@@ -1192,7 +1192,11 @@ html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);colo
   </div>
 </div>
 <div class="toast" id="toast"></div>
-<script>
+<script>window._sb=window._sb||null;
+window._syncT=window._syncT||null;
+window._syncing=window._syncing||false;
+var _sb=null,_syncT=null,_syncing=false;
+
 
 // ══ OrthoBuddy v2026-05-29-LOGIN-FIX ══
 // ══ LOGIN ══
@@ -1484,7 +1488,6 @@ let currentFicheId=null,currentPinId=null,currentAvatarId=null,pendingPhotos={};
 let tempAvatarColor=null,tempAvatarInitials=null,tempAvatarPhoto=null;
 let editSeancePid=null,editSeanceSid=null,currentApptId=null;
 let currentSort='alpha';
-let _sb=null,_syncT=null,_syncing=false;
 
 const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6);
 const calcAge=dob=>{if(!dob)return null;const d=new Date(dob),n=new Date();let a=n.getFullYear()-d.getFullYear();if(n.getMonth()<d.getMonth()||(n.getMonth()===d.getMonth()&&n.getDate()<d.getDate()))a--;return a;};
