@@ -1556,20 +1556,35 @@ function exportData(){
 function importData(e){
   const file=e.target.files[0];if(!file)return;
   const reader=new FileReader();
-  reader.onload=ev=>{
+  reader.onload=function(ev){
     try{
-      const data=JSON.parse(ev.target.result);
-      if(!data.patients||!Array.isArray(data.patients))throw new Error();
-      if(!confirm('Importer '+data.patients.length+' patient(s) ? Cela remplacera les données actuelles.'))return;
-      state.patients=data.patients;state.paused=data.paused||[];state.espace=data.espace||{};
+      const raw=ev.target.result;
+      let data;
+      try{data=JSON.parse(raw);}catch(parseErr){alert('Erreur JSON: '+parseErr.message);return;}
+      if(!data||typeof data!=='object'){alert('Fichier vide.');return;}
+      if(!data.patients||!Array.isArray(data.patients)){alert('Format invalide. Clé patients introuvable.');return;}
+      if(!confirm('Importer '+data.patients.length+' patient(s) ?'))return;
+      state.patients=data.patients;
+      state.paused=data.paused||[];
+      state.espace=data.espace||{};
       if(!state.espace.postits)state.espace.postits=[];
       if(!state.espace.notes)state.espace.notes=[];
       if(!state.espace.contacts)state.espace.contacts=[];
-      state.planning=data.planning||[];state.lastExport=data.exportedAt||null;
-      save();renderPatients();showToast('✓ Données importées');
-    }catch(err){alert('Fichier invalide.');}
+      state.planning=data.planning||[];
+      state.cabinet=data.cabinet||{categories:[]};
+      state.lastExport=data.exportedAt||null;
+      save();
+      renderDashboard();
+      renderPatients();
+      showToast(data.patients.length+' patients importés !');
+      setTimeout(function(){_pushCloud();},1000);
+    }catch(err){
+      alert('Erreur import: '+err.message);
+      console.error(err);
+    }
   };
-  reader.readAsText(file);e.target.value='';
+  reader.readAsText(file,'UTF-8');
+  e.target.value='';
 }
 
 // AVATAR
