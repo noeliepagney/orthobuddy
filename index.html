@@ -559,7 +559,6 @@ html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);colo
 
 /* ── LOGIN SCREEN ── */
 #login-screen{position:fixed;inset:0;z-index:9999;background:#F4F6F3;display:flex;align-items:center;justify-content:center;}
-#login-screen.hidden{display:none !important;pointer-events:none;visibility:hidden;}
 #login-screen.hidden{display:none;}
 .login-card{background:white;border-radius:16px;padding:40px 48px;box-shadow:0 4px 24px rgba(0,0,0,.10);width:100%;max-width:360px;text-align:center;}
 .login-logo{width:52px;height:52px;margin:0 auto 20px;}
@@ -573,11 +572,6 @@ html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);colo
 
 /* ── PLANNING DRAG ── */
 .planning-slot.drag-over{background:rgba(29,158,117,.12)!important;outline:2px dashed var(--green);}
-
-
-.planning-wrap{overflow-x:auto;width:100%;}
-.planning-grid{display:grid;min-width:800px;}
-.planning-time-col{width:52px;flex-shrink:0;}
 
 </style>
 </head>
@@ -638,7 +632,8 @@ html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);colo
   </nav>
   <div class="sidebar-bottom">
     <button class="nav-item" onclick="exportData()"><span class="nav-icon">💾</span><span class="nav-label">Sauvegarder</span></button>
-    <label class="nav-item" style="cursor:pointer;display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:6px;color:var(--text-mid);font-size:13px;"><span class="nav-icon">📂</span><span class="nav-label">Importer</span><input type="file" accept=".json" style="display:none" onchange="importData(event)"></label>
+    <button class="nav-item" onclick="document.getElementById('import-file').click()"><span class="nav-icon">📂</span><span class="nav-label">Importer</span></button>
+    <input type="file" id="import-file" accept=".json" style="display:none" onchange="importData(event)">
   </div>
 </aside>
 <div class="main">
@@ -853,9 +848,30 @@ html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);colo
           <div id="cabinet-docs-list" style="padding:12px 14px;"></div>
         </div>
       </div>
-      
+      <div class="rev-settings" style="margin-top:16px;">
+        <div style="font-size:14px;font-weight:500;margin-bottom:8px;">☁️ Synchronisation cloud (Supabase)</div>
+        <div style="font-size:12px;color:var(--text-soft);margin-bottom:10px;">Vos données sont synchronisées automatiquement. Partagez votre identifiant entre vos appareils pour accéder aux mêmes données partout.</div>
+        <div class="rev-settings-grid">
+          <div class="rev-field" style="grid-column:1/-1;">
+            <label>Identifiant de cet appareil</label>
+            <div style="display:flex;gap:8px;margin-top:4px;">
+              <input type="text" id="s-ob-uid" readonly style="flex:1;padding:5px 8px;font-size:12px;font-family:'DM Sans',sans-serif;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--bg);">
+              <button class="btn btn-sm" onclick="navigator.clipboard.writeText(document.getElementById('s-ob-uid').value).then(()=>showToast('Copie !'))">📋 Copier</button>
+            </div>
+          </div>
+          <div class="rev-field" style="grid-column:1/-1;">
+            <label>Utiliser sur un autre appareil</label>
+            <div style="display:flex;gap:8px;margin-top:4px;">
+              <input type="text" id="s-import-uid" placeholder="Coller l'identifiant de l'autre appareil…" style="flex:1;padding:5px 8px;font-size:12px;font-family:'DM Sans',sans-serif;border:1px solid var(--border);border-radius:var(--radius-sm);background:white;">
+              <button class="btn btn-sm btn-green" onclick="useDeviceId(document.getElementById('s-import-uid').value)">Utiliser</button>
+            </div>
+          </div>
+        </div>
+        <button class="btn btn-green" onclick="syncNow()" style="margin-top:10px;">↺ Synchroniser maintenant</button>
+      </div>
     </div>
 
+    <!-- PARAMÈTRES -->
     <div class="page" id="page-settings">
       <div class="page-header"><div class="page-title">⚙️ Paramètres</div></div>
       <div style="display:flex;flex-direction:column;gap:16px;">
@@ -912,19 +928,6 @@ html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);colo
           <div id="s-custom-categories" style="display:flex;flex-direction:column;gap:6px;"></div>
           <button class="btn btn-green btn-sm" onclick="addCustomCategory()" style="margin-top:10px;">＋ Ajouter une catégorie</button>
         </div>
-      </div>
-      <div class="rev-settings" style="margin-top:16px;">
-        <div style="font-size:14px;font-weight:500;margin-bottom:8px;">☁️ Synchronisation cloud</div>
-        <div style="font-size:12px;color:var(--text-soft);margin-bottom:10px;">Partagez votre identifiant pour accéder à vos données depuis plusieurs appareils.</div>
-        <div class="rev-settings-grid">
-          <div class="rev-field" style="grid-column:1/-1;"><label>Identifiant de cet appareil</label>
-            <div style="display:flex;gap:8px;margin-top:4px;"><input type="text" id="s-ob-uid" readonly style="flex:1;padding:5px 8px;font-size:12px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--bg);font-family:'DM Sans',sans-serif;"><button class="btn btn-sm" onclick="navigator.clipboard.writeText(document.getElementById('s-ob-uid').value).then(()=>showToast('Copié !'))">📋</button></div>
-          </div>
-          <div class="rev-field" style="grid-column:1/-1;"><label>Autre appareil</label>
-            <div style="display:flex;gap:8px;margin-top:4px;"><input type="text" id="s-import-uid" placeholder="Coller l'identifiant…" style="flex:1;padding:5px 8px;font-size:12px;border:1px solid var(--border);border-radius:var(--radius-sm);font-family:'DM Sans',sans-serif;"><button class="btn btn-sm btn-green" onclick="useDeviceId(document.getElementById('s-import-uid').value)">Utiliser</button></div>
-          </div>
-        </div>
-        <button class="btn btn-green" onclick="syncNow()" style="margin-top:8px;">↺ Synchroniser</button>
       </div>
     </div>
 
@@ -1192,59 +1195,22 @@ html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);colo
   </div>
 </div>
 <div class="toast" id="toast"></div>
-<script>window._sb=window._sb||null;
-window._syncT=window._syncT||null;
-window._syncing=window._syncing||false;
-var _sb=null,_syncT=null,_syncing=false;
+<script>
 
-
-// ══ OrthoBuddy v2026-05-29-LOGIN-FIX ══
 // ══ LOGIN ══
 const _PWD_HASH = '7f242254b30a5b1f9609e567aee4f3920d348467ac7bfbaf17d06a0df57d6447';
 async function _hashPwd(pwd){
-  // Try crypto.subtle (HTTPS only), fallback to simple hash for HTTP
-  if(typeof crypto!=='undefined'&&crypto.subtle){
-    try{
-      const buf=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(pwd));
-      return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
-    }catch(e){}
-  }
-  // Simple fallback hash (works on HTTP)
-  let h=0x811c9dc5;
-  for(let i=0;i<pwd.length;i++){h^=pwd.charCodeAt(i);h=(h*0x01000193)>>>0;}
-  // Use hardcoded check for fallback
-  return '_http_'+btoa(pwd).replace(/=/g,'');
-}
-function _checkPwdFallback(pwd){
-  // HTTP fallback: check against stored or default
-  const stored=localStorage.getItem('ob_pwd_plain');
-  if(stored)return pwd===stored;
-  return pwd==='Pagney*54200';
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(pwd));
+  return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
 }
 async function checkLogin(){
-  const pwd=document.getElementById('login-pwd').value;
-  const DEFAULT_PWD='Pagney*54200';
+  const pwd = document.getElementById('login-pwd').value;
   const storedPwd=localStorage.getItem('ob_pwd_plain');
-  
-  // Debug: log what we're comparing
-  console.log('Login attempt - stored:', storedPwd, 'default check:', pwd===DEFAULT_PWD, 'pwd length:', pwd.length);
-  
-  // Simple direct comparison (works HTTP and HTTPS)
-  const ok = storedPwd ? pwd===storedPwd : pwd===DEFAULT_PWD;
-  
-  // Also try SHA-256 if available (HTTPS)
-  let hashOk=false;
+  let ok = storedPwd ? pwd===storedPwd : pwd==='Pagney*54200';
   if(!ok && typeof crypto!=='undefined' && crypto.subtle){
-    try{
-      const buf=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(pwd));
-      const hash=Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
-      const storedHash=localStorage.getItem('ob_pwd_hash')||_PWD_HASH;
-      hashOk=(hash===storedHash);
-    }catch(e){}
+    try{const buf=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(pwd));const hash=Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');ok=(hash===(localStorage.getItem('ob_pwd_hash')||_PWD_HASH));}catch(e){}
   }
-  
-  if(ok||hashOk){
-
+  if(ok){
     document.getElementById('login-screen').classList.add('hidden');
     sessionStorage.setItem('ob_auth','1');
     load();
@@ -1261,24 +1227,57 @@ async function checkLogin(){
   }
 }
 function _checkAuth(){
-  return sessionStorage.getItem('ob_auth')==='1';
+  
+// ══ FONCTIONS MANQUANTES ══
+function renderPatientDocs(p){
+  var pid=p.id;
+  if(!p.permTagData)p.permTagData={};
+  if(!p.permTagData.docs)p.permTagData.docs={files:[],categories:[]};
+  var allFiles=p.permTagData.docs.files||[];
+  var cats=p.permTagData.docs.categories||[];
+  var html='<div style="display:flex;gap:6px;justify-content:flex-end;margin-bottom:10px;">';
+  html+='<label class="btn btn-sm btn-green" style="cursor:pointer;">+ Document<input type="file" multiple accept="image/*,.pdf,.doc,.docx" style="display:none" onchange="handleTagFile(event,\''+pid+'\',\'docs\',true)"></label>';
+  html+='</div>';
+  if(!allFiles.length&&!cats.length)return html+'<div style="font-size:13px;color:var(--text-soft);padding:8px 0;">Aucun document.</div>';
+  allFiles.forEach(function(f,fi){
+    html+='<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--border);">';
+    html+='<span style="cursor:pointer;flex:1;" onclick="openFileById(\''+pid+'\',\'docs\','+fi+',true)">📄 '+(f.title||f.name)+'</span>';
+    html+='<button onclick="deleteFile(\''+pid+'\',\'docs\','+fi+',true)" style="background:none;border:none;cursor:pointer;color:var(--red);">✕</button></div>';
+  });
+  return html;
 }
-function addCustomCat(){
-  var label=prompt('Nom de la catégorie :');if(!label)return;
-  var emoji=prompt('Emoji :','📅')||'📅';
-  var color=prompt('Couleur hex :','#1D9E75')||'#1D9E75';
-  if(!appSettings.customCategories)appSettings.customCategories=[];
-  appSettings.customCategories.push({id:uid(),label:label.trim(),emoji:emoji,color:color});
-  saveSettings();renderCustomCategories();
+function openToTag(pid,tid){
+  var p=state.patients.find(function(x){return x.id===pid;});if(!p)return;
+  if(!p._expanded){p._expanded=true;renderPatients();}
+  setTimeout(function(){switchPatientTab(pid,'docs');},80);
 }
-function editCustomCat(i){
-  var cat=appSettings.customCategories[i];if(!cat)return;
-  var label=prompt('Nom :',cat.label);if(label!==null)cat.label=label.trim();
-  var emoji=prompt('Emoji :',cat.emoji);if(emoji!==null)cat.emoji=emoji;
-  var color=prompt('Couleur hex :',cat.color);if(color!==null)cat.color=color;
-  saveSettings();renderCustomCategories();
+function esSetResEmoji(bi,ei,emoji,btn){
+  if(esBlocks[bi]&&esBlocks[bi].entries[ei]){
+    var cur=esBlocks[bi].entries[ei].resEmoji||'';
+    esBlocks[bi].entries[ei].resEmoji=cur===emoji?'':emoji;
+  }
+  var container=document.getElementById('es-blocks-container');
+  if(container){
+    container.querySelectorAll('button[onclick*="esSetResEmoji('+bi+','+ei+'"]').forEach(function(b){
+      var em=b.getAttribute('onclick').match(/'([^']+)'/);
+      if(em){var sel=esBlocks[bi]&&esBlocks[bi].entries[ei]&&esBlocks[bi].entries[ei].resEmoji===em[1];b.style.borderColor=sel?'var(--green)':'var(--border)';b.style.background=sel?'var(--green-ll)':'white';}
+    });
+  }
+}
+async function _pull(){return _pullCloud();}
+// ══ FIN FONCTIONS MANQUANTES ══
+
+if(sessionStorage.getItem('ob_auth')==='1'){
+    document.getElementById('login-screen').classList.add('hidden');
+    return true;
+  }
+  return false;
 }
 
+// ════ SUPABASE SYNC ════
+const _SB_URL='https://xiznicrburryfmdfbjxk.supabase.co';
+const _SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inhpem5pY3JidXJyeWZtZGZianhrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAwNDM0NjEsImV4cCI6MjA5NTYxOTQ2MX0.vYuV7LIBXXkKJkHVwNPaI-lA7x1HwFROdU1K17ZB1Y8';
+let _sb=null,_syncT=null,_syncing=false;
 function _initSB(){
   try{
     const dot=document.getElementById('_sync_dot');
@@ -1487,7 +1486,6 @@ let state={patients:[],paused:[],lastExport:null,espace:{todos:[],notes:[]},plan
 let currentFicheId=null,currentPinId=null,currentAvatarId=null,pendingPhotos={};
 let tempAvatarColor=null,tempAvatarInitials=null,tempAvatarPhoto=null;
 let editSeancePid=null,editSeanceSid=null,currentApptId=null;
-let currentSort='alpha';
 
 const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6);
 const calcAge=dob=>{if(!dob)return null;const d=new Date(dob),n=new Date();let a=n.getFullYear()-d.getFullYear();if(n.getMonth()<d.getMonth()||(n.getMonth()===d.getMonth()&&n.getDate()<d.getDate()))a--;return a;};
@@ -1526,7 +1524,7 @@ function load(){
   const now=new Date();
   const d=now.toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
   document.getElementById('top-date').textContent=d;
-  const dlEl=document.getElementById('date-label');if(dlEl)dlEl.textContent=d;
+  document.getElementById('date-label').textContent=d;
   if(!state.cabinet)state.cabinet={categories:[]};
   updateSaveStatus();checkBackupBanner();checkFirstRun();loadSettings();checkAllRappelTriggers();
   // sync after short delay
@@ -1560,35 +1558,20 @@ function exportData(){
 function importData(e){
   const file=e.target.files[0];if(!file)return;
   const reader=new FileReader();
-  reader.onload=function(ev){
+  reader.onload=ev=>{
     try{
-      const raw=ev.target.result;
-      let data;
-      try{data=JSON.parse(raw);}catch(parseErr){alert('Erreur JSON: '+parseErr.message);return;}
-      if(!data||typeof data!=='object'){alert('Fichier vide.');return;}
-      if(!data.patients||!Array.isArray(data.patients)){alert('Format invalide. Clé patients introuvable.');return;}
-      if(!confirm('Importer '+data.patients.length+' patient(s) ?'))return;
-      state.patients=data.patients;
-      state.paused=data.paused||[];
-      state.espace=data.espace||{};
+      const data=JSON.parse(ev.target.result);
+      if(!data.patients||!Array.isArray(data.patients))throw new Error();
+      if(!confirm('Importer '+data.patients.length+' patient(s) ? Cela remplacera les données actuelles.'))return;
+      state.patients=data.patients;state.paused=data.paused||[];state.espace=data.espace||{};
       if(!state.espace.postits)state.espace.postits=[];
       if(!state.espace.notes)state.espace.notes=[];
       if(!state.espace.contacts)state.espace.contacts=[];
-      state.planning=data.planning||[];
-      state.cabinet=data.cabinet||{categories:[]};
-      state.lastExport=data.exportedAt||null;
-      save();
-      renderDashboard();
-      renderPatients();
-      showToast(data.patients.length+' patients importés !');
-      setTimeout(function(){_pushCloud();},1000);
-    }catch(err){
-      alert('Erreur import: '+err.message);
-      console.error(err);
-    }
+      state.planning=data.planning||[];state.lastExport=data.exportedAt||null;
+      save();renderPatients();showToast('✓ Données importées');
+    }catch(err){alert('Fichier invalide.');}
   };
-  reader.readAsText(file,'UTF-8');
-  e.target.value='';
+  reader.readAsText(file);e.target.value='';
 }
 
 // AVATAR
@@ -1766,150 +1749,212 @@ function renderCardBody(p){
   const seanceData=todaySeance?.tagData||{};
   const permTags=p.permTags||[];
   const permData=p.permTagData||{};
+  const photos=pendingPhotos[p.id]||(todaySeance?.photos||[]);
+  if(!pendingPhotos[p.id]&&todaySeance?.photos)pendingPhotos[p.id]=todaySeance.photos;
+
   const activeTab=p._activeTab||'';
 
-  // ── Build tabs bar ──
-  const sc=(p.seances||[]).length;
-  const ic=((p.permTagData&&p.permTagData.idee&&p.permTagData.idee.entries)||[]).filter(function(e){return typeof e==='string'?e.trim():true;}).length;
-  const dc=(p.permTagData&&p.permTagData.docs&&p.permTagData.docs.files||[]).length;
-  const rc=(p.rappels||[]).filter(function(r){return !r.done;}).length;
-  const tabDefs=[
-    {id:'dossier', label:'📋 Dossier'},
-    {id:'plan',    label:'📝 Plan'},
-    {id:'seances', label:'🗓️ Séances'+(sc?' ('+sc+')':'')},
-    {id:'idees',   label:'💡 Idées'+(ic?' ('+ic+')':'')},
-    {id:'docs',    label:'📁 Documents'+(dc?' ('+dc+')':'')},
-    {id:'rappels', label:'🔔 Rappels'+(rc?' ('+rc+')':'')},
-  ];
-  const tabsHtml=tabDefs.map(function(t){
-    var active=activeTab===t.id?' active':'';
-    return '<button class="patient-tab-btn'+active+'" onclick="switchPatientTab(\''+p.id+'\',\''+t.id+'\')">'+t.label+'</button>';
-  }).join('');
-
-  // ── Dossier tab ──
-  const dossierTab=renderAmoZone(p)+renderOrdonnanceZone(p)+renderAdminZone(p);
-
-  // ── Plan tab ──
-  const planTab='<div style="padding:14px 16px;"><textarea id="perm-'+p.id+'" placeholder="Objectifs, protocole, notes importantes…" onblur="savePermNotes(\''+p.id+'\')" style="width:100%;padding:8px 10px;font-size:13px;font-family:DM Sans,sans-serif;border:1px solid var(--border);border-radius:var(--radius-sm);background:white;resize:vertical;min-height:120px;box-sizing:border-box;outline:none;">'+(p.permNotes||'')+'</textarea></div>';
-
-  // ── Séances tab ──
+  // ── TAB: SÉANCES ──
+  const seanceBlocksHtml=TAG_DEFS.filter(t=>!t.perm&&seanceTags.includes(t.id))
+    .map(t=>renderTagBlock(p.id,t,seanceData[t.id],false)).join('');
+  const photosHtml=photos.length?photos.map((ph,i)=>`<span class="photo-chip" onclick="openPhoto('${p.id}',${i})">📎 ${ph.name}</span>`).join(''):'';
   const amoCode=todaySeance?.amo||(p.amoDef||p.amo)||'';
   const defDur=getDefaultDurForAmo(amoCode,p);
-  const seanceAmoOpts=buildSeanceAmoOptions(p,todaySeance?.amo,true);
-  const seanceBlocksHtml=TAG_DEFS.filter(function(t){return !t.perm&&seanceTags.includes(t.id);}).map(function(t){return renderTagBlock(p.id,t,seanceData[t.id],false);}).join('');
+  const seanceAmoOptions=buildSeanceAmoOptions(p,todaySeance?.amo,true);
+  const domToggle=p.domicile?`<label style="font-size:11px;color:var(--text-soft);display:flex;align-items:center;gap:4px;cursor:pointer;"><input type="checkbox" id="dom-${p.id}" ${todaySeance?.domicile!==false?'checked':''} onchange="saveSeanceDomicile('${p.id}')" style="accent-color:var(--green);">🏠</label>`:'';
+
+  // Result emojis for today's seance
   const todayResEmoji=todaySeance?.resEmoji||'';
-  const resultRow='<div class="result-emoji-row"><span style="font-size:11px;color:var(--text-soft);">Résultat :</span>'+
-    [['🌟','Excellent'],['✅','Acquis'],['🔄','En cours'],['⚠️','Difficile'],['❌','Non acquis']].map(function(arr){
-      var em=arr[0],lbl=arr[1];
-      var sel=todayResEmoji===em?' selected':'';
-      return '<button class="result-emoji-btn'+sel+'" onclick="saveTodayResEmoji(\''+p.id+'\',\''+em+'\')" title="'+lbl+'" data-emoji="'+em+'">'+em+'</button>';
-    }).join('')+'</div>';
-  const domToggle=p.domicile?'<label style="font-size:11px;color:var(--text-soft);display:flex;align-items:center;gap:4px;cursor:pointer;"><input type="checkbox" id="dom-'+p.id+'" '+(todaySeance?.domicile!==false?'checked':'')+' onchange="saveSeanceDomicile(\''+p.id+'\')" style="accent-color:var(--green);">🏠</label>':'';
+  const resultRow=`<div class="result-emoji-row">
+    <span style="font-size:11px;color:var(--text-soft);">Résultat :</span>
+    ${[['🌟','Excellent'],['✅','Acquis'],['🔄','En cours'],['⚠️','Difficile'],['❌','Non acquis']].map(([em,lbl])=>
+      `<button class="result-emoji-btn${todayResEmoji===em?' selected':''}" onclick="saveTodayResEmoji('${p.id}','${em}')" title="${lbl}">${em}</button>`
+    ).join('')}
+    ${todayResEmoji?`<span style="font-size:11px;color:var(--text-soft);">${{'🌟':'Excellent','✅':'Acquis','🔄':'En cours','⚠️':'Difficile','❌':'Non acquis'}[todayResEmoji]||''}</span>`:''}
+  </div>`;
 
-  // Build past/future seances list
-  var seancesList='';
-  var future=(state.planning||[]).filter(function(a){return a.patientId===p.id&&a.date>today;}).sort(function(a,b){return a.date.localeCompare(b.date);});
-  var past=(p.seances||[]).sort(function(a,b){return b.date.localeCompare(a.date);});
-  future.forEach(function(a){
-    seancesList+='<div class="hist-row" style="background:#F0FAF6;cursor:pointer;">'+
-      '<div class="hist-row-dot" style="background:var(--green);opacity:.5;"></div>'+
-      '<div class="hist-row-date" style="color:var(--green-mid);font-size:11px;">📅 '+fmtDateShort(a.date)+(a.start?' '+a.start:'')+'</div>'+
-      '<span style="font-size:10px;background:var(--green-ll);color:var(--green-mid);border:1px solid #9FE1CB;border-radius:8px;padding:1px 5px;">Planifiée</span>'+
-      '<div style="flex:1;font-size:11px;color:var(--text-soft);padding-left:6px;">'+(a.dur||30)+' min</div>'+
-      '<button onclick="removeFuturePlan(\''+a.id+'\');event.stopPropagation()" style="background:none;border:none;cursor:pointer;font-size:10px;color:var(--text-soft);">✕</button>'+
-    '</div>';
-  });
-  var shown=past.slice(0,5);
-  shown.forEach(function(s){seancesList+=renderHistRow(p.id,s,p);});
-  var hiddenCount=past.length-5;
-  var moreBtn=hiddenCount>0?'<button class="btn btn-sm btn-ghost" style="width:100%;margin-top:4px;" onclick="toggleHistMore(\''+p.id+'\',this)">Voir les '+hiddenCount+' séances précédentes ▾</button>':'';
-  var moreDiv=hiddenCount>0?'<div id="hist-more-'+p.id+'" style="display:none;">'+past.slice(5).map(function(s){return renderHistRow(p.id,s,p);}).join('')+'</div>':'';
-  if(!seancesList)seancesList='<div style="font-size:12px;color:var(--text-soft);padding:8px 0;">Aucune séance.</div>';
+  const seancesTab=`<div class="seance-today-wrap">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:0;">
+      <button class="seance-today-date" style="cursor:pointer;background:none;border:1px solid #9FE1CB;border-radius:20px;padding:3px 12px;font-size:12px;font-weight:600;color:var(--green-mid);" onclick="toggleTodayZone('today-zone-${p.id}')">
+        Séance du ${new Date().toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long'})} ▾
+      </button>
+    </div>
+    <div id="today-zone-${p.id}" style="display:none;">
+    <div class="seance-meta-compact">
+      <div class="datetime-field">
+        <label>Heure</label>
+        <input type="time" id="heure-${p.id}" value="${todaySeance?.heure||''}" onchange="saveHeure('${p.id}')">
+      </div>
+      <select class="seance-amo-select" id="seance-amo-${p.id}" onchange="onSeanceAmoChange('${p.id}')" style="max-width:160px;">${seanceAmoOptions}</select>
+      <select class="seance-amo-select" id="seance-dur-${p.id}" style="width:78px;" onchange="saveSeanceDur('${p.id}')">
+        <option value="20"${todaySeance?.dur===20?' selected':''}>20 min</option>
+        <option value="30"${(!todaySeance&&defDur===30)||todaySeance?.dur===30?' selected':''}>30 min</option>
+        <option value="45"${(!todaySeance&&defDur===45)||todaySeance?.dur===45?' selected':''}>45 min</option>
+        <option value="60"${todaySeance?.dur===60?' selected':''}>60 min</option>
+        <option value="90"${todaySeance?.dur===90?' selected':''}>90 min</option>
+        <option value="120"${todaySeance?.dur===120?' selected':''}>120 min</option>
+      </select>
+      <label style="font-size:11px;color:var(--text-soft);display:flex;align-items:center;gap:4px;cursor:pointer;"><input type="checkbox" id="tele-${p.id}" ${todaySeance?.telesoin?'checked':''} onchange="saveTelesoin('${p.id}')" style="accent-color:var(--green);">📱</label>
+      <label style="font-size:11px;color:var(--text-soft);display:flex;align-items:center;gap:4px;cursor:pointer;"><input type="checkbox" id="cv-${p.id}" ${todaySeance?.carteVitale?'checked':''} onchange="saveCarteVitale('${p.id}')" style="accent-color:var(--green);">💳</label>
+      ${domToggle}
+    </div>
+    <div class="seance-tags-compact">
+      ${TAG_DEFS.filter(t=>!t.perm).map(t=>`<button class="tag-btn tag-btn-${t.id}${seanceTags.includes(t.id)?' active':''}" onclick="toggleTag('${p.id}','${t.id}')">${t.label}</button>`).join('')}
+    </div>
+    <div id="seance-blocks-${p.id}">${seanceBlocksHtml}</div>
+    ${resultRow}
+    <div class="photos-preview" id="photos-preview-${p.id}">${photosHtml}</div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-top:10px;flex-wrap:wrap;gap:8px;">
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <button class="photo-btn" onclick="document.getElementById('photo-file-${p.id}').click()">📎 Fichier</button>
+        <input type="file" id="photo-file-${p.id}" accept="image/*,.pdf,.doc,.docx" multiple style="display:none" onchange="handlePhoto(event,'${p.id}')">
+      </div>
+      <button class="save-btn" onclick="saveSeance('${p.id}')">Enregistrer la séance</button>
+    </div>
+    </div>
+  </div>
+  <!-- SÉANCES LIST: button + collapsed list -->
+  <div style="border-top:1px solid var(--border);padding:10px 16px;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+      <span style="font-size:12px;font-weight:600;color:var(--text-mid);">Séances (${(p.seances||[]).length})</span>
+      <button class="btn btn-green btn-sm" onclick="openAddAnySeance('${p.id}')">＋ Ajouter une séance</button>
+    </div>
+    ${(()=>{
+      const today=todayStr();
+      const future=(state.planning||[]).filter(a=>a.patientId===p.id&&a.date>today).sort((a,b)=>a.date.localeCompare(b.date));
+      const past=(p.seances||[]).sort((a,b)=>b.date.localeCompare(a.date));
+      const futureRows=future.map(a=>`<div class="hist-row" style="background:#F0FAF6;" onclick="openJAM('${p.id}',null,'${p.prenom} ${p.nom}',event)">
+        <span style="font-size:12px;">📅</span>
+        <div class="hist-row-date" style="color:var(--green-mid);font-size:11px;font-weight:500;">${fmtDateShort(a.date)}${a.start?' '+a.start:''}</div>
+        <span style="font-size:10px;background:var(--green-ll);color:var(--green-mid);border:1px solid #9FE1CB;border-radius:8px;padding:1px 5px;">Planifiée • ${a.dur||30}min</span>
+        <div style="flex:1;"></div>
+        <button onclick="removeFuturePlan('${a.id}');event.stopPropagation()" style="background:none;border:none;cursor:pointer;font-size:10px;color:var(--text-soft);">✕</button>
+      </div>`).join('');
+      const shownPast=past.slice(0,5);
+      const hiddenCount=past.length-5;
+      const pastRows=shownPast.map(s=>renderHistRow(p.id,s,p)).join('');
+      const moreBtn=hiddenCount>0?`<div id="hist-more-${p.id}" style="display:none;">${past.slice(5).map(s=>renderHistRow(p.id,s,p)).join('')}</div><button class="btn btn-sm btn-ghost" style="width:100%;margin-top:4px;" onclick="toggleHistMore('${p.id}',this)">Voir les ${hiddenCount} séances précédentes ▾</button>`:'';
+      const empty=futureRows===''&&pastRows===''?'<div style="font-size:12px;color:var(--text-soft);padding:8px 0;">Aucune séance enregistrée.</div>':'';
+      return'<div class="hist-list-wrap">'+futureRows+pastRows+empty+'</div>'+moreBtn;
+    })()}
+  </div>`;
 
-  const seancesTab='<div class="seance-today-wrap">'+
-    '<button class="seance-today-date" onclick="toggleTodayZone(\'tz-'+p.id+'\')" style="cursor:pointer;background:none;border:1px solid #9FE1CB;border-radius:20px;padding:3px 12px;font-size:12px;font-weight:600;color:var(--green-mid);margin-bottom:12px;">'+
-      'Séance du '+new Date().toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long'})+' ▾'+
-    '</button>'+
-    '<div id="tz-'+p.id+'" style="display:none;">'+
-      '<div class="seance-meta-compact">'+
-        '<div class="datetime-field"><label>Heure</label><input type="time" id="heure-'+p.id+'" value="'+(todaySeance?.heure||'')+'" onchange="saveHeure(\''+p.id+'\')"></div>'+
-        '<select class="seance-amo-select" id="seance-amo-'+p.id+'" onchange="onSeanceAmoChange(\''+p.id+'\')" style="max-width:160px;">'+seanceAmoOpts+'</select>'+
-        '<select class="seance-amo-select" id="seance-dur-'+p.id+'" style="width:78px;" onchange="saveSeanceDur(\''+p.id+'\')">'+
-          '<option value="20"'+(todaySeance?.dur===20?' selected':'')+'>20 min</option>'+
-          '<option value="30"'+(((!todaySeance&&defDur===30)||todaySeance?.dur===30)?' selected':'')+'>30 min</option>'+
-          '<option value="45"'+(((!todaySeance&&defDur===45)||todaySeance?.dur===45)?' selected':'')+'>45 min</option>'+
-          '<option value="60"'+(todaySeance?.dur===60?' selected':'')+'>60 min</option>'+
-          '<option value="90"'+(todaySeance?.dur===90?' selected':'')+'>90 min</option>'+
-          '<option value="120"'+(todaySeance?.dur===120?' selected':'')+'>120 min</option>'+
-        '</select>'+
-        '<label style="font-size:11px;color:var(--text-soft);display:flex;align-items:center;gap:4px;cursor:pointer;"><input type="checkbox" id="tele-'+p.id+'" '+(todaySeance?.telesoin?'checked':'')+' onchange="saveTelesoin(\''+p.id+'\')" style="accent-color:var(--green);">📱</label>'+
-        '<label style="font-size:11px;color:var(--text-soft);display:flex;align-items:center;gap:4px;cursor:pointer;"><input type="checkbox" id="cv-'+p.id+'" '+(todaySeance?.carteVitale?'checked':'')+' onchange="saveCarteVitale(\''+p.id+'\')" style="accent-color:var(--green);">💳</label>'+
-        domToggle+
-      '</div>'+
-      '<div class="seance-tags-compact">'+
-        TAG_DEFS.filter(function(t){return !t.perm;}).map(function(t){return '<button class="tag-btn tag-btn-'+t.id+(seanceTags.includes(t.id)?' active':'')+'" onclick="toggleTag(\''+p.id+'\',\''+t.id+'\')">'+t.label+'</button>';}).join('')+
-      '</div>'+
-      '<div id="seance-blocks-'+p.id+'">'+seanceBlocksHtml+'</div>'+
-      resultRow+
-      '<div style="display:flex;align-items:center;justify-content:space-between;margin-top:10px;flex-wrap:wrap;gap:8px;">'+
-        '<div style="display:flex;gap:8px;"><button class="photo-btn" onclick="document.getElementById(\'photo-file-'+p.id+'\').click()">📎 Fichier</button><input type="file" id="photo-file-'+p.id+'" accept="image/*,.pdf,.doc,.docx" multiple style="display:none" onchange="handlePhoto(event,\''+p.id+'\')"></div>'+
-        '<button class="save-btn" onclick="saveSeance(\''+p.id+'\')">Enregistrer la séance</button>'+
-      '</div>'+
-    '</div>'+
-  '</div>'+
-  '<div style="border-top:1px solid var(--border);padding:10px 16px;">'+
-    '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">'+
-      '<span style="font-size:12px;font-weight:600;color:var(--text-mid);">Séances ('+sc+')</span>'+
-      '<button class="btn btn-green btn-sm" onclick="openAddAnySeance(\''+p.id+'\')">＋ Ajouter une séance</button>'+
-    '</div>'+
-    '<div class="hist-list-wrap">'+seancesList+'</div>'+
-    moreDiv+moreBtn+
-  '</div>';
+  // ── TAB: DOSSIER ──
+  const dossierTab=`<div style="padding:0;">
+    ${renderAmoZone(p)}
+    ${renderOrdonnanceZone(p)}
+    ${renderAdminZone(p)}
+  </div>`;
 
-  // ── Idées tab ──
-  var ideaEntries=(p.permTagData&&p.permTagData.idee&&p.permTagData.idee.entries)||[];
-  var ideasHtml=ideaEntries.length?ideaEntries.map(function(v,ei){
-    return '<div style="display:flex;align-items:flex-start;gap:8px;padding:8px 0;border-bottom:1px solid var(--border);">'+
-      '<span style="font-size:16px;margin-top:2px;">💡</span>'+
-      '<textarea style="flex:1;font-size:13px;font-family:DM Sans,sans-serif;border:none;outline:none;resize:none;background:transparent;padding:0;" rows="2" onblur="saveIdeaEntry(\''+p.id+'\','+ei+',this.value)">'+(v||'')+'</textarea>'+
-      '<button onclick="removeIdeaEntry(\''+p.id+'\','+ei+')" style="background:none;border:none;cursor:pointer;font-size:11px;opacity:.3;" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=.3">✕</button>'+
-    '</div>';
-  }).join(''):'<div style="font-size:13px;color:var(--text-soft);">Aucune idée pour l\'instant.</div>';
-  const ideesTab='<div style="padding:12px 16px;"><div style="display:flex;justify-content:flex-end;margin-bottom:8px;"><button class="btn btn-sm btn-ghost" onclick="addIdeaEntry(\''+p.id+'\')">＋ Ajouter</button></div>'+ideasHtml+'</div>';
+  // ── TAB: NOTES ──
+  const docsEntries=(permData['docs']?.files)||[];
+  const rappelsData=p.rappels||[];
+  const ideeEntries=permData['idee']?.entries||[];
 
-  // ── Documents tab ──
-  var docsHtml=renderPatientDocs(p);
-  const docsTab='<div style="padding:12px 16px;">'+docsHtml+'</div>';
+  const notesTab=`<div style="padding:12px 16px;display:flex;flex-direction:column;gap:12px;">
 
-  // ── Rappels tab ──
-  var rappelsHtml=(p.rappels||[]).length?renderPatientRappels(p).replace(/<div class="patient-rappels-zone">/g,'').replace(/<\/div>\s*$/, ''):'<div style="font-size:13px;color:var(--text-soft);">Aucun rappel.</div>';
-  const rappelsTab='<div style="padding:12px 16px;"><div style="display:flex;justify-content:flex-end;margin-bottom:8px;"><button class="btn btn-sm btn-ghost" onclick="addRappel(\''+p.id+'\')">＋ Ajouter</button></div>'+rappelsHtml+'</div>';
+    <!-- DOCUMENTS PATIENT -->
+    <div style="border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;">
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:9px 14px;background:var(--bg);border-bottom:1px solid var(--border);">
+        <span style="font-size:12px;font-weight:600;color:var(--text-mid);">📁 Documents patient</span>
+        <div style="display:flex;gap:6px;">
+          <button class="btn btn-sm btn-ghost" onclick="document.getElementById('tagfile-${p.id}-docs').click()">＋ Ajouter</button>
+          <input type="file" id="tagfile-${p.id}-docs" multiple accept="image/*,.pdf,.doc,.docx" style="display:none" onchange="handleTagFile(event,'${p.id}','docs',true)">
+        </div>
+      </div>
+      <div style="padding:10px 14px;">
+        ${docsEntries.length?docsEntries.map((f,fi)=>`<div style="display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid var(--border);">
+          <span style="font-size:16px;">📄</span>
+          <span style="flex:1;font-size:13px;cursor:pointer;" onclick="openFile('${p.id}','docs',${fi},true)">${f.title||f.name}</span>
+          <button onclick="editFileTitle('${p.id}','docs',${fi},true)" style="background:none;border:none;cursor:pointer;font-size:11px;color:var(--text-soft);" title="Renommer">✏️</button>
+          <button onclick="deleteFile('${p.id}','docs',${fi},true)" style="background:none;border:none;cursor:pointer;font-size:11px;color:var(--text-soft);">✕</button>
+        </div>`).join(''):'<div style="font-size:12px;color:var(--text-soft);">Aucun document.</div>'}
+      </div>
+    </div>
 
-  return '<div class="patient-body open">'+
-    '<div class="patient-tabs" style="flex-wrap:wrap;">'+tabsHtml+'</div>'+
-    '<div class="patient-tab-content'+(activeTab==='dossier'?' active':'')+'" id="ptab-dossier-'+p.id+'">'+dossierTab+'</div>'+
-    '<div class="patient-tab-content'+(activeTab==='plan'?' active':'')+'" id="ptab-plan-'+p.id+'">'+planTab+'</div>'+
-    '<div class="patient-tab-content'+(activeTab==='seances'?' active':'')+'" id="ptab-seances-'+p.id+'">'+seancesTab+'</div>'+
-    '<div class="patient-tab-content'+(activeTab==='idees'?' active':'')+'" id="ptab-idees-'+p.id+'">'+ideesTab+'</div>'+
-    '<div class="patient-tab-content'+(activeTab==='docs'?' active':'')+'" id="ptab-docs-'+p.id+'">'+docsTab+'</div>'+
-    '<div class="patient-tab-content'+(activeTab==='rappels'?' active':'')+'" id="ptab-rappels-'+p.id+'">'+rappelsTab+'</div>'+
-  '</div>';
+    <!-- RAPPELS -->
+    <div style="border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;">
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:9px 14px;background:var(--bg);border-bottom:1px solid var(--border);">
+        <span style="font-size:12px;font-weight:600;color:var(--text-mid);">🔔 Rappels</span>
+        <button class="btn btn-sm btn-ghost" onclick="addRappel('${p.id}')">＋ Ajouter</button>
+      </div>
+      <div style="padding:10px 14px;">
+        ${rappelsData.length?renderPatientRappels(p).replace('<div class="patient-rappels-zone">','').replace('<div class="patient-rappels-label">🔔 Rappels</div>','').replace('<button class="btn-add-entry" onclick="addRappel(\''+p.id+'\')">＋ Ajouter un rappel</button>','').replace('</div>',''):' <div style="font-size:12px;color:var(--text-soft);">Aucun rappel. Cliquez sur + Ajouter.</div>'}
+      </div>
+    </div>
+
+    <!-- IDÉES -->
+    <div style="border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;">
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:9px 14px;background:var(--bg);border-bottom:1px solid var(--border);">
+        <span style="font-size:12px;font-weight:600;color:var(--text-mid);">💡 Idées</span>
+        <button class="btn btn-sm btn-ghost" onclick="addEntry('${p.id}','idee',true)">＋ Ajouter</button>
+      </div>
+      <div id="ptb-${p.id}-idee" style="padding:10px 14px;">
+        ${ideeEntries.filter(e=>typeof e==='string'?e.trim():true).length?ideeEntries.map((v,ei)=>`<div style="display:flex;align-items:flex-start;gap:8px;padding:5px 0;border-bottom:1px solid var(--border);">
+          <span style="font-size:16px;">💡</span>
+          <textarea style="flex:1;font-size:13px;font-family:'DM Sans',sans-serif;border:none;outline:none;resize:none;background:transparent;" rows="2" onblur="saveIdeaEntry('${p.id}',${ei},this.value)">${v||''}</textarea>
+          <div style="display:flex;flex-direction:column;gap:3px;">
+            <button onclick="document.getElementById('ideafile-${p.id}-${ei}').click()" style="background:none;border:1px solid var(--border);border-radius:4px;cursor:pointer;font-size:10px;padding:2px 5px;">📎</button>
+            <input type="file" id="ideafile-${p.id}-${ei}" style="display:none" onchange="handleIdeaFile(event,'${p.id}',${ei})">
+            <button onclick="removeIdeaEntry('${p.id}',${ei})" style="background:none;border:none;cursor:pointer;font-size:10px;color:var(--text-soft);opacity:.3;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='.3'">✕</button>
+          </div>
+        </div>`).join(''):'<div style="font-size:12px;color:var(--text-soft);">Aucune idée pour l\'instant.</div>'}
+      </div>
+    </div>
+
+    <!-- PLAN THÉRAPEUTIQUE (compact) -->
+    <div style="border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;">
+      <div style="padding:9px 14px;background:var(--bg);border-bottom:1px solid var(--border);">
+        <span style="font-size:12px;font-weight:600;color:var(--text-mid);">📋 Plan thérapeutique</span>
+      </div>
+      <div style="padding:10px 14px;">
+        <textarea id="perm-${p.id}" placeholder="Objectifs, fiches, notes importantes…" onblur="savePermNotes('${p.id}')" style="width:100%;padding:6px 8px;font-size:13px;font-family:'DM Sans',sans-serif;border:1px solid var(--border);border-radius:var(--radius-sm);background:white;outline:none;resize:vertical;min-height:60px;">${p.permNotes||''}</textarea>
+      </div>
+    </div>
+
+  </div>`;
+
+  return`<div class="patient-body open">
+    <div class="patient-tabs" style="flex-wrap:wrap;">
+      ${(()=>{
+        const sc=(p.seances||[]).length;
+        const ic=((p.permTagData?.idee?.entries)||[]).filter(e=>typeof e==='string'?e.trim():true).length;
+        const dc=(p.permTagData?.docs?.files||[]).length;
+        const rc=(p.rappels||[]).filter(r=>!r.done).length;
+        const tabs=[
+          {id:'dossier',   label:'📋 Dossier'},
+          {id:'plan',      label:'📝 Plan'},
+          {id:'seances',   label:'🗓️ Séances'+(sc?' ('+sc+')':'')},
+          {id:'idees',     label:'💡 Idées'+(ic?' ('+ic+')':'')},
+          {id:'documents', label:'📁 Documents'+(dc?' ('+dc+')':'')},
+          {id:'rappels',   label:'🔔 Rappels'+(rc?' ('+rc+')':'')},
+        ];
+        return tabs.map(t=>`<button class="patient-tab-btn${activeTab===t.id?' active':''}" onclick="switchPatientTab('${p.id}','${t.id}')">${t.label}</button>`).join('');
+      })()}
+    </div>
+    <div class="patient-tab-content${activeTab==='seances'?' active':''}" id="ptab-seances-${p.id}">${seancesTab}</div>
+    <div class="patient-tab-content${activeTab==='dossier'?' active':''}" id="ptab-dossier-${p.id}">${dossierTab}</div>
+    <div class="patient-tab-content${activeTab==='notes'?' active':''}" id="ptab-notes-${p.id}">${notesTab}</div>
+  </div>`;
 }
 
-function switchPatientTab(pid,tab){
-  const p=state.patients.find(function(x){return x.id===pid;});if(!p)return;
+
+// ── PATIENT TABS ──
+function switchPatientTab(pid, tab){
+  const p=state.patients.find(x=>x.id===pid);if(!p)return;
   p._activeTab=tab;
-  ['dossier','plan','seances','idees','docs','rappels'].forEach(function(t){
+  ['dossier','plan','seances','idees','documents','rappels'].forEach(t=>{
     const el=document.getElementById('ptab-'+t+'-'+pid);
     if(el)el.classList.toggle('active',t===tab);
   });
   const card=document.getElementById('pc-'+pid);
-  if(card)card.querySelectorAll('.patient-tab-btn').forEach(function(btn){
-    const isActive=btn.getAttribute('onclick')&&btn.getAttribute('onclick').includes("'"+tab+"'");
-    btn.classList.toggle('active',isActive);
+  if(card)card.querySelectorAll('.patient-tab-btn').forEach(btn=>{
+    btn.classList.toggle('active',btn.onclick?.toString().includes("'"+tab+"'"));
   });
 }
 
+// ── SORT PATIENTS ──
+let currentSort='alpha';
 function setSortMode(mode){
   currentSort=mode;
   ['alpha','recent','alert','add'].forEach(m=>{
@@ -1960,6 +2005,16 @@ function getSortedPatients(patients){
 }
 
 // ── SAVE TODAY RESULT EMOJI ──
+function saveTodayResEmoji(pid, emoji){
+  const p=state.patients.find(x=>x.id===pid);if(!p)return;
+  const today=todayStr();if(!p.seances)p.seances=[];
+  let s=p.seances.find(x=>x.date===today);
+  if(!s){s={id:uid(),date:today,tags:[],tagData:{},notes:'',photos:[]};p.seances.unshift(s);}
+  s.resEmoji=s.resEmoji===emoji?'':emoji; // toggle
+  save();
+  // Re-render just this card to reflect new emoji
+  renderPatients();
+}
 
 // ── SÉANCES DÉPART → UPDATE AMO COUNTER ──
 // When seancesDepart changes, it auto-adds to the AMO counter display
@@ -2024,11 +2079,43 @@ function addFutureSeance(pid){
   renderPatients();
   showToast('✓ Séance planifiée le '+fmtDateShort(date));
 }
+function removeFuturePlan(apptId){
+  state.planning=(state.planning||[]).filter(a=>a.id!==apptId);
+  save();renderPatients();
+}
 
 
 
 
 
+function openAddAnySeance(pid){
+  editSeancePid=pid;editSeanceSid=null;
+  const today=todayStr();
+  document.getElementById('es-date').value=today;
+  document.getElementById('es-heure').value='';
+  document.getElementById('es-notes').value='';
+  document.getElementById('es-telesoin').checked=false;
+  if(document.getElementById('es-surveillance'))document.getElementById('es-surveillance').checked=false;
+  if(document.getElementById('es-bilan-renouv'))document.getElementById('es-bilan-renouv').checked=false;
+  const p2=state.patients.find(x=>x.id===pid);
+  const esAmo2=document.getElementById('es-amo');
+  if(esAmo2&&p2){esAmo2.innerHTML=buildSeanceAmoOptions(p2,'');}
+  if(document.getElementById('es-dur'))document.getElementById('es-dur').value=p2?.defaultDur||45;
+  esBlocks=[];esFiles=[];esRenderBlocks();
+  const esFilesEl=document.getElementById('es-files-list');if(esFilesEl)esFilesEl.innerHTML='';
+  // Update modal title based on date
+  const titleEl=document.getElementById('es-modal-title');
+  if(titleEl)titleEl.textContent='Ajouter / modifier une séance';
+  // Add date-change listener to update title
+  const dateEl=document.getElementById('es-date');
+  if(dateEl){
+    dateEl.onchange=()=>{
+      const d=dateEl.value;const t=document.getElementById('es-modal-title');
+      if(t)t.textContent=d>today?'📅 Séance future planifiée':d===today?'📅 Séance du jour':'📅 Séance passée';
+    };
+  }
+  openModal('modal-edit-seance');
+}
 
 
 function editFileTitle(pid,tid,idx,isPerm){
@@ -2078,8 +2165,34 @@ function setResEmoji(btn,pid,tid,isPerm){
 
 
 // ── HIST MORE/LESS TOGGLE ──
+function toggleHistMore(pid, btn){
+  const el=document.getElementById('hist-more-'+pid);
+  if(!el)return;
+  const open=el.style.display==='none'||!el.style.display;
+  el.style.display=open?'block':'none';
+  btn.textContent=open?'Replier ▴':('Voir les séances précédentes ▾');
+}
 
 // ── IDEA ENTRIES ──
+function saveIdeaEntry(pid,idx,val){
+  const p=state.patients.find(x=>x.id===pid);if(!p)return;
+  if(!p.permTagData)p.permTagData={};
+  if(!p.permTagData.idee)p.permTagData.idee={entries:[],files:[]};
+  if(p.permTagData.idee.entries[idx]!==undefined)p.permTagData.idee.entries[idx]=val;
+  save();
+}
+function addIdeaEntry(pid){
+  const p=state.patients.find(x=>x.id===pid);if(!p)return;
+  if(!p.permTagData)p.permTagData={};
+  if(!p.permTagData.idee)p.permTagData.idee={entries:[],files:[]};
+  p.permTagData.idee.entries.push('');
+  save();renderPatients();
+}
+function removeIdeaEntry(pid,idx){
+  const p=state.patients.find(x=>x.id===pid);if(!p)return;
+  p.permTagData?.idee?.entries.splice(idx,1);
+  save();renderPatients();
+}
 function handleIdeaFile(e,pid,idx){
   const p=state.patients.find(x=>x.id===pid);if(!p)return;
   if(!p.permTagData)p.permTagData={};
@@ -2114,6 +2227,14 @@ function handleEsFile(e){
 }
 
 
+function toggleTodayZone(id){
+  const el=document.getElementById(id);if(!el)return;
+  const open=el.style.display==='none'||!el.style.display;
+  el.style.display=open?'block':'none';
+  // Update chevron on the button
+  const btn=el.previousElementSibling?.querySelector('button');
+  if(btn)btn.textContent=btn.textContent.replace(open?'▾':'▴',open?'▴':'▾');
+}
 
 
 function initFlatpickr(){
@@ -2231,6 +2352,7 @@ function buildPatientTabs(p, activeTab){
   }).join('');
 }
 
+
 async function changePassword(){
   const cur=document.getElementById('s-pwd-current')?.value||'';
   const nw=document.getElementById('s-pwd-new')?.value||'';
@@ -2240,12 +2362,11 @@ async function changePassword(){
   if(nw!==cf){if(msg){msg.textContent='Les mots de passe ne correspondent pas.';msg.style.color='var(--red)';}return;}
   if(nw.length<6){if(msg){msg.textContent='Minimum 6 caractères.';msg.style.color='var(--red)';}return;}
   // Verify current password
-  const curHash=await _hashPwd(cur);
-  const storedHash=localStorage.getItem('ob_pwd_hash')||_PWD_HASH;
-  if(curHash!==storedHash){if(msg){msg.textContent='Mot de passe actuel incorrect.';msg.style.color='var(--red)';}return;}
-  // Save new password hash
-  const newHash=await _hashPwd(nw);
-  localStorage.setItem('ob_pwd_hash',newHash);
+  const storedPwd2=localStorage.getItem('ob_pwd_plain');
+  let curOk=storedPwd2?cur===storedPwd2:cur==='Pagney*54200';
+  if(!curOk&&typeof crypto!=='undefined'&&crypto.subtle){try{const buf=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(cur));const h=Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');curOk=(h===(localStorage.getItem('ob_pwd_hash')||_PWD_HASH));}catch(e){}}
+  if(!curOk){if(msg){msg.textContent='Mot de passe actuel incorrect.';msg.style.color='var(--red)';}return;}
+  localStorage.setItem('ob_pwd_plain',nw);
   // Clear fields
   ['s-pwd-current','s-pwd-new','s-pwd-confirm'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
   if(msg){msg.textContent='✓ Mot de passe changé !';msg.style.color='var(--green-mid)';}
@@ -2253,12 +2374,27 @@ async function changePassword(){
 }
 
 function togglePermGroup(id){const el=document.getElementById(id);if(el)el.classList.toggle('open');}
+function onSeanceAmoChange(pid){
+  const p=state.patients.find(x=>x.id===pid);if(!p)return;
+  const code=document.getElementById('seance-amo-'+pid)?.value||'';
+  const dur=getDefaultDurForAmo(code,null);
+  const durSel=document.getElementById('seance-dur-'+pid);
+  if(durSel)durSel.value=dur;
+  saveSeanceAmo(pid);
+}
 
 function togglePermSect(id){const el=document.getElementById(id);if(el)el.classList.toggle('open');}
 function toggleSeanceDetail(id){const el=document.getElementById(id);if(el)el.classList.toggle('open');}
 function togglePermSection(pid,tid){
   // Toggle the tag section open in perm zone
   toggleTag(pid,tid);
+}
+function saveSeanceDur(pid){
+  const p=state.patients.find(x=>x.id===pid);if(!p)return;
+  const today=todayStr();if(!p.seances)p.seances=[];
+  let s=p.seances.find(x=>x.date===today);
+  if(!s){s={id:uid(),date:today,tags:[],tagData:{},notes:'',photos:[]};p.seances.unshift(s);}
+  s.dur=parseInt(document.getElementById('seance-dur-'+pid)?.value)||30;save();
 }
 
 
@@ -2345,7 +2481,12 @@ function rerenderBlock(pid,tid,isPerm){
   const d=isPerm?p.permTagData?.[tid]:(p.seances||[]).find(s=>s.date===todayStr())?.tagData?.[tid];
   const nw=document.createElement('div');nw.innerHTML=renderTagBlock(pid,tag,d,isPerm);el.replaceWith(nw.firstElementChild);
 }
-
+function handleTagFile(ev,pid,tid,isPerm){
+  collectFromDom(pid);const d=getTagData(pid,tid,isPerm);if(!d)return;
+  let loaded=0;const files=Array.from(ev.target.files);
+  files.forEach(file=>{const r=new FileReader();r.onload=e=>{if(!d.files)d.files=[];d.files.push({name:file.name,type:file.type,data:e.target.result});loaded++;if(loaded===files.length){save();rerenderBlock(pid,tid,isPerm);}};r.readAsDataURL(file);});
+  ev.target.value='';
+}
 function openFile(pid,tid,idx,isPerm){const d=getTagData(pid,tid,isPerm);if(!d)return;const f=d.files?.[idx];if(!f)return;if(f.type?.startsWith('image/')){const w=window.open();w.document.write('<img src="'+f.data+'" style="max-width:100%;">');}else{const a=document.createElement('a');a.href=f.data;a.download=f.name;a.click();}}
 function deleteFile(pid,tid,idx,isPerm){collectFromDom(pid);const d=getTagData(pid,tid,isPerm);if(!d?.files)return;d.files.splice(idx,1);save();rerenderBlock(pid,tid,isPerm);}
 function savePermNotes(pid){const p=state.patients.find(x=>x.id===pid);if(!p)return;const el=document.getElementById('perm-'+pid);if(!el)return;p.permNotes=el.value;save();}
@@ -2425,7 +2566,7 @@ function saveEditSeance(){
 function renderDashboard(){
   const now=new Date();const today=todayStr();
   const hour=now.getHours();
-  const greeting=hour<12?'Bonjour':hour<18?'Bon après-midi':'Bonsoir';
+  const greeting=hour<18?'Bonjour':'Bonsoir';
   document.getElementById('dash-greeting').textContent=greeting+', Noëlie 👋';
   document.getElementById('dash-date-full').textContent=now.toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
 
@@ -2826,7 +2967,7 @@ function applySettingsToUI(){
   ];
   fields.forEach(([id,key])=>{const el=document.getElementById(id);if(el)el.value=appSettings[key]??SETTINGS_DEFAULTS[key]??'';});
 }
-function renderSettingsPage(){setTimeout(function(){renderCustomCategories();},50);
+function renderSettingsPage(){
   applySettingsToUI();
   const cvEl=document.getElementById('s-cv-alert');if(cvEl)cvEl.value=appSettings.cvAlertAfter||3;
   // CV alert
@@ -3911,7 +4052,74 @@ async function openFileById(pid,tid,fi,isPerm){
 }
 
 // Override handleTagFile to use IDB
+async function handleTagFile(e,pid,tid,isPerm){
+  const p=state.patients.find(x=>x.id===pid);if(!p)return;
+  const files=[...e.target.files];
+  for(const file of files){
+    const ref=await storeFileAndGetRef(file);
+    if(!p.permTagData)p.permTagData={};
+    if(!p.permTagData[tid])p.permTagData[tid]={entries:[],files:[]};
+    if(!p.permTagData[tid].files)p.permTagData[tid].files=[];
+    p.permTagData[tid].files.push(ref);
+  }
+  save();renderPatients();showToast('✓ '+files.length+' fichier(s) ajouté(s)');
+  e.target.value='';
+}
 
+// Override handlePhoto to use IDB
+async function handlePhoto(e,pid){
+  const p=state.patients.find(x=>x.id===pid);if(!p)return;
+  const today=todayStr();if(!p.seances)p.seances=[];
+  let s=p.seances.find(x=>x.date===today);
+  if(!s){s={id:uid(),date:today,tags:[],tagData:{},notes:'',photos:[]};p.seances.unshift(s);}
+  if(!s.photos)s.photos=[];
+  const files=[...e.target.files];
+  for(const file of files){
+    const ref=await storeFileAndGetRef(file);
+    s.photos.push(ref);
+    if(!pendingPhotos[pid])pendingPhotos[pid]=[];
+    pendingPhotos[pid].push(ref);
+  }
+  save();renderPatients();showToast('✓ Fichier ajouté');
+  e.target.value='';
+}
+
+// Open photo
+async function openPhoto(pid,idx){
+  const p=state.patients.find(x=>x.id===pid);if(!p)return;
+  const photos=pendingPhotos[pid]||(p.seances||[]).find(s=>s.date===todayStr())?.photos||[];
+  const ph=photos[idx];if(!ph)return;
+  if(ph.data){openFilePreview(ph.data,ph.name);return;}
+  if(ph.id){const data=await idbGet(ph.id);if(data)openFilePreview(data,ph.title||ph.name);}
+}
+
+// Cabinet file handler — also uses IDB
+async function handleCabinetFile(e){
+  if(!selectedCabinetCat)return;
+  const files=[...e.target.files];
+  for(const file of files){
+    const ref=await storeFileAndGetRef(file);
+    const cat=state.cabinet.categories[selectedCabinetCat.ci];
+    if(selectedCabinetCat.type==='sub'){
+      if(!cat.subcats[selectedCabinetCat.si].files)cat.subcats[selectedCabinetCat.si].files=[];
+      cat.subcats[selectedCabinetCat.si].files.push(ref);
+    }else{
+      if(!cat.files)cat.files=[];
+      cat.files.push(ref);
+    }
+    save();renderCabinetDocs();renderCabinet();
+  }
+  e.target.value='';
+}
+
+// Preview cabinet file
+async function openCabinetFile(fi){
+  const files=getCabinetFiles();const f=files[fi];if(!f)return;
+  if(f.data){openFilePreview(f.data,f.title||f.name);return;}
+  if(f.id){const data=await idbGet(f.id);if(data)openFilePreview(data,f.title||f.name);else showToast('⚠️ Fichier introuvable.');}
+}
+
+// PAUSE
 function renderPaused(){
   const list=document.getElementById('pause-list');const empty=document.getElementById('pause-empty');
   if(!state.paused.length){list.innerHTML='';empty.style.display='block';return;}
@@ -4385,85 +4593,15 @@ function copyCR(){navigator.clipboard.writeText(document.getElementById('cr-box'
 function openModal(id){document.getElementById(id).classList.add('open');}
 function closeModal(id){document.getElementById(id).classList.remove('open');}
 document.querySelectorAll('.overlay').forEach(o=>o.addEventListener('click',function(e){if(e.target===this)this.classList.remove('open');}));
+load();
+// Ensure DOM is fully ready before first render
 // Auth check on load
-
-function toggleTodayZone(id){
-  const el=document.getElementById(id);if(!el)return;
-  const open=el.style.display==='none'||!el.style.display;
-  el.style.display=open?'block':'none';
-}
-function toggleHistMore(pid,btn){
-  const el=document.getElementById('hist-more-'+pid);if(!el)return;
-  const open=el.style.display==='none'||!el.style.display;
-  el.style.display=open?'block':'none';
-  if(btn)btn.textContent=open?'Replier ▴':('Voir les séances précédentes ▾');
-}
-function saveTodayResEmoji(pid,emoji){
-  const p=state.patients.find(function(x){return x.id===pid;});if(!p)return;
-  const today=todayStr();if(!p.seances)p.seances=[];
-  let s=p.seances.find(function(x){return x.date===today;});
-  if(!s){s={id:uid(),date:today,tags:[],tagData:{},notes:'',photos:[]};p.seances.unshift(s);}
-  s.resEmoji=s.resEmoji===emoji?'':emoji;
-  save();renderPatients();
-}
-function saveIdeaEntry(pid,idx,val){
-  const p=state.patients.find(function(x){return x.id===pid;});if(!p)return;
-  if(!p.permTagData)p.permTagData={};
-  if(!p.permTagData.idee)p.permTagData.idee={entries:[],files:[]};
-  if(p.permTagData.idee.entries[idx]!==undefined)p.permTagData.idee.entries[idx]=val;
-  save();
-}
-function addIdeaEntry(pid){
-  const p=state.patients.find(function(x){return x.id===pid;});if(!p)return;
-  if(!p.permTagData)p.permTagData={};
-  if(!p.permTagData.idee)p.permTagData.idee={entries:[],files:[]};
-  p.permTagData.idee.entries.push('');
-  save();renderPatients();
-}
-function removeIdeaEntry(pid,idx){
-  const p=state.patients.find(function(x){return x.id===pid;});if(!p)return;
-  if(p.permTagData&&p.permTagData.idee)p.permTagData.idee.entries.splice(idx,1);
-  save();renderPatients();
-}
-function removeFuturePlan(apptId){
-  state.planning=(state.planning||[]).filter(function(a){return a.id!==apptId;});
-  save();renderPatients();
-}
-function openAddAnySeance(pid){
-  editSeancePid=pid;editSeanceSid=null;
-  const today=todayStr();
-  const p=state.patients.find(function(x){return x.id===pid;});
-  ['es-date','es-heure','es-notes'].forEach(function(id){const el=document.getElementById(id);if(el)el.value=id==='es-date'?today:'';});
-  if(document.getElementById('es-telesoin'))document.getElementById('es-telesoin').checked=false;
-  const esAmo=document.getElementById('es-amo');
-  if(esAmo&&p)esAmo.innerHTML=buildSeanceAmoOptions(p,'');
-  if(document.getElementById('es-dur'))document.getElementById('es-dur').value=p&&p.defaultDur?p.defaultDur:30;
-  esBlocks=[];esRenderBlocks();
-  openModal('modal-edit-seance');
-}
-function onSeanceAmoChange(pid){
-  const p=state.patients.find(function(x){return x.id===pid;});if(!p)return;
-  const sel=document.getElementById('seance-amo-'+pid);if(!sel)return;
-  const dur=getDefaultDurForAmo(sel.value,p);
-  const durSel=document.getElementById('seance-dur-'+pid);
-  if(durSel)durSel.value=dur;
-}
-function saveSeanceDur(pid){
-  const p=state.patients.find(function(x){return x.id===pid;});if(!p)return;
-  const today=todayStr();if(!p.seances)p.seances=[];
-  let s=p.seances.find(function(x){return x.date===today;});
-  if(!s){s={id:uid(),date:today,tags:[],tagData:{},notes:'',photos:[]};p.seances.unshift(s);}
-  const el=document.getElementById('seance-dur-'+pid);
-  if(el)s.dur=parseInt(el.value)||30;
-  save();
-}
-
-if(sessionStorage.getItem('ob_auth')==='1'){
-  load();_initSB();renderDashboard();renderPatients();
-  setTimeout(_pull,1500);
+if(document.readyState==='loading'){
+  document.addEventListener('DOMContentLoaded',()=>{
+    if(_checkAuth()){_initSB();load();renderDashboard();renderPatients();}
+  });
 }else{
-  const ls=document.getElementById('login-screen');
-  if(ls){ls.style.display='';ls.classList.remove('hidden');}
+  if(_checkAuth()){_initSB();load();renderDashboard();renderPatients();}
 }
 </script>
 </body>
