@@ -1218,10 +1218,26 @@ function _checkPwdFallback(pwd){
   return pwd==='Pagney*54200';
 }
 async function checkLogin(){
-  const pwd = document.getElementById('login-pwd').value;
-  const hash = await _hashPwd(pwd);
-  const storedHash=localStorage.getItem('ob_pwd_hash')||_PWD_HASH;
-  if(hash === storedHash){
+  const pwd=document.getElementById('login-pwd').value;
+  const DEFAULT_PWD='Pagney*54200';
+  const storedPwd=localStorage.getItem('ob_pwd_plain');
+  
+  // Simple direct comparison (works HTTP and HTTPS)
+  const ok = storedPwd ? pwd===storedPwd : pwd===DEFAULT_PWD;
+  
+  // Also try SHA-256 if available (HTTPS)
+  let hashOk=false;
+  if(!ok && typeof crypto!=='undefined' && crypto.subtle){
+    try{
+      const buf=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(pwd));
+      const hash=Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
+      const storedHash=localStorage.getItem('ob_pwd_hash')||_PWD_HASH;
+      hashOk=(hash===storedHash);
+    }catch(e){}
+  }
+  
+  if(ok||hashOk){
+
     document.getElementById('login-screen').classList.add('hidden');
     sessionStorage.setItem('ob_auth','1');
     load();
@@ -2191,7 +2207,6 @@ function buildPatientTabs(p, activeTab){
     const isActive=activeTab===t.id;return '<button class="patient-tab-btn'+(isActive?' active':'')+'" onclick="switchPatientTab(\'' + p.id + '\',\'' + t.id + '\')">'+t.label+'</button>';
   }).join('');
 }
-
 
 async function changePassword(){
   const cur=document.getElementById('s-pwd-current')?.value||'';
