@@ -1195,6 +1195,7 @@ html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);colo
 <div class="toast" id="toast"></div>
 <script>
 
+// ══ OrthoBuddy v2026-05-29-LOGIN-FIX ══
 // ══ LOGIN ══
 const _PWD_HASH = '7f242254b30a5b1f9609e567aee4f3920d348467ac7bfbaf17d06a0df57d6447';
 async function _hashPwd(pwd){
@@ -1221,6 +1222,9 @@ async function checkLogin(){
   const pwd=document.getElementById('login-pwd').value;
   const DEFAULT_PWD='Pagney*54200';
   const storedPwd=localStorage.getItem('ob_pwd_plain');
+  
+  // Debug: log what we're comparing
+  console.log('Login attempt - stored:', storedPwd, 'default check:', pwd===DEFAULT_PWD, 'pwd length:', pwd.length);
   
   // Simple direct comparison (works HTTP and HTTPS)
   const ok = storedPwd ? pwd===storedPwd : pwd===DEFAULT_PWD;
