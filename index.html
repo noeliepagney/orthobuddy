@@ -1198,8 +1198,24 @@ html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);colo
 // ══ LOGIN ══
 const _PWD_HASH = '7f242254b30a5b1f9609e567aee4f3920d348467ac7bfbaf17d06a0df57d6447';
 async function _hashPwd(pwd){
-  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(pwd));
-  return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
+  // Try crypto.subtle (HTTPS only), fallback to simple hash for HTTP
+  if(typeof crypto!=='undefined'&&crypto.subtle){
+    try{
+      const buf=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(pwd));
+      return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
+    }catch(e){}
+  }
+  // Simple fallback hash (works on HTTP)
+  let h=0x811c9dc5;
+  for(let i=0;i<pwd.length;i++){h^=pwd.charCodeAt(i);h=(h*0x01000193)>>>0;}
+  // Use hardcoded check for fallback
+  return '_http_'+btoa(pwd).replace(/=/g,'');
+}
+function _checkPwdFallback(pwd){
+  // HTTP fallback: check against stored or default
+  const stored=localStorage.getItem('ob_pwd_plain');
+  if(stored)return pwd===stored;
+  return pwd==='Pagney*54200';
 }
 async function checkLogin(){
   const pwd = document.getElementById('login-pwd').value;
