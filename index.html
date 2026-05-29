@@ -638,8 +638,7 @@ html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);colo
   </nav>
   <div class="sidebar-bottom">
     <button class="nav-item" onclick="exportData()"><span class="nav-icon">💾</span><span class="nav-label">Sauvegarder</span></button>
-    <button class="nav-item" onclick="document.getElementById('import-file').click()"><span class="nav-icon">📂</span><span class="nav-label">Importer</span></button>
-    <input type="file" id="import-file" accept=".json" style="display:none" onchange="importData(event)">
+    <label class="nav-item" style="cursor:pointer;display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:6px;color:var(--text-mid);font-size:13px;"><span class="nav-icon">📂</span><span class="nav-label">Importer</span><input type="file" accept=".json" style="display:none" onchange="importData(event)"></label>
   </div>
 </aside>
 <div class="main">
@@ -1484,6 +1483,8 @@ let state={patients:[],paused:[],lastExport:null,espace:{todos:[],notes:[]},plan
 let currentFicheId=null,currentPinId=null,currentAvatarId=null,pendingPhotos={};
 let tempAvatarColor=null,tempAvatarInitials=null,tempAvatarPhoto=null;
 let editSeancePid=null,editSeanceSid=null,currentApptId=null;
+let currentSort='alpha';
+let _sb=null,_syncT=null,_syncing=false;
 
 const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6);
 const calcAge=dob=>{if(!dob)return null;const d=new Date(dob),n=new Date();let a=n.getFullYear()-d.getFullYear();if(n.getMonth()<d.getMonth()||(n.getMonth()===d.getMonth()&&n.getDate()<d.getDate()))a--;return a;};
@@ -1522,7 +1523,7 @@ function load(){
   const now=new Date();
   const d=now.toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
   document.getElementById('top-date').textContent=d;
-  document.getElementById('date-label').textContent=d;
+  const dlEl=document.getElementById('date-label');if(dlEl)dlEl.textContent=d;
   if(!state.cabinet)state.cabinet={categories:[]};
   updateSaveStatus();checkBackupBanner();checkFirstRun();loadSettings();checkAllRappelTriggers();
   // sync after short delay
