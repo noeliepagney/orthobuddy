@@ -305,6 +305,26 @@ html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);colo
 }
 .color-swatch{width:22px;height:22px;border-radius:50%;cursor:pointer;border:2px solid transparent;transition:transform .1s;display:inline-block;}
 .color-swatch:hover,.color-swatch.selected{transform:scale(1.2);border-color:var(--text);}
+
+/* ═══ TÂCHES ═══ */
+.todo-item{display:flex;align-items:center;gap:8px;padding:8px 14px;border-bottom:1px solid var(--border);transition:background .1s;flex-wrap:nowrap;}
+.todo-item:last-child{border-bottom:none;}
+.todo-item:hover{background:var(--bg);}
+.todo-item.done .todo-text{text-decoration:line-through;color:var(--text-soft);}
+.todo-checkbox{width:16px;height:16px;border-radius:4px;border:2px solid var(--border-mid);cursor:pointer;flex-shrink:0;appearance:none;-webkit-appearance:none;transition:all .12s;background:white;position:relative;}
+.todo-checkbox:checked{background:var(--green);border-color:var(--green);}
+.todo-checkbox:checked::after{content:'✓';color:white;font-size:10px;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);}
+.todo-text{flex:1;font-size:13px;line-height:1.4;min-width:0;}
+.todo-date{font-size:10px;padding:1px 7px;border-radius:10px;white-space:nowrap;flex-shrink:0;}
+.todo-date.urgent{background:var(--red-l);color:var(--red);border:1px solid var(--red-b);}
+.todo-date.soon{background:var(--amber-l);color:var(--amber);border:1px solid var(--amber-b);}
+.todo-date.ok{background:var(--green-ll);color:var(--green-mid);border:1px solid #9FE1CB;}
+.todo-date.nodate{background:var(--bg);color:var(--text-soft);border:1px solid var(--border);}
+.todo-section{margin-bottom:20px;}
+.todo-section-title{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--text-soft);margin-bottom:8px;padding-bottom:5px;border-bottom:1px solid var(--border);}
+.todo-card{border:1px solid var(--border);border-radius:var(--radius);background:var(--surface);box-shadow:var(--shadow);overflow:hidden;margin-bottom:10px;}
+.model-chip{display:inline-flex;align-items:center;gap:5px;padding:5px 12px;border-radius:20px;font-size:12px;cursor:pointer;border:1.5px dashed var(--border-mid);background:var(--bg);color:var(--text-mid);transition:all .15s;margin:3px;}
+.model-chip:hover{border-color:var(--green);color:var(--green);background:var(--green-ll);}
 </style>
 </head>
 <body>
@@ -358,10 +378,10 @@ html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);colo
       <button class="nav-item" onclick="showPage('agenda')" id="nav-agenda">
         <span class="nav-icon">📅</span><span class="nav-label">Mon agenda</span>
       </button>
-      <button class="nav-item" onclick="showPage('taches')" id="nav-taches">
-        <span class="nav-icon">✅</span><span class="nav-label">Mes tâches</span>
-        <span id="nav-taches-urgent" style="display:none;margin-left:auto;background:var(--red-l);color:var(--red);border:1px solid var(--red-b);border-radius:20px;font-size:10px;padding:1px 7px;font-weight:600;"></span>
-        <span id="nav-taches-total" style="display:none;margin-left:3px;background:var(--bg);color:var(--text-soft);border:1px solid var(--border);border-radius:20px;font-size:10px;padding:1px 7px;"></span>
+      <button class="nav-item" onclick="showPage('taches')" id="nav-taches" style="flex-wrap:nowrap;">
+        <span class="nav-icon">✅</span><span class="nav-label" style="white-space:nowrap;">Mes tâches</span>
+        <span id="nav-taches-urgent" style="display:none;margin-left:auto;background:var(--red-l);color:var(--red);border:1px solid var(--red-b);border-radius:20px;font-size:10px;padding:1px 7px;font-weight:600;white-space:nowrap;"></span>
+        <span id="nav-taches-total" style="display:none;margin-left:3px;background:var(--bg);color:var(--text-soft);border:1px solid var(--border);border-radius:20px;font-size:10px;padding:1px 7px;white-space:nowrap;"></span>
       </button>
       <div class="nav-section">Réglages</div>
       <button class="nav-item" onclick="showPage('settings')" id="nav-settings">
@@ -1965,230 +1985,226 @@ function saveParcours(){save();showToast('✓ Parcours enregistrés');renderPati
 
 function getTacheDateStatus(dateStr){
   if(!dateStr) return 'nodate';
-  const urgDays = (DB.settings&&DB.settings.urgenceDays!=null) ? DB.settings.urgenceDays : 2;
-  const today = new Date(); today.setHours(0,0,0,0);
-  const due = new Date(dateStr+'T00:00:00');
-  const diff = Math.floor((due-today)/(1000*60*60*24));
-  if(diff < 0) return 'urgent';
-  if(diff <= urgDays) return 'urgent';
-  if(diff <= urgDays*3+1) return 'soon';
+  const urgDays = (DB.settings&&DB.settings.urgenceDays!=null)?DB.settings.urgenceDays:2;
+  const today=new Date();today.setHours(0,0,0,0);
+  const due=new Date(dateStr+'T00:00:00');
+  const diff=Math.floor((due-today)/(1000*60*60*24));
+  if(diff<0)return 'urgent';
+  if(diff<=urgDays)return 'urgent';
+  if(diff<=urgDays*3+1)return 'soon';
   return 'ok';
 }
 
 function fmtDateFr(dateStr){
-  if(!dateStr) return '';
+  if(!dateStr)return '';
   return new Date(dateStr+'T00:00:00').toLocaleDateString('fr-FR',{day:'2-digit',month:'2-digit',year:'2-digit'});
 }
 
 function renderTachesPatientBadge(pid){
-  const urgent = (DB.taches||[]).filter(t=>t.patientId===pid&&!t.done&&getTacheDateStatus(t.date)==='urgent').length;
-  const total = (DB.taches||[]).filter(t=>t.patientId===pid&&!t.done).length;
-  if(!total) return '';
-  if(urgent) return ` <span style="background:var(--red-l);color:var(--red);border:1px solid var(--red-b);border-radius:10px;font-size:9px;padding:0 5px;">\${urgent}</span>`;
-  return ` <span style="background:var(--bg);color:var(--text-soft);border:1px solid var(--border);border-radius:10px;font-size:9px;padding:0 5px;">\${total}</span>`;
+  const urgent=(DB.taches||[]).filter(t=>t.patientId===pid&&!t.done&&getTacheDateStatus(t.date)==='urgent').length;
+  const total=(DB.taches||[]).filter(t=>t.patientId===pid&&!t.done).length;
+  if(!total)return '';
+  if(urgent)return ' <span style="background:var(--red-l);color:var(--red);border:1px solid var(--red-b);border-radius:10px;font-size:9px;padding:0 5px;">'+urgent+'</span>';
+  return ' <span style="background:var(--bg);color:var(--text-soft);border:1px solid var(--border);border-radius:10px;font-size:9px;padding:0 5px;">'+total+'</span>';
 }
 
 function updateTachesBadge(){
-  const urgent = (DB.taches||[]).filter(t=>!t.done&&getTacheDateStatus(t.date)==='urgent').length;
-  const total = (DB.taches||[]).filter(t=>!t.done).length;
-  const elU = document.getElementById('nav-taches-urgent');
-  const elT = document.getElementById('nav-taches-total');
+  const urgent=(DB.taches||[]).filter(t=>!t.done&&getTacheDateStatus(t.date)==='urgent').length;
+  const total=(DB.taches||[]).filter(t=>!t.done).length;
+  const elU=document.getElementById('nav-taches-urgent');
+  const elT=document.getElementById('nav-taches-total');
   if(elU){elU.textContent='🔴 '+urgent;elU.style.display=urgent?'inline':'none';}
   if(elT){elT.textContent='('+total+')';elT.style.display=total?'inline':'none';}
 }
 
-function renderTacheItem(t, showPatient){
-  const st = getTacheDateStatus(t.date);
-  const p = showPatient && t.patientId ? DB.patients.find(x=>x.id===t.patientId) : null;
-  const patBadge = p ? `<span style="font-size:10px;background:var(--green-ll);color:var(--green-mid);padding:1px 7px;border-radius:10px;margin-left:5px;">\${p.prenom} \${p.nom}</span>` : '';
-  return `<div class="todo-item\${t.done?' done':''}">
-    <input type="checkbox" class="todo-checkbox" \${t.done?'checked':''} onchange="toggleTache('\${t.id}',this.checked)">
-    <span class="todo-text">\${t.text}\${patBadge}</span>
-    \${t.date?`<span class="todo-date \${t.done?'nodate':st}">\${fmtDateFr(t.date)}</span>`:''}
-    <button class="icon-btn" onclick="openTacheModal('\${t.id}');event.stopPropagation()" style="opacity:.5;flex-shrink:0;padding:2px;">
-      <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-    </button>
-  </div>`;
+function renderTacheItem(t,showPatient){
+  const st=getTacheDateStatus(t.date);
+  const p=showPatient&&t.patientId?DB.patients.find(x=>x.id===t.patientId):null;
+  const patBadge=p?' <span style="font-size:10px;background:var(--green-ll);color:var(--green-mid);padding:1px 7px;border-radius:10px;margin-left:5px;">'+p.prenom+' '+p.nom+'</span>':'';
+  const dateHtml=t.date?'<span class="todo-date '+(t.done?'nodate':st)+'">'+fmtDateFr(t.date)+'</span>':'';
+  return '<div class="todo-item'+(t.done?' done':'')+'">'+
+    '<input type="checkbox" class="todo-checkbox" '+(t.done?'checked':'')+' onchange="toggleTache(\''+t.id+'\',this.checked)">'+
+    '<span class="todo-text">'+t.text+patBadge+'</span>'+
+    dateHtml+
+    '<button class="icon-btn" onclick="openTacheModal(\''+t.id+'\');event.stopPropagation()" title="Modifier" style="flex-shrink:0;padding:2px;color:var(--text-soft);">'+
+    '<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>'+
+    '</button></div>';
 }
 
 function renderTachesPatientTab(p){
-  const taches = (DB.taches||[]).filter(t=>t.patientId===p.id);
-  const ouvertes = taches.filter(t=>!t.done).sort((a,b)=>(a.date||'9999')>=(b.date||'9999')?1:-1);
-  const faites = taches.filter(t=>t.done);
-  let html = `<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
-    <span style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--text-soft);">\${ouvertes.length} tâche\${ouvertes.length>1?'s':''} en cours</span>
-    <div style="display:flex;gap:6px;">
-      <button class="btn btn-sm btn-ghost" onclick="openActiverModele('\${p.id}');event.stopPropagation()">📋 Modèle</button>
-      <button class="btn btn-sm btn-green" onclick="openTacheModal(null,'\${p.id}');event.stopPropagation()">+ Tâche</button>
-    </div>
-  </div>`;
-  if(!taches.length) return html + `<div class="empty-state" style="padding:16px;"><div class="empty-state-icon">✅</div><p>Aucune tâche.</p></div>`;
-  if(ouvertes.length) html += `<div class="todo-card">\${ouvertes.map(t=>renderTacheItem(t,false)).join('')}</div>`;
-  if(faites.length) html += `<div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--text-soft);margin:12px 0 6px;">Terminées (\${faites.length})</div><div class="todo-card">\${faites.map(t=>renderTacheItem(t,false)).join('')}</div>`;
+  const taches=(DB.taches||[]).filter(t=>t.patientId===p.id);
+  const ouvertes=taches.filter(t=>!t.done).sort((a,b)=>(a.date||'9999')>=(b.date||'9999')?1:-1);
+  const faites=taches.filter(t=>t.done);
+  let html='<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">'+
+    '<span style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--text-soft);">'+ouvertes.length+' tâche'+(ouvertes.length>1?'s':'')+' en cours</span>'+
+    '<div style="display:flex;gap:6px;">'+
+    '<button class="btn btn-sm btn-ghost" onclick="openActiverModele(\''+p.id+'\');event.stopPropagation()">📋 Modèle</button>'+
+    '<button class="btn btn-sm btn-green" onclick="openTacheModal(null,\''+p.id+'\');event.stopPropagation()">+ Tâche</button>'+
+    '</div></div>';
+  if(!taches.length)return html+'<div class="empty-state" style="padding:16px;"><div class="empty-state-icon">✅</div><p>Aucune tâche.</p></div>';
+  if(ouvertes.length)html+='<div class="todo-card">'+ouvertes.map(t=>renderTacheItem(t,false)).join('')+'</div>';
+  if(faites.length)html+='<div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--text-soft);margin:12px 0 6px;">Terminées ('+faites.length+')</div><div class="todo-card">'+faites.map(t=>renderTacheItem(t,false)).join('')+'</div>';
   return html;
 }
 
 function renderTachesPage(){
   updateTachesBadge();
-  const all = DB.taches||[];
-  const ouvertes = all.filter(t=>!t.done);
-  const urgentes = ouvertes.filter(t=>getTacheDateStatus(t.date)==='urgent').sort((a,b)=>(a.date||'9999')>=(b.date||'9999')?1:-1);
-  const soon = ouvertes.filter(t=>getTacheDateStatus(t.date)==='soon').sort((a,b)=>(a.date||'9999')>=(b.date||'9999')?1:-1);
-  const ok = ouvertes.filter(t=>getTacheDateStatus(t.date)==='ok').sort((a,b)=>(a.date||'9999')>=(b.date||'9999')?1:-1);
-  const sansDate = ouvertes.filter(t=>!t.date);
-  const faites = all.filter(t=>t.done);
-  document.getElementById('taches-count').textContent = ouvertes.length + ' tâche'+(ouvertes.length>1?'s':'')+' en cours';
-  let html = '';
-  if(urgentes.length) html += `<div class="todo-section"><div class="todo-section-title" style="color:var(--red);">🔴 Urgentes (\${urgentes.length})</div><div class="todo-card">\${urgentes.map(t=>renderTacheItem(t,true)).join('')}</div></div>`;
-  if(soon.length) html += `<div class="todo-section"><div class="todo-section-title" style="color:var(--amber);">🟡 Bientôt (\${soon.length})</div><div class="todo-card">\${soon.map(t=>renderTacheItem(t,true)).join('')}</div></div>`;
-  if(ok.length) html += `<div class="todo-section"><div class="todo-section-title">📅 À venir (\${ok.length})</div><div class="todo-card">\${ok.map(t=>renderTacheItem(t,true)).join('')}</div></div>`;
-  if(sansDate.length) html += `<div class="todo-section"><div class="todo-section-title">📋 Sans date (\${sansDate.length})</div><div class="todo-card">\${sansDate.map(t=>renderTacheItem(t,true)).join('')}</div></div>`;
-  if(!ouvertes.length) html += `<div class="empty-state"><div class="empty-state-icon">✅</div><p>Aucune tâche en cours !</p></div>`;
-  if(faites.length) html += `<div class="todo-section" style="margin-top:24px;"><div class="todo-section-title">✅ Terminées (\${faites.length}) <button class="btn btn-sm btn-ghost" style="font-size:10px;padding:2px 8px;" onclick="clearDoneTaches()">Effacer tout</button></div><div class="todo-card">\${faites.map(t=>renderTacheItem(t,true)).join('')}</div></div>`;
-  document.getElementById('taches-page-content').innerHTML = html;
+  const all=DB.taches||[];
+  const ouvertes=all.filter(t=>!t.done);
+  const urgentes=ouvertes.filter(t=>getTacheDateStatus(t.date)==='urgent').sort((a,b)=>(a.date||'9999')>=(b.date||'9999')?1:-1);
+  const soon=ouvertes.filter(t=>getTacheDateStatus(t.date)==='soon').sort((a,b)=>(a.date||'9999')>=(b.date||'9999')?1:-1);
+  const ok=ouvertes.filter(t=>getTacheDateStatus(t.date)==='ok').sort((a,b)=>(a.date||'9999')>=(b.date||'9999')?1:-1);
+  const sansDate=ouvertes.filter(t=>!t.date);
+  const faites=all.filter(t=>t.done);
+  document.getElementById('taches-count').textContent=ouvertes.length+' tâche'+(ouvertes.length>1?'s':'')+' en cours';
+  let html='';
+  if(urgentes.length)html+='<div class="todo-section"><div class="todo-section-title" style="color:var(--red);">🔴 Urgentes ('+urgentes.length+')</div><div class="todo-card">'+urgentes.map(t=>renderTacheItem(t,true)).join('')+'</div></div>';
+  if(soon.length)html+='<div class="todo-section"><div class="todo-section-title" style="color:var(--amber);">🟡 Bientôt ('+soon.length+')</div><div class="todo-card">'+soon.map(t=>renderTacheItem(t,true)).join('')+'</div></div>';
+  if(ok.length)html+='<div class="todo-section"><div class="todo-section-title">📅 À venir ('+ok.length+')</div><div class="todo-card">'+ok.map(t=>renderTacheItem(t,true)).join('')+'</div></div>';
+  if(sansDate.length)html+='<div class="todo-section"><div class="todo-section-title">📋 Sans date ('+sansDate.length+')</div><div class="todo-card">'+sansDate.map(t=>renderTacheItem(t,true)).join('')+'</div></div>';
+  if(!ouvertes.length)html+='<div class="empty-state"><div class="empty-state-icon">✅</div><p>Aucune tâche en cours !</p></div>';
+  if(faites.length)html+='<div class="todo-section" style="margin-top:24px;"><div class="todo-section-title">✅ Terminées ('+faites.length+') <button class="btn btn-sm btn-ghost" style="font-size:10px;padding:2px 8px;" onclick="clearDoneTaches()">Effacer tout</button></div><div class="todo-card">'+faites.map(t=>renderTacheItem(t,true)).join('')+'</div></div>';
+  document.getElementById('taches-page-content').innerHTML=html;
 }
 
-function toggleTache(tid, checked){
-  const t = (DB.taches||[]).find(x=>x.id===tid);
-  if(!t) return;
-  t.done = checked;
-  save(); updateTachesBadge();
-  if(document.getElementById('page-taches').classList.contains('active')) renderTachesPage();
+function toggleTache(tid,checked){
+  const t=(DB.taches||[]).find(x=>x.id===tid);
+  if(!t)return;
+  t.done=checked;
+  save();updateTachesBadge();
+  if(document.getElementById('page-taches').classList.contains('active'))renderTachesPage();
   else renderPatients();
 }
 
 function clearDoneTaches(){
-  if(!confirm('Effacer toutes les tâches terminées ?')) return;
-  DB.taches = (DB.taches||[]).filter(t=>!t.done);
-  save(); renderTachesPage(); updateTachesBadge();
+  if(!confirm('Effacer toutes les tâches terminées ?'))return;
+  DB.taches=(DB.taches||[]).filter(t=>!t.done);
+  save();renderTachesPage();updateTachesBadge();
 }
 
-function openTacheModal(tid, prefPid){
-  const t = tid ? (DB.taches||[]).find(x=>x.id===tid) : null;
-  document.getElementById('modal-tache-title').textContent = t ? 'Modifier la tâche' : 'Nouvelle tâche';
-  document.getElementById('edit-tache-id').value = tid||'';
-  document.getElementById('tache-text').value = t?.text||'';
-  createDatePicker('dp-tache-date-wrap', t?.date||'');
-  const sel = document.getElementById('tache-patient-id');
-  sel.innerHTML = '<option value="">— Aucun patient —</option>' +
+function openTacheModal(tid,prefPid){
+  const t=tid?(DB.taches||[]).find(x=>x.id===tid):null;
+  document.getElementById('modal-tache-title').textContent=t?'Modifier la tâche':'Nouvelle tâche';
+  document.getElementById('edit-tache-id').value=tid||'';
+  document.getElementById('tache-text').value=t&&t.text?t.text:'';
+  createDatePicker('dp-tache-date-wrap',t&&t.date?t.date:'');
+  const sel=document.getElementById('tache-patient-id');
+  sel.innerHTML='<option value="">— Aucun patient —</option>'+
     [...DB.patients].sort((a,b)=>(a.nom+a.prenom).localeCompare(b.nom+b.prenom))
-      .map(p=>`<option value="\${p.id}" \${(t?.patientId||prefPid)===p.id?'selected':''}>\${p.prenom} \${p.nom}</option>`).join('');
-  document.getElementById('btn-delete-tache').style.display = tid?'inline-flex':'none';
+      .map(p=>'<option value="'+p.id+'" '+((t&&t.patientId===p.id)||(prefPid===p.id)?'selected':'')+'>'+p.prenom+' '+p.nom+'</option>').join('');
+  document.getElementById('btn-delete-tache').style.display=tid?'inline-flex':'none';
   openModal('modal-tache');
-  setTimeout(()=>document.getElementById('tache-text').focus(),100);
+  setTimeout(function(){document.getElementById('tache-text').focus();},100);
 }
 
 function saveTache(){
-  const tid = document.getElementById('edit-tache-id').value;
-  const text = document.getElementById('tache-text').value.trim();
+  const tid=document.getElementById('edit-tache-id').value;
+  const text=document.getElementById('tache-text').value.trim();
   if(!text){showToast('Saisissez une tâche','red');return;}
-  if(!DB.taches) DB.taches=[];
-  const data = {text, date:dpGet('dp-tache-date-wrap'), patientId:document.getElementById('tache-patient-id').value||null};
+  if(!DB.taches)DB.taches=[];
+  const data={text:text,date:dpGet('dp-tache-date-wrap'),patientId:document.getElementById('tache-patient-id').value||null};
   if(tid){const t=DB.taches.find(x=>x.id===tid);if(t)Object.assign(t,data);}
-  else DB.taches.push({id:uid(),done:false,...data});
-  save(); closeModal('modal-tache'); updateTachesBadge();
-  if(document.getElementById('page-taches').classList.contains('active')) renderTachesPage();
+  else DB.taches.push({id:uid(),done:false,text:data.text,date:data.date,patientId:data.patientId});
+  save();closeModal('modal-tache');updateTachesBadge();
+  if(document.getElementById('page-taches').classList.contains('active'))renderTachesPage();
   else renderPatients();
   showToast(tid?'✓ Tâche modifiée':'✓ Tâche ajoutée');
 }
 
 function deleteTache(){
-  const tid = document.getElementById('edit-tache-id').value;
-  if(!tid||!confirm('Supprimer cette tâche ?')) return;
-  DB.taches = (DB.taches||[]).filter(t=>t.id!==tid);
-  save(); closeModal('modal-tache'); updateTachesBadge();
-  if(document.getElementById('page-taches').classList.contains('active')) renderTachesPage();
+  const tid=document.getElementById('edit-tache-id').value;
+  if(!tid||!confirm('Supprimer cette tâche ?'))return;
+  DB.taches=(DB.taches||[]).filter(t=>t.id!==tid);
+  save();closeModal('modal-tache');updateTachesBadge();
+  if(document.getElementById('page-taches').classList.contains('active'))renderTachesPage();
   else renderPatients();
   showToast('Tâche supprimée');
 }
 
 function openActiverModele(pid){
-  document.getElementById('activer-modele-pid').value = pid;
-  const modeles = DB.modelesTodo||[];
-  document.getElementById('activer-modele-liste').innerHTML = modeles.length
-    ? modeles.map(m=>`<div class="model-chip" onclick="activerModele('\${m.id}','\${pid}')">
-        \${m.emoji||'📋'} <strong>\${m.nom}</strong>
-        <span style="color:var(--text-soft);font-size:11px;">(\${m.items.length} tâches)</span>
-      </div>`).join('')
-    : '<p style="font-size:12px;color:var(--text-soft);">Aucun modèle. Créez-en dans Paramètres.</p>';
+  document.getElementById('activer-modele-pid').value=pid;
+  const modeles=DB.modelesTodo||[];
+  document.getElementById('activer-modele-liste').innerHTML=modeles.length
+    ?modeles.map(m=>'<div class="model-chip" onclick="activerModele(\''+m.id+'\',\''+pid+'\')">'+
+        (m.emoji||'📋')+' <strong>'+m.nom+'</strong> <span style="color:var(--text-soft);font-size:11px;">('+m.items.length+' tâches)</span></div>').join('')
+    :'<p style="font-size:12px;color:var(--text-soft);">Aucun modèle. Créez-en dans Paramètres.</p>';
   openModal('modal-activer-modele');
 }
 
-function activerModele(mid, pid){
-  const m = (DB.modelesTodo||[]).find(x=>x.id===mid);
-  if(!m) return;
-  if(!DB.taches) DB.taches=[];
-  m.items.forEach(text=>DB.taches.push({id:uid(),text,done:false,date:'',patientId:pid||null}));
-  save(); closeModal('modal-activer-modele'); updateTachesBadge(); renderPatients();
-  showToast(`✓ "\${m.nom}" activé (\${m.items.length} tâches)`);
+function activerModele(mid,pid){
+  const m=(DB.modelesTodo||[]).find(x=>x.id===mid);
+  if(!m)return;
+  if(!DB.taches)DB.taches=[];
+  m.items.forEach(function(text){DB.taches.push({id:uid(),text:text,done:false,date:'',patientId:pid||null});});
+  save();closeModal('modal-activer-modele');updateTachesBadge();renderPatients();
+  showToast('"'+m.nom+'" activé ('+m.items.length+' tâches)');
 }
 
-// ── Modèles settings ──
-let _modeleItems = [];
+var _modeleItems=[];
 
 function renderModelesTodoList(){
-  const el = document.getElementById('modeles-todo-list');
-  if(!el) return;
-  const modeles = DB.modelesTodo||[];
-  el.innerHTML = modeles.length
-    ? modeles.map(m=>`<div style="display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid var(--border);">
-        <span style="font-size:15px;">\${m.emoji||'📋'}</span>
-        <span style="flex:1;font-size:13px;font-weight:500;">\${m.nom}</span>
-        <span style="font-size:11px;color:var(--text-soft);">\${m.items.length} tâche\${m.items.length>1?'s':''}</span>
-        <button class="btn btn-sm btn-ghost" onclick="openModeleModal('\${m.id}')">✏️</button>
-      </div>`).join('')
-    : '<p style="font-size:12px;color:var(--text-soft);">Aucun modèle.</p>';
+  const el=document.getElementById('modeles-todo-list');
+  if(!el)return;
+  const modeles=DB.modelesTodo||[];
+  el.innerHTML=modeles.length
+    ?modeles.map(m=>'<div style="display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid var(--border);">'+
+        '<span style="font-size:15px;">'+(m.emoji||'📋')+'</span>'+
+        '<span style="flex:1;font-size:13px;font-weight:500;">'+m.nom+'</span>'+
+        '<span style="font-size:11px;color:var(--text-soft);">'+m.items.length+' tâche'+(m.items.length>1?'s':'')+'</span>'+
+        '<button class="btn btn-sm btn-ghost" onclick="openModeleModal(\''+m.id+'\')">✏️</button></div>').join('')
+    :'<p style="font-size:12px;color:var(--text-soft);">Aucun modèle.</p>';
 }
 
 function openModeleModal(mid){
-  const m = mid ? (DB.modelesTodo||[]).find(x=>x.id===mid) : null;
-  document.getElementById('modal-modele-title').textContent = m ? 'Modifier le modèle' : 'Nouveau modèle';
-  document.getElementById('edit-modele-id').value = mid||'';
-  document.getElementById('modele-emoji').value = m?.emoji||'📋';
-  document.getElementById('modele-nom').value = m?.nom||'';
-  _modeleItems = m ? [...m.items] : [];
-  document.getElementById('btn-delete-modele').style.display = mid?'inline-flex':'none';
+  const m=mid?(DB.modelesTodo||[]).find(x=>x.id===mid):null;
+  document.getElementById('modal-modele-title').textContent=m?'Modifier le modèle':'Nouveau modèle';
+  document.getElementById('edit-modele-id').value=mid||'';
+  document.getElementById('modele-emoji').value=m&&m.emoji?m.emoji:'📋';
+  document.getElementById('modele-nom').value=m&&m.nom?m.nom:'';
+  _modeleItems=m?[...m.items]:[];
+  document.getElementById('btn-delete-modele').style.display=mid?'inline-flex':'none';
   renderModeleItems();
   openModal('modal-modele-todo');
 }
 
 function renderModeleItems(){
-  document.getElementById('modele-items-list').innerHTML = _modeleItems.map((text,i)=>`
-    <div style="display:flex;align-items:center;gap:6px;margin-bottom:5px;">
-      <input type="text" value="\${text.replace(/"/g,'&quot;')}" placeholder="Tâche…" oninput="_modeleItems[\${i}]=this.value"
-        style="flex:1;padding:6px 8px;font-size:12px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--bg);font-family:'DM Sans',sans-serif;outline:none;">
-      <button class="icon-btn" onclick="_modeleItems.splice(\${i},1);renderModeleItems();">
-        <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-      </button>
-    </div>`).join('');
+  document.getElementById('modele-items-list').innerHTML=_modeleItems.map(function(text,i){
+    return '<div style="display:flex;align-items:center;gap:6px;margin-bottom:5px;">'+
+      '<input type="text" value="'+text.replace(/"/g,'&quot;')+'" placeholder="Tâche…" oninput="_modeleItems['+i+']=this.value"'+
+      ' style="flex:1;padding:6px 8px;font-size:12px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--bg);font-family:\'DM Sans\',sans-serif;outline:none;">'+
+      '<button class="icon-btn" onclick="_modeleItems.splice('+i+',1);renderModeleItems();">'+
+      '<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>'+
+      '</button></div>';
+  }).join('');
 }
 
 function addModeleItem(){
   _modeleItems.push('');
   renderModeleItems();
-  setTimeout(()=>{const ins=document.querySelectorAll('#modele-items-list input');if(ins.length)ins[ins.length-1].focus();},50);
+  setTimeout(function(){var ins=document.querySelectorAll('#modele-items-list input');if(ins.length)ins[ins.length-1].focus();},50);
 }
 
 function saveModele(){
-  const mid = document.getElementById('edit-modele-id').value;
-  const emoji = document.getElementById('modele-emoji').value.trim()||'📋';
-  const nom = document.getElementById('modele-nom').value.trim();
+  const mid=document.getElementById('edit-modele-id').value;
+  const emoji=document.getElementById('modele-emoji').value.trim()||'📋';
+  const nom=document.getElementById('modele-nom').value.trim();
   if(!nom){showToast('Saisissez un nom','red');return;}
-  const items = _modeleItems.filter(x=>x.trim());
-  if(!DB.modelesTodo) DB.modelesTodo=[];
+  const items=_modeleItems.filter(function(x){return x.trim();});
+  if(!DB.modelesTodo)DB.modelesTodo=[];
   if(mid){const m=DB.modelesTodo.find(x=>x.id===mid);if(m){m.emoji=emoji;m.nom=nom;m.items=items;}}
-  else DB.modelesTodo.push({id:uid(),emoji,nom,items});
-  save(); closeModal('modal-modele-todo'); renderModelesTodoList();
+  else DB.modelesTodo.push({id:uid(),emoji:emoji,nom:nom,items:items});
+  save();closeModal('modal-modele-todo');renderModelesTodoList();
   showToast(mid?'✓ Modèle modifié':'✓ Modèle créé');
 }
 
 function deleteModele(){
-  const mid = document.getElementById('edit-modele-id').value;
-  if(!mid||!confirm('Supprimer ce modèle ?')) return;
-  DB.modelesTodo = (DB.modelesTodo||[]).filter(m=>m.id!==mid);
-  save(); closeModal('modal-modele-todo'); renderModelesTodoList();
+  const mid=document.getElementById('edit-modele-id').value;
+  if(!mid||!confirm('Supprimer ce modèle ?'))return;
+  DB.modelesTodo=(DB.modelesTodo||[]).filter(m=>m.id!==mid);
+  save();closeModal('modal-modele-todo');renderModelesTodoList();
   showToast('Modèle supprimé');
 }
+
 
 // ═══════════════════════════════════════
 // INIT
