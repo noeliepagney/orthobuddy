@@ -341,17 +341,27 @@ html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);colo
       </div>
     </div>
     <nav class="sidebar-nav">
-      <button class="nav-item active" onclick="showPage('patients')" id="nav-patients">
+      <div class="nav-section">Patients</div>
+      <button class="nav-item active" onclick="showPage('patients','actif')" id="nav-patients">
         <span class="nav-icon">👥</span><span class="nav-label">Mes patients</span>
-        <span id="bday-nav-badge" style="display:none;margin-left:auto;background:#e05;color:white;border-radius:20px;font-size:10px;padding:1px 7px;font-weight:700;">🎂</span>
+        <span id="nav-count-actif" style="margin-left:auto;background:var(--green-l);color:var(--green-mid);border-radius:20px;font-size:10px;padding:1px 7px;font-weight:600;"></span>
+        <span id="bday-nav-badge" style="display:none;background:#e05;color:white;border-radius:20px;font-size:10px;padding:1px 7px;font-weight:700;">🎂</span>
+      </button>
+      <button class="nav-item" onclick="showPage('patients','pause')" id="nav-patients-pause">
+        <span class="nav-icon">🌿</span><span class="nav-label">En suspens</span>
+        <span id="nav-count-pause" style="margin-left:auto;background:var(--amber-l);color:var(--amber);border-radius:20px;font-size:10px;padding:1px 7px;font-weight:600;"></span>
+      </button>
+      <button class="nav-item" onclick="showPage('patients','termine')" id="nav-patients-termine">
+        <span class="nav-icon">📦</span><span class="nav-label">Dossiers clos</span>
+        <span id="nav-count-termine" style="margin-left:auto;background:var(--bg);color:var(--text-soft);border-radius:20px;font-size:10px;padding:1px 7px;font-weight:600;border:1px solid var(--border);"></span>
       </button>
       <button class="nav-item" onclick="showPage('agenda')" id="nav-agenda">
         <span class="nav-icon">📅</span><span class="nav-label">Mon agenda</span>
       </button>
       <button class="nav-item" onclick="showPage('taches')" id="nav-taches">
         <span class="nav-icon">✅</span><span class="nav-label">Mes tâches</span>
-        <span id="nav-taches-badge" style="margin-left:auto;display:none;background:var(--red-l);color:var(--red);border:1px solid var(--red-b);border-radius:20px;font-size:10px;padding:1px 7px;font-weight:600;"></span>
-        <span id="nav-taches-total" style="margin-left:4px;background:var(--bg);color:var(--text-soft);border:1px solid var(--border);border-radius:20px;font-size:10px;padding:1px 7px;font-weight:600;"></span>
+        <span id="nav-taches-urgent" style="display:none;margin-left:auto;background:var(--red-l);color:var(--red);border:1px solid var(--red-b);border-radius:20px;font-size:10px;padding:1px 7px;font-weight:600;"></span>
+        <span id="nav-taches-total" style="display:none;margin-left:3px;background:var(--bg);color:var(--text-soft);border:1px solid var(--border);border-radius:20px;font-size:10px;padding:1px 7px;"></span>
       </button>
       <div class="nav-section">Réglages</div>
       <button class="nav-item" onclick="showPage('settings')" id="nav-settings">
@@ -413,7 +423,7 @@ html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);colo
       <!-- TÂCHES -->
       <div class="page" id="page-taches">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;">
-          <div style="font-size:13px;color:var(--text-soft);" id="taches-count"></div>
+          <div id="taches-count" style="font-size:13px;color:var(--text-soft);"></div>
           <button class="btn btn-green" onclick="openTacheModal()">
             <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
             Nouvelle tâche
@@ -446,18 +456,13 @@ html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);colo
 
         <div class="settings-section">
           <div class="settings-section-title">✅ Tâches & rappels</div>
-          <div class="field-grid field-grid-2" style="max-width:400px;">
-            <div class="field">
-              <label>Délai d'urgence (jours)</label>
-              <input type="number" id="setting-urgence-days" min="0" max="30" value="2" style="width:80px;" oninput="DB.settings=DB.settings||{};DB.settings.urgenceDays=parseInt(this.value)||2;save();updateTachesBadge();">
-              <span style="font-size:11px;color:var(--text-soft);margin-top:3px;">Une tâche devient urgente X jours avant son échéance</span>
-            </div>
+          <div class="field" style="max-width:280px;margin-bottom:14px;">
+            <label>Délai d'urgence (jours avant échéance)</label>
+            <input type="number" id="setting-urgence-days" min="0" max="30" value="2" style="width:70px;margin-top:4px;" oninput="DB.settings.urgenceDays=parseInt(this.value)||2;save();updateTachesBadge();">
           </div>
-          <div style="margin-top:14px;">
-            <div style="font-size:12px;font-weight:600;color:var(--text-mid);margin-bottom:8px;">Modèles de listes</div>
-            <div id="modeles-todo-settings-list"></div>
-            <button class="btn btn-sm" style="margin-top:8px;" onclick="openModeleModal()">+ Nouveau modèle</button>
-          </div>
+          <div style="font-size:12px;font-weight:600;color:var(--text-mid);margin-bottom:8px;">Modèles de listes</div>
+          <div id="modeles-todo-list"></div>
+          <button class="btn btn-sm" style="margin-top:10px;" onclick="openModeleModal()">+ Nouveau modèle</button>
         </div>
 
         <div class="settings-section">
@@ -484,6 +489,7 @@ html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);colo
   </div>
 </div>
 
+
 <!-- MODAL TÂCHE -->
 <div class="overlay" id="modal-tache">
   <div class="modal modal-sm">
@@ -493,16 +499,14 @@ html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);colo
     </div>
     <input type="hidden" id="edit-tache-id">
     <div class="field-grid" style="gap:12px;">
-      <div class="field"><label>Tâche</label><input type="text" id="tache-text" placeholder="Description de la tâche…"></div>
-      <div class="field"><label>Date d'échéance</label><div class="date-picker-wrap" id="dp-tache-date-wrap"></div></div>
+      <div class="field"><label>Tâche</label><input type="text" id="tache-text" placeholder="Description…"></div>
+      <div class="field"><label>Date d'échéance (optionnel)</label><div class="date-picker-wrap" id="dp-tache-date-wrap"></div></div>
       <div class="field"><label>Patient concerné (optionnel)</label>
-        <select id="tache-patient-id">
-          <option value="">— Aucun patient —</option>
-        </select>
+        <select id="tache-patient-id"><option value="">— Aucun —</option></select>
       </div>
     </div>
     <div class="modal-footer">
-      <button class="btn btn-ghost btn-sm btn-red" id="btn-delete-tache" onclick="deleteTache()" style="display:none;">Supprimer</button>
+      <button class="btn btn-red btn-sm" id="btn-delete-tache" onclick="deleteTache()" style="display:none;">Supprimer</button>
       <div style="display:flex;gap:8px;">
         <button class="btn btn-ghost" onclick="closeModal('modal-tache')">Annuler</button>
         <button class="btn btn-green" onclick="saveTache()">Enregistrer</button>
@@ -519,17 +523,15 @@ html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);colo
       <button class="modal-close" onclick="closeModal('modal-modele-todo')"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
     </div>
     <input type="hidden" id="edit-modele-id">
-    <div class="field-grid" style="gap:12px;margin-bottom:16px;">
-      <div class="field-grid field-grid-2">
-        <div class="field"><label>Emoji</label><input type="text" id="modele-emoji" placeholder="📋" style="width:60px;text-align:center;font-size:18px;"></div>
-        <div class="field"><label>Nom du modèle</label><input type="text" id="modele-nom" placeholder="Ex: Bilan initial"></div>
-      </div>
+    <div class="field-grid field-grid-2" style="gap:12px;margin-bottom:16px;">
+      <div class="field"><label>Emoji</label><input type="text" id="modele-emoji" style="width:60px;text-align:center;font-size:18px;" placeholder="📋"></div>
+      <div class="field"><label>Nom du modèle</label><input type="text" id="modele-nom" placeholder="Ex: Bilan initial"></div>
     </div>
-    <div class="modal-section-label" style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--text-soft);margin-bottom:8px;">Tâches du modèle</div>
+    <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--text-soft);margin-bottom:8px;">Tâches du modèle</div>
     <div id="modele-items-list"></div>
     <button class="add-activite-btn" style="margin-top:6px;" onclick="addModeleItem()">+ Ajouter une tâche</button>
     <div class="modal-footer">
-      <button class="btn btn-ghost btn-sm" style="color:var(--red);" id="btn-delete-modele" onclick="deleteModele()" style="display:none;">Supprimer</button>
+      <button class="btn btn-red btn-sm" id="btn-delete-modele" onclick="deleteModele()" style="display:none;">Supprimer</button>
       <div style="display:flex;gap:8px;">
         <button class="btn btn-ghost" onclick="closeModal('modal-modele-todo')">Annuler</button>
         <button class="btn btn-green" onclick="saveModele()">Enregistrer</button>
@@ -545,11 +547,11 @@ html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);colo
       <div class="modal-title">Activer un modèle</div>
       <button class="modal-close" onclick="closeModal('modal-activer-modele')"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
     </div>
-    <input type="hidden" id="activer-modele-patient-id">
-    <p style="font-size:12px;color:var(--text-soft);margin-bottom:12px;">Choisissez un modèle à activer pour ce patient :</p>
+    <input type="hidden" id="activer-modele-pid">
+    <p style="font-size:12px;color:var(--text-soft);margin-bottom:14px;">Choisissez un modèle à activer pour ce patient :</p>
     <div id="activer-modele-liste"></div>
     <div class="modal-footer">
-      <button class="btn btn-ghost" onclick="closeModal('modal-activer-modele')">Annuler</button>
+      <button class="btn btn-ghost" onclick="closeModal('modal-activer-modele')">Fermer</button>
     </div>
   </div>
 </div>
@@ -791,30 +793,16 @@ const DEFAULT_PARCOURS = [
 ];
 
 const DEFAULT_MODELES_TODO = [
-  {id:'m1',emoji:'📋',nom:'Bilan initial',items:[
-    {text:'Envoyer CR bilan au prescripteur',done:false},
-    {text:'Rédiger compte-rendu',done:false},
-    {text:'Planifier 1ère séance',done:false},
-    {text:'Informer la famille',done:false}
-  ]},
-  {id:'m2',emoji:'🔄',nom:'Renouvellement',items:[
-    {text:'Envoyer note d\'évolution',done:false},
-    {text:'DAP auprès de l\'assurance maladie',done:false},
-    {text:'Faire signer ordonnance de renouvellement',done:false},
-    {text:'Mettre à jour le compteur de séances',done:false}
-  ]},
-  {id:'m3',emoji:'🏁',nom:'Fin de suivi',items:[
-    {text:'Envoyer note de fin de traitement',done:false},
-    {text:'CR final au prescripteur',done:false},
-    {text:'Archiver le dossier',done:false},
-    {text:'Informer le patient / famille',done:false}
-  ]},
-  {id:'m4',emoji:'📁',nom:'Tâches administratives',items:[
-    {text:'Télétransmission FSE',done:false},
-    {text:'Relance impayés',done:false},
-    {text:'Mise à jour ordonnances',done:false},
-    {text:'Vérifier accord préalable',done:false}
-  ]}
+  {id:'mt1',emoji:'📋',nom:'Bilan initial',items:[
+    'Envoyer CR bilan au prescripteur','Rédiger compte-rendu','Planifier 1ère séance','Informer la famille']},
+  {id:'mt2',emoji:'🔄',nom:'Renouvellement',items:[
+    'Envoyer note d\'évolution','DAP auprès de l\'assurance maladie',
+    'Faire signer ordonnance de renouvellement','Mettre à jour le compteur de séances']},
+  {id:'mt3',emoji:'🏁',nom:'Fin de suivi',items:[
+    'Envoyer note de fin de traitement','CR final au prescripteur',
+    'Archiver le dossier','Informer le patient / famille']},
+  {id:'mt4',emoji:'📁',nom:'Tâches administratives',items:[
+    'Télétransmission FSE','Relance impayés','Mise à jour ordonnances','Vérifier accord préalable']}
 ];
 
 let DB = {
@@ -822,7 +810,7 @@ let DB = {
   patients:[],seances:[],rdvs:[],
   parcours: JSON.parse(JSON.stringify(DEFAULT_PARCOURS)),
   taches:[],
-  modelesTodo: JSON.parse(JSON.stringify(DEFAULT_MODELES_TODO)),
+  modelesTodo:[],
   settings:{urgenceDays:2},
   lastBackup:null,lastModified:null
 };
@@ -856,6 +844,9 @@ async function sbLoad(){
       if(!Array.isArray(DB.seances))  DB.seances=[];
       if(!Array.isArray(DB.rdvs))     DB.rdvs=[];
       if(!Array.isArray(DB.parcours)||!DB.parcours.length) DB.parcours=JSON.parse(JSON.stringify(DEFAULT_PARCOURS));
+      if(!Array.isArray(DB.taches)) DB.taches=[];
+      if(!DB.settings) DB.settings={urgenceDays:2};
+      if(!Array.isArray(DB.modelesTodo)||!DB.modelesTodo.length) DB.modelesTodo=JSON.parse(JSON.stringify(DEFAULT_MODELES_TODO));
       // Mirror to localStorage as cache
       localStorage.setItem(SK, JSON.stringify(DB));
       return true;
@@ -918,10 +909,10 @@ function load(){
   if(!Array.isArray(DB.patients)) DB.patients=[];
   if(!Array.isArray(DB.seances))  DB.seances=[];
   if(!Array.isArray(DB.rdvs))     DB.rdvs=[];
-  if(!Array.isArray(DB.taches))   DB.taches=[];
+  if(!Array.isArray(DB.parcours)||!DB.parcours.length) DB.parcours=JSON.parse(JSON.stringify(DEFAULT_PARCOURS));
+  if(!Array.isArray(DB.taches)) DB.taches=[];
   if(!DB.settings) DB.settings={urgenceDays:2};
   if(!Array.isArray(DB.modelesTodo)||!DB.modelesTodo.length) DB.modelesTodo=JSON.parse(JSON.stringify(DEFAULT_MODELES_TODO));
-  if(!Array.isArray(DB.parcours)||!DB.parcours.length) DB.parcours=JSON.parse(JSON.stringify(DEFAULT_PARCOURS));
 }
 
 function save(){
@@ -1176,16 +1167,27 @@ function checkBackupReminder(){
 // ═══════════════════════════════════════
 // NAVIGATION
 // ═══════════════════════════════════════
-function showPage(name){
+let _patientStatutFilter = 'actif';
+
+function showPage(name, statut){
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
   document.getElementById('page-'+name).classList.add('active');
-  document.getElementById('nav-'+name).classList.add('active');
-  const titles={patients:'Mes patients',agenda:'Mon agenda',settings:'Paramètres',taches:'Mes tâches'};
-  document.getElementById('topbar-title').textContent=titles[name]||name;
+  if(name==='patients' && statut){
+    _patientStatutFilter = statut;
+    const navId = statut==='actif'?'nav-patients':statut==='pause'?'nav-patients-pause':'nav-patients-termine';
+    document.getElementById(navId).classList.add('active');
+    const titles={actif:'Mes patients',pause:'En suspens',termine:'Dossiers clos'};
+    document.getElementById('topbar-title').textContent=titles[statut]||'Patients';
+  } else {
+    const el=document.getElementById('nav-'+name);
+    if(el)el.classList.add('active');
+    const titles={agenda:'Mon agenda',settings:'Paramètres'};
+    document.getElementById('topbar-title').textContent=titles[name]||name;
+  }
   if(name==='agenda')renderAgenda();
   if(name==='patients')renderPatients();
-  if(name==='settings'){renderSettings();setTimeout(()=>{const el=document.getElementById('setting-urgence-days');if(el)el.value=(DB.settings&&DB.settings.urgenceDays)||2;},50);}
+  if(name==='settings'){renderSettings();setTimeout(()=>{const el=document.getElementById('setting-urgence-days');if(el)el.value=(DB.settings&&DB.settings.urgenceDays!=null?DB.settings.urgenceDays:2);},50);}
   if(name==='taches')renderTachesPage();
 }
 
@@ -1249,12 +1251,24 @@ function renderPatients(){
     }
   }
 
+  // Mettre à jour les compteurs de la sidebar
+  document.getElementById('nav-count-actif').textContent = DB.patients.filter(p=>!p.statut||p.statut==='actif').length || '';
+  document.getElementById('nav-count-pause').textContent = DB.patients.filter(p=>p.statut==='pause').length || '';
+  document.getElementById('nav-count-termine').textContent = DB.patients.filter(p=>p.statut==='termine').length || '';
+
   const q=(document.getElementById('search-patients').value||'').toLowerCase();
-  let pts=DB.patients.filter(p=>(p.prenom+' '+p.nom).toLowerCase().includes(q)||(p.diagnostic||'').toLowerCase().includes(q))
+  let pts=DB.patients
+    .filter(p=>{
+      const statut=p.statut||'actif';
+      return statut===_patientStatutFilter;
+    })
+    .filter(p=>(p.prenom+' '+p.nom).toLowerCase().includes(q)||(p.diagnostic||'').toLowerCase().includes(q))
     .sort((a,b)=>(a.nom+a.prenom).localeCompare(b.nom+b.prenom));
   document.getElementById('patients-count').textContent=pts.length+' patient'+(pts.length>1?'s':'');
+  const emptyIcons={actif:'👥',pause:'🌿',termine:'📦'};
+  const emptyMsgs={actif:'Ajoutez votre premier patient.',pause:'Aucun patient en suspens.',termine:'Aucun dossier clos.'};
   if(!pts.length){
-    document.getElementById('patients-list').innerHTML=`<div class="empty-state"><div class="empty-state-icon">👥</div><p>${q?'Aucun résultat.':'Ajoutez votre premier patient.'}</p></div>`;
+    document.getElementById('patients-list').innerHTML=`<div class="empty-state"><div class="empty-state-icon">${emptyIcons[_patientStatutFilter]||'👥'}</div><p>${q?'Aucun résultat.':emptyMsgs[_patientStatutFilter]||''}</p></div>`;
     return;
   }
   document.getElementById('patients-list').innerHTML=pts.map(p=>{
@@ -1293,7 +1307,7 @@ function renderPatients(){
           <button class="patient-tab active" onclick="switchPTab('${p.id}','seances',this)">📋 Séances</button>
           <button class="patient-tab" onclick="switchPTab('${p.id}','dossier',this)">📁 Dossier</button>
           <button class="patient-tab" onclick="switchPTab('${p.id}','amo',this)">🏥 AMO</button>
-          <button class="patient-tab" onclick="switchPTab('${p.id}','taches',this)" id="ptab-btn-${p.id}-taches">✅ Tâches${getTachesPatientBadge(p.id)}</button>
+          <button class="patient-tab" onclick="switchPTab('${p.id}','taches',this)">✅ Tâches${renderTachesPatientBadge(p.id)}</button>
         </div>
         <div class="patient-tab-content active" id="ptab-${p.id}-seances">${renderSeancesTab(p)}</div>
         <div class="patient-tab-content" id="ptab-${p.id}-dossier">${renderDossierTab(p)}</div>
@@ -1486,7 +1500,13 @@ function savePatient(){
   };
   if(pid){const p=DB.patients.find(x=>x.id===pid);if(p)Object.assign(p,data);}
   else DB.patients.push({id:uid(),...data,permNotes:''});
-  save();closeModal('modal-patient');renderPatients();
+  save();closeModal('modal-patient');
+  // Si le statut du patient ne correspond plus au filtre actuel, naviguer vers la bonne liste
+  if(data.statut !== _patientStatutFilter){
+    showPage('patients', data.statut);
+  } else {
+    renderPatients();
+  }
   if(document.getElementById('page-agenda').classList.contains('active'))renderAgenda();
   showToast(pid?'✓ Patient modifié':'✓ Patient ajouté');
 }
@@ -1852,7 +1872,7 @@ function deleteRdv(){
 // SETTINGS
 // ═══════════════════════════════════════
 function renderSettings(){
-  renderModelesTodoSettings();
+  renderModelesTodoList();
   const el=document.getElementById('parcours-settings-list');
   el.innerHTML=DB.parcours.map((pc,i)=>{
     const openClass = _settingsOpenParcours===i?'open':'';
@@ -1938,136 +1958,101 @@ function resetParcours(){
 
 function saveParcours(){save();showToast('✓ Parcours enregistrés');renderPatients();}
 
+
 // ═══════════════════════════════════════
 // TÂCHES
 // ═══════════════════════════════════════
 
-function getTodayStr(){return new Date().toISOString().slice(0,10);}
-
 function getTacheDateStatus(dateStr){
-  if(!dateStr) return 'none';
-  const urgenceDays = (DB.settings&&DB.settings.urgenceDays!=null)?DB.settings.urgenceDays:2;
+  if(!dateStr) return 'nodate';
+  const urgDays = (DB.settings&&DB.settings.urgenceDays!=null) ? DB.settings.urgenceDays : 2;
   const today = new Date(); today.setHours(0,0,0,0);
-  const due = new Date(dateStr+'T00:00:00'); due.setHours(0,0,0,0);
+  const due = new Date(dateStr+'T00:00:00');
   const diff = Math.floor((due-today)/(1000*60*60*24));
-  if(diff < 0) return 'urgent'; // en retard
-  if(diff <= urgenceDays) return 'urgent';
-  if(diff <= urgenceDays*3) return 'soon';
+  if(diff < 0) return 'urgent';
+  if(diff <= urgDays) return 'urgent';
+  if(diff <= urgDays*3+1) return 'soon';
   return 'ok';
 }
 
-function formatTacheDate(dateStr){
+function fmtDateFr(dateStr){
   if(!dateStr) return '';
-  const d = new Date(dateStr+'T00:00:00');
-  return d.toLocaleDateString('fr-FR',{day:'2-digit',month:'2-digit',year:'2-digit'});
+  return new Date(dateStr+'T00:00:00').toLocaleDateString('fr-FR',{day:'2-digit',month:'2-digit',year:'2-digit'});
 }
 
-function getTachesPatientBadge(pid){
-  if(!DB.taches) return '';
-  const urgent = DB.taches.filter(t=>t.patientId===pid&&!t.done&&getTacheDateStatus(t.date)==='urgent').length;
-  const total = DB.taches.filter(t=>t.patientId===pid&&!t.done).length;
+function renderTachesPatientBadge(pid){
+  const urgent = (DB.taches||[]).filter(t=>t.patientId===pid&&!t.done&&getTacheDateStatus(t.date)==='urgent').length;
+  const total = (DB.taches||[]).filter(t=>t.patientId===pid&&!t.done).length;
   if(!total) return '';
-  if(urgent) return ` <span style="background:var(--red-l);color:var(--red);border:1px solid var(--red-b);border-radius:10px;font-size:9px;padding:0 5px;margin-left:3px;">🔴 ${urgent}</span>`;
-  return ` <span style="background:var(--bg);color:var(--text-soft);border:1px solid var(--border);border-radius:10px;font-size:9px;padding:0 5px;margin-left:3px;">${total}</span>`;
+  if(urgent) return \` <span style="background:var(--red-l);color:var(--red);border:1px solid var(--red-b);border-radius:10px;font-size:9px;padding:0 5px;">\${urgent}</span>\`;
+  return \` <span style="background:var(--bg);color:var(--text-soft);border:1px solid var(--border);border-radius:10px;font-size:9px;padding:0 5px;">\${total}</span>\`;
 }
 
 function updateTachesBadge(){
-  if(!DB.taches) return;
-  const urgent = DB.taches.filter(t=>!t.done&&getTacheDateStatus(t.date)==='urgent').length;
-  const total = DB.taches.filter(t=>!t.done).length;
-  const badge = document.getElementById('nav-taches-badge');
-  const totalEl = document.getElementById('nav-taches-total');
-  if(badge){
-    if(urgent>0){badge.textContent='🔴 '+urgent;badge.style.display='inline';}
-    else badge.style.display='none';
-  }
-  if(totalEl){totalEl.textContent=total?'('+total+')':'';totalEl.style.display=total?'inline':'none';}
+  const urgent = (DB.taches||[]).filter(t=>!t.done&&getTacheDateStatus(t.date)==='urgent').length;
+  const total = (DB.taches||[]).filter(t=>!t.done).length;
+  const elU = document.getElementById('nav-taches-urgent');
+  const elT = document.getElementById('nav-taches-total');
+  if(elU){elU.textContent='🔴 '+urgent;elU.style.display=urgent?'inline':'none';}
+  if(elT){elT.textContent='('+total+')';elT.style.display=total?'inline':'none';}
+}
+
+function renderTacheItem(t, showPatient){
+  const st = getTacheDateStatus(t.date);
+  const p = showPatient && t.patientId ? DB.patients.find(x=>x.id===t.patientId) : null;
+  const patBadge = p ? \`<span style="font-size:10px;background:var(--green-ll);color:var(--green-mid);padding:1px 7px;border-radius:10px;margin-left:5px;">\${p.prenom} \${p.nom}</span>\` : '';
+  return \`<div class="todo-item\${t.done?' done':''}">
+    <input type="checkbox" class="todo-checkbox" \${t.done?'checked':''} onchange="toggleTache('\${t.id}',this.checked)">
+    <span class="todo-text">\${t.text}\${patBadge}</span>
+    \${t.date?\`<span class="todo-date \${t.done?'nodate':st}">\${fmtDateFr(t.date)}</span>\`:''}
+    <button class="icon-btn" onclick="openTacheModal('\${t.id}');event.stopPropagation()" style="opacity:.5;flex-shrink:0;padding:2px;">
+      <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+    </button>
+  </div>\`;
 }
 
 function renderTachesPatientTab(p){
   const taches = (DB.taches||[]).filter(t=>t.patientId===p.id);
   const ouvertes = taches.filter(t=>!t.done).sort((a,b)=>(a.date||'9999')>=(b.date||'9999')?1:-1);
-  const fermees = taches.filter(t=>t.done);
-  let html = `<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
-    <span style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--text-soft);">Tâches (${ouvertes.length} en cours)</span>
+  const faites = taches.filter(t=>t.done);
+  let html = \`<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+    <span style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--text-soft);">\${ouvertes.length} tâche\${ouvertes.length>1?'s':''} en cours</span>
     <div style="display:flex;gap:6px;">
-      <button class="btn btn-sm btn-ghost" onclick="openActiverModele('${p.id}');event.stopPropagation()">📋 Activer un modèle</button>
-      <button class="btn btn-sm btn-green" onclick="openTacheModal(null,'${p.id}');event.stopPropagation()">+ Tâche</button>
+      <button class="btn btn-sm btn-ghost" onclick="openActiverModele('\${p.id}');event.stopPropagation()">📋 Modèle</button>
+      <button class="btn btn-sm btn-green" onclick="openTacheModal(null,'\${p.id}');event.stopPropagation()">+ Tâche</button>
     </div>
-  </div>`;
-  if(!taches.length) html += `<div class="empty-state" style="padding:16px;"><div class="empty-state-icon">✅</div><p>Aucune tâche pour ce patient.</p></div>`;
-  if(ouvertes.length){
-    html += ouvertes.map(t=>renderTacheItem(t,p.id)).join('');
-  }
-  if(fermees.length){
-    html += `<div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--text-soft);margin:12px 0 6px;">Terminées (${fermees.length})</div>`;
-    html += fermees.map(t=>renderTacheItem(t,p.id)).join('');
-  }
+  </div>\`;
+  if(!taches.length) return html + \`<div class="empty-state" style="padding:16px;"><div class="empty-state-icon">✅</div><p>Aucune tâche.</p></div>\`;
+  if(ouvertes.length) html += \`<div class="todo-card">\${ouvertes.map(t=>renderTacheItem(t,false)).join('')}</div>\`;
+  if(faites.length) html += \`<div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--text-soft);margin:12px 0 6px;">Terminées (\${faites.length})</div><div class="todo-card">\${faites.map(t=>renderTacheItem(t,false)).join('')}</div>\`;
   return html;
 }
 
-function renderTacheItem(t, contextPid){
-  const status = getTacheDateStatus(t.date);
-  const dateLabel = formatTacheDate(t.date);
-  const p = t.patientId ? DB.patients.find(x=>x.id===t.patientId) : null;
-  const patientLabel = (!contextPid && p) ? `<span style="font-size:10px;background:var(--green-ll);color:var(--green-mid);padding:1px 7px;border-radius:10px;margin-left:6px;">${p.prenom} ${p.nom}</span>` : '';
-  return `<div class="todo-item${t.done?' done':''}">
-    <input type="checkbox" class="todo-checkbox" ${t.done?'checked':''} onchange="toggleTache('${t.id}',this.checked)">
-    <span class="todo-text">${t.text}${patientLabel}</span>
-    ${dateLabel?`<span class="todo-date ${t.done?'none':status}">${dateLabel}</span>`:''}
-    <button class="icon-btn" onclick="openTacheModal('${t.id}');event.stopPropagation()" style="opacity:.5;flex-shrink:0;"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
-  </div>`;
-}
-
 function renderTachesPage(){
-  if(!DB.taches) DB.taches=[];
   updateTachesBadge();
-  const total = DB.taches.filter(t=>!t.done).length;
-  document.getElementById('taches-count').textContent = total + ' tâche'+(total>1?'s':'')+' en cours';
-
-  // Grouper : urgentes, aujourd'hui, à venir, sans date, générales, terminées
-  const urgentes = DB.taches.filter(t=>!t.done&&getTacheDateStatus(t.date)==='urgent').sort((a,b)=>(a.date||'9999')>=(b.date||'9999')?1:-1);
-  const soon = DB.taches.filter(t=>!t.done&&getTacheDateStatus(t.date)==='soon').sort((a,b)=>(a.date||'9999')>=(b.date||'9999')?1:-1);
-  const ok = DB.taches.filter(t=>!t.done&&getTacheDateStatus(t.date)==='ok').sort((a,b)=>(a.date||'9999')>=(b.date||'9999')?1:-1);
-  const sansDat = DB.taches.filter(t=>!t.done&&!t.date);
-  const terminees = DB.taches.filter(t=>t.done);
-
+  const all = DB.taches||[];
+  const ouvertes = all.filter(t=>!t.done);
+  const urgentes = ouvertes.filter(t=>getTacheDateStatus(t.date)==='urgent').sort((a,b)=>(a.date||'9999')>=(b.date||'9999')?1:-1);
+  const soon = ouvertes.filter(t=>getTacheDateStatus(t.date)==='soon').sort((a,b)=>(a.date||'9999')>=(b.date||'9999')?1:-1);
+  const ok = ouvertes.filter(t=>getTacheDateStatus(t.date)==='ok').sort((a,b)=>(a.date||'9999')>=(b.date||'9999')?1:-1);
+  const sansDate = ouvertes.filter(t=>!t.date);
+  const faites = all.filter(t=>t.done);
+  document.getElementById('taches-count').textContent = ouvertes.length + ' tâche'+(ouvertes.length>1?'s':'')+' en cours';
   let html = '';
-  if(urgentes.length){
-    html += `<div class="todo-page-section"><div class="todo-page-section-title" style="color:var(--red);">🔴 Urgentes (${urgentes.length})</div>`;
-    html += urgentes.map(t=>renderTacheItem(t,null)).join('');
-    html += '</div>';
-  }
-  if(soon.length){
-    html += `<div class="todo-page-section"><div class="todo-page-section-title" style="color:var(--amber);">🟡 Bientôt (${soon.length})</div>`;
-    html += soon.map(t=>renderTacheItem(t,null)).join('');
-    html += '</div>';
-  }
-  if(ok.length){
-    html += `<div class="todo-page-section"><div class="todo-page-section-title">📅 À venir (${ok.length})</div>`;
-    html += ok.map(t=>renderTacheItem(t,null)).join('');
-    html += '</div>';
-  }
-  if(sansDat.length){
-    html += `<div class="todo-page-section"><div class="todo-page-section-title">📋 Sans date (${sansDat.length})</div>`;
-    html += sansDat.map(t=>renderTacheItem(t,null)).join('');
-    html += '</div>';
-  }
-  if(!urgentes.length&&!soon.length&&!ok.length&&!sansDat.length){
-    html += `<div class="empty-state"><div class="empty-state-icon">✅</div><p>Aucune tâche en cours. Bravo !</p></div>`;
-  }
-  if(terminees.length){
-    html += `<div class="todo-page-section" style="margin-top:24px;"><div class="todo-page-section-title">✅ Terminées (${terminees.length}) <button class="btn btn-sm btn-ghost" style="font-size:11px;padding:2px 8px;" onclick="clearDoneTaches()">Effacer</button></div>`;
-    html += terminees.map(t=>renderTacheItem(t,null)).join('');
-    html += '</div>';
-  }
+  if(urgentes.length) html += \`<div class="todo-section"><div class="todo-section-title" style="color:var(--red);">🔴 Urgentes (\${urgentes.length})</div><div class="todo-card">\${urgentes.map(t=>renderTacheItem(t,true)).join('')}</div></div>\`;
+  if(soon.length) html += \`<div class="todo-section"><div class="todo-section-title" style="color:var(--amber);">🟡 Bientôt (\${soon.length})</div><div class="todo-card">\${soon.map(t=>renderTacheItem(t,true)).join('')}</div></div>\`;
+  if(ok.length) html += \`<div class="todo-section"><div class="todo-section-title">📅 À venir (\${ok.length})</div><div class="todo-card">\${ok.map(t=>renderTacheItem(t,true)).join('')}</div></div>\`;
+  if(sansDate.length) html += \`<div class="todo-section"><div class="todo-section-title">📋 Sans date (\${sansDate.length})</div><div class="todo-card">\${sansDate.map(t=>renderTacheItem(t,true)).join('')}</div></div>\`;
+  if(!ouvertes.length) html += \`<div class="empty-state"><div class="empty-state-icon">✅</div><p>Aucune tâche en cours !</p></div>\`;
+  if(faites.length) html += \`<div class="todo-section" style="margin-top:24px;"><div class="todo-section-title">✅ Terminées (\${faites.length}) <button class="btn btn-sm btn-ghost" style="font-size:10px;padding:2px 8px;" onclick="clearDoneTaches()">Effacer tout</button></div><div class="todo-card">\${faites.map(t=>renderTacheItem(t,true)).join('')}</div></div>\`;
   document.getElementById('taches-page-content').innerHTML = html;
 }
 
 function toggleTache(tid, checked){
   const t = (DB.taches||[]).find(x=>x.id===tid);
-  if(t){ t.done=checked; save(); updateTachesBadge(); }
-  // Re-render la page courante
+  if(!t) return;
+  t.done = checked;
+  save(); updateTachesBadge();
   if(document.getElementById('page-taches').classList.contains('active')) renderTachesPage();
   else renderPatients();
 }
@@ -2078,17 +2063,16 @@ function clearDoneTaches(){
   save(); renderTachesPage(); updateTachesBadge();
 }
 
-function openTacheModal(tid, prefPatientId){
+function openTacheModal(tid, prefPid){
   const t = tid ? (DB.taches||[]).find(x=>x.id===tid) : null;
   document.getElementById('modal-tache-title').textContent = t ? 'Modifier la tâche' : 'Nouvelle tâche';
   document.getElementById('edit-tache-id').value = tid||'';
   document.getElementById('tache-text').value = t?.text||'';
   createDatePicker('dp-tache-date-wrap', t?.date||'');
-  // Remplir la liste patients
   const sel = document.getElementById('tache-patient-id');
   sel.innerHTML = '<option value="">— Aucun patient —</option>' +
-    DB.patients.sort((a,b)=>(a.nom+a.prenom).localeCompare(b.nom+b.prenom))
-      .map(p=>`<option value="${p.id}" ${(t?.patientId||prefPatientId)===p.id?'selected':''}>${p.prenom} ${p.nom}</option>`).join('');
+    [...DB.patients].sort((a,b)=>(a.nom+a.prenom).localeCompare(b.nom+b.prenom))
+      .map(p=>\`<option value="\${p.id}" \${(t?.patientId||prefPid)===p.id?'selected':''}>\${p.prenom} \${p.nom}</option>\`).join('');
   document.getElementById('btn-delete-tache').style.display = tid?'inline-flex':'none';
   openModal('modal-tache');
   setTimeout(()=>document.getElementById('tache-text').focus(),100);
@@ -2099,13 +2083,9 @@ function saveTache(){
   const text = document.getElementById('tache-text').value.trim();
   if(!text){showToast('Saisissez une tâche','red');return;}
   if(!DB.taches) DB.taches=[];
-  const data = {
-    text,
-    date: dpGet('dp-tache-date-wrap'),
-    patientId: document.getElementById('tache-patient-id').value||null
-  };
-  if(tid){ const t=DB.taches.find(x=>x.id===tid); if(t) Object.assign(t,data); }
-  else DB.taches.push({id:uid(), done:false, ...data});
+  const data = {text, date:dpGet('dp-tache-date-wrap'), patientId:document.getElementById('tache-patient-id').value||null};
+  if(tid){const t=DB.taches.find(x=>x.id===tid);if(t)Object.assign(t,data);}
+  else DB.taches.push({id:uid(),done:false,...data});
   save(); closeModal('modal-tache'); updateTachesBadge();
   if(document.getElementById('page-taches').classList.contains('active')) renderTachesPage();
   else renderPatients();
@@ -2122,17 +2102,15 @@ function deleteTache(){
   showToast('Tâche supprimée');
 }
 
-// ── ACTIVER UN MODÈLE ──
 function openActiverModele(pid){
-  document.getElementById('activer-modele-patient-id').value = pid;
-  const p = DB.patients.find(x=>x.id===pid);
+  document.getElementById('activer-modele-pid').value = pid;
   const modeles = DB.modelesTodo||[];
   document.getElementById('activer-modele-liste').innerHTML = modeles.length
-    ? modeles.map(m=>`<div class="model-chip" onclick="activerModele('${m.id}','${pid}')">
-        <span>${m.emoji||'📋'}</span><span style="font-weight:500;">${m.nom}</span>
-        <span style="color:var(--text-soft);font-size:11px;">(${m.items.length} tâches)</span>
-      </div>`).join('')
-    : '<div style="font-size:12px;color:var(--text-soft);">Aucun modèle disponible. Créez-en dans les Paramètres.</div>';
+    ? modeles.map(m=>\`<div class="model-chip" onclick="activerModele('\${m.id}','\${pid}')">
+        \${m.emoji||'📋'} <strong>\${m.nom}</strong>
+        <span style="color:var(--text-soft);font-size:11px;">(\${m.items.length} tâches)</span>
+      </div>\`).join('')
+    : '<p style="font-size:12px;color:var(--text-soft);">Aucun modèle. Créez-en dans Paramètres.</p>';
   openModal('modal-activer-modele');
 }
 
@@ -2140,26 +2118,26 @@ function activerModele(mid, pid){
   const m = (DB.modelesTodo||[]).find(x=>x.id===mid);
   if(!m) return;
   if(!DB.taches) DB.taches=[];
-  m.items.forEach(item=>{
-    DB.taches.push({id:uid(), text:item.text, done:false, date:'', patientId:pid||null});
-  });
+  m.items.forEach(text=>DB.taches.push({id:uid(),text,done:false,date:'',patientId:pid||null}));
   save(); closeModal('modal-activer-modele'); updateTachesBadge(); renderPatients();
-  showToast(`✓ Modèle "${m.nom}" activé (${m.items.length} tâches)`);
+  showToast(\`✓ "\${m.nom}" activé (\${m.items.length} tâches)\`);
 }
 
-// ── MODÈLES SETTINGS ──
+// ── Modèles settings ──
 let _modeleItems = [];
 
-function renderModelesTodoSettings(){
-  const el = document.getElementById('modeles-todo-settings-list');
+function renderModelesTodoList(){
+  const el = document.getElementById('modeles-todo-list');
   if(!el) return;
   const modeles = DB.modelesTodo||[];
-  el.innerHTML = modeles.map((m,i)=>`<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--border);">
-    <span style="font-size:16px;">${m.emoji||'📋'}</span>
-    <span style="flex:1;font-size:13px;font-weight:500;">${m.nom}</span>
-    <span style="font-size:11px;color:var(--text-soft);">${m.items.length} tâche${m.items.length>1?'s':''}</span>
-    <button class="btn btn-sm btn-ghost" onclick="openModeleModal('${m.id}')">✏️</button>
-  </div>`).join('') || '<div style="font-size:12px;color:var(--text-soft);">Aucun modèle.</div>';
+  el.innerHTML = modeles.length
+    ? modeles.map(m=>\`<div style="display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid var(--border);">
+        <span style="font-size:15px;">\${m.emoji||'📋'}</span>
+        <span style="flex:1;font-size:13px;font-weight:500;">\${m.nom}</span>
+        <span style="font-size:11px;color:var(--text-soft);">\${m.items.length} tâche\${m.items.length>1?'s':''}</span>
+        <button class="btn btn-sm btn-ghost" onclick="openModeleModal('\${m.id}')">✏️</button>
+      </div>\`).join('')
+    : '<p style="font-size:12px;color:var(--text-soft);">Aucun modèle.</p>';
 }
 
 function openModeleModal(mid){
@@ -2168,28 +2146,27 @@ function openModeleModal(mid){
   document.getElementById('edit-modele-id').value = mid||'';
   document.getElementById('modele-emoji').value = m?.emoji||'📋';
   document.getElementById('modele-nom').value = m?.nom||'';
-  _modeleItems = m ? JSON.parse(JSON.stringify(m.items)) : [];
+  _modeleItems = m ? [...m.items] : [];
   document.getElementById('btn-delete-modele').style.display = mid?'inline-flex':'none';
   renderModeleItems();
   openModal('modal-modele-todo');
 }
 
 function renderModeleItems(){
-  document.getElementById('modele-items-list').innerHTML = _modeleItems.map((item,i)=>`
-    <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;">
-      <input type="text" value="${item.text.replace(/"/g,'&quot;')}" placeholder="Tâche…"
-        oninput="_modeleItems[${i}].text=this.value"
-        style="flex:1;padding:5px 8px;font-size:12px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--bg);font-family:'DM Sans',sans-serif;outline:none;">
-      <button class="icon-btn" onclick="_modeleItems.splice(${i},1);renderModeleItems();" title="Supprimer">
+  document.getElementById('modele-items-list').innerHTML = _modeleItems.map((text,i)=>\`
+    <div style="display:flex;align-items:center;gap:6px;margin-bottom:5px;">
+      <input type="text" value="\${text.replace(/"/g,'&quot;')}" placeholder="Tâche…" oninput="_modeleItems[\${i}]=this.value"
+        style="flex:1;padding:6px 8px;font-size:12px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--bg);font-family:'DM Sans',sans-serif;outline:none;">
+      <button class="icon-btn" onclick="_modeleItems.splice(\${i},1);renderModeleItems();">
         <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
       </button>
-    </div>`).join('');
+    </div>\`).join('');
 }
 
 function addModeleItem(){
-  _modeleItems.push({text:'',done:false});
+  _modeleItems.push('');
   renderModeleItems();
-  setTimeout(()=>{const inputs=document.querySelectorAll('#modele-items-list input');if(inputs.length)inputs[inputs.length-1].focus();},50);
+  setTimeout(()=>{const ins=document.querySelectorAll('#modele-items-list input');if(ins.length)ins[ins.length-1].focus();},50);
 }
 
 function saveModele(){
@@ -2197,11 +2174,11 @@ function saveModele(){
   const emoji = document.getElementById('modele-emoji').value.trim()||'📋';
   const nom = document.getElementById('modele-nom').value.trim();
   if(!nom){showToast('Saisissez un nom','red');return;}
-  const items = _modeleItems.filter(x=>x.text.trim()).map(x=>({text:x.text.trim(),done:false}));
+  const items = _modeleItems.filter(x=>x.trim());
   if(!DB.modelesTodo) DB.modelesTodo=[];
-  if(mid){ const m=DB.modelesTodo.find(x=>x.id===mid); if(m){m.emoji=emoji;m.nom=nom;m.items=items;} }
+  if(mid){const m=DB.modelesTodo.find(x=>x.id===mid);if(m){m.emoji=emoji;m.nom=nom;m.items=items;}}
   else DB.modelesTodo.push({id:uid(),emoji,nom,items});
-  save(); closeModal('modal-modele-todo'); renderModelesTodoSettings();
+  save(); closeModal('modal-modele-todo'); renderModelesTodoList();
   showToast(mid?'✓ Modèle modifié':'✓ Modèle créé');
 }
 
@@ -2209,7 +2186,7 @@ function deleteModele(){
   const mid = document.getElementById('edit-modele-id').value;
   if(!mid||!confirm('Supprimer ce modèle ?')) return;
   DB.modelesTodo = (DB.modelesTodo||[]).filter(m=>m.id!==mid);
-  save(); closeModal('modal-modele-todo'); renderModelesTodoSettings();
+  save(); closeModal('modal-modele-todo'); renderModelesTodoList();
   showToast('Modèle supprimé');
 }
 
