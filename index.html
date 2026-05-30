@@ -1341,6 +1341,7 @@ function savePatient(){
   if(pid){const p=DB.patients.find(x=>x.id===pid);if(p)Object.assign(p,data);}
   else DB.patients.push({id:uid(),...data,permNotes:''});
   save();closeModal('modal-patient');renderPatients();
+  if(document.getElementById('page-agenda').classList.contains('active'))renderAgenda();
   showToast(pid?'✓ Patient modifié':'✓ Patient ajouté');
 }
 
@@ -1448,26 +1449,27 @@ function selectAmoActe(code,label,tarif,pid){
   renderAmoList(pid);
 }
 
+function updateActivite(i,field,val){if(_modalActivites[i])_modalActivites[i][field]=val;}
+
 function renderModalActivites(){
   const el=document.getElementById('modal-activites');
   if(!_modalActivites.length){el.innerHTML=`<div style="font-size:12px;color:var(--text-soft);padding:6px 0;">Aucune activité.</div>`;return;}
   el.innerHTML=_modalActivites.map((a,i)=>`
     <div class="activite-card">
       <div class="activite-header">
-        <input class="activite-name-input" type="text" value="${a.nom||''}" placeholder="Nom de l'activité" oninput="_modalActivites[${i}].nom=this.value">
+        <input class="activite-name-input" type="text" value="${(a.nom||'').replace(/"/g,'&quot;')}" placeholder="Nom de l'activité" oninput="updateActivite(${i},'nom',this.value)">
         <div class="activite-emoji-row">
-          ${['😀','🙂','😐','😞','⭐','❌'].map(em=>`<button class="activite-emoji-btn${a.resultatEmoji===em?' selected':''}" onclick="_modalActivites[${i}].resultatEmoji=_modalActivites[${i}].resultatEmoji==='${em}'?'':'${em}';renderModalActivites();">${em}</button>`).join('')}
+          ${['😀','🙂','😐','😞','⭐','❌'].map(em=>`<button class="activite-emoji-btn${a.resultatEmoji===em?' selected':''}" onclick="updateActivite(${i},'resultatEmoji',_modalActivites[${i}].resultatEmoji==='${em}'?'':'${em}');renderModalActivites();">${em}</button>`).join('')}
         </div>
         <button class="icon-btn" onclick="_modalActivites.splice(${i},1);renderModalActivites();" title="Supprimer"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
       </div>
       <div class="activite-fields">
-        <div class="activite-field"><label>Objectif</label><textarea placeholder="Objectif visé…" oninput="_modalActivites[${i}].objectif=this.value">${a.objectif||''}</textarea></div>
-        <div class="activite-field"><label>Moyen</label><textarea placeholder="Support, exercice…" oninput="_modalActivites[${i}].moyen=this.value">${a.moyen||''}</textarea></div>
-        <div class="activite-field"><label>Résultat</label><textarea placeholder="Observation…" oninput="_modalActivites[${i}].resultat=this.value">${a.resultat||''}</textarea></div>
+        <div class="activite-field"><label>Objectif</label><textarea placeholder="Objectif visé…" oninput="updateActivite(${i},'objectif',this.value)">${a.objectif||''}</textarea></div>
+        <div class="activite-field"><label>Moyen</label><textarea placeholder="Support, exercice…" oninput="updateActivite(${i},'moyen',this.value)">${a.moyen||''}</textarea></div>
+        <div class="activite-field"><label>Résultat</label><textarea placeholder="Observation…" oninput="updateActivite(${i},'resultat',this.value)">${a.resultat||''}</textarea></div>
       </div>
     </div>`).join('');
 }
-
 function addActiviteInModal(){
   _modalActivites.push({id:uid(),nom:'',objectif:'',moyen:'',resultat:'',resultatEmoji:''});
   renderModalActivites();
