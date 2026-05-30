@@ -698,7 +698,7 @@ let DB = {
 // SUPABASE
 // ═══════════════════════════════════════
 const SB_URL = 'https://xiznicrburryfmdfbjxk.supabase.co';
-const SB_KEY = 'sb_publishable_2cGbVy07HQ7jddbJGidKMg_PXPd40kx';
+const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inhpem5pY3JidXJyeWZtZGZianhrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAwNDM0NjEsImV4cCI6MjA5NTYxOTQ2MX0.vYuV7LIBXXkKJkHVwNPaI-lA7x1HwFROdU1K17ZB1Y8';
 const SB_USER = 'noelie'; // identifiant unique dans la table
 
 let _syncTimeout = null;
@@ -741,9 +741,16 @@ async function sbSave(){
     // Strip file data from main blob to keep it small (files stored separately)
     const dbLight = JSON.parse(payload);
     (dbLight.seances||[]).forEach(s=>{(s.fichiers||[]).forEach(f=>{f.data='';});});
-    const r = await fetch(`${SB_URL}/rest/v1/orthobuddy_data`,{
-      method:'POST',
-      headers:{...sbHeaders(),'Prefer':'resolution=merge-duplicates'},
+    // Try UPDATE first, then INSERT if not exists
+    const checkR = await fetch(`${SB_URL}/rest/v1/orthobuddy_data?user_id=eq.${SB_USER}`,{headers:sbHeaders()});
+    const existing = await checkR.json();
+    const method = (existing && existing.length > 0) ? 'PATCH' : 'POST';
+    const url = method==='PATCH'
+      ? `${SB_URL}/rest/v1/orthobuddy_data?user_id=eq.${SB_USER}`
+      : `${SB_URL}/rest/v1/orthobuddy_data`;
+    const r = await fetch(url,{
+      method,
+      headers:{...sbHeaders(),'Prefer':'return=minimal'},
       body: JSON.stringify({user_id:SB_USER, data:dbLight, updated_at:new Date().toISOString()})
     });
     if(!r.ok) throw new Error('HTTP '+r.status);
