@@ -384,8 +384,29 @@
       <div class="field">
         <label>S’agit-il d’un premier suivi orthophonique ? <span class="req">*</span></label>
         <div class="radio-group">
-          <label class="radio-item"><input type="radio" name="premier_suivi" value="oui"><span>Oui, c’est un premier suivi</span></label>
-          <label class="radio-item"><input type="radio" name="premier_suivi" value="non"><span>Non, un suivi orthophonique a déjà été réalisé</span></label>
+          <label class="radio-item"><input type="radio" name="premier_suivi" value="oui" onchange="toggleSuiviPrecedent(this)"><span>Oui, c’est un premier suivi</span></label>
+          <label class="radio-item"><input type="radio" name="premier_suivi" value="non" onchange="toggleSuiviPrecedent(this)"><span>Non, un suivi orthophonique a déjà été réalisé</span></label>
+        </div>
+      </div>
+      <div id="zone-suivi-precedent" style="display:none;margin-top:4px;padding:14px;background:#F8F9FA;border-radius:10px;border:1.5px solid #E2E0D8;">
+        <div style="font-size:11px;font-weight:700;color:#2A3F6A;text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px;">Détails du suivi précédent</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+          <div class="field" style="margin-bottom:0;">
+            <label>Nom de l’orthophoniste</label>
+            <input type="text" id="ortho_prec" placeholder="Nom de l’orthophoniste précédent">
+          </div>
+          <div class="field" style="margin-bottom:0;">
+            <label>Durée du suivi</label>
+            <input type="text" id="duree_suivi" placeholder="ex: 2 ans, 6 mois">
+          </div>
+          <div class="field" style="margin-bottom:0;">
+            <label>Motif du suivi précédent</label>
+            <input type="text" id="raison_suivi" placeholder="ex: retard de parole">
+          </div>
+          <div class="field" style="margin-bottom:0;">
+            <label>Raison de l’arrêt</label>
+            <input type="text" id="raison_arret" placeholder="ex: objectifs atteints, déménagement">
+          </div>
         </div>
       </div>
       <div class="field">
@@ -503,6 +524,10 @@ function checkOrdonnanceDate() {
   }
 }
 
+function toggleSuiviPrecedent(radio){
+  document.getElementById('zone-suivi-precedent').style.display = radio.value==='non' ? 'block' : 'none';
+}
+
 function toggleAutreStructure(cb) {
   document.getElementById('structure_autre_detail').style.display = cb.checked ? 'block' : 'none';
 }
@@ -524,13 +549,20 @@ async function submitForm() {
   errGlobal.style.display = 'none';
 
   // Validation
-  const required = ['nom','prenom','ddn','email','telephone','motif'];
+  const required = ['nom','prenom','email','telephone','motif'];
   let valid = true;
   required.forEach(id => {
     const el = document.getElementById(id);
     if (!el.value.trim()) { el.style.borderColor = '#E53E3E'; valid = false; }
     else el.style.borderColor = '';
   });
+  // Check DDN (filled by selects)
+  var ddnVal = document.getElementById('ddn').value;
+  if(!ddnVal){
+    errGlobal.textContent = 'Veuillez renseigner la date de naissance (jour, mois et année).';
+    errGlobal.style.display = 'block';
+    valid = false;
+  }
   const parcours = getChecked('parcours');
   if (!parcours.length) {
     errGlobal.textContent = 'Veuillez sélectionner au moins un domaine de consultation.';
@@ -575,6 +607,10 @@ async function submitForm() {
     professionnels_suivi: getChecked('professionnels'),
     prof_autre_detail: document.getElementById('prof_autre_detail').value.trim(),
     premier_suivi: getRadio('premier_suivi')||'oui',
+    ortho_prec: document.getElementById('ortho_prec')?document.getElementById('ortho_prec').value.trim():'',
+    duree_suivi: document.getElementById('duree_suivi')?document.getElementById('duree_suivi').value.trim():'',
+    raison_suivi: document.getElementById('raison_suivi')?document.getElementById('raison_suivi').value.trim():'',
+    raison_arret: document.getElementById('raison_arret')?document.getElementById('raison_arret').value.trim():'',
     domicile: getRadio('domicile')==='oui',
     jours_preferes: getChecked('jours'),
     horaires_preferes: getChecked('horaires'),
