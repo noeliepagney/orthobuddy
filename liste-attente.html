@@ -113,6 +113,8 @@
   .success h2 { font-size: 20px; font-weight: 700; color: #1D9E75; margin-bottom: 8px; }
   .success p { font-size: 13px; color: #666; line-height: 1.6; }
   .error-msg { color: #E53E3E; font-size: 11px; margin-top: 4px; display: none; }
+  .checkbox-item strong { display:block; font-size:13px; }
+  .checkbox-item small { font-size:11px; line-height:1.4; margin-top:2px; display:block; }
   @media (max-width: 480px) {
     .field-row { grid-template-columns: 1fr; }
     .form-body { padding: 20px; }
@@ -126,6 +128,7 @@
     <div class="logo">〰️</div>
     <h1>Cabinet d'orthophonie de Noëlie Lainé</h1>
     <p>Formulaire de demande de prise en charge</p>
+    <a href="/liste-attente.pdf" download style="display:inline-block;margin-top:10px;background:rgba(255,255,255,.2);color:white;padding:6px 14px;border-radius:20px;font-size:12px;font-weight:600;text-decoration:none;">⬇ Télécharger le formulaire PDF</a>
   </div>
 
   <div id="form-container">
@@ -187,19 +190,53 @@
       <!-- MOTIF -->
       <div class="section-title">🎯 Motif de consultation</div>
       <div class="field">
-        <label>Domaine(s) concerné(s) <span class="req">*</span></label>
+        <label>Motif(s) de consultation <span class="req">*</span></label>
         <div class="checkbox-group">
-          <label class="checkbox-item"><input type="checkbox" name="parcours" value="Langage oral"><span>🗣️ Langage oral</span></label>
-          <label class="checkbox-item"><input type="checkbox" name="parcours" value="Langage écrit"><span>📖 Langage écrit (lecture, écriture, orthographe)</span></label>
-          <label class="checkbox-item"><input type="checkbox" name="parcours" value="Cognition mathématique"><span>🧮 Cognition mathématique (dyscalculie…)</span></label>
-          <label class="checkbox-item"><input type="checkbox" name="parcours" value="Neurologie"><span>🧠 Neurologie (aphasie, mémoire…)</span></label>
-          <label class="checkbox-item"><input type="checkbox" name="parcours" value="Déglutition"><span>😋 Déglutition / alimentation</span></label>
-          <label class="checkbox-item"><input type="checkbox" name="parcours" value="Bégaiement"><span>🌊 Bégaiement / troubles de la fluence</span></label>
-          <label class="checkbox-item"><input type="checkbox" name="parcours" value="Surdité"><span>👂 Surdité / implant cochléaire</span></label>
-          <label class="checkbox-item"><input type="checkbox" name="parcours" value="Handicap / TSA"><span>🌈 Handicap / TSA / TND</span></label>
-          <label class="checkbox-item"><input type="checkbox" name="parcours" value="Prévention"><span>🌱 Prévention / accompagnement parental</span></label>
-          <label class="checkbox-item"><input type="checkbox" name="parcours" value="Phonation"><span>🎙️ Phonation / voix</span></label>
-          <label class="checkbox-item"><input type="checkbox" name="parcours" value="Oralité / OMF"><span>👄 Oralité / fonctions oro-myo-faciales</span></label>
+
+          <label class="checkbox-item"><input type="checkbox" name="parcours" value="Langage oral">
+            <span><strong>Langage oral</strong><br><small style="color:#666;">Retard de parole ou de langage, trouble de l’articulation, TDL (ex-dysphasie), retard de communication</small></span>
+          </label>
+
+          <label class="checkbox-item"><input type="checkbox" name="parcours" value="Langage écrit">
+            <span><strong>Langage écrit</strong><br><small style="color:#666;">TSLE (ex-dyslexie-dysorthographie), retard d’acquisition de la lecture ou de l’écriture, difficultés de compréhension écrite</small></span>
+          </label>
+
+          <label class="checkbox-item"><input type="checkbox" name="parcours" value="Difficultés logico-mathématiques">
+            <span><strong>Difficultés logico-mathématiques</strong><br><small style="color:#666;">Dyscalculie, retard des habiletés numériques, difficultés de raisonnement logique ou de résolution de problèmes</small></span>
+          </label>
+
+          <label class="checkbox-item"><input type="checkbox" name="parcours" value="Neurologie">
+            <span><strong>Pathologies neurologiques et troubles cognitifs</strong><br><small style="color:#666;">AVC, traumatisme crânien, pathologies neuro-évolutives (Parkinson, SLA, SEP…), troubles cognitifs (mémoire, fonctions exécutives, attention), paralysie faciale</small></span>
+          </label>
+
+          <label class="checkbox-item"><input type="checkbox" name="parcours" value="Déglutition">
+            <span><strong>Déglutition et alimentation</strong><br><small style="color:#666;">Déglutition dysfonctionnelle, dysphagie (fausses-routes), difficultés alimentaires chez l’enfant</small></span>
+          </label>
+
+          <label class="checkbox-item"><input type="checkbox" name="parcours" value="Bégaiement">
+            <span><strong>Bégaiement et troubles de la fluence</strong><br><small style="color:#666;">Bégaiement, bredouillement, disfluences</small></span>
+          </label>
+
+          <label class="checkbox-item"><input type="checkbox" name="parcours" value="Surdité">
+            <span><strong>Surdité et troubles auditifs</strong><br><small style="color:#666;">Rééducation auditive, réadaptation après appareillage ou implant cochléaire, démutisation</small></span>
+          </label>
+
+          <label class="checkbox-item"><input type="checkbox" name="parcours" value="TSA / Handicap">
+            <span><strong>TSA / Handicap / TND</strong><br><small style="color:#666;">Trouble du spectre autistique, handicap moteur ou sensoriel, troubles du neurodéveloppement, communication alternative et augmentée (CAA)</small></span>
+          </label>
+
+          <label class="checkbox-item"><input type="checkbox" name="parcours" value="Prévention">
+            <span><strong>Bilan de prévention et accompagnement parental</strong><br><small style="color:#666;">Bilan préventif du développement du langage — ce bilan n’est pas suivi d’une prise en charge orthophonique</small></span>
+          </label>
+
+          <label class="checkbox-item"><input type="checkbox" name="parcours" value="Phonation">
+            <span><strong>Troubles de la voix et de la phonation</strong><br><small style="color:#666;">Dysphonie, troubles de la voix fonctionnels ou organiques, post-cancérologie (laryngectomie), paralysie faciale</small></span>
+          </label>
+
+          <label class="checkbox-item"><input type="checkbox" name="parcours" value="Oralité / OMF">
+            <span><strong>Oralité et fonctions oro-myo-faciales</strong><br><small style="color:#666;">Troubles de l’oralité alimentaire, anomalies des fonctions oro-myo-faciales (déglutition atypique, ventilation buccale, succion…)</small></span>
+          </label>
+
         </div>
       </div>
       <div class="field">
@@ -218,12 +255,72 @@
         </div>
       </div>
       <div class="field">
+        <label>Intitulé de l'ordonnance</label>
+        <input type="text" id="intitule_ordonnance" placeholder="Ex: bilan orthophonique, rééducation langage écrit…">
+      </div>
+      <div class="field">
         <label>Nom du médecin prescripteur</label>
         <input type="text" id="medecin" placeholder="Dr Martin">
       </div>
+
+      <!-- SCOLARITÉ -->
+      <div class="section-title">🏫 Scolarité</div>
       <div class="field">
-        <label>Des bilans ou suivis ont-ils déjà été réalisés ?</label>
-        <textarea id="antecedents" placeholder="Ex: bilan orthophonique en 2022, suivi psychologique, SESSAD…" style="min-height:60px;"></textarea>
+        <label>Classe actuelle</label>
+        <select id="classe">
+          <option value="">— Choisir —</option>
+          <option value="TPS">TPS (Très Petite Section)</option>
+          <option value="PS">PS (Petite Section)</option>
+          <option value="MS">MS (Moyenne Section)</option>
+          <option value="GS">GS (Grande Section)</option>
+          <option value="CP">CP</option>
+          <option value="CE1">CE1</option>
+          <option value="CE2">CE2</option>
+          <option value="CM1">CM1</option>
+          <option value="CM2">CM2</option>
+          <option value="6e">6ème</option>
+          <option value="5e">5ème</option>
+          <option value="4e">4ème</option>
+          <option value="3e">3ème</option>
+          <option value="seconde">Seconde</option>
+          <option value="premiere">Première</option>
+          <option value="terminale">Terminale</option>
+          <option value="superieur">Études supérieures</option>
+          <option value="adulte">Adulte / Non scolarisé</option>
+        </select>
+      </div>
+
+      <!-- SUIVIS -->
+      <div class="section-title">🏥 Suivis en cours</div>
+      <div class="field">
+        <label>La personne est-elle suivie par une structure spécialisée ?</label>
+        <div class="checkbox-group">
+          <label class="checkbox-item"><input type="checkbox" name="structures" value="CMP"><span>CMP (Centre Médico-Psychologique)</span></label>
+          <label class="checkbox-item"><input type="checkbox" name="structures" value="CMPP"><span>CMPP (Centre Médico-Psycho-Pédagogique)</span></label>
+          <label class="checkbox-item"><input type="checkbox" name="structures" value="CAMSP"><span>CAMSP (Centre d'Action Médico-Sociale Précoce)</span></label>
+          <label class="checkbox-item"><input type="checkbox" name="structures" value="IME"><span>IME (Institut Médico-Éducatif)</span></label>
+          <label class="checkbox-item"><input type="checkbox" name="structures" value="Hôpital de jour"><span>Hôpital de jour</span></label>
+          <label class="checkbox-item"><input type="checkbox" name="structures" value="SESSAD"><span>SESSAD</span></label>
+          <label class="checkbox-item" id="structure-autre-item"><input type="checkbox" name="structures" value="Autre" onchange="toggleAutreStructure(this)"><span>Autre</span></label>
+        </div>
+        <input type="text" id="structure_autre_detail" placeholder="Précisez…" style="display:none;margin-top:8px;">
+      </div>
+      <div class="field">
+        <label>Autres professionnels suivant la personne</label>
+        <div class="checkbox-group">
+          <label class="checkbox-item"><input type="checkbox" name="professionnels" value="Psychologue"><span>Psychologue</span></label>
+          <label class="checkbox-item"><input type="checkbox" name="professionnels" value="Ergothérapeute"><span>Ergothérapeute</span></label>
+          <label class="checkbox-item"><input type="checkbox" name="professionnels" value="Psychomotricien"><span>Psychomotricien·ne</span></label>
+          <label class="checkbox-item"><input type="checkbox" name="professionnels" value="Psychiatre"><span>Psychiatre</span></label>
+          <label class="checkbox-item"><input type="checkbox" name="professionnels" value="Pédopsychiatre"><span>Pédopsychiatre</span></label>
+          <label class="checkbox-item"><input type="checkbox" name="professionnels" value="Orthophoniste"><span>Orthophoniste (autre suivi en cours)</span></label>
+          <label class="checkbox-item"><input type="checkbox" name="professionnels" value="Autre" onchange="toggleAutreProf(this)"><span>Autre</span></label>
+        </div>
+        <input type="text" id="prof_autre_detail" placeholder="Précisez…" style="display:none;margin-top:8px;">
+      </div>
+      <div class="field">
+        <label>Des bilans ont-ils déjà été réalisés ?</label>
+        <textarea id="antecedents" placeholder="Ex: bilan orthophonique en 2022, bilan psychologique…" style="min-height:60px;"></textarea>
       </div>
 
       <!-- DISPONIBILITÉS -->
@@ -282,6 +379,13 @@
 const SB_URL = 'https://xiznicrburryfmdfbjxk.supabase.co';
 const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inhpem5pY3JidXJyeWZtZGZianhrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAwNDM0NjEsImV4cCI6MjA5NTYxOTQ2MX0.vYuV7LIBXXkKJkHVwNPaI-lA7x1HwFROdU1K17ZB1Y8';
 
+function toggleAutreStructure(cb) {
+  document.getElementById('structure_autre_detail').style.display = cb.checked ? 'block' : 'none';
+}
+function toggleAutreProf(cb) {
+  document.getElementById('prof_autre_detail').style.display = cb.checked ? 'block' : 'none';
+}
+
 function getChecked(name) {
   return [...document.querySelectorAll(`input[name="${name}"]:checked`)].map(el => el.value);
 }
@@ -339,6 +443,12 @@ async function submitForm() {
     medecin: document.getElementById('medecin').value.trim(),
     antecedents: document.getElementById('antecedents').value.trim(),
     ordonnance: getRadio('ordonnance'),
+    intitule_ordonnance: document.getElementById('intitule_ordonnance').value.trim(),
+    classe: document.getElementById('classe').value,
+    structures_suivi: getChecked('structures'),
+    structure_autre_detail: document.getElementById('structure_autre_detail').value.trim(),
+    professionnels_suivi: getChecked('professionnels'),
+    prof_autre_detail: document.getElementById('prof_autre_detail').value.trim(),
     jours_preferes: getChecked('jours'),
     horaires_preferes: getChecked('horaires'),
     infos_supp: document.getElementById('infos_supp').value.trim(),
