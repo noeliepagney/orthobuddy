@@ -349,6 +349,23 @@
         <textarea id="antecedents" placeholder="Ex: bilan orthophonique en 2022, bilan psychologique…" style="min-height:60px;"></textarea>
       </div>
 
+      <!-- PREMIER SUIVI & DOMICILE -->
+      <div class="section-title">📋 Suivi orthophonique</div>
+      <div class="field">
+        <label>S’agit-il d’un premier suivi orthophonique ? <span class="req">*</span></label>
+        <div class="radio-group">
+          <label class="radio-item"><input type="radio" name="premier_suivi" value="oui"><span>Oui, c’est un premier suivi</span></label>
+          <label class="radio-item"><input type="radio" name="premier_suivi" value="non"><span>Non, un suivi orthophonique a déjà été réalisé</span></label>
+        </div>
+      </div>
+      <div class="field">
+        <label>Les séances à domicile sont-elles nécessaires ?</label>
+        <div class="radio-group">
+          <label class="radio-item"><input type="radio" name="domicile" value="non"><span>Non, je me déplace au cabinet</span></label>
+          <label class="radio-item"><input type="radio" name="domicile" value="oui"><span>Oui, les séances à domicile sont nécessaires</span></label>
+        </div>
+      </div>
+
       <!-- DISPONIBILITÉS -->
       <div class="section-title">📅 Disponibilités</div>
       <div class="field">
@@ -512,6 +529,8 @@ async function submitForm() {
     structure_autre_detail: document.getElementById('structure_autre_detail').value.trim(),
     professionnels_suivi: getChecked('professionnels'),
     prof_autre_detail: document.getElementById('prof_autre_detail').value.trim(),
+    premier_suivi: getRadio('premier_suivi')||'oui',
+    domicile: getRadio('domicile')==='oui',
     jours_preferes: getChecked('jours'),
     horaires_preferes: getChecked('horaires'),
     infos_supp: document.getElementById('infos_supp').value.trim(),
