@@ -125,13 +125,26 @@
 
 <div class="card">
   <div class="header">
-    <div class="logo">〰️</div>
     <h1>Cabinet d'orthophonie de Noëlie Lainé</h1>
     <p>Formulaire de demande de prise en charge</p>
     <a href="/liste-attente.pdf" download style="display:inline-block;margin-top:10px;background:rgba(255,255,255,.2);color:white;padding:6px 14px;border-radius:20px;font-size:12px;font-weight:600;text-decoration:none;">⬇ Télécharger le formulaire PDF</a>
   </div>
 
   <div id="form-container">
+    <div style="background:#F0FBF6;border-bottom:1px solid #D1EFE2;padding:20px 28px;">
+      <p style="font-size:13px;color:#1A3A2A;line-height:1.7;margin-bottom:10px;">
+        Orthophoniste diplômée d’État, j’ouvrirai mon cabinet au <strong>285 rue de la Croix de Mission, 54200 Pagney-derrière-Barine</strong> en <strong>août 2026</strong>.
+      </p>
+      <p style="font-size:13px;color:#1A3A2A;line-height:1.7;margin-bottom:10px;">
+        Je reçois enfants, adolescents et adultes notamment pour des bilans et des prises en soins dans les domaines du langage oral et écrit, de la cognition mathématique et de la neurologie.
+      </p>
+      <p style="font-size:13px;color:#1A3A2A;line-height:1.7;margin-bottom:10px;">
+        Ce formulaire me permet de mieux connaître votre situation avant de vous recontacter. <strong>Je vous contacterai à partir du mois de juillet 2026</strong> pour vous proposer un rendez-vous.
+      </p>
+      <p style="font-size:12px;color:#4A7A5A;line-height:1.6;font-style:italic;">
+        Toutes les informations renseignées restent strictement confidentielles et ne seront pas transmises à des tiers.
+      </p>
+    </div>
     <div class="form-body">
 
       <!-- PATIENT -->
@@ -201,8 +214,8 @@
             <span><strong>Langage écrit</strong><br><small style="color:#666;">TSLE (ex-dyslexie-dysorthographie), retard d’acquisition de la lecture ou de l’écriture, difficultés de compréhension écrite</small></span>
           </label>
 
-          <label class="checkbox-item"><input type="checkbox" name="parcours" value="Difficultés logico-mathématiques">
-            <span><strong>Difficultés logico-mathématiques</strong><br><small style="color:#666;">Dyscalculie, retard des habiletés numériques, difficultés de raisonnement logique ou de résolution de problèmes</small></span>
+          <label class="checkbox-item"><input type="checkbox" name="parcours" value="Difficultés de cognition mathématique">
+            <span><strong>Difficultés de cognition mathématique</strong><br><small style="color:#666;">Dyscalculie, retard des habiletés numériques, difficultés de raisonnement logique ou de résolution de problèmes</small></span>
           </label>
 
           <label class="checkbox-item"><input type="checkbox" name="parcours" value="Neurologie">
@@ -210,7 +223,7 @@
           </label>
 
           <label class="checkbox-item"><input type="checkbox" name="parcours" value="Déglutition">
-            <span><strong>Déglutition et alimentation</strong><br><small style="color:#666;">Déglutition dysfonctionnelle, dysphagie (fausses-routes), difficultés alimentaires chez l’enfant</small></span>
+            <span><strong>Déglutition et alimentation</strong><br><small style="color:#666;">Déglutition dysfonctionnelle, dysphagie (fausses-routes), rééducation vélo-tubo-tympanique</small></span>
           </label>
 
           <label class="checkbox-item"><input type="checkbox" name="parcours" value="Bégaiement">
@@ -222,19 +235,19 @@
           </label>
 
           <label class="checkbox-item"><input type="checkbox" name="parcours" value="TSA / Handicap">
-            <span><strong>TSA / Handicap / TND</strong><br><small style="color:#666;">Trouble du spectre autistique, handicap moteur ou sensoriel, troubles du neurodéveloppement, communication alternative et augmentée (CAA)</small></span>
+            <span><strong>TSA / Handicap / TND</strong><br><small style="color:#666;">Trouble du spectre autistique, troubles du neurodéveloppement, handicap sensoriel</small></span>
           </label>
 
           <label class="checkbox-item"><input type="checkbox" name="parcours" value="Prévention">
-            <span><strong>Bilan de prévention et accompagnement parental</strong><br><small style="color:#666;">Bilan préventif du développement du langage — ce bilan n’est pas suivi d’une prise en charge orthophonique</small></span>
+            <span><strong>Bilan de prévention et accompagnement parental</strong><br><small style="color:#666;">Bilan préventif du développement du langage — ce bilan n’est pas suivi d’une prise en soins orthophonique</small></span>
           </label>
 
           <label class="checkbox-item"><input type="checkbox" name="parcours" value="Phonation">
-            <span><strong>Troubles de la voix et de la phonation</strong><br><small style="color:#666;">Dysphonie, troubles de la voix fonctionnels ou organiques, post-cancérologie (laryngectomie), paralysie faciale</small></span>
+            <span><strong>Troubles de la voix et de la phonation</strong><br><small style="color:#666;">Dysphonie, troubles de la voix fonctionnels ou organiques, post-cancérologie (laryngectomie)</small></span>
           </label>
 
           <label class="checkbox-item"><input type="checkbox" name="parcours" value="Oralité / OMF">
-            <span><strong>Oralité et fonctions oro-myo-faciales</strong><br><small style="color:#666;">Troubles de l’oralité alimentaire, anomalies des fonctions oro-myo-faciales (déglutition atypique, ventilation buccale, succion…)</small></span>
+            <span><strong>Oralité et fonctions oro-myo-faciales</strong><br><small style="color:#666;">Troubles de l’oralité alimentaire, difficultés alimentaires chez l’enfant, anomalies des fonctions oro-myo-faciales (ventilation buccale, succion…)</small></span>
           </label>
 
         </div>
@@ -247,16 +260,29 @@
       <!-- PRESCRIPTION -->
       <div class="section-title">📋 Prescription médicale</div>
       <div class="field">
-        <label>Avez-vous une ordonnance ?</label>
+        <label>Avez-vous une ordonnance de moins d’un an ? <span class="req">*</span></label>
         <div class="radio-group">
-          <label class="radio-item"><input type="radio" name="ordonnance" value="oui"><span>Oui, j'ai une ordonnance</span></label>
-          <label class="radio-item"><input type="radio" name="ordonnance" value="non"><span>Non, pas encore</span></label>
-          <label class="radio-item"><input type="radio" name="ordonnance" value="en_cours"><span>En cours d'obtention</span></label>
+          <label class="radio-item"><input type="radio" name="ordonnance" value="oui" onchange="checkOrdonnance(this)"><span>Oui, j’ai une ordonnance de moins d’un an</span></label>
+          <label class="radio-item"><input type="radio" name="ordonnance" value="non" onchange="checkOrdonnance(this)"><span>Non, je n’en ai pas encore</span></label>
+          <label class="radio-item"><input type="radio" name="ordonnance" value="en_cours" onchange="checkOrdonnance(this)"><span>En cours d’obtention</span></label>
+        </div>
+        <div id="ordonnance-alert" style="display:none;margin-top:10px;background:#FFF8E1;border:1.5px solid #F59E0B;border-radius:10px;padding:12px 14px;">
+          <div style="font-size:13px;font-weight:600;color:#92400E;margin-bottom:4px;">&#9432; Une ordonnance médicale est nécessaire</div>
+          <div style="font-size:12px;color:#78350F;line-height:1.5;">
+            Pour votre premier rendez-vous, une ordonnance médicale valide (de moins d’un an) est obligatoire pour que les séances soient prises en charge par l’Assurance Maladie.<br><br>
+            Nous vous invitons à consulter votre médecin traitant ou votre pédiatre afin d’obtenir une prescription orthophonique avant votre premier rendez-vous.<br><br>
+            <strong>Vous pouvez tout de même remplir ce formulaire</strong> — votre demande sera enregistrée et je vous contacterai dès qu’un créneau sera disponible. 🙂
+          </div>
         </div>
       </div>
       <div class="field">
-        <label>Intitulé de l'ordonnance</label>
+        <label>Intitulé de l’ordonnance</label>
         <input type="text" id="intitule_ordonnance" placeholder="Ex: bilan orthophonique, rééducation langage écrit…">
+      </div>
+      <div class="field" id="field-date-ordonnance" style="display:none;">
+        <label>Date de l’ordonnance</label>
+        <input type="date" id="date_ordonnance" onchange="checkOrdonnanceDate()">
+        <div id="ordonnance-expiry" style="display:none;margin-top:6px;font-size:11px;border-radius:8px;padding:7px 10px;"></div>
       </div>
       <div class="field">
         <label>Nom du médecin prescripteur</label>
@@ -364,6 +390,7 @@
         Envoyer ma demande →
       </button>
     </div>
+    </div>
   </div>
 
   <div class="success" id="success-screen">
@@ -378,6 +405,41 @@
 <script>
 const SB_URL = 'https://xiznicrburryfmdfbjxk.supabase.co';
 const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inhpem5pY3JidXJyeWZtZGZianhrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAwNDM0NjEsImV4cCI6MjA5NTYxOTQ2MX0.vYuV7LIBXXkKJkHVwNPaI-lA7x1HwFROdU1K17ZB1Y8';
+
+function checkOrdonnance(radio) {
+  var alert = document.getElementById('ordonnance-alert');
+  var dateField = document.getElementById('field-date-ordonnance');
+  if (radio.value === 'non' || radio.value === 'en_cours') {
+    alert.style.display = 'block';
+    dateField.style.display = 'none';
+  } else {
+    alert.style.display = 'none';
+    dateField.style.display = 'block';
+  }
+}
+
+function checkOrdonnanceDate() {
+  var val = document.getElementById('date_ordonnance').value;
+  var info = document.getElementById('ordonnance-expiry');
+  if (!val) { info.style.display='none'; return; }
+  var date = new Date(val);
+  var now = new Date();
+  var diffMonths = (now.getFullYear() - date.getFullYear())*12 + (now.getMonth() - date.getMonth());
+  info.style.display = 'block';
+  if (diffMonths < 0) {
+    info.style.background='#FFF8E1'; info.style.color='#92400E';
+    info.style.border='1px solid #F59E0B';
+    info.textContent = '⚠️ Cette date est dans le futur — merci de vérifier.';
+  } else if (diffMonths < 12) {
+    info.style.background='#E6F4EA'; info.style.color='#166534';
+    info.style.border='1px solid #86EFAC';
+    info.textContent = '✅ Ordonnance valide (' + diffMonths + ' mois).';
+  } else {
+    info.style.background='#FEF2F2'; info.style.color='#991B1B';
+    info.style.border='1px solid #FCA5A5';
+    info.textContent = '❌ Ordonnance expirée (' + diffMonths + ' mois). Une nouvelle ordonnance sera nécessaire.';
+  }
+}
 
 function toggleAutreStructure(cb) {
   document.getElementById('structure_autre_detail').style.display = cb.checked ? 'block' : 'none';
@@ -444,6 +506,7 @@ async function submitForm() {
     antecedents: document.getElementById('antecedents').value.trim(),
     ordonnance: getRadio('ordonnance'),
     intitule_ordonnance: document.getElementById('intitule_ordonnance').value.trim(),
+    date_ordonnance: document.getElementById('date_ordonnance').value,
     classe: document.getElementById('classe').value,
     structures_suivi: getChecked('structures'),
     structure_autre_detail: document.getElementById('structure_autre_detail').value.trim(),
