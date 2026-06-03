@@ -248,17 +248,6 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'DM Sans', sans-serif; ba
 
       <div class="section-title">📅 Disponibilités</div>
       <div class="field">
-        <label>Jours préférés</label>
-        <div class="checkbox-group" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
-          <label class="checkbox-item"><input type="checkbox" name="jours" value="Lundi"><span>Lundi</span></label>
-          <label class="checkbox-item"><input type="checkbox" name="jours" value="Mardi"><span>Mardi</span></label>
-          <label class="checkbox-item"><input type="checkbox" name="jours" value="Mercredi"><span>Mercredi</span></label>
-          <label class="checkbox-item"><input type="checkbox" name="jours" value="Jeudi"><span>Jeudi</span></label>
-          <label class="checkbox-item"><input type="checkbox" name="jours" value="Vendredi"><span>Vendredi</span></label>
-          <label class="checkbox-item"><input type="checkbox" name="jours" value="Samedi"><span>Samedi</span></label>
-        </div>
-      </div>
-      <div class="field">
         <label>Disponibilités préférées</label>
         <p style="font-size:12px;color:#744210;background:#FEFCBF;border:1px solid #F6E05E;border-radius:8px;padding:8px 12px;margin-bottom:10px;">💡 Les créneaux du mercredi sont très demandés. Pour diminuer votre délai d'attente, n'hésitez pas à sélectionner d'autres plages horaires.</p>
         <label class="checkbox-item" style="margin-bottom:10px;">
@@ -444,14 +433,7 @@ function checkOrdonnanceDate(){
   else if(diffMonths<12){info.style.background='#E6F4EA';info.style.color='#166534';info.style.border='1px solid #86EFAC';info.textContent='✅ Ordonnance valide ('+diffMonths+' mois).';}
   else{info.style.background='#FEF2F2';info.style.color='#991B1B';info.style.border='1px solid #FCA5A5';info.textContent='❌ Ordonnance expirée ('+diffMonths+' mois). Une nouvelle ordonnance sera nécessaire.';}
 }
-function toggleSuiviPrecedent(radio){
-  document.getElementById('zone-suivi-precedent').style.display=radio.value==='non'?'block':'none';
-  if(radio.value==='oui'){
-    ['antecedents','ortho_prec','duree_suivi','raison_suivi','raison_arret'].forEach(function(id){
-      var el=document.getElementById(id);if(el)el.value='';
-    });
-  }
-}
+function toggleSuiviPrecedent(radio){ document.getElementById('zone-suivi-precedent').style.display=radio.value==='non'?'block':'none'; }
 function toggleAutreStructure(cb){ document.getElementById('structure_autre_detail').style.display=cb.checked?'block':'none'; }
 function toggleAutreProf(cb){ document.getElementById('prof_autre_detail').style.display=cb.checked?'block':'none'; }
 
@@ -497,8 +479,8 @@ async function submitForm(){
     structure_autre_detail:document.getElementById('structure_autre_detail').value.trim(),
     professionnels_suivi:getChecked('professionnels'),
     prof_autre_detail:document.getElementById('prof_autre_detail').value.trim(),
-    antecedents:getRadio('premier_suivi')==='non'?document.getElementById('antecedents').value.trim():'',
-    jours_preferes:getChecked('jours'), horaires_preferes:document.getElementById('dispo_aucune').checked?['Indifférent']:getChecked('horaires'),
+    antecedents:document.getElementById('antecedents').value.trim(),
+    jours_preferes:[], horaires_preferes:document.getElementById('dispo_aucune').checked?["Indifférent"]:getChecked('horaires'),
     infos_supp:document.getElementById('infos_supp').value.trim(),
     nom_contact:document.getElementById('demandeur').value==='parent'
       ? (document.getElementById('nom_contact')?document.getElementById('nom_contact').value.trim():'')
