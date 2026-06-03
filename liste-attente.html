@@ -444,7 +444,14 @@ function checkOrdonnanceDate(){
   else if(diffMonths<12){info.style.background='#E6F4EA';info.style.color='#166534';info.style.border='1px solid #86EFAC';info.textContent='✅ Ordonnance valide ('+diffMonths+' mois).';}
   else{info.style.background='#FEF2F2';info.style.color='#991B1B';info.style.border='1px solid #FCA5A5';info.textContent='❌ Ordonnance expirée ('+diffMonths+' mois). Une nouvelle ordonnance sera nécessaire.';}
 }
-function toggleSuiviPrecedent(radio){ document.getElementById('zone-suivi-precedent').style.display=radio.value==='non'?'block':'none'; }
+function toggleSuiviPrecedent(radio){
+  document.getElementById('zone-suivi-precedent').style.display=radio.value==='non'?'block':'none';
+  if(radio.value==='oui'){
+    ['antecedents','ortho_prec','duree_suivi','raison_suivi','raison_arret'].forEach(function(id){
+      var el=document.getElementById(id);if(el)el.value='';
+    });
+  }
+}
 function toggleAutreStructure(cb){ document.getElementById('structure_autre_detail').style.display=cb.checked?'block':'none'; }
 function toggleAutreProf(cb){ document.getElementById('prof_autre_detail').style.display=cb.checked?'block':'none'; }
 
@@ -490,7 +497,7 @@ async function submitForm(){
     structure_autre_detail:document.getElementById('structure_autre_detail').value.trim(),
     professionnels_suivi:getChecked('professionnels'),
     prof_autre_detail:document.getElementById('prof_autre_detail').value.trim(),
-    antecedents:document.getElementById('antecedents').value.trim(),
+    antecedents:getRadio('premier_suivi')==='non'?document.getElementById('antecedents').value.trim():'',
     jours_preferes:getChecked('jours'), horaires_preferes:getChecked('horaires'),
     infos_supp:document.getElementById('infos_supp').value.trim(),
     nom_contact:document.getElementById('demandeur').value==='parent'
