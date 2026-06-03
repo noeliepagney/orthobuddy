@@ -498,7 +498,7 @@ async function submitForm(){
     professionnels_suivi:getChecked('professionnels'),
     prof_autre_detail:document.getElementById('prof_autre_detail').value.trim(),
     antecedents:getRadio('premier_suivi')==='non'?document.getElementById('antecedents').value.trim():'',
-    jours_preferes:getChecked('jours'), horaires_preferes:getChecked('horaires'),
+    jours_preferes:getChecked('jours'), horaires_preferes:document.getElementById('dispo_aucune').checked?['Indifférent']:getChecked('horaires'),
     infos_supp:document.getElementById('infos_supp').value.trim(),
     nom_contact:document.getElementById('demandeur').value==='parent'
       ? (document.getElementById('nom_contact')?document.getElementById('nom_contact').value.trim():'')

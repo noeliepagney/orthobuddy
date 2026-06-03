@@ -7017,6 +7017,7 @@ async function importerDemandesWeb(){
     var horairesMap={'Matin (8h-12h)':'matin','Midi (12h-14h)':'midi','Après-midi (14h-17h)':'aprem','Fin de journée (17h-19h)':'soir'};
     // Mapping format formulaire web : "Lundi matin", "Mercredi après-midi", etc.
     var horairesSuffixMap={'matin':'matin','midi':'midi','après-midi':'aprem','fin journée':'soir','fin de journée':'soir'};
+    var indiffKeyword = 'indifférent';
     for(var i=0;i<rows.length;i++){
       var row=rows[i];
       // Support both old format (row.data avec nom dedans) and new flat format
@@ -7046,7 +7047,10 @@ async function importerDemandesWeb(){
       var creneaux={};
       var horaires_preferes = d.horaires_preferes||[];
       var jours_preferes = d.jours_preferes||[];
-      if(horaires_preferes.length && horaires_preferes[0] && horaires_preferes[0].indexOf(' ')>0){
+      if(horaires_preferes.some(function(v){return v.toLowerCase()===indiffKeyword;})){
+        // "Pas de préférence" coché
+        creneaux['indiff']=true;
+      } else if(horaires_preferes.length && horaires_preferes[0] && horaires_preferes[0].indexOf(' ')>0){
         // Format combiné "Jour horaire"
         horaires_preferes.forEach(function(val){
           var v = val.toLowerCase();
@@ -7106,7 +7110,7 @@ async function importerDemandesWeb(){
         creneaux: creneaux,
         dateEntree: (row.created_at||new Date().toISOString()).slice(0,10),
         sourceDemande: 'Formulaire web',
-        urgence: d.sortie_hospit ? 'prioritaire' : (d.urgence&&d.urgence!=='normal'&&d.urgence!=='urgent' ? d.urgence : 'aucune'), urgenceCause: d.urgence_cause||d.urgenceCause||'',
+        urgence: d.sortie_hospit ? 'urgent' : (d.urgence&&d.urgence!=='normal' ? d.urgence : 'aucune'), urgenceCause: d.urgence_cause||d.urgenceCause||'',
         sortieHospit: !!(d.sortie_hospit),
         collab: false, renouvellements: 0,
       };
