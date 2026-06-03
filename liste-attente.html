@@ -169,8 +169,10 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'DM Sans', sans-serif; ba
         <input type="hidden" id="date_ordonnance">
         <div id="ordonnance-expiry" style="display:none;margin-top:6px;font-size:11px;border-radius:8px;padding:7px 10px;"></div>
       </div>
-      <div class="field"><label>Intitulé de l'ordonnance</label><input type="text" id="intitule_ordonnance" placeholder="Ex: bilan orthophonique, rééducation langage écrit…"></div>
-      <div class="field"><label>Nom du médecin prescripteur</label><input type="text" id="medecin" placeholder="Dr Martin"></div>
+      <div id="field-ordo-details" style="display:none;">
+        <div class="field"><label>Intitulé de l'ordonnance</label><input type="text" id="intitule_ordonnance" placeholder="Ex: bilan orthophonique, rééducation langage écrit…"></div>
+        <div class="field"><label>Nom du médecin prescripteur</label><input type="text" id="medecin" placeholder="Dr Martin"></div>
+      </div>
 
       <div class="section-title">🏫 Scolarité</div>
       <div class="field"><label>Classe actuelle</label>
@@ -224,12 +226,13 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'DM Sans', sans-serif; ba
       </div>
       <div class="field"><label>Des bilans ont-ils déjà été réalisés ?</label><textarea id="antecedents" placeholder="Ex: bilan orthophonique en 2022, bilan psychologique…" style="min-height:60px;"></textarea></div>
 
-      <div class="section-title">🏠 Séances</div>
+      <div class="section-title">🏠 Lieu des séances</div>
       <div class="field">
-        <label>Les séances à domicile sont-elles nécessaires ?</label>
+        <label>Lieu des séances</label>
+        <p style="font-size:12px;color:#666;margin:-4px 0 10px;">Les séances ont lieu au cabinet. Les séances à domicile sont réservées aux personnes dans l'impossibilité de se déplacer (mobilité réduite, dépendance, hospitalisation à domicile…).</p>
         <div class="radio-group">
-          <label class="radio-item"><input type="radio" name="domicile" value="non"><span>Non, je me déplace au cabinet</span></label>
-          <label class="radio-item"><input type="radio" name="domicile" value="oui"><span>Oui, les séances à domicile sont nécessaires</span></label>
+          <label class="radio-item"><input type="radio" name="domicile" value="non" checked><span>Au cabinet</span></label>
+          <label class="radio-item"><input type="radio" name="domicile" value="oui"><span>À domicile — dans l'impossibilité de me déplacer</span></label>
         </div>
       </div>
 
@@ -304,6 +307,7 @@ function updateOrdoDate(){
 function checkOrdonnance(radio){
   document.getElementById('ordonnance-alert').style.display=(radio.value==='non'||radio.value==='en_cours')?'block':'none';
   document.getElementById('field-date-ordonnance').style.display=radio.value==='oui'?'block':'none';
+  document.getElementById('field-ordo-details').style.display=radio.value==='oui'?'block':'none';
 }
 function checkOrdonnanceDate(){
   var val=document.getElementById('date_ordonnance').value;
