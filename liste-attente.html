@@ -504,7 +504,7 @@ async function submitForm(){
     profession_mere:document.getElementById('profession_mere')?document.getElementById('profession_mere').value.trim():'',
     sortie_hospit:document.getElementById('sortie_hospit').checked,
     urgence:document.getElementById('sortie_hospit').checked?'urgent':'normal',
-    urgenceCause:document.getElementById('sortie_hospit').checked?'Sortie d\'hospitalisation (IFS)':'',
+    urgence_cause:document.getElementById('sortie_hospit').checked?'Sortie d\'hospitalisation (IFS)':'',
     date_inscription:now.slice(0,10), source:'formulaire_web', statut:'attente',
   };
   try{
