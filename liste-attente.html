@@ -350,7 +350,7 @@ async function submitForm(){
     antecedents:document.getElementById('antecedents').value.trim(),
     jours_preferes:getChecked('jours'), horaires_preferes:getChecked('horaires'),
     infos_supp:document.getElementById('infos_supp').value.trim(),
-    dateInscription:now.slice(0,10), source:'formulaire_web', statut:'attente',
+    date_inscription:now.slice(0,10), source:'formulaire_web', statut:'attente',
   };
   try{
     var res=await fetch(SB_URL+'/rest/v1/liste_attente',{
