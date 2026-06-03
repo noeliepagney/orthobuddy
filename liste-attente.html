@@ -57,6 +57,10 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'DM Sans', sans-serif; ba
 .date-row select { flex:1; padding:10px 8px; border:1.5px solid #E2E0D8; border-radius:10px; font-size:14px; color:#1A2A4A; background:#FAFAF8; font-family:inherit; }
 .date-row select:focus { border-color:#1D9E75; outline:none; }
 @media print { body{background:white;padding:0;} .card{box-shadow:none;border-radius:0;} .header button,.btn-submit{display:none;} }
+.parent-zone { display:none; margin-top:12px; padding:14px; background:#F0F9FF; border:1.5px solid #BEE3F8; border-radius:10px; }
+.parent-zone .zone-label { font-size:11px; font-weight:700; color:#2B6CB0; text-transform:uppercase; letter-spacing:.06em; margin-bottom:10px; }
+.btn-pdf { display:inline-flex; align-items:center; gap:6px; margin-top:10px; background:rgba(255,255,255,.25); color:white; padding:7px 16px; border-radius:20px; font-size:12px; font-weight:600; border:1.5px solid rgba(255,255,255,.4); cursor:pointer; transition:background .15s; }
+.btn-pdf:hover { background:rgba(255,255,255,.35); }
 @media (max-width:480px) { .field-row{grid-template-columns:1fr;} .form-body{padding:20px;} }
 </style>
 </head>
@@ -65,13 +69,13 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'DM Sans', sans-serif; ba
   <div class="header">
     <h1>Cabinet d'orthophonie de Noëlie Lainé</h1>
     <p>Formulaire de demande de prise en soins</p>
-    <button onclick="window.print()">Imprimer / Enregistrer en PDF</button>
+    <button class="btn-pdf" onclick="ouvrirRecapPDF()">🖨️ Télécharger ma demande en PDF</button>
   </div>
 
   <div class="intro">
     <p>Orthophoniste diplômée d'État, j'ouvrirai mon cabinet au <strong>285 rue de la Croix de Mission, 54200 Pagney-derrière-Barine</strong> en <strong>août 2026</strong>.</p>
     <p>Je reçois enfants, adolescents et adultes notamment pour des bilans et des prises en soins dans les domaines du langage oral et écrit, de la cognition mathématique et de la neurologie.</p>
-    <p>Ce formulaire me permet de mieux connaître votre situation avant de vous recontacter. <strong>Je vous contacterai à partir du mois de juillet 2026</strong> pour vous proposer un rendez-vous.</p>
+    <p>Ce formulaire me permet de mieux connaître votre situation avant de vous recontacter. Je vous contacterai dès qu'un créneau de rendez-vous sera disponible.</p>
     <p>Toutes les informations renseignées restent strictement confidentielles et ne seront pas transmises à des tiers.</p>
   </div>
 
@@ -102,7 +106,15 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'DM Sans', sans-serif; ba
         <div class="field"><label>Email <span class="req">*</span></label><input type="email" id="email" placeholder="marie.dupont@email.fr" required></div>
         <div class="field"><label>Téléphone <span class="req">*</span></label><input type="tel" id="telephone" placeholder="06 12 34 56 78" required></div>
       </div>
-      <div class="field"><label>Vous êtes</label><select id="demandeur"><option value="patient">Le patient lui-même</option><option value="parent">Parent / tuteur légal</option><option value="autre">Autre (aidant, proche…)</option></select></div>
+      <div class="field"><label>Vous êtes</label><select id="demandeur" onchange="toggleParentZone(this)"><option value="patient">Le patient lui-même</option><option value="parent">Parent / tuteur légal</option><option value="autre">Autre (aidant, proche…)</option></select></div>
+      <div class="parent-zone" id="zone-parent">
+        <div class="zone-label">👨‍👩‍👦 Informations sur les parents</div>
+        <div class="field-row">
+          <div class="field" style="margin-bottom:0;"><label>Profession du père</label><input type="text" id="profession_pere" placeholder="ex: enseignant, infirmier…"></div>
+          <div class="field" style="margin-bottom:0;"><label>Profession de la mère</label><input type="text" id="profession_mere" placeholder="ex: comptable, médecin…"></div>
+        </div>
+      </div>
+      <div class="field" style="display:none">
 
       <div class="section-title">🎯 Motif de consultation</div>
       <div class="field">
@@ -248,7 +260,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'DM Sans', sans-serif; ba
   <div class="success" id="success-screen">
     <div class="icon">✅</div>
     <h2>Demande envoyée !</h2>
-    <p>Merci <strong id="success-prenom"></strong>, votre demande a bien été reçue.<br><br>Je vous contacterai à partir du mois de juillet 2026 pour vous proposer un rendez-vous.<br><br><span style="color:#1D9E75;font-weight:600;">Vous recevrez une confirmation par email.</span></p>
+    <p>Merci <strong id="success-prenom"></strong>, votre demande a bien été reçue.<br><br>Je vous contacterai dès qu'un créneau de rendez-vous sera disponible.<br><br><span style="color:#1D9E75;font-weight:600;">Vous recevrez une confirmation par email.</span></p>
   </div>
 </div>
 
