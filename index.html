@@ -6204,19 +6204,21 @@ function renderSeanceBody(s){
 }
 
 function renderDossierTab(p){
-  var contactHtml = '';
-  if(p.contacts && p.contacts.length){
-    contactHtml = '<div style="margin-top:12px;"><div style="font-size:11px;font-weight:700;color:var(--green);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px;">\u{1F464} Contact(s)</div>'
-      + p.contacts.map(function(c){
-        return '<div style="background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px 12px;margin-bottom:6px;">'
-          +'<div style="font-weight:600;font-size:13px;">'+escHtml((c.prenom||'')+' '+(c.nom||''))
-          +(c.lien?'<span style="font-size:11px;color:var(--text-soft);margin-left:6px;">('+escHtml(c.lien)+')</span>':'')+'</div>'
-          +(c.tel?'<div style="font-size:12px;color:var(--text-soft);">\uD83D\uDCDE '+escHtml(c.tel)+'</div>':'')
-          +(c.email?'<div style="font-size:12px;color:var(--text-soft);">\u2709\uFE0F '+escHtml(c.email)+'</div>':'')
-          +(c.professionPere?'<div style="font-size:11px;color:var(--text-soft);">P\u00e8re : '+escHtml(c.professionPere)+'</div>':'')
-          +(c.professionMere?'<div style="font-size:11px;color:var(--text-soft);">M\u00e8re : '+escHtml(c.professionMere)+'</div>':'')
-          +'</div>';
-      }).join('') + '</div>';
+  // Créneaux souhaités (depuis liste d'attente)
+
+  var creneauxLabels = {
+    'lun_matin':'Lundi matin','lun_midi':'Lundi midi','lun_aprem':'Lundi après-midi','lun_soir':'Lundi après 17h',
+    'mar_matin':'Mardi matin','mar_midi':'Mardi midi','mar_aprem':'Mardi après-midi','mar_soir':'Mardi après 17h',
+    'mer_matin':'Mercredi matin','mer_midi':'Mercredi midi','mer_aprem':'Mercredi après-midi','mer_soir':'Mercredi après 17h',
+    'jeu_matin':'Jeudi matin','jeu_midi':'Jeudi midi','jeu_aprem':'Jeudi après-midi','jeu_soir':'Jeudi après 17h',
+    'ven_matin':'Vendredi matin','ven_midi':'Vendredi midi','ven_aprem':'Vendredi après-midi','ven_soir':'Vendredi après 17h',
+    'sam_matin':'Samedi matin','sam_midi':'Samedi midi','sam_aprem':'Samedi après-midi','sam_soir':'Samedi après 17h',
+    'indiff':'Indifférent'
+  };
+  var creneauxStr = '';
+  if(p.creneaux && Object.keys(p.creneaux).length){
+    var labels = Object.keys(p.creneaux).filter(function(k){return p.creneaux[k];}).map(function(k){return creneauxLabels[k]||k;});
+    if(labels.length) creneauxStr = labels.join(', ');
   }
   var suiviHtml = '';
   if(p.premierSuivi==='non'){
@@ -6252,16 +6254,8 @@ function renderDossierTab(p){
     +'</div></div>';
 
   return '<div class="perm-zone"><div class="perm-zone-label">\uD83D\uDCCC Notes permanentes</div>'
+    +(creneauxStr?'<div style="font-size:11px;color:var(--text-soft);margin-bottom:6px;">🕐 Créneaux souhaités : '+escHtml(creneauxStr)+'</div>':'')
     +'<textarea placeholder="Informations importantes\u2026" onchange="updatePF(\'' + p.id + '\',\'permNotes\',this.value)">'+(p.permNotes||'')+'</textarea></div>'
-    +'<div style="margin-top:12px;"><div style="font-size:11px;font-weight:700;color:var(--green);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px;">\uD83D\uDCDE Coordonn\u00e9es</div>'
-    +'<div style="font-size:11px;font-weight:600;color:var(--text-soft);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px;">🧑 Patient</div>'
-    +'<div class="field-grid field-grid-2">'
-    +'<div class="field"><label>Téléphone</label><input type="tel" value="'+(p.tel||'')+'" placeholder="06 \u2026" onchange="updatePF(\'' + p.id + '\',\'tel\',this.value)"></div>'
-    +'<div class="field"><label>Email</label><input type="email" value="'+(p.email||'')+'" placeholder="email@\u2026" onchange="updatePF(\'' + p.id + '\',\'email\',this.value)"></div>'
-    +'<div class="field field-full"><label>Adresse</label><input type="text" value="'+(p.adresse||'')+'" onchange="updatePF(\'' + p.id + '\',\'adresse\',this.value)"></div>'
-    +'</div>'
-    + contactRefHtml
-    +'</div>'
     + suiviHtml + structHtml
     +'<div style="margin-top:12px;display:flex;gap:8px;">'
     +'<button class="btn btn-sm" onclick="openPatientModal(\'' + p.id + '\')">\u270F\uFE0F Modifier</button>'
