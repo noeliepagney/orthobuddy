@@ -3443,12 +3443,9 @@ function openPatientModalFromAttente(a){
     if(a.adressePar) bannerParts.push('Adressé par : <strong>'+escHtml(a.adressePar)+'</strong>');
     if(a.dateOrdonnance) bannerParts.push('Ordonnance du : <strong>'+new Date(a.dateOrdonnance+'T00:00:00').toLocaleDateString('fr-FR')+'</strong>');
     if(a.motif) bannerParts.push('Motif : '+escHtml(a.motif));
-    if(bannerParts.length){
-      bannerText.innerHTML = bannerParts.join(' &nbsp;·&nbsp; ')+(a.adressePar||a.dateOrdonnance ? '<br><span style="color:var(--green-d);font-size:11px;">↳ Une ordonnance initiale sera créée automatiquement dans la fiche AMO.</span>' : '');
-      bannerEl.style.display = 'block';
-    } else {
-      bannerEl.style.display = 'none';
-    }
+    var ordoNote = '<br><span style="color:var(--green-d);font-size:11px;">↳ Une ordonnance initiale sera créée dans la fiche AMO'+(a.adressePar||a.dateOrdonnance?'':' (à compléter)')+'. Vous pourrez la modifier après enregistrement.</span>';
+    bannerText.innerHTML = (bannerParts.length ? bannerParts.join(' &nbsp;·&nbsp; ') : '') + ordoNote;
+    bannerEl.style.display = 'block';
   }
   document.getElementById('edit-patient-id').value = '';
   document.getElementById('p-prenom').value = a.prenom||'';
@@ -6241,15 +6238,31 @@ function renderDossierTab(p){
       +(profs.length?'<div>Professionnels : '+escHtml(profs.join(', ')+(p.profAutreDetail?' ('+p.profAutreDetail+')':''))+'</div>':'')
       +'</div>';
   }
+  // Bloc contact référent inline (éditable)
+  var c0 = (p.contacts && p.contacts.length) ? p.contacts[0] : null;
+  var contactRefHtml = '<div style="margin-top:10px;">'
+    +'<div style="font-size:11px;font-weight:600;color:var(--text-soft);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px;">👤 Contact référent <span style="font-size:10px;font-weight:400;text-transform:none;letter-spacing:0;">(parent, tuteur… laisser vide si le patient est son propre contact)</span></div>'
+    +'<div class="field-grid field-grid-2">'
+    +'<div class="field"><label>Nom du contact</label><input type="text" value="'+escHtml(c0?(c0.prenom||'')+' '+(c0.nom||''):'')+'" placeholder="ex: Dupont Marie" onchange="updateContactField(\''+p.id+'\',\'nomContact\',this.value)"></div>'
+    +'<div class="field"><label>Lien avec le patient</label><input type="text" value="'+escHtml(c0?c0.lien||'':'')+'" placeholder="ex: mère, père, conjoint…" onchange="updateContactField(\''+p.id+'\',\'lien\',this.value)"></div>'
+    +'<div class="field"><label>Téléphone contact</label><input type="tel" value="'+escHtml(c0?c0.tel||'':'')+'" placeholder="06 …" onchange="updateContactField(\''+p.id+'\',\'tel\',this.value)"></div>'
+    +'<div class="field"><label>Email contact</label><input type="email" value="'+escHtml(c0?c0.email||'':'')+'" placeholder="email@…" onchange="updateContactField(\''+p.id+'\',\'email\',this.value)"></div>'
+    +'<div class="field"><label>Profession du père</label><input type="text" value="'+escHtml(c0?c0.professionPere||'':'')+'" placeholder="ex: enseignant…" onchange="updateContactField(\''+p.id+'\',\'professionPere\',this.value)"></div>'
+    +'<div class="field"><label>Profession de la mère</label><input type="text" value="'+escHtml(c0?c0.professionMere||'':'')+'" placeholder="ex: comptable…" onchange="updateContactField(\''+p.id+'\',\'professionMere\',this.value)"></div>'
+    +'</div></div>';
+
   return '<div class="perm-zone"><div class="perm-zone-label">\uD83D\uDCCC Notes permanentes</div>'
     +'<textarea placeholder="Informations importantes\u2026" onchange="updatePF(\'' + p.id + '\',\'permNotes\',this.value)">'+(p.permNotes||'')+'</textarea></div>'
     +'<div style="margin-top:12px;"><div style="font-size:11px;font-weight:700;color:var(--green);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px;">\uD83D\uDCDE Coordonn\u00e9es</div>'
+    +'<div style="font-size:11px;font-weight:600;color:var(--text-soft);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px;">🧑 Patient</div>'
     +'<div class="field-grid field-grid-2">'
+    +'<div class="field"><label>Téléphone</label><input type="tel" value="'+(p.tel||'')+'" placeholder="06 \u2026" onchange="updatePF(\'' + p.id + '\',\'tel\',this.value)"></div>'
     +'<div class="field"><label>Email</label><input type="email" value="'+(p.email||'')+'" placeholder="email@\u2026" onchange="updatePF(\'' + p.id + '\',\'email\',this.value)"></div>'
-    +'<div class="field"><label>T\u00e9l\u00e9phone</label><input type="tel" value="'+(p.tel||'')+'" placeholder="06 \u2026" onchange="updatePF(\'' + p.id + '\',\'tel\',this.value)"></div>'
     +'<div class="field field-full"><label>Adresse</label><input type="text" value="'+(p.adresse||'')+'" onchange="updatePF(\'' + p.id + '\',\'adresse\',this.value)"></div>'
-    +'</div></div>'
-    + contactHtml + suiviHtml + structHtml
+    +'</div>'
+    + contactRefHtml
+    +'</div>'
+    + suiviHtml + structHtml
     +'<div style="margin-top:12px;display:flex;gap:8px;">'
     +'<button class="btn btn-sm" onclick="openPatientModal(\'' + p.id + '\')">\u270F\uFE0F Modifier</button>'
     +'<button class="btn btn-sm btn-red" onclick="deletePatient(\'' + p.id + '\')">\uD83D\uDDD1\uFE0F Supprimer</button>'
@@ -6699,6 +6712,28 @@ function updatePF(pid,field,val){
   p[field]=val;save();
 }
 
+function updateContactField(pid, field, val){
+  var p = DB.patients.find(function(x){return x.id===pid;});
+  if(!p) return;
+  if(!p.contacts || !p.contacts.length){
+    // Créer un contact si aucun n'existe encore
+    p.contacts = [{id:uid(), prenom:'', nom:'', lien:'', tel:'', email:'', professionPere:'', professionMere:''}];
+  }
+  var c = p.contacts[0];
+  if(field === 'nomContact'){
+    var parts = val.trim().split(' ');
+    c.prenom = parts.length > 1 ? parts.slice(0,-1).join(' ') : val.trim();
+    c.nom = parts.length > 1 ? parts[parts.length-1] : '';
+  } else {
+    c[field] = val;
+  }
+  // Si tous les champs du contact sont vides, supprimer
+  if(!c.prenom && !c.nom && !c.lien && !c.tel && !c.email && !c.professionPere && !c.professionMere){
+    p.contacts = [];
+  }
+  save();
+}
+
 function deletePatient(pid){
   // suppression directe
   DB.patients=DB.patients.filter(p=>p.id!==pid);
@@ -6882,31 +6917,25 @@ function savePatient(){
         });
       }
       // Créer une ordonnance initiale depuis les infos de la liste d'attente
-      var ordonnancesInit = [];
-      if(a.adressePar || a.dateOrdonnance) {
-        // Trouver le 1er parcours pour typer l'ordonnance
-        var firstParcoursId = (a.parcours && a.parcours.length) ? a.parcours[0] : null;
-        var firstParcours = firstParcoursId ? DB.parcours.find(function(pc){return pc.id===firstParcoursId;}) : null;
-        var parcoursNom = firstParcours ? firstParcours.nom : '';
-        // Calculer fin ordonnance (bilan 3 mois, rééducation 1 an par défaut)
-        var debutOrdo = a.dateOrdonnance || '';
-        var finOrdo = '';
-        if(debutOrdo){
-          var d = new Date(debutOrdo+'T00:00:00');
-          d.setFullYear(d.getFullYear()+1);
-          finOrdo = d.toISOString().slice(0,10);
-        }
-        ordonnancesInit.push({
-          id: uid(),
-          parcoursId: firstParcoursId||'',
-          prescripteur: a.adressePar||'',
-          nb: 0,
-          type: 'reeducation',
-          debut: debutOrdo,
-          fin: finOrdo,
-          _importeeListeAttente: true,
-        });
+      // On crée toujours une ordonnance (même vide) pour que l'onglet AMO soit pré-rempli
+      var firstParcoursId = (a.parcours && a.parcours.length) ? a.parcours[0] : null;
+      var debutOrdo = a.dateOrdonnance || '';
+      var finOrdo = '';
+      if(debutOrdo){
+        var dFin = new Date(debutOrdo+'T00:00:00');
+        dFin.setFullYear(dFin.getFullYear()+1);
+        finOrdo = dFin.toISOString().slice(0,10);
       }
+      var ordonnancesInit = [{
+        id: uid(),
+        parcoursId: firstParcoursId||'',
+        prescripteur: a.adressePar||'',
+        nb: 0,
+        type: 'reeducation',
+        debut: debutOrdo,
+        fin: finOrdo,
+        _importeeListeAttente: true,
+      }];
       extraData = {
         adresse: data.adresse||a.adresse||'',
         contacts: contacts,
