@@ -3287,7 +3287,7 @@ function renderAttenteBody(a){
   if(a.collab) h += '<span style="font-size:11px;padding:4px 10px;background:#EDE9FE;color:#6D28D9;border-radius:var(--radius-sm);">🤝 Collab</span>';
   if(a.domicile) h += '<span style="font-size:11px;padding:4px 10px;background:#EFF6FF;color:#1D4ED8;border-radius:var(--radius-sm);">🏠 '+(a.domicileVille||'Domicile')+'</span>';
 
-  if(a.urgence && a.urgence!=='aucune'){
+  if(a.urgence && a.urgence!=='aucune' && a.urgence!=='normal'){
     h += '<div style="font-size:11px;padding:4px 10px;background:'+(a.urgence==='urgent'?'var(--red-l)':'var(--amber-l)')+';border-radius:var(--radius-sm);color:'+(a.urgence==='urgent'?'var(--red)':'var(--amber)')+';">'
       +(a.urgence==='urgent'?'🔴 Urgent':'🟡 Prioritaire')+(a.urgenceCause?' — '+escHtml(a.urgenceCause):'')+'</div>';
   }
