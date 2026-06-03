@@ -470,7 +470,7 @@ async function submitForm(){
   try{
     var res=await fetch('https://xiznicrburryfmdfbjxk.supabase.co/functions/v1/quick-action',{
       method:'POST',
-      headers:{'Content-Type':'application/json'},
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+SB_KEY},
       body:JSON.stringify({...newPatient,created_at:now,data:{}})
     });
     if(!res.ok){var err=await res.text();throw new Error(err);}
