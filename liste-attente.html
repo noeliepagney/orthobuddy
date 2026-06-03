@@ -326,7 +326,6 @@ async function submitForm(){
   var prenom=document.getElementById('prenom').value.trim();
   var now=new Date().toISOString();
   var newPatient={
-    id:'att_'+Date.now()+'_'+Math.random().toString(36).slice(2,6),
     prenom:prenom, nom:document.getElementById('nom').value.trim(),
     ddn:document.getElementById('ddn').value, sexe:document.getElementById('sexe').value,
     adresse:document.getElementById('adresse').value.trim(),
