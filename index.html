@@ -1115,6 +1115,10 @@ html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);colo
       <button class="modal-close" onclick="closeModal('modal-patient')"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
     </div>
     <input type="hidden" id="edit-patient-id">
+    <div id="modal-patient-attente-banner" style="display:none;margin:0 0 12px;padding:10px 14px;background:#E1F5EE;border:1px solid #A8DFC8;border-radius:var(--radius-sm);font-size:12px;color:#0F6E56;line-height:1.5;">
+      <strong>📋 Import depuis la liste d'attente</strong><br>
+      <span id="modal-patient-attente-banner-text"></span>
+    </div>
 
     <!-- 1. IDENTITÉ -->
     <div class="modal-section">
@@ -1159,19 +1163,27 @@ html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);colo
     <!-- 2. CONTACT -->
     <div class="modal-section">
       <div class="modal-section-label">📞 Contact</div>
-      <div class="field-grid field-grid-2">
-        <div class="field"><label>Téléphone</label><input type="tel" id="p-tel" placeholder="06 …"></div>
-        <div class="field"><label>Email</label><input type="email" id="p-email" placeholder="email@exemple.fr"></div>
-        <div class="field">
-          <label>Nom du contact</label>
-          <input type="text" id="p-nom-contact" placeholder="Si différent du patient">
-          <span style="font-size:11px;color:var(--text-soft);margin-top:3px;">Laisser vide si le contact est le patient lui-même</span>
+
+      <!-- Bloc patient -->
+      <div style="margin-bottom:10px;">
+        <div style="font-size:11px;font-weight:600;color:var(--text-soft);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px;">🧑 Patient</div>
+        <div class="field-grid field-grid-2">
+          <div class="field"><label>Téléphone</label><input type="tel" id="p-tel" placeholder="06 …"></div>
+          <div class="field"><label>Email</label><input type="email" id="p-email" placeholder="email@exemple.fr"></div>
         </div>
-        <div class="field"><label>Lien avec le patient</label><input type="text" id="p-lien-contact" placeholder="ex: mère, père, conjoint…"></div>
-        <div class="field"><label>Tél. contact</label><input type="tel" id="p-tel-contact" placeholder="06 …"></div>
-        <div class="field"><label>Email contact</label><input type="email" id="p-email-contact" placeholder="email@exemple.fr"></div>
-        <div class="field"><label>Profession du père</label><input type="text" id="p-prof-pere" placeholder="ex: enseignant, infirmier…"></div>
-        <div class="field"><label>Profession de la mère</label><input type="text" id="p-prof-mere" placeholder="ex: comptable, médecin…"></div>
+      </div>
+
+      <!-- Bloc contact référent -->
+      <div>
+        <div style="font-size:11px;font-weight:600;color:var(--text-soft);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px;">👤 Contact référent <span style="font-size:10px;font-weight:400;text-transform:none;letter-spacing:0;">(parent, tuteur… laisser vide si le patient est son propre contact)</span></div>
+        <div class="field-grid field-grid-2">
+          <div class="field"><label>Nom du contact</label><input type="text" id="p-nom-contact" placeholder="ex: Dupont Marie"></div>
+          <div class="field"><label>Lien avec le patient</label><input type="text" id="p-lien-contact" placeholder="ex: mère, père, conjoint…"></div>
+          <div class="field"><label>Téléphone contact</label><input type="tel" id="p-tel-contact" placeholder="06 …"></div>
+          <div class="field"><label>Email contact</label><input type="email" id="p-email-contact" placeholder="email@exemple.fr"></div>
+          <div class="field"><label>Profession du père</label><input type="text" id="p-prof-pere" placeholder="ex: enseignant, infirmier…"></div>
+          <div class="field"><label>Profession de la mère</label><input type="text" id="p-prof-mere" placeholder="ex: comptable, médecin…"></div>
+        </div>
       </div>
     </div>
 
@@ -3388,6 +3400,8 @@ function openPatientModalFromAttente(a){
   // Notes permanentes
   var notes = '— Issu de la liste d\'attente (entrée le '+(a.dateEntree||'?')+')';
   if(a.motif) notes += '\n\nMotif : '+a.motif;
+  if(a.adressePar) notes += '\nAdressé par : '+a.adressePar;
+  if(a.dateOrdonnance) notes += '\nDate ordonnance : '+new Date(a.dateOrdonnance+'T00:00:00').toLocaleDateString('fr-FR');
   if(a.infosComplementaires) notes += '\n\nInfos complémentaires : '+a.infosComplementaires;
   if(a.observations && !a.motif) notes += '\n'+a.observations;
 
@@ -3420,6 +3434,22 @@ function openPatientModalFromAttente(a){
   };
 
   document.getElementById('modal-patient-title').textContent = '✅ Prendre en soins — '+a.prenom+' '+a.nom;
+
+  // Bandeau d'import
+  var bannerEl = document.getElementById('modal-patient-attente-banner');
+  var bannerText = document.getElementById('modal-patient-attente-banner-text');
+  if(bannerEl && bannerText){
+    var bannerParts = [];
+    if(a.adressePar) bannerParts.push('Adressé par : <strong>'+escHtml(a.adressePar)+'</strong>');
+    if(a.dateOrdonnance) bannerParts.push('Ordonnance du : <strong>'+new Date(a.dateOrdonnance+'T00:00:00').toLocaleDateString('fr-FR')+'</strong>');
+    if(a.motif) bannerParts.push('Motif : '+escHtml(a.motif));
+    if(bannerParts.length){
+      bannerText.innerHTML = bannerParts.join(' &nbsp;·&nbsp; ')+(a.adressePar||a.dateOrdonnance ? '<br><span style="color:var(--green-d);font-size:11px;">↳ Une ordonnance initiale sera créée automatiquement dans la fiche AMO.</span>' : '');
+      bannerEl.style.display = 'block';
+    } else {
+      bannerEl.style.display = 'none';
+    }
+  }
   document.getElementById('edit-patient-id').value = '';
   document.getElementById('p-prenom').value = a.prenom||'';
   document.getElementById('p-nom').value = a.nom||'';
@@ -6682,6 +6712,9 @@ let _modalParcours=[];
 function openPatientModal(pid){
   const p=pid?DB.patients.find(x=>x.id===pid):null;
   document.getElementById('modal-patient-title').textContent=p?'Modifier le patient':'Nouveau patient';
+  // Masquer le bandeau liste d'attente (contexte normal)
+  var _banner=document.getElementById('modal-patient-attente-banner');if(_banner)_banner.style.display='none';
+  _attenteDataForPromotion=null;_promouvoirAttenteId=null;
   document.getElementById('edit-patient-id').value=pid||'';
   document.getElementById('p-prenom').value=p?.prenom||'';
   document.getElementById('p-nom').value=p?.nom||'';
@@ -6848,6 +6881,32 @@ function savePatient(){
           professionMere: a.professionMere||'',
         });
       }
+      // Créer une ordonnance initiale depuis les infos de la liste d'attente
+      var ordonnancesInit = [];
+      if(a.adressePar || a.dateOrdonnance) {
+        // Trouver le 1er parcours pour typer l'ordonnance
+        var firstParcoursId = (a.parcours && a.parcours.length) ? a.parcours[0] : null;
+        var firstParcours = firstParcoursId ? DB.parcours.find(function(pc){return pc.id===firstParcoursId;}) : null;
+        var parcoursNom = firstParcours ? firstParcours.nom : '';
+        // Calculer fin ordonnance (bilan 3 mois, rééducation 1 an par défaut)
+        var debutOrdo = a.dateOrdonnance || '';
+        var finOrdo = '';
+        if(debutOrdo){
+          var d = new Date(debutOrdo+'T00:00:00');
+          d.setFullYear(d.getFullYear()+1);
+          finOrdo = d.toISOString().slice(0,10);
+        }
+        ordonnancesInit.push({
+          id: uid(),
+          parcoursId: firstParcoursId||'',
+          prescripteur: a.adressePar||'',
+          nb: 0,
+          type: 'reeducation',
+          debut: debutOrdo,
+          fin: finOrdo,
+          _importeeListeAttente: true,
+        });
+      }
       extraData = {
         adresse: data.adresse||a.adresse||'',
         contacts: contacts,
@@ -6862,6 +6921,7 @@ function savePatient(){
         profAutreDetail: a.profAutreDetail||'',
         creneaux: a.creneaux||{},
         permNotes: data.permNotes||'',
+        ordonnances: ordonnancesInit,
       };
       // Supprimer de la liste d'attente
       var attenteId = _promouvoirAttenteId;
@@ -6997,7 +7057,8 @@ async function importerDemandesWeb(){
         creneaux: creneaux,
         dateEntree: (row.created_at||new Date().toISOString()).slice(0,10),
         sourceDemande: 'Formulaire web',
-        urgence: 'aucune', urgenceCause: '',
+        urgence: d.urgence||'aucune', urgenceCause: d.urgenceCause||d.urgence_cause||'',
+        sortieHospit: !!(d.sortie_hospit),
         collab: false, renouvellements: 0,
       };
       if(!DB.attente)DB.attente=[];
