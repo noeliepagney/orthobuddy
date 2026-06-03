@@ -355,7 +355,7 @@ async function submitForm(){
     var res=await fetch(SB_URL+'/rest/v1/liste_attente',{
       method:'POST',
       headers:{'Content-Type':'application/json','apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Prefer':'return=minimal'},
-      body:JSON.stringify({...newPatient,created_at:now})
+      body:JSON.stringify({...newPatient,created_at:now,data:{}})
     });
     if(!res.ok){var err=await res.text();throw new Error(err);}
     document.getElementById('form-container').style.display='none';
