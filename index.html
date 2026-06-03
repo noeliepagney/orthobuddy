@@ -834,6 +834,7 @@ html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);colo
           <button class="btn btn-sm" style="margin-top:10px;" onclick="openModeleModal()">+ Nouveau modèle</button>
         </div></div>
 
+        <div class="settings-section"><div class="settings-section-title" onclick="toggleSettingsSection('sec_environnement')"><span>🧪 Environnement (test / production)</span><span class="settings-section-chevron">▼</span></div><div class="settings-section-body" id="sec_environnement"><div style="margin-bottom:12px;font-size:13px;color:var(--text-soft);">Bascule entre la base de données de test et la base de production. En mode test, aucune donnée réelle n'est affectée.</div><div style="display:flex;align-items:center;gap:12px;"><button id="btn-env-prod" class="btn btn-sm" onclick="switchEnv('prod')" style="min-width:120px;">🟢 Production</button><button id="btn-env-test" class="btn btn-sm" onclick="switchEnv('test')" style="min-width:120px;">🧪 Test</button><span id="env-current-label" style="font-size:13px;font-weight:600;"></span></div></div></div>
         <div class="settings-section"><div class="settings-section-title" onclick="toggleSettingsSection('sec_donnees')"><span>💾 Données</span><span class="settings-section-chevron">▼</span></div><div class="settings-section-body" id="sec_donnees">
           <div style="display:flex;gap:8px;flex-wrap:wrap;">
             <button class="btn btn-sm" onclick="exportData()">📥 Exporter (JSON)</button>
@@ -1970,8 +1971,53 @@ let DB = {
 // ═══════════════════════════════════════
 // SUPABASE
 // ═══════════════════════════════════════
-const SB_URL = 'https://xiznicrburryfmdfbjxk.supabase.co';
-const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inhpem5pY3JidXJyeWZtZGZianhrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAwNDM0NjEsImV4cCI6MjA5NTYxOTQ2MX0.vYuV7LIBXXkKJkHVwNPaI-lA7x1HwFROdU1K17ZB1Y8';
+// Bannière mode test
+function switchEnv(env){
+  localStorage.setItem('sb_env', env);
+  SB_URL = SB_CONFIGS[env].url;
+  SB_KEY = SB_CONFIGS[env].key;
+  updateEnvBanner();
+  updateEnvButtons();
+  showToast(env === 'test' ? '🧪 Mode TEST activé' : '🟢 Mode PRODUCTION activé');
+}
+function updateEnvButtons(){
+  const env = localStorage.getItem('sb_env') || 'prod';
+  const btnProd = document.getElementById('btn-env-prod');
+  const btnTest = document.getElementById('btn-env-test');
+  const label = document.getElementById('env-current-label');
+  if(btnProd) btnProd.style.outline = env === 'prod' ? '2px solid var(--green-mid)' : 'none';
+  if(btnTest) btnTest.style.outline = env === 'test' ? '2px solid #e53e3e' : 'none';
+  if(label) label.textContent = env === 'test' ? '⚠️ Mode TEST actif' : '✅ Mode PRODUCTION actif';
+  if(label) label.style.color = env === 'test' ? '#e53e3e' : 'var(--green-mid)';
+}
+function updateEnvBanner(){
+  const env = localStorage.getItem('sb_env') || 'prod';
+  let banner = document.getElementById('env-banner');
+  if(env === 'test'){
+    if(!banner){
+      banner = document.createElement('div');
+      banner.id = 'env-banner';
+      banner.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:99999;background:#e53e3e;color:white;text-align:center;padding:6px;font-weight:bold;font-size:13px;letter-spacing:1px;';
+      banner.textContent = '⚠️ MODE TEST — les données ne sont pas réelles';
+      document.body.prepend(banner);
+    }
+  } else {
+    if(banner) banner.remove();
+  }
+}
+const SB_CONFIGS = {
+  prod: {
+    url: 'https://xiznicrburryfmdfbjxk.supabase.co',
+    key: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inhpem5pY3JidXJyeWZtZGZianhrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAwNDM0NjEsImV4cCI6MjA5NTYxOTQ2MX0.vYuV7LIBXXkKJkHVwNPaI-lA7x1HwFROdU1K17ZB1Y8'
+  },
+  test: {
+    url: 'https://lexlcscnbggtbekhvxwv.supabase.co',
+    key: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxleGxjc2NuYmdndGJla2h2eHd2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA1MDM2MDAsImV4cCI6MjA5NjA3OTYwMH0.RO6YGwxSv5xWuorQyaKbKCpReGyv9gCeX5IAuLJAdIY'
+  }
+};
+const _sbEnv = localStorage.getItem('sb_env') || 'prod';
+let SB_URL = SB_CONFIGS[_sbEnv].url;
+let SB_KEY = SB_CONFIGS[_sbEnv].key;
 const SB_USER = 'noelie'; // identifiant unique dans la table
 
 let _syncTimeout = null;
@@ -2371,7 +2417,7 @@ async function doLogin(){
       // Mais on sauvegarde vers Supabase pour garder la synchro
       setSyncStatus('syncing');
       sbSave().then(()=>{setSyncStatus('ok');setTimeout(()=>setSyncStatus('idle'),2000);}).catch(()=>setSyncStatus('error'));
-      renderAll();checkBackupReminder();
+      renderAll();checkBackupReminder();updateEnvBanner();updateEnvButtons();
     } else {
       // Mode browser : charger depuis Supabase
       document.getElementById('patients-list').innerHTML='<div style="text-align:center;padding:40px;color:var(--text-soft);"><div style="font-size:32px;margin-bottom:10px;">☁️</div><p style="font-size:13px;">Chargement de vos données…</p></div>';
@@ -2379,7 +2425,7 @@ async function doLogin(){
       const loaded = await sbLoad();
       setSyncStatus(loaded?'ok':'error');
       if(loaded) setTimeout(()=>setSyncStatus('idle'),3000);
-      renderAll();checkBackupReminder();
+      renderAll();checkBackupReminder();updateEnvBanner();updateEnvButtons();
     }
   } else {
     document.getElementById('login-error').textContent='Mot de passe incorrect';
