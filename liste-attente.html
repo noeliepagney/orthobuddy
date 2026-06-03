@@ -197,6 +197,16 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'DM Sans', sans-serif; ba
         </div>
       </div>
 
+      <div class="section-title">🏥 Situation particulière</div>
+      <div class="field">
+        <div style="background:#FFF8E1;border:1.5px solid #F6AD55;border-radius:10px;padding:12px 16px;">
+          <label class="checkbox-item">
+            <input type="checkbox" id="sortie_hospit" name="sortie_hospit" value="oui">
+            <span style="font-weight:500;">Patient en sortie d'hospitalisation <span style="color:#C05621;font-size:12px;">(demande traitée en priorité)</span></span>
+          </label>
+        </div>
+      </div>
+
       <div class="section-title">🏥 Suivis en cours</div>
       <div class="field">
         <label>La personne est-elle suivie par une structure spécialisée ?</label>
@@ -492,6 +502,9 @@ async function submitForm(){
     lien_contact:document.getElementById('lien_contact_autre')?document.getElementById('lien_contact_autre').value.trim():'',
     profession_pere:document.getElementById('profession_pere')?document.getElementById('profession_pere').value.trim():'',
     profession_mere:document.getElementById('profession_mere')?document.getElementById('profession_mere').value.trim():'',
+    sortie_hospit:document.getElementById('sortie_hospit').checked,
+    urgence:document.getElementById('sortie_hospit').checked?'urgent':'normal',
+    urgenceCause:document.getElementById('sortie_hospit').checked?'Sortie d\'hospitalisation (IFS)':'',
     date_inscription:now.slice(0,10), source:'formulaire_web', statut:'attente',
   };
   try{
