@@ -108,7 +108,11 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'DM Sans', sans-serif; ba
       </div>
       <div class="field"><label>Vous êtes</label><select id="demandeur" onchange="toggleParentZone(this)"><option value="patient">Le patient lui-même</option><option value="parent">Parent / tuteur légal</option><option value="autre">Autre (aidant, proche…)</option></select></div>
       <div class="parent-zone" id="zone-parent">
-        <div class="zone-label">👨‍👩‍👦 Informations sur les parents</div>
+        <div class="zone-label">👨‍👩‍👦 Informations sur le contact</div>
+        <div class="field-row">
+          <div class="field" style="margin-bottom:8px;"><label>Votre prénom <span class="req">*</span></label><input type="text" id="prenom_contact" placeholder="ex: Marie"></div>
+          <div class="field" style="margin-bottom:8px;"><label>Votre nom <span class="req">*</span></label><input type="text" id="nom_contact" placeholder="ex: Dupont"></div>
+        </div>
         <div class="field-row">
           <div class="field" style="margin-bottom:0;"><label>Profession du père</label><input type="text" id="profession_pere" placeholder="ex: enseignant, infirmier…"></div>
           <div class="field" style="margin-bottom:0;"><label>Profession de la mère</label><input type="text" id="profession_mere" placeholder="ex: comptable, médecin…"></div>
@@ -349,6 +353,10 @@ async function submitForm(){
     antecedents:document.getElementById('antecedents').value.trim(),
     jours_preferes:getChecked('jours'), horaires_preferes:getChecked('horaires'),
     infos_supp:document.getElementById('infos_supp').value.trim(),
+    nom_contact:document.getElementById('nom_contact')?document.getElementById('nom_contact').value.trim():'',
+    prenom_contact:document.getElementById('prenom_contact')?document.getElementById('prenom_contact').value.trim():'',
+    profession_pere:document.getElementById('profession_pere')?document.getElementById('profession_pere').value.trim():'',
+    profession_mere:document.getElementById('profession_mere')?document.getElementById('profession_mere').value.trim():'',
     date_inscription:now.slice(0,10), source:'formulaire_web', statut:'attente',
   };
   try{
