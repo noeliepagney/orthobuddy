@@ -7015,6 +7015,8 @@ async function importerDemandesWeb(){
     };
     var joursMap={'Lundi':'lun','Mardi':'mar','Mercredi':'mer','Jeudi':'jeu','Vendredi':'ven','Samedi':'sam'};
     var horairesMap={'Matin (8h-12h)':'matin','Midi (12h-14h)':'midi','Après-midi (14h-17h)':'aprem','Fin de journée (17h-19h)':'soir'};
+    // Mapping format formulaire web : "Lundi matin", "Mercredi après-midi", etc.
+    var horairesSuffixMap={'matin':'matin','midi':'midi','après-midi':'aprem','fin journée':'soir','fin de journée':'soir'};
     for(var i=0;i<rows.length;i++){
       var row=rows[i];
       // Support both old format (row.data avec nom dedans) and new flat format
@@ -7038,24 +7040,42 @@ async function importerDemandesWeb(){
       // Parcours
       var parcoursIds=[];
       (d.parcours||[]).forEach(function(n){if(parcoursMap[n])parcoursIds.push(parcoursMap[n]);});
-      // Créneaux
+      // Créneaux — support deux formats :
+      // Ancien : jours_preferes + horaires_preferes séparés
+      // Nouveau (formulaire web) : horaires_preferes = ["Lundi matin", "Mercredi après-midi"...]
       var creneaux={};
-      (d.jours_preferes||[]).forEach(function(j){
-        var jk=joursMap[j];if(!jk)return;
-        (d.horaires_preferes||[]).forEach(function(h){
-          var hk=horairesMap[h];if(!hk)return;
+      var horaires_preferes = d.horaires_preferes||[];
+      var jours_preferes = d.jours_preferes||[];
+      if(horaires_preferes.length && horaires_preferes[0] && horaires_preferes[0].indexOf(' ')>0){
+        // Format combiné "Jour horaire"
+        horaires_preferes.forEach(function(val){
+          var v = val.toLowerCase();
+          var jk = null;
+          Object.keys(joursMap).forEach(function(j){ if(v.startsWith(j.toLowerCase())) jk=joursMap[j]; });
+          if(!jk) return;
+          var hk = null;
+          Object.keys(horairesSuffixMap).forEach(function(s){ if(v.endsWith(s)) hk=horairesSuffixMap[s]; });
+          if(!hk) return;
           creneaux[jk+'_'+hk]=true;
         });
-      });
+      } else {
+        // Format séparé
+        jours_preferes.forEach(function(j){
+          var jk=joursMap[j];if(!jk)return;
+          horaires_preferes.forEach(function(h){
+            var hk=horairesMap[h];if(!hk)return;
+            creneaux[jk+'_'+hk]=true;
+          });
+        });
+      }
       // Motif + infos complémentaires (séparés)
       var motifWeb = d.motif||'';
       var infosCompWeb = [];
       if(d.infos_supp) infosCompWeb.push(d.infos_supp);
       if(d.demandeur&&d.demandeur!=='patient') infosCompWeb.push('Demandé par : '+({parent:'un parent',autre:'un proche'}[d.demandeur]||d.demandeur));
       // Premier suivi & antécédents
-      var premierSuivi = d.premier_suivi||'oui';
-      var raisonSuivi = '';
-      if(d.antecedents){premierSuivi='non';raisonSuivi=d.antecedents;}
+      var premierSuivi = (d.premier_suivi==='non') ? 'non' : 'oui';
+      var raisonSuivi = (premierSuivi==='non' && d.antecedents) ? d.antecedents : '';
       var newD={
         id: 'att_web_'+Date.now()+'_'+Math.random().toString(36).slice(2,5),
         supabaseId: row.id,
@@ -7086,7 +7106,7 @@ async function importerDemandesWeb(){
         creneaux: creneaux,
         dateEntree: (row.created_at||new Date().toISOString()).slice(0,10),
         sourceDemande: 'Formulaire web',
-        urgence: d.urgence||'aucune', urgenceCause: d.urgenceCause||d.urgence_cause||'',
+        urgence: d.sortie_hospit ? 'prioritaire' : (d.urgence&&d.urgence!=='normal'&&d.urgence!=='urgent' ? d.urgence : 'aucune'), urgenceCause: d.urgence_cause||d.urgenceCause||'',
         sortieHospit: !!(d.sortie_hospit),
         collab: false, renouvellements: 0,
       };
