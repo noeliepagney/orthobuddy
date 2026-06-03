@@ -1979,6 +1979,8 @@ function switchEnv(env){
   updateEnvBanner();
   updateEnvButtons();
   showToast(env === 'test' ? '🧪 Mode TEST activé' : '🟢 Mode PRODUCTION activé');
+  // Recharger les données depuis la bonne base Supabase
+  sbLoad().then(()=>{ renderAll(); });
 }
 function updateEnvButtons(){
   const env = localStorage.getItem('sb_env') || 'prod';
