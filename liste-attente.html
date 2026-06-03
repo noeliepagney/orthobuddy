@@ -249,13 +249,39 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'DM Sans', sans-serif; ba
         </div>
       </div>
       <div class="field">
-        <label>Créneaux horaires préférés</label>
-        <div class="checkbox-group" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
-          <label class="checkbox-item"><input type="checkbox" name="horaires" value="Matin (8h-12h)"><span>Matin (8h-12h)</span></label>
-          <label class="checkbox-item"><input type="checkbox" name="horaires" value="Midi (12h-14h)"><span>Midi (12h-14h)</span></label>
-          <label class="checkbox-item"><input type="checkbox" name="horaires" value="Après-midi (14h-17h)"><span>Après-midi (14h-17h)</span></label>
-          <label class="checkbox-item"><input type="checkbox" name="horaires" value="Fin de journée (17h-19h)"><span>Fin de journée (17h+)</span></label>
+        <label>Disponibilités préférées</label>
+        <label class="checkbox-item" style="margin-bottom:10px;">
+          <input type="checkbox" id="dispo_aucune" onchange="toggleDispoTable(this)">
+          <span>Pas de préférence particulière</span>
+        </label>
+        <div id="dispo-table" style="overflow-x:auto;">
+          <table style="width:100%;border-collapse:collapse;font-size:13px;">
+            <thead>
+              <tr>
+                <th style="padding:6px;border:1px solid #e2e8f0;background:#f7fafc;"></th>
+                <th style="padding:6px;border:1px solid #e2e8f0;background:#f7fafc;text-align:center;">Matin<br><small style="color:#718096;">8h-12h</small></th>
+                <th style="padding:6px;border:1px solid #e2e8f0;background:#f7fafc;text-align:center;">Midi<br><small style="color:#718096;">12h-14h</small></th>
+                <th style="padding:6px;border:1px solid #e2e8f0;background:#f7fafc;text-align:center;">Après-midi<br><small style="color:#718096;">14h-17h</small></th>
+                <th style="padding:6px;border:1px solid #e2e8f0;background:#f7fafc;text-align:center;">Fin de journée<br><small style="color:#718096;">17h+</small></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td style="padding:6px;border:1px solid #e2e8f0;font-weight:500;">Lundi</td><td style="text-align:center;border:1px solid #e2e8f0;"><input type="checkbox" name="horaires" value="Lundi matin"></td><td style="text-align:center;border:1px solid #e2e8f0;"><input type="checkbox" name="horaires" value="Lundi midi"></td><td style="text-align:center;border:1px solid #e2e8f0;"><input type="checkbox" name="horaires" value="Lundi après-midi"></td><td style="text-align:center;border:1px solid #e2e8f0;"><input type="checkbox" name="horaires" value="Lundi fin journée"></td></tr>
+              <tr><td style="padding:6px;border:1px solid #e2e8f0;font-weight:500;">Mardi</td><td style="text-align:center;border:1px solid #e2e8f0;"><input type="checkbox" name="horaires" value="Mardi matin"></td><td style="text-align:center;border:1px solid #e2e8f0;"><input type="checkbox" name="horaires" value="Mardi midi"></td><td style="text-align:center;border:1px solid #e2e8f0;"><input type="checkbox" name="horaires" value="Mardi après-midi"></td><td style="text-align:center;border:1px solid #e2e8f0;"><input type="checkbox" name="horaires" value="Mardi fin journée"></td></tr>
+              <tr><td style="padding:6px;border:1px solid #e2e8f0;font-weight:500;">Mercredi</td><td style="text-align:center;border:1px solid #e2e8f0;"><input type="checkbox" name="horaires" value="Mercredi matin"></td><td style="text-align:center;border:1px solid #e2e8f0;"><input type="checkbox" name="horaires" value="Mercredi midi"></td><td style="text-align:center;border:1px solid #e2e8f0;"><input type="checkbox" name="horaires" value="Mercredi après-midi"></td><td style="text-align:center;border:1px solid #e2e8f0;"><input type="checkbox" name="horaires" value="Mercredi fin journée"></td></tr>
+              <tr><td style="padding:6px;border:1px solid #e2e8f0;font-weight:500;">Jeudi</td><td style="text-align:center;border:1px solid #e2e8f0;"><input type="checkbox" name="horaires" value="Jeudi matin"></td><td style="text-align:center;border:1px solid #e2e8f0;"><input type="checkbox" name="horaires" value="Jeudi midi"></td><td style="text-align:center;border:1px solid #e2e8f0;"><input type="checkbox" name="horaires" value="Jeudi après-midi"></td><td style="text-align:center;border:1px solid #e2e8f0;"><input type="checkbox" name="horaires" value="Jeudi fin journée"></td></tr>
+              <tr><td style="padding:6px;border:1px solid #e2e8f0;font-weight:500;">Vendredi</td><td style="text-align:center;border:1px solid #e2e8f0;"><input type="checkbox" name="horaires" value="Vendredi matin"></td><td style="text-align:center;border:1px solid #e2e8f0;"><input type="checkbox" name="horaires" value="Vendredi midi"></td><td style="text-align:center;border:1px solid #e2e8f0;"><input type="checkbox" name="horaires" value="Vendredi après-midi"></td><td style="text-align:center;border:1px solid #e2e8f0;"><input type="checkbox" name="horaires" value="Vendredi fin journée"></td></tr>
+              <tr><td style="padding:6px;border:1px solid #e2e8f0;font-weight:500;">Samedi</td><td style="text-align:center;border:1px solid #e2e8f0;"><input type="checkbox" name="horaires" value="Samedi matin"></td><td style="text-align:center;border:1px solid #e2e8f0;"><input type="checkbox" name="horaires" value="Samedi midi"></td><td style="text-align:center;border:1px solid #e2e8f0;"><input type="checkbox" name="horaires" value="Samedi après-midi"></td><td style="text-align:center;border:1px solid #e2e8f0;"><input type="checkbox" name="horaires" value="Samedi fin journée"></td></tr>
+            </tbody>
+          </table>
         </div>
+        <script>
+        function toggleDispoTable(cb){
+          document.getElementById('dispo-table').style.opacity = cb.checked ? '0.4' : '1';
+          document.getElementById('dispo-table').style.pointerEvents = cb.checked ? 'none' : 'auto';
+          if(cb.checked) document.querySelectorAll('[name="horaires"]').forEach(function(c){c.checked=false;});
+        }
+        </script>
       </div>
       <div class="field"><label>Informations complémentaires</label><textarea id="infos_supp" placeholder="Contraintes particulières, informations utiles à me communiquer…" style="min-height:60px;"></textarea></div>
 
