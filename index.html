@@ -2466,7 +2466,10 @@ function importData(e){
       var nbPat=(d.patients||[]).length;
       var nbSea=(d.seances||[]).length;
       if(!confirm('Importer cette sauvegarde ?\n\n'+nbPat+' patient(s), '+nbSea+' séance(s) trouvés.\n\nCela remplacera toutes vos données actuelles.'))return;
-      DB={...DB,...d};save();renderAll();showToast('✓ Données importées');
+      const importBatch = Date.now();
+      DB={...DB,...d};
+      DB.patients = (DB.patients||[]).map(p=>({...p, importedAt:importBatch, isNew:true}));
+      save();renderAll();showToast('✓ Données importées');
     }catch{alert('Fichier invalide ou corrompu.');}
   };
   r.readAsText(f);e.target.value='';
@@ -2836,6 +2839,7 @@ function renderFilterChips(){
     { key:'domicile',  label:'🏠 Domicile',         cls:'active' },
     { key:'alertes',   label:'🔔 Alertes',          cls:'active-alert' },
     { key:'telesoin',  label:'📱 Télésoin',          cls:'active' },
+    { key:'nouveaux',  label:'🆕 Importés',          cls:'active' },
   ];
   fixedFilters.forEach(function(f){
     var active = !!_pFilters[f.key];
@@ -2953,6 +2957,7 @@ function renderPatients(){
         if(key==='domicile') return !!p.domicile;
         if(key==='age6'){ var a=getAge(p.ddn); return a!==null&&a<6; }
         if(key==='telesoin') return DB.seances.some(function(s){return s.patientId===p.id&&s.isTelesoin;});
+        if(key==='nouveaux') return !!p.isNew;
         if(key==='genre_F') return p.genre==='F';
         if(key==='genre_M') return p.genre==='M';
         if(key==='genre_A') return p.genre==='A'||p.genre==='Autre';
@@ -3011,6 +3016,7 @@ function renderPatients(){
             ${getAgeEmoji(age,isUnder6)}
             ${p.domicile?'<span title="Séances à domicile" style="font-size:13px;">🏠</span>':''}
 
+            ${p.isNew?'<span title="Importé récemment" style="font-size:10px;background:#3b82f6;color:white;border-radius:8px;padding:1px 7px;font-weight:600;letter-spacing:.3px;">NEW</span>':''}
             ${p.enCollab?'<span title="En collaboration" style="font-size:11px;opacity:.55;">🤝</span>':''}
             ${p.genre==='F'?'<span title="Féminin" style="font-size:10px;color:var(--text-soft);opacity:.6;margin-left:1px;">♀</span>':p.genre==='M'?'<span title="Masculin" style="font-size:10px;color:var(--text-soft);opacity:.6;margin-left:1px;">♂</span>':''}
           </div>
@@ -3051,7 +3057,17 @@ function renderPatients(){
   }).join('');
 }
 
-function togglePatient(pid){document.getElementById('pcard-'+pid).classList.toggle('expanded');}
+function togglePatient(pid){
+  document.getElementById('pcard-'+pid).classList.toggle('expanded');
+  // Supprimer le badge NEW à l'ouverture
+  const p = DB.patients.find(x=>x.id===pid);
+  if(p && p.isNew){
+    p.isNew = false;
+    save();
+    const badge = document.querySelector('#pcard-'+pid+' span[title="Importé récemment"]');
+    if(badge) badge.remove();
+  }
+}
 
 // ─── LISTE D'ATTENTE ───────────────────────────────────────────────────────
 
@@ -3081,6 +3097,8 @@ function renderAttenteList(){
     if(_attenteFilters.collab && !a.collab) return false;
     // Filtre domicile
     if(_attenteFilters.domicile && !a.domicile) return false;
+    // Filtre nouveaux
+    if(_attenteFilters.nouveaux && !a.isNew) return false;
     // Filtre créneaux
     if(_attenteFilters.creneaux && _attenteFilters.creneaux.length > 0){
       var _okCr = _attenteFilters.creneaux.some(function(cr){ return a.creneaux && a.creneaux[cr]; });
@@ -3153,6 +3171,7 @@ function renderAttenteList(){
     }
     if(_attenteFilters.collab && !a.collab) return false;
     if(_attenteFilters.domicile && !a.domicile) return false;
+    if(_attenteFilters.nouveaux && !a.isNew) return false;
     if(_attenteFilters.creneaux && _attenteFilters.creneaux.length > 0){
       if(!_attenteFilters.creneaux.some(function(cr){ return a.creneaux && a.creneaux[cr]; })) return false;
     }
@@ -3168,8 +3187,9 @@ function renderAttenteList(){
   var _f3=_attenteFilters.alertes.includes('3mois')?'btn-sm btn-green':'btn-sm';
   var _fC=_attenteFilters.collab?'btn-sm btn-green':'btn-sm';
   var _fD=_attenteFilters.domicile?'btn-sm btn-green':'btn-sm';
+  var _fN=_attenteFilters.nouveaux?'btn-sm btn-green':'btn-sm';
   var _hasF=_attenteFilters.parcours.length||_attenteFilters.alertes.length||
-    _attenteFilters.collab||_attenteFilters.domicile||
+    _attenteFilters.collab||_attenteFilters.domicile||_attenteFilters.nouveaux||
     (_attenteFilters.creneaux&&_attenteFilters.creneaux.length)||_attenteFilters.search;
   var _sStyle='font-size:11px;padding:4px 8px;border:1px solid var(--border);border-radius:20px;background:var(--bg);color:var(--text);outline:none;cursor:pointer;max-width:160px;';
   var _pOpts='<option value="">Parcours...</option>'+(DB.parcours||[]).map(function(pc){
@@ -3197,6 +3217,7 @@ function renderAttenteList(){
     +'<button class="'+_f3+'" onclick="toggleAttenteFiltre(this.dataset.t,this.dataset.v)" data-t="alertes" data-v="3mois" title="+3 mois">&#9888;</button>'
     +'<button class="'+_fC+'" onclick="toggleAttenteFiltre(this.dataset.t)" data-t="collab" title="Collab">&#129309;</button>'
     +'<button class="'+_fD+'" onclick="toggleAttenteFiltre(this.dataset.t)" data-t="domicile" title="Domicile">&#127968;</button>'
+    +'<button class="'+_fN+'" onclick="toggleAttenteFiltre(this.dataset.t)" data-t="nouveaux" title="Nouveaux">🆕</button>'
     +(_hasF?'<button class="btn btn-sm" style="color:var(--red);" onclick="resetAttenteFiltres()">&#10005;</button>':'')
     +'</div>';
   var header = '<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;margin-bottom:8px;">'
@@ -3246,6 +3267,7 @@ function renderAttenteList(){
       +'<div class="patient-row" onclick="toggleAttenteCard(this)">'
       +'<div class="avatar" style="background:linear-gradient(135deg,#6D28D9,#4C1D95);color:white;font-size:11px;font-weight:700;">'+initials+'</div>'
       +'<div class="patient-info">'
+      +(a.isNew?'<span style="font-size:10px;background:#3b82f6;color:white;border-radius:8px;padding:1px 7px;font-weight:600;margin-right:4px;">NEW</span>':'')
       +'<div style="font-weight:600;font-size:13px;">'+escHtml(a.nom||'')+' '+escHtml(a.prenom||'')+(function(){var _age=getAge(a.ddn);var _ageStr=_age!==null?(_age+' ans'):(a.age||'');var _sexeStr=a.sexe==='F'?'F':a.sexe==='M'?'M':'';var _parts=[];if(_ageStr)_parts.push(_ageStr);if(_sexeStr)_parts.push(_sexeStr);return _parts.length?' <span style="font-size:11px;color:var(--text-soft);">'+_parts.join(' · ')+'</span>':'';}())+'</div>'
       +'<div style="font-size:11px;color:var(--text-soft);">'+dateStr+(moisAttente>0?' ('+moisAttente+' mois)':'')+'</div>'
       +(contact?'<div style="font-size:11px;color:var(--text-soft);">Contact : '+escHtml(contact)+'</div>':'')
@@ -3305,6 +3327,8 @@ function toggleAttenteFiltre(type, val){
     _attenteFilters.collab = !_attenteFilters.collab;
   } else if(type === 'domicile'){
     _attenteFilters.domicile = !_attenteFilters.domicile;
+  } else if(type === 'nouveaux'){
+    _attenteFilters.nouveaux = !_attenteFilters.nouveaux;
   } else if(type === 'alertes'){
     var idx = _attenteFilters.alertes.indexOf(val);
     if(idx >= 0) _attenteFilters.alertes.splice(idx, 1);
@@ -3318,7 +3342,7 @@ function toggleAttenteFiltre(type, val){
 }
 
 function resetAttenteFiltres(){
-  _attenteFilters = {parcours:[], alertes:[], collab:false, domicile:false, creneaux:[], search:''};
+  _attenteFilters = {parcours:[], alertes:[], collab:false, domicile:false, nouveaux:false, creneaux:[], search:''};
   renderAttenteList();
 }
 
@@ -3328,6 +3352,10 @@ function toggleAttenteCard(rowEl){
   var body = card.querySelector('.patient-body');
   if(!body) return;
   body.style.display = body.style.display==='none' ? 'block' : 'none';
+  // Supprimer le badge NEW à l'ouverture
+  var aid = card.getAttribute('data-attente-id');
+  var a = (DB.attente||[]).find(function(x){return x.id===aid;});
+  if(a && a.isNew){ a.isNew=false; save(); var badge=card.querySelector('span[style*="#3b82f6"]'); if(badge)badge.remove(); }
 }
 
 function renderAttenteBody(a){
@@ -7000,7 +7028,7 @@ function savePatient(){
       _attenteDataForPromotion = null;
       _promouvoirAttenteId = null;
     }
-    DB.patients.push({id:newPid,...data,...extraData,permNotes:extraData.permNotes||data.permNotes||''});
+    DB.patients.push({id:newPid,...data,...extraData,permNotes:extraData.permNotes||data.permNotes||'',isNew:!!attenteId});
   }
   save();closeModal('modal-patient');
   if(data.statut !== _patientStatutFilter){
@@ -7015,7 +7043,7 @@ function savePatient(){
 // ─── LISTE D'ATTENTE — Modal JS ────────────────────────────────────────────
 
 var _attenteParcours = [];
-var _attenteFilters = {parcours:[], alertes:[], collab:false, domicile:false, creneaux:[], search:''};
+var _attenteFilters = {parcours:[], alertes:[], collab:false, domicile:false, nouveaux:false, creneaux:[], search:''};
 
 function toggleAttenteAntecedents(){
   var val = document.querySelector('input[name="att-premier-suivi"]:checked');
@@ -7157,6 +7185,7 @@ async function importerDemandesWeb(){
         collab: false, renouvellements: 0,
       };
       if(!DB.attente)DB.attente=[];
+      newD.isNew = true;
       DB.attente.push(newD);imported++;
       if(!DB.importedSupabaseIds.includes(row.id)) DB.importedSupabaseIds.push(row.id);
       // Mark as treated
@@ -7166,7 +7195,7 @@ async function importerDemandesWeb(){
         body:JSON.stringify({traite:true})
       });
     }
-    save();renderPatients();
+    save();renderPatients();renderAttenteList();
     var msg=imported+' demande'+(imported>1?'s':'')+' importée'+(imported>1?'s':'');
     if(skipped)msg+=' ('+skipped+' doublon'+(skipped>1?'s':'')+' ignoré'+(skipped>1?'s':'')+')';
     showToast('✅ '+msg);
