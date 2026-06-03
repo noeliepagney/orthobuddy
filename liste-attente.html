@@ -264,6 +264,11 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'DM Sans', sans-serif; ba
 </div>
 
 <script>
+function toggleParentZone(sel){
+  var z = document.getElementById('zone-parent');
+  if(z) z.style.display = sel.value==='parent' ? 'block' : 'none';
+}
+
 const SB_URL = 'https://xiznicrburryfmdfbjxk.supabase.co';
 const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inhpem5pY3JidXJyeWZtZGZianhrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAwNDM0NjEsImV4cCI6MjA5NTYxOTQ2MX0.vYuV7LIBXXkKJkHVwNPaI-lA7x1HwFROdU1K17ZB1Y8';
 
