@@ -47,7 +47,7 @@
         return;
       }
 
-      var res = await fetch(SUPABASE_URL+'/rest/v1/reservations?token=eq.'+token+'&select=*,creneaux(*)', {
+      var res = await fetch(SUPABASE_URL+'/rest/v1/reservations?token=eq.'+token+'&select=*', {
         headers: { 'apikey': SUPABASE_ANON, 'Authorization': 'Bearer '+SUPABASE_ANON }
       });
       var data = await res.json();
@@ -58,7 +58,18 @@
       }
 
       var rdv = data[0];
-      var creneau = rdv.creneaux;
+
+      // Charger le créneau séparément
+      var crenRes = await fetch(SUPABASE_URL+'/rest/v1/creneaux?id=eq.'+rdv.creneau_id+'&select=*', {
+        headers: { 'apikey': SUPABASE_ANON, 'Authorization': 'Bearer '+SUPABASE_ANON }
+      });
+      var crenData = await crenRes.json();
+      var creneau = crenData.length ? crenData[0] : null;
+
+      if(!creneau){
+        document.getElementById('content').innerHTML = '<div class="empty"><div class="empty-icon">📅</div><p>Créneau introuvable.</p></div>';
+        return;
+      }
 
       if(rdv.statut === 'annulee'){
         document.getElementById('content').innerHTML =
