@@ -15,10 +15,11 @@
     .rdv-heure{font-size:16px;color:#1D9E75;margin-bottom:16px;}
     .badge{display:inline-block;padding:4px 12px;border-radius:20px;font-size:12px;font-weight:600;}
     .badge-ok{background:#E1F5EE;color:#0F6E56;}
-    .badge-annule{background:#FDECEA;color:#C0392B;}
     .btn{padding:12px 24px;border-radius:8px;border:none;cursor:pointer;font-size:14px;font-weight:500;width:100%;margin-top:12px;}
     .btn-red{background:#FDECEA;color:#C0392B;border:1px solid #F5C6C6;}
     .btn-red:hover{background:#FBCFCF;}
+    .btn-red:disabled{opacity:.5;cursor:not-allowed;}
+    .btn-ghost{background:white;color:#5F5E5A;border:1px solid #E0E0D8;}
     .empty{text-align:center;padding:48px 16px;color:#888;}
     .empty-icon{font-size:48px;margin-bottom:12px;}
     .loading{text-align:center;padding:48px;color:#888;}
@@ -26,6 +27,13 @@
     .annule-icon{font-size:48px;margin-bottom:12px;}
     .annule-title{font-size:18px;font-weight:600;color:#C0392B;margin-bottom:8px;}
     .annule-text{font-size:14px;color:#888;}
+    .warning{background:#FFF8E6;border:1px solid #F5C06C;border-radius:8px;padding:14px 16px;font-size:13px;color:#7A4F00;margin-bottom:16px;line-height:1.5;}
+    .field{margin-bottom:12px;}
+    .field label{display:block;font-size:13px;font-weight:500;margin-bottom:4px;color:#3d3d3a;}
+    .field select, .field textarea{width:100%;padding:9px 10px;border:1px solid #E0E0D8;border-radius:8px;font-size:13px;font-family:inherit;background:white;color:#2C2C2A;}
+    .field textarea{resize:vertical;min-height:70px;}
+    .annulation-form{margin-top:16px;padding-top:16px;border-top:1px solid #E0E0D8;}
+    .annulation-form-title{font-size:14px;font-weight:600;margin-bottom:12px;}
   </style>
 </head>
 <body>
@@ -59,7 +67,6 @@
 
       var rdv = data[0];
 
-      // Charger le créneau séparément
       var crenRes = await fetch(SUPABASE_URL+'/rest/v1/creneaux?id=eq.'+rdv.creneau_id+'&select=*', {
         headers: { 'apikey': SUPABASE_ANON, 'Authorization': 'Bearer '+SUPABASE_ANON }
       });
@@ -81,8 +88,17 @@
         return;
       }
 
+      var rdvDate = new Date(creneau.date+'T'+creneau.heure_debut);
+      var now = new Date();
+      var diffH = (rdvDate - now) / (1000 * 60 * 60);
+      var tardif = diffH < 48;
+
       var date = new Date(creneau.date+'T00:00:00').toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
       var heure = creneau.heure_debut.slice(0,5)+' – '+creneau.heure_fin.slice(0,5);
+
+      var warningHtml = tardif
+        ? '<div class="warning">⚠️ Votre séance est dans moins de 48h. Les annulations tardives répétées peuvent compromettre la continuité de votre suivi orthophonique.</div>'
+        : '';
 
       var h = '<div class="card">'
         +'<div style="margin-bottom:16px;"><span class="badge badge-ok">✅ Confirmé</span></div>'
@@ -91,22 +107,57 @@
         +'<div style="font-size:13px;color:#888;margin-top:8px;">Séance d\'orthophonie</div>'
         +'<hr style="margin:20px 0;border:none;border-top:1px solid #E0E0D8;">'
         +'<div style="font-size:13px;color:#5F5E5A;margin-bottom:12px;">Vous ne pouvez plus venir ? Annulez votre séance pour libérer le créneau.</div>'
-        +'<button class="btn btn-red" onclick="annuler()">Annuler mon RDV</button>'
-        +'</div>';
+        +'<button class="btn btn-red" onclick="afficherFormAnnulation()">Annuler mon RDV</button>'
+        +'</div>'
+        +'<div id="form-annulation" style="display:none;">'
+        +'<div class="card">'
+        +'<div class="annulation-form-title">Motif d\'annulation</div>'
+        + warningHtml
+        +'<div class="field"><label>Raison <span style="color:#C0392B;">*</span></label>'
+        +'<select id="motif-select" onchange="toggleAutreMotif()">'
+        +'<option value="">— Sélectionnez —</option>'
+        +'<option value="Maladie / urgence">Maladie / urgence</option>'
+        +'<option value="Indisponibilité professionnelle">Indisponibilité professionnelle</option>'
+        +'<option value="Indisponibilité personnelle">Indisponibilité personnelle</option>'
+        +'<option value="Autre">Autre (préciser)</option>'
+        +'</select></div>'
+        +'<div class="field" id="autre-motif-field" style="display:none;"><label>Précisez</label>'
+        +'<textarea id="autre-motif" placeholder="Décrivez la raison..."></textarea></div>'
+        +'<button class="btn btn-red" id="btn-confirmer-annulation" onclick="annuler()">Confirmer l\'annulation</button>'
+        +'<button class="btn btn-ghost" onclick="masquerFormAnnulation()" style="margin-top:8px;">Retour</button>'
+        +'</div></div>';
 
       document.getElementById('content').innerHTML = h;
     }
 
-    async function annuler(){
-      if(!confirm('Confirmer l\'annulation de votre RDV ?')) return;
+    function afficherFormAnnulation(){
+      document.getElementById('form-annulation').style.display = 'block';
+      document.getElementById('form-annulation').scrollIntoView({behavior:'smooth'});
+    }
 
-      var btn = document.querySelector('.btn-red');
+    function masquerFormAnnulation(){
+      document.getElementById('form-annulation').style.display = 'none';
+    }
+
+    function toggleAutreMotif(){
+      var val = document.getElementById('motif-select').value;
+      document.getElementById('autre-motif-field').style.display = val === 'Autre' ? 'block' : 'none';
+    }
+
+    async function annuler(){
+      var motif = document.getElementById('motif-select').value;
+      if(!motif){ alert('Veuillez sélectionner un motif.'); return; }
+      var detail = motif === 'Autre' ? document.getElementById('autre-motif').value.trim() : '';
+      if(motif === 'Autre' && !detail){ alert('Veuillez préciser le motif.'); return; }
+      var motifFinal = motif === 'Autre' ? 'Autre : '+detail : motif;
+
+      var btn = document.getElementById('btn-confirmer-annulation');
       if(btn){ btn.disabled=true; btn.textContent='Annulation...'; }
 
       var res = await fetch(SUPABASE_URL+'/functions/v1/smooth-action', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer '+SUPABASE_ANON },
-        body: JSON.stringify({ action: 'annuler', token: token })
+        body: JSON.stringify({ action: 'annuler', token: token, motif: motifFinal })
       });
       var data = await res.json();
 
@@ -118,7 +169,7 @@
           +'<div class="annule-text">Votre annulation a bien été prise en compte.<br>Nous espérons vous revoir bientôt !</div>'
           +'</div>';
       } else {
-        if(btn){ btn.disabled=false; btn.textContent='Annuler mon RDV'; }
+        if(btn){ btn.disabled=false; btn.textContent='Confirmer l\'annulation'; }
         alert('Erreur lors de l\'annulation. Veuillez réessayer.');
       }
     }
