@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mon RDV — OrthoBuddy</title>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0;}
+    body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#F4F6F3;color:#2C2C2A;min-height:100vh;}
+    .header{background:white;border-bottom:1px solid #E0E0D8;padding:16px 24px;}
+    .logo{font-size:20px;font-weight:700;color:#1D9E75;}
+    .container{max-width:500px;margin:32px auto;padding:0 16px;}
+    .card{background:white;border:1px solid #E0E0D8;border-radius:12px;padding:24px;margin-bottom:16px;}
+    .rdv-date{font-size:20px;font-weight:600;color:#0F6E56;text-transform:capitalize;margin-bottom:4px;}
+    .rdv-heure{font-size:16px;color:#1D9E75;margin-bottom:16px;}
+    .badge{display:inline-block;padding:4px 12px;border-radius:20px;font-size:12px;font-weight:600;}
+    .badge-ok{background:#E1F5EE;color:#0F6E56;}
+    .badge-annule{background:#FDECEA;color:#C0392B;}
+    .btn{padding:12px 24px;border-radius:8px;border:none;cursor:pointer;font-size:14px;font-weight:500;width:100%;margin-top:12px;}
+    .btn-red{background:#FDECEA;color:#C0392B;border:1px solid #F5C6C6;}
+    .btn-red:hover{background:#FBCFCF;}
+    .empty{text-align:center;padding:48px 16px;color:#888;}
+    .empty-icon{font-size:48px;margin-bottom:12px;}
+    .loading{text-align:center;padding:48px;color:#888;}
+    .annule-card{background:#FDECEA;border:1px solid #F5C6C6;border-radius:12px;padding:24px;text-align:center;}
+    .annule-icon{font-size:48px;margin-bottom:12px;}
+    .annule-title{font-size:18px;font-weight:600;color:#C0392B;margin-bottom:8px;}
+    .annule-text{font-size:14px;color:#888;}
+  </style>
+</head>
+<body>
+  <div class="header"><div class="logo">🦋 OrthoBuddy</div></div>
+  <div class="container">
+    <div id="content"><div class="loading">Chargement...</div></div>
+  </div>
+
+  <script>
+    const SUPABASE_URL = 'https://xiznicrburryfmdfbjxk.supabase.co';
+    const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inhpem5pY3JidXJyeWZtZGZianhrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAwNDM0NjEsImV4cCI6MjA5NTYxOTQ2MX0.vYuV7LIBXXkKJkHVwNPaI-lA7x1HwFROdU1K17ZB1Y8';
+
+    const params = new URLSearchParams(window.location.search);
+    const token = params.get('token');
+
+    async function load(){
+      if(!token){
+        document.getElementById('content').innerHTML = '<div class="empty"><div class="empty-icon">🔒</div><p>Lien invalide.</p></div>';
+        return;
+      }
+
+      var res = await fetch(SUPABASE_URL+'/rest/v1/reservations?token=eq.'+token+'&select=*,creneaux(*)', {
+        headers: { 'apikey': SUPABASE_ANON, 'Authorization': 'Bearer '+SUPABASE_ANON }
+      });
+      var data = await res.json();
+
+      if(!data.length){
+        document.getElementById('content').innerHTML = '<div class="empty"><div class="empty-icon">🔒</div><p>Lien invalide ou expiré.</p></div>';
+        return;
+      }
+
+      var rdv = data[0];
+      var creneau = rdv.creneaux;
+
+      if(rdv.statut === 'annulee'){
+        document.getElementById('content').innerHTML =
+          '<div class="annule-card">'
+          +'<div class="annule-icon">❌</div>'
+          +'<div class="annule-title">RDV annulé</div>'
+          +'<div class="annule-text">Ce rendez-vous a été annulé.</div>'
+          +'</div>';
+        return;
+      }
+
+      var date = new Date(creneau.date+'T00:00:00').toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+      var heure = creneau.heure_debut.slice(0,5)+' – '+creneau.heure_fin.slice(0,5);
+
+      var h = '<div class="card">'
+        +'<div style="margin-bottom:16px;"><span class="badge badge-ok">✅ Confirmé</span></div>'
+        +'<div class="rdv-date">'+date+'</div>'
+        +'<div class="rdv-heure">'+heure+'</div>'
+        +'<div style="font-size:13px;color:#888;margin-top:8px;">Séance d\'orthophonie</div>'
+        +'<hr style="margin:20px 0;border:none;border-top:1px solid #E0E0D8;">'
+        +'<div style="font-size:13px;color:#5F5E5A;margin-bottom:12px;">Vous ne pouvez plus venir ? Annulez votre séance pour libérer le créneau.</div>'
+        +'<button class="btn btn-red" onclick="annuler()">Annuler mon RDV</button>'
+        +'</div>';
+
+      document.getElementById('content').innerHTML = h;
+    }
+
+    async function annuler(){
+      if(!confirm('Confirmer l\'annulation de votre RDV ?')) return;
+
+      var btn = document.querySelector('.btn-red');
+      if(btn){ btn.disabled=true; btn.textContent='Annulation...'; }
+
+      var res = await fetch(SUPABASE_URL+'/functions/v1/smooth-action', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer '+SUPABASE_ANON },
+        body: JSON.stringify({ action: 'annuler', token: token })
+      });
+      var data = await res.json();
+
+      if(data.success){
+        document.getElementById('content').innerHTML =
+          '<div class="annule-card">'
+          +'<div class="annule-icon">✅</div>'
+          +'<div class="annule-title">RDV annulé</div>'
+          +'<div class="annule-text">Votre annulation a bien été prise en compte.<br>Nous espérons vous revoir bientôt !</div>'
+          +'</div>';
+      } else {
+        if(btn){ btn.disabled=false; btn.textContent='Annuler mon RDV'; }
+        alert('Erreur lors de l\'annulation. Veuillez réessayer.');
+      }
+    }
+
+    window.addEventListener('load', function(){ load(); });
+  </script>
+</body>
+</html>
