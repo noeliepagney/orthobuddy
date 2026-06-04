@@ -473,6 +473,9 @@ html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);colo
       <button class="nav-item" onclick="showPage('agenda')" id="nav-agenda">
         <span class="nav-icon">📅</span><span class="nav-label">Mon agenda</span>
       </button>
+      <button class="nav-item" onclick="showPage('creneaux')" id="nav-creneaux">
+        <span class="nav-icon">🗓️</span><span class="nav-label">Créneaux ouverts</span>
+      </button>
       <button class="nav-item" onclick="showPage('alertes')" id="nav-alertes" style="flex-wrap:nowrap;overflow:hidden;">
         <span class="nav-icon" style="flex-shrink:0;">🔔</span>
         <span class="nav-label" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Alertes</span>
@@ -568,6 +571,7 @@ html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);colo
       </div>
 
       <!-- AGENDA -->
+      <div class="page" id="page-creneaux"><div id="creneaux-content" style="padding:16px;"></div></div>
       <div class="page" id="page-agenda">
         <div id="agenda-prochaines" style="padding:10px 16px 0;"></div>
         <div class="agenda-toolbar">
@@ -2589,6 +2593,7 @@ function showPage(name, statut){
     if(el)el.classList.add('active');
     const titles={
       agenda:   ['📅 Mon agenda',        'Planification & séances'],
+      creneaux: ['🗓️ Créneaux ouverts',   'Gestion des réservations patients'],
       settings: ['⚙️ Paramètres',         'Configuration'],
       docs:     ['📎 Mes documents',      'Fichiers & pièces jointes'],
       alertes:  ['🔔 Alertes & rappels',  "Notifications et points d'attention"],
@@ -2601,6 +2606,7 @@ function showPage(name, statut){
     setTopbar(t[0], t[1]);
   }
   if(name==='agenda')renderAgenda();
+  if(name==='creneaux')renderCreneauxPage();
   if(name==='patients')renderPatients();
   if(name==='settings'){renderSettings();setTimeout(function(){var el=document.getElementById('setting-urgence-days');if(el)el.value=(DB.settings&&DB.settings.urgenceDays!=null?DB.settings.urgenceDays:2);},50);}
   if(name==='taches')renderTachesPage();
@@ -11018,6 +11024,184 @@ const FAMI_INDICATEURS = [
 
 const FAMI_BASE = 490;
 
+function renderCreneauxPage(){
+  var el = document.getElementById('creneaux-content');
+  if(!el) return;
+
+  // Patients autonomes et surbooking
+  var autonomes = DB.patients.filter(function(p){ return p.portail==='autonome' && (!p.statut||p.statut==='actif'); });
+  var surbooking = DB.patients.filter(function(p){ return p.portail==='surbooking' && (!p.statut||p.statut==='actif'); });
+
+  var h = '';
+
+  // ── Générateur de créneaux ──
+  var today = new Date().toISOString().slice(0,10);
+  h += '<div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px;margin-bottom:20px;">';
+  h += '<div style="font-weight:600;font-size:15px;margin-bottom:16px;">➕ Générer des créneaux</div>';
+  h += '<div style="display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;margin-bottom:12px;">';
+  h += '<div class="field" style="margin:0;"><label>Du</label><input type="date" id="cren-date-debut" style="margin-top:4px;font-size:13px;padding:6px 8px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--surface);color:var(--text);" min="'+today+'"></div>';
+  h += '<div class="field" style="margin:0;"><label>Au</label><input type="date" id="cren-date-fin" style="margin-top:4px;font-size:13px;padding:6px 8px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--surface);color:var(--text);" min="'+today+'"></div>';
+  h += '<div class="field" style="margin:0;"><label>Heure début</label><input type="time" id="cren-heure-debut" style="margin-top:4px;" value="09:00"></div>';
+  h += '<div class="field" style="margin:0;"><label>Heure fin</label><input type="time" id="cren-heure-fin" style="margin-top:4px;" value="12:00"></div>';
+  h += '<div class="field" style="margin:0;"><label>Durée (min)</label><select id="cren-duree" style="margin-top:4px;"><option value="30">30 min</option><option value="45">45 min</option><option value="60">1h</option></select></div>';
+  h += '</div>';
+  h += '<div style="margin-bottom:12px;">';
+  h += '<div style="font-size:12px;font-weight:600;color:var(--text-soft);margin-bottom:6px;">Jours</div>';
+  h += '<div style="display:flex;gap:8px;flex-wrap:wrap;">';
+  ['Lun','Mar','Mer','Jeu','Ven','Sam','Dim'].forEach(function(j,i){
+    h += '<label style="display:flex;align-items:center;gap:4px;font-size:13px;cursor:pointer;"><input type="checkbox" class="cren-jour" value="'+(i+1)+'" '+(i<5?'checked':'')+'>'+j+'</label>';
+  });
+  h += '</div>';
+  h += '</div>';
+  h += '<button class="btn btn-green" onclick="previsualiserCreneaux()">Prévisualiser</button>';
+  h += '</div>';
+  h += '<div id="cren-preview" style="margin-bottom:20px;display:none;"></div>';
+
+  // ── Liste des créneaux ──
+  var creneaux = (DB.creneaux||[]).sort(function(a,b){ return (a.date+a.heure_debut).localeCompare(b.date+b.heure_debut); });
+
+  h += '<div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px;margin-bottom:20px;">';
+  h += '<div style="font-weight:600;font-size:15px;margin-bottom:12px;">📋 Créneaux définis</div>';
+
+  if(!creneaux.length){
+    h += '<div style="color:var(--text-soft);font-size:13px;">Aucun créneau défini. Ajoutez des créneaux ci-dessus.</div>';
+  } else {
+    creneaux.forEach(function(c){
+      var dateStr = new Date(c.date+'T00:00:00').toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long'});
+      var statutColor = c.statut==='libre' ? 'var(--green)' : c.statut==='reserve' ? 'var(--amber)' : 'var(--text-soft)';
+      var statutLabel = c.statut==='libre' ? '🟢 Libre' : c.statut==='reserve' ? '🟡 Réservé' : '⚫ Fermé';
+      h += '<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border-light);">';
+      h += '<div>';
+      h += '<div style="font-weight:500;font-size:13px;">'+dateStr+'</div>';
+      h += '<div style="font-size:12px;color:var(--text-soft);">'+c.heure_debut.slice(0,5)+' – '+c.heure_fin.slice(0,5)+'</div>';
+      h += '</div>';
+      h += '<div style="display:flex;align-items:center;gap:10px;">';
+      h += '<span style="font-size:12px;color:'+statutColor+';">'+statutLabel+'</span>';
+      if(c.statut==='libre'){
+        h += '<button class="btn btn-ghost" style="font-size:11px;padding:3px 8px;" onclick="supprimerCreneau(\'' + c.id + '\')">✕</button>';
+      }
+      h += '</div>';
+      h += '</div>';
+    });
+  }
+  h += '</div>';
+
+  // ── Bouton ouvrir les plages ──
+  var libres = creneaux.filter(function(c){ return c.statut==='libre'; });
+  if(libres.length){
+    h += '<div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px;">';
+    h += '<div style="font-weight:600;font-size:15px;margin-bottom:8px;">📨 Ouvrir les plages</div>';
+    h += '<div style="font-size:13px;color:var(--text-soft);margin-bottom:16px;">'+libres.length+' créneau'+(libres.length>1?'x':'')+' libre'+(libres.length>1?'s':'')+' — ';
+    h += autonomes.length+' patient'+(autonomes.length>1?'s':'')+' autonome'+(autonomes.length>1?'s':'')+', ';
+    h += surbooking.length+' surbooking</div>';
+    h += '<button class="btn btn-green" onclick="ouvrirPlages()" style="font-size:14px;padding:10px 24px;">🚀 Envoyer les invitations</button>';
+    h += '</div>';
+  }
+
+  el.innerHTML = h;
+
+}
+
+function previsualiserCreneaux(){
+  var dateDebut = document.getElementById('cren-date-debut').value;
+  var dateFin = document.getElementById('cren-date-fin').value;
+  var heureDebut = document.getElementById('cren-heure-debut').value;
+  var heureFin = document.getElementById('cren-heure-fin').value;
+  var duree = parseInt(document.getElementById('cren-duree').value);
+  var jours = [...document.querySelectorAll('.cren-jour:checked')].map(function(cb){ return parseInt(cb.value); });
+
+  if(!dateDebut||!dateFin){ showToast('Sélectionnez une période','red'); return; }
+  if(dateDebut>dateFin){ showToast('La date de fin doit être après le début','red'); return; }
+  if(!heureDebut||!heureFin){ showToast('Sélectionnez les horaires','red'); return; }
+  if(heureDebut>=heureFin){ showToast("L'heure de fin doit être après le début",'red'); return; }
+  if(!jours.length){ showToast('Sélectionnez au moins un jour','red'); return; }
+
+  var slots = [];
+  var current = new Date(dateDebut+'T00:00:00');
+  var end = new Date(dateFin+'T00:00:00');
+
+  while(current <= end){
+    var dow = current.getDay();
+    var dowAdj = dow===0 ? 7 : dow;
+    if(jours.includes(dowAdj)){
+      var y = current.getFullYear();
+      var mo = String(current.getMonth()+1).padStart(2,'0');
+      var dy = String(current.getDate()).padStart(2,'0');
+      var dateStr = y+'-'+mo+'-'+dy;
+      var hD = parseInt(heureDebut.split(':')[0]);
+      var mD = parseInt(heureDebut.split(':')[1]);
+      var hF = parseInt(heureFin.split(':')[0]);
+      var mF = parseInt(heureFin.split(':')[1]);
+      var totalMinDebut = hD*60+mD;
+      var totalMinFin = hF*60+mF;
+      while(totalMinDebut+duree <= totalMinFin){
+        var hDStr = String(Math.floor(totalMinDebut/60)).padStart(2,'0');
+        var mDStr = String(totalMinDebut%60).padStart(2,'0');
+        var hFStr = String(Math.floor((totalMinDebut+duree)/60)).padStart(2,'0');
+        var mFStr = String((totalMinDebut+duree)%60).padStart(2,'0');
+        slots.push({ date: dateStr, heure_debut: hDStr+':'+mDStr, heure_fin: hFStr+':'+mFStr });
+        totalMinDebut += duree;
+      }
+    }
+    current.setDate(current.getDate()+1);
+  }
+
+  if(!slots.length){ showToast('Aucun créneau généré avec ces paramètres','red'); return; }
+
+  var preview = document.getElementById('cren-preview');
+  var h = '<div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px;">';
+  h += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">';
+  h += '<div style="font-weight:600;font-size:15px;">👁 Prévisualisation — '+slots.length+' créneau'+(slots.length>1?'x':'')+' générés</div>';
+  h += '<div style="display:flex;gap:8px;">';
+  h += '<button class="btn btn-ghost" onclick="document.getElementById(\'cren-preview\').style.display=\'none\'">Annuler</button>';
+  h += '<button class="btn btn-green" onclick="confirmerCreneaux()">✅ Confirmer et ajouter</button>';
+  h += '</div></div>';
+
+  var parDate = {};
+  slots.forEach(function(s){ if(!parDate[s.date]) parDate[s.date]=[]; parDate[s.date].push(s); });
+  Object.keys(parDate).sort().forEach(function(date){
+    var dateStr = new Date(date+'T00:00:00').toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long'});
+    h += '<div style="margin-bottom:10px;">';
+    h += '<div style="font-size:12px;font-weight:600;color:var(--text-soft);text-transform:uppercase;margin-bottom:4px;">'+dateStr+'</div>';
+    h += '<div style="display:flex;flex-wrap:wrap;gap:6px;">';
+    parDate[date].forEach(function(s){
+      h += '<span style="font-size:12px;background:var(--green-ll);color:var(--green-d);border-radius:20px;padding:3px 10px;">'+s.heure_debut+' – '+s.heure_fin+'</span>';
+    });
+    h += '</div></div>';
+  });
+  h += '</div>';
+
+  preview.innerHTML = h;
+  preview.style.display = 'block';
+  preview.scrollIntoView({behavior:'smooth',block:'start'});
+  window._pendingCreneaux = slots;
+}
+
+function confirmerCreneaux(){
+  var slots = window._pendingCreneaux || [];
+  if(!slots.length){ showToast('Aucun créneau à ajouter','red'); return; }
+  if(!DB.creneaux) DB.creneaux = [];
+  slots.forEach(function(s){
+    DB.creneaux.push({ id:uid(), date:s.date, heure_debut:s.heure_debut+':00', heure_fin:s.heure_fin+':00', statut:'libre', patient_id:null, token_patient:uid() });
+  });
+  window._pendingCreneaux = [];
+  save();
+  showToast(slots.length+' créneau'+(slots.length>1?'x':'')+' ajouté'+(slots.length>1?'s':''));
+  renderCreneauxPage();
+}
+
+function supprimerCreneau(cid){
+  if(!confirm('Supprimer ce créneau ?')) return;
+  DB.creneaux = (DB.creneaux||[]).filter(function(c){ return c.id!==cid; });
+  save();
+  showToast('Créneau supprimé');
+  renderCreneauxPage();
+}
+
+function ouvrirPlages(){
+  showToast('Fonctionnalité d\'envoi des emails — bientôt disponible !','blue');
+}
+
 function getFamiMontant(indicateurs){
   if(!indicateurs) return 0;
   var socles = ['logiciel','sesam','scor','teletrans','mssante'];
@@ -11666,6 +11850,29 @@ function getSeancesForPeriod(){
   return seances.filter(function(s){return s.date>=sStr&&s.date<=eStr&&!!s.amoTarif;});
 }
 
+
+// Override getSeancesForPeriod pour inclure le prévisionnel si activé
+var _origGetSeancesForPeriod = getSeancesForPeriod;
+getSeancesForPeriod = function(){
+  var seances = _origGetSeancesForPeriod();
+  if(!_showPrevision) return seances;
+  // Ajouter les séances futures de la période si prévisionnel activé
+  var all = DB.seances || [];
+  if(_resPeriod === 'patient') {
+    var futureAll = all.filter(function(s){ return s.date > today() && !!s.amoTarif; });
+    // Dédupliquer
+    var ids = new Set(seances.map(function(s){ return s.id; }));
+    futureAll.forEach(function(s){ if(!ids.has(s.id)) seances.push(s); });
+    return seances;
+  }
+  var range = getPeriodicRange(_resPeriod, _resOffset);
+  var sStr = fmtDate(range.start);
+  var eStr = fmtDate(range.end);
+  var future = all.filter(function(s){ return s.date > today() && s.date >= sStr && s.date <= eStr && !!s.amoTarif; });
+  var ids = new Set(seances.map(function(s){ return s.id; }));
+  future.forEach(function(s){ if(!ids.has(s.id)) seances.push(s); });
+  return seances;
+};
 function cycleSeanceStatus(sid){
   var s=(DB.seances||[]).find(function(x){return x.id===sid;});
   if(!s)return;
@@ -11685,6 +11892,14 @@ function statusChip(s){
 
 
 // ─── Stats cabinet ───
+// Marquer visuellement les séances prévisionnelles dans renderResultats
+var _origStatusChip = statusChip;
+statusChip = function(s){
+  if(s.date > today()){
+    return '<span class="status-chip attente" style="font-style:italic;opacity:.7;">📅 Planifiée</span>';
+  }
+  return _origStatusChip(s);
+};
 function renderStatsCabinet(annee, moisFiltre){
   var el = document.getElementById('stats-cabinet-content');
   if(!el) return;
@@ -13991,35 +14206,4 @@ function togglePrevision(){
   renderResultats();
 }
 
-// Override getSeancesForPeriod pour inclure le prévisionnel si activé
-var _origGetSeancesForPeriod = getSeancesForPeriod;
-getSeancesForPeriod = function(){
-  var seances = _origGetSeancesForPeriod();
-  if(!_showPrevision) return seances;
-  // Ajouter les séances futures de la période si prévisionnel activé
-  var all = DB.seances || [];
-  if(_resPeriod === 'patient') {
-    var futureAll = all.filter(function(s){ return s.date > today() && !!s.amoTarif; });
-    // Dédupliquer
-    var ids = new Set(seances.map(function(s){ return s.id; }));
-    futureAll.forEach(function(s){ if(!ids.has(s.id)) seances.push(s); });
-    return seances;
-  }
-  var range = getPeriodicRange(_resPeriod, _resOffset);
-  var sStr = fmtDate(range.start);
-  var eStr = fmtDate(range.end);
-  var future = all.filter(function(s){ return s.date > today() && s.date >= sStr && s.date <= eStr && !!s.amoTarif; });
-  var ids = new Set(seances.map(function(s){ return s.id; }));
-  future.forEach(function(s){ if(!ids.has(s.id)) seances.push(s); });
-  return seances;
-};
-
-// Marquer visuellement les séances prévisionnelles dans renderResultats
-var _origStatusChip = statusChip;
-statusChip = function(s){
-  if(s.date > today()){
-    return '<span class="status-chip attente" style="font-style:italic;opacity:.7;">📅 Planifiée</span>';
-  }
-  return _origStatusChip(s);
-};
 </script>
