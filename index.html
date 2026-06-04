@@ -2482,14 +2482,42 @@ function getRdvFin(){return String(_rdvFH).padStart(2,'0')+':'+String(_rdvFM).pa
 // ═══════════════════════════════════════
 async function doLogin(){
   const pwd=document.getElementById('login-pwd').value;
-  // En mode Tauri, charger les données avec le mot de passe saisi
-  if(window.__TAURI__ && pwd){
+  if(!pwd){ document.getElementById('login-error').textContent='Saisissez un mot de passe'; return; }
+
+  if(window.__TAURI__){
+    // Mode Tauri : vérification via Argon2
+    const verif = await window.__TAURI__.core.invoke('verify_pwd', {password: pwd});
+    if(verif === 'wrong'){
+      document.getElementById('login-error').textContent='Mot de passe incorrect';
+      setTimeout(()=>document.getElementById('login-error').textContent='',2000);
+      return;
+    }
+    // Charger les données
     const raw = await window.__TAURI__.core.invoke('load_data', {password: pwd});
     if(raw && raw !== 'null'){
       try{ const p=JSON.parse(raw); if(p) DB={...DB,...p}; }catch(e){}
     }
+    // Première fois : créer le hash Argon2 depuis DB.password
+    if(verif === 'first_time'){
+      const pwdToHash = DB.password || pwd;
+      if(pwd === pwdToHash){
+        await window.__TAURI__.core.invoke('set_pwd_hash', {password: pwd});
+      } else {
+        document.getElementById('login-error').textContent='Mot de passe incorrect';
+        setTimeout(()=>document.getElementById('login-error').textContent='',2000);
+        return;
+      }
+    }
+  } else {
+    // Mode browser : vérification classique
+    if(pwd!==DB.password){
+      document.getElementById('login-error').textContent='Mot de passe incorrect';
+      setTimeout(()=>document.getElementById('login-error').textContent='',2000);
+      return;
+    }
   }
-  if(pwd===DB.password){
+
+  if(true){
     sessionStorage.setItem('ob_auth','1');
     document.getElementById('login-screen').classList.add('hidden');
     document.getElementById('app').style.display='flex';
@@ -2517,11 +2545,17 @@ async function doLogin(){
   }
 }
 
-function changePassword(){
+async function changePassword(){
   const p1=document.getElementById('new-pwd').value,p2=document.getElementById('new-pwd2').value;
   if(!p1){showToast('Saisissez un mot de passe','red');return;}
   if(p1!==p2){showToast('Les mots de passe ne correspondent pas','red');return;}
-  DB.password=p1;save();showToast('✓ Mot de passe modifié');
+  DB.password=p1;
+  save();
+  // Mettre à jour le hash Argon2 en mode Tauri
+  if(window.__TAURI__){
+    await window.__TAURI__.core.invoke('set_pwd_hash', {password: p1});
+  }
+  showToast('✓ Mot de passe modifié');
 }
 
 // ═══════════════════════════════════════
