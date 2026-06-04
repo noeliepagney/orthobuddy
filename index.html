@@ -2859,7 +2859,8 @@ function renderFilterChips(){
     { key:'domicile',  label:'🏠 Domicile',         cls:'active' },
     { key:'alertes',   label:'🔔 Alertes',          cls:'active-alert' },
     { key:'telesoin',  label:'📱 Télésoin',          cls:'active' },
-    { key:'nouveaux',  label:'🆕 Importés',          cls:'active' },
+    { key:'perdvue',   label:'👻 Perdus de vue',      cls:'active' },
+    { key:'aujourdhui',label:'📅 Aujourd\'hui',        cls:'active' },
   ];
   fixedFilters.forEach(function(f){
     var active = !!_pFilters[f.key];
@@ -2978,6 +2979,8 @@ function renderPatients(){
         if(key==='age6'){ var a=getAge(p.ddn); return a!==null&&a<6; }
         if(key==='telesoin') return DB.seances.some(function(s){return s.patientId===p.id&&s.isTelesoin;});
         if(key==='nouveaux') return !!p.isNew;
+        if(key==='perdvue') return isPerdVue(p);
+        if(key==='aujourdhui'){ var today=new Date().toISOString().slice(0,10); return (DB.rdvs||[]).some(function(r){return r.patientId===p.id&&r.date===today;})||(DB.seances||[]).some(function(s){return s.patientId===p.id&&s.date===today;}); }
         if(key==='genre_F') return p.genre==='F';
         if(key==='genre_M') return p.genre==='M';
         if(key==='genre_A') return p.genre==='A'||p.genre==='Autre';
@@ -3037,6 +3040,7 @@ function renderPatients(){
             ${p.domicile?'<span title="Séances à domicile" style="font-size:13px;">🏠</span>':''}
 
             ${p.isNew?'<span title="Importé récemment" style="font-size:10px;background:#3b82f6;color:white;border-radius:8px;padding:1px 7px;font-weight:600;letter-spacing:.3px;">NEW</span>':''}
+            ${isPerdVue(p)?'<span title="Pas de séance depuis 4 semaines" style="font-size:10px;background:#f97316;color:white;border-radius:8px;padding:1px 7px;font-weight:600;">👻 Perdu de vue</span>':''}
             ${p.enCollab?'<span title="En collaboration" style="font-size:11px;opacity:.55;">🤝</span>':''}
             ${p.genre==='F'?'<span title="Féminin" style="font-size:10px;color:var(--text-soft);opacity:.6;margin-left:1px;">♀</span>':p.genre==='M'?'<span title="Masculin" style="font-size:10px;color:var(--text-soft);opacity:.6;margin-left:1px;">♂</span>':''}
           </div>
@@ -3075,6 +3079,21 @@ function renderPatients(){
       </div>
     </div>`;
   }).join('');
+}
+
+function toggleRappelPerdVue(pid, checked){
+  var p = DB.patients.find(function(x){return x.id===pid;});
+  if(p){ p.rappelPerdVue = checked; save(); }
+}
+
+function isPerdVue(p){
+  if(p.rappelPerdVue === false) return false;
+  if(p.statut && p.statut !== 'actif') return false;
+  var seances = (DB.seances||[]).filter(function(s){return s.patientId===p.id;});
+  if(!seances.length) return false;
+  var last = seances.map(function(s){return s.date;}).sort().pop();
+  var diffDays = (Date.now() - new Date(last+'T00:00:00')) / (1000*60*60*24);
+  return diffDays >= 28;
 }
 
 function togglePatient(pid){
@@ -3227,18 +3246,24 @@ function renderAttenteList(){
   var _cOpts='<option value="">Créneaux...</option>'+_crData.map(function(o){
     return '<option value="'+o.v+'"'+(_attenteFilters.creneaux&&_attenteFilters.creneaux.includes(o.v)?' selected':'')+'>'+o.l+'</option>';
   }).join('');
-  var filtresBtns='<div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px;align-items:center;">'
+  var _chipU = 'filter-chip'+(_attenteFilters.alertes.includes('urgent')?' active-alert':'');
+  var _chipP = 'filter-chip'+(_attenteFilters.alertes.includes('prioritaire')?' active':'');
+  var _chip3 = 'filter-chip'+(_attenteFilters.alertes.includes('3mois')?' active':'');
+  var _chipC = 'filter-chip'+(_attenteFilters.collab?' active-collab':'');
+  var _chipD = 'filter-chip'+(_attenteFilters.domicile?' active':'');
+  var _chipN = 'filter-chip'+(_attenteFilters.nouveaux?' active':'');
+  var filtresBtns='<div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:10px;align-items:center;">'
+    +(_hasF?'<span class="filter-chip active" onclick="resetAttenteFiltres()" style="background:var(--text-mid);border-color:var(--text-mid);">✕ Effacer</span>':'')
     +'<input type="text" placeholder="Rechercher..." value="'+(_attenteFilters.search||'')
-    +'" oninput="onAttenteSearch(this.value)" style="font-size:12px;padding:4px 12px;border:1px solid var(--border);border-radius:20px;background:var(--bg);outline:none;min-width:140px;">'
+    +'" oninput="onAttenteSearch(this.value)" style="font-size:11px;padding:3px 10px;border:1px solid var(--border);border-radius:20px;background:var(--bg);outline:none;min-width:130px;">'
     +'<select onchange="onAttenteFiltreSelect(this,\'parcours\')" style="'+_sStyle+'">'+_pOpts+'</select>'
     +'<select onchange="onAttenteFiltreSelect(this,\'creneaux\')" style="'+_sStyle+'">'+_cOpts+'</select>'
-    +'<button class="'+_fU+'" onclick="toggleAttenteFiltre(this.dataset.t,this.dataset.v)" data-t="alertes" data-v="urgent" title="Urgent">&#128308;</button>'
-    +'<button class="'+_fP+'" onclick="toggleAttenteFiltre(this.dataset.t,this.dataset.v)" data-t="alertes" data-v="prioritaire" title="Prioritaire">&#129505;</button>'
-    +'<button class="'+_f3+'" onclick="toggleAttenteFiltre(this.dataset.t,this.dataset.v)" data-t="alertes" data-v="3mois" title="+3 mois">⏰ +3 mois</button>'
-    +'<button class="'+_fC+'" onclick="toggleAttenteFiltre(this.dataset.t)" data-t="collab" title="Collab">&#129309;</button>'
-    +'<button class="'+_fD+'" onclick="toggleAttenteFiltre(this.dataset.t)" data-t="domicile" title="Domicile">&#127968;</button>'
-    +'<button class="'+_fN+'" onclick="toggleAttenteFiltre(this.dataset.t)" data-t="nouveaux" title="Nouveaux">🆕</button>'
-    +(_hasF?'<button class="btn btn-sm" style="color:var(--red);" onclick="resetAttenteFiltres()">&#10005;</button>':'')
+    +'<span class="'+_chipU+'" onclick="toggleAttenteFiltre(\'alertes\',\'urgent\')">🔴 Urgent</span>'
+    +'<span class="'+_chipP+'" onclick="toggleAttenteFiltre(\'alertes\',\'prioritaire\')">🟡 Prioritaire</span>'
+    +'<span class="'+_chip3+'" onclick="toggleAttenteFiltre(\'alertes\',\'3mois\')">⏰ +3 mois</span>'
+    +'<span class="'+_chipC+'" onclick="toggleAttenteFiltre(\'collab\')">🤝 Collab</span>'
+    +'<span class="'+_chipD+'" onclick="toggleAttenteFiltre(\'domicile\')">🏠 Domicile</span>'
+    +'<span class="'+_chipN+'" onclick="toggleAttenteFiltre(\'nouveaux\')">🆕 Nouveaux</span>'
     +'</div>';
   var header = '<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;margin-bottom:8px;">'
     +'<span style="font-size:12px;color:var(--text-soft);">'+list.length+' demande'+(list.length>1?'s':'')+'</span>'
@@ -6353,7 +6378,14 @@ function renderDossierTab(p){
     +(creneauxStr?'<div style="font-size:11px;color:var(--text-soft);margin-bottom:6px;">🕐 Créneaux souhaités : '+escHtml(creneauxStr)+'</div>':'')
     +'<textarea placeholder="Informations importantes\u2026" onchange="updatePF(\'' + p.id + '\',\'permNotes\',this.value)">'+(p.permNotes||'')+'</textarea></div>'
     + suiviHtml + structHtml
-    +'<div style="margin-top:12px;display:flex;gap:8px;">'
+    +'<div style="margin-top:12px;display:flex;flex-direction:column;gap:8px;">'
+    +'<div style="padding:10px 12px;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-sm);">'
+    +'<label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:12px;">'
+    +'<input type="checkbox" '+(p.rappelPerdVue===false?'':'checked')+' onchange="toggleRappelPerdVue(\''+ p.id +'\',this.checked)" style="accent-color:var(--green);width:14px;height:14px;">'
+    +'<span>\uD83D\uDD14 Alerte si pas de s\u00e9ance depuis 4 semaines</span>'
+    +'</label>'
+    +'</div>'
+    +'<div style="display:flex;gap:8px;">'
     +'<button class="btn btn-sm" onclick="openPatientModal(\'' + p.id + '\')">\u270F\uFE0F Modifier</button>'
     +'<button class="btn btn-sm btn-red" onclick="deletePatient(\'' + p.id + '\')">\uD83D\uDDD1\uFE0F Supprimer</button>'
     +'</div>';
