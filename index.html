@@ -203,7 +203,7 @@ html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);colo
 .filter-chip.active-collab{background:#EA580C;color:white;border-color:#EA580C;}
 .filter-chip.active-alert{background:var(--red);color:white;border-color:var(--red);}
 .filter-chip.active-parc{border-color:var(--green);color:var(--green);background:var(--green-ll);}
-.patient-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:8px;box-shadow:var(--shadow);overflow:hidden;transition:border-color .15s;}
+.patient-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:8px;box-shadow:var(--shadow);overflow:hidden;transition:border-color .15s;position:relative;z-index:1;}
 .patient-card.expanded{border-color:#9FE1CB;}
 .patient-row{display:flex;align-items:center;gap:10px;padding:11px 14px;cursor:pointer;transition:background .1s;}
 .patient-row:hover{background:var(--bg);}
@@ -3022,6 +3022,7 @@ function renderPatients(){
     document.getElementById('patients-list').innerHTML=`<div class="empty-state"><div class="empty-state-icon">${emptyIcons[_patientStatutFilter]||'👥'}</div><p>${q?'Aucun résultat.':emptyMsgs[_patientStatutFilter]||''}</p></div>`;
     return;
   }
+  var _pl=document.getElementById('patients-list'); _pl.style.minHeight='0'; _pl.style.height='auto';
   document.getElementById('patients-list').innerHTML=pts.map(p=>{
     const nb=DB.seances.filter(s=>s.patientId===p.id).length;
     const ordo=getOrdoStatus(p);
@@ -3059,7 +3060,7 @@ function renderPatients(){
           <span class="chevron">&#9662;</span>
         </div>
       </div>
-      <div class="patient-body" id="pbody-${p.id}">
+      <div class="patient-body" id="pbody-${p.id}" style="display:none;">
         <div class="patient-tabs">
           <button class="patient-tab active" onclick="switchPTab('${p.id}','seances',this)">📋 Séances</button>
           <button class="patient-tab" onclick="switchPTab('${p.id}','dossier',this)">📁 Dossier</button>
@@ -3069,10 +3070,10 @@ function renderPatients(){
           <button class="patient-tab" onclick="switchPTab('${p.id}','gir',this);renderGirTab('${p.id}')">📊 Grille FNO</button>
           <button class="patient-tab" onclick="switchPTab('${p.id}','objectifs',this);renderObjectifsTab('${p.id}')">🎯 Objectifs</button>
         </div>
-        <div class="patient-tab-content active" id="ptab-${p.id}-seances">${renderSeancesTab(p)}</div>
-        <div class="patient-tab-content" id="ptab-${p.id}-dossier">${renderDossierTab(p)}</div>
-        <div class="patient-tab-content" id="ptab-${p.id}-amo">${renderAmoTab(p)}</div>
-        <div class="patient-tab-content" id="ptab-${p.id}-taches">${renderTachesPatientTab(p)}</div>
+        <div class="patient-tab-content active" id="ptab-${p.id}-seances"></div>
+        <div class="patient-tab-content" id="ptab-${p.id}-dossier"></div>
+        <div class="patient-tab-content" id="ptab-${p.id}-amo"></div>
+        <div class="patient-tab-content" id="ptab-${p.id}-taches"></div>
         <div class="patient-tab-content" id="ptab-${p.id}-docs"><div class="empty-state" style="padding:16px;"><div class="empty-state-icon">📎</div><p>Cliquez pour charger les documents.</p></div></div>
         <div class="patient-tab-content" id="ptab-${p.id}-gir"></div>
         <div class="patient-tab-content" id="ptab-${p.id}-objectifs"></div>
@@ -3097,14 +3098,26 @@ function isPerdVue(p){
 }
 
 function togglePatient(pid){
-  document.getElementById('pcard-'+pid).classList.toggle('expanded');
-  // Supprimer le badge NEW à l'ouverture
+  const card = document.getElementById('pcard-'+pid);
+  card.classList.toggle('expanded');
+  const isExpanded = card.classList.contains('expanded');
   const p = DB.patients.find(x=>x.id===pid);
-  if(p && p.isNew){
+  if(!p) return;
+  if(p.isNew && isExpanded){
     p.isNew = false;
     save();
     const badge = document.querySelector('#pcard-'+pid+' span[title="Importé récemment"]');
     if(badge) badge.remove();
+  }
+  if(isExpanded){
+    const seancesTab = document.getElementById('ptab-'+pid+'-seances');
+    if(seancesTab && !seancesTab.dataset.loaded){ seancesTab.innerHTML = renderSeancesTab(p); seancesTab.dataset.loaded='1'; }
+    const dossierTab = document.getElementById('ptab-'+pid+'-dossier');
+    if(dossierTab && !dossierTab.dataset.loaded){ dossierTab.innerHTML = renderDossierTab(p); dossierTab.dataset.loaded='1'; }
+    const amoTab = document.getElementById('ptab-'+pid+'-amo');
+    if(amoTab && !amoTab.dataset.loaded){ amoTab.innerHTML = renderAmoTab(p); amoTab.dataset.loaded='1'; }
+    const tachesTab = document.getElementById('ptab-'+pid+'-taches');
+    if(tachesTab && !tachesTab.dataset.loaded){ tachesTab.innerHTML = renderTachesPatientTab(p); tachesTab.dataset.loaded='1'; }
   }
 }
 
