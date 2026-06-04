@@ -474,7 +474,7 @@ html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);colo
         <span class="nav-icon">📅</span><span class="nav-label">Mon agenda</span>
       </button>
       <button class="nav-item" onclick="showPage('creneaux')" id="nav-creneaux">
-        <span class="nav-icon">🗓️</span><span class="nav-label">Créneaux ouverts</span>
+        <span class="nav-icon">🗓️</span><span class="nav-label">Créneaux ouverts</span><span id="creneaux-notif-badge" style="display:none;background:var(--red);color:white;border-radius:10px;font-size:9px;padding:0 5px;margin-left:4px;font-weight:700;"></span>
       </button>
       <button class="nav-item" onclick="showPage('alertes')" id="nav-alertes" style="flex-wrap:nowrap;overflow:hidden;">
         <span class="nav-icon" style="flex-shrink:0;">🔔</span>
@@ -2165,6 +2165,32 @@ async function sbSave(){
   }
 }
 
+async function checkNouvellesReservations(){
+  try {
+    if(!SB_URL||!SB_KEY) return;
+    var res = await fetch(SB_URL+'/rest/v1/reservations?statut=eq.confirmee&select=token,patient_id', {
+      headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer '+SB_KEY }
+    });
+    var reservations = await res.json();
+    if(!Array.isArray(reservations)) return;
+
+    // Compter les réservations pas encore dans DB.seances
+    var nouvelles = reservations.filter(function(r){
+      return !(DB.seances||[]).some(function(s){ return s.portailToken === r.token; });
+    });
+
+    var badge = document.getElementById('creneaux-notif-badge');
+    if(badge){
+      if(nouvelles.length > 0){
+        badge.textContent = nouvelles.length;
+        badge.style.display = 'inline';
+      } else {
+        badge.style.display = 'none';
+      }
+    }
+  } catch(e){ console.warn('checkNouvellesReservations:', e); }
+}
+
 async function checkServicesHealth(){
   var el = document.getElementById('services-health');
   if(!el) return;
@@ -2192,7 +2218,7 @@ async function checkServicesHealth(){
 
 function setSyncStatus(s){
   _syncStatus=s;
-  if(s==='ok'||s==='idle') setTimeout(checkServicesHealth, 500);
+  if(s==='ok'||s==='idle') setTimeout(function(){ checkServicesHealth(); checkNouvellesReservations(); }, 500);
   const el=document.getElementById('sync-indicator');
   if(!el)return;
   const states={
@@ -2529,6 +2555,7 @@ async function doLogin(){
       await syncPortailReservations();
       renderAll();checkBackupReminder();updateEnvBanner();updateEnvButtons();
       setInterval(checkServicesHealth, 5*60*1000);
+      setInterval(checkNouvellesReservations, 2*60*1000);
     } else {
       // Mode browser : charger depuis Supabase
       document.getElementById('patients-list').innerHTML='<div style="text-align:center;padding:40px;color:var(--text-soft);"><div style="font-size:32px;margin-bottom:10px;">☁️</div><p style="font-size:13px;">Chargement de vos données…</p></div>';
@@ -2538,6 +2565,7 @@ async function doLogin(){
       if(loaded) setTimeout(()=>setSyncStatus('idle'),3000);
       renderAll();checkBackupReminder();updateEnvBanner();updateEnvButtons();
       setInterval(checkServicesHealth, 5*60*1000);
+      setInterval(checkNouvellesReservations, 2*60*1000);
     }
   } else {
     document.getElementById('login-error').textContent='Mot de passe incorrect';
@@ -11330,7 +11358,7 @@ async function renderCreneauxPage(){
 
   // ── Bouton synchroniser ──
   h += '<div style="display:flex;justify-content:flex-end;margin-bottom:12px;">';
-  h += '<button class="btn btn-ghost" style="font-size:12px;" onclick="syncPortailReservations().then(()=>{renderAll();renderCreneauxPage();showToast(\'✅ Synchronisé\')})">🔄 Synchroniser avec le portail</button>';
+  h += '<button class="btn btn-ghost" style="font-size:12px;" id="btn-sync-portail" onclick="syncPortailReservations().then(()=>{renderAll();renderCreneauxPage();showToast(\'✅ Synchronisé\');var b=document.getElementById(\'creneaux-notif-badge\');if(b)b.style.display=\'none\';})">🔄 Synchroniser avec le portail</button>';
   h += '</div>';
 
   // ── Bouton sélection depuis agenda ──
