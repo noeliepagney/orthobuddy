@@ -2471,6 +2471,7 @@ async function doLogin(){
       // Mais on sauvegarde vers Supabase pour garder la synchro
       setSyncStatus('syncing');
       sbSave().then(()=>{setSyncStatus('ok');setTimeout(()=>setSyncStatus('idle'),2000);}).catch(()=>setSyncStatus('error'));
+      await syncPortailReservations();
       renderAll();checkBackupReminder();updateEnvBanner();updateEnvButtons();
     } else {
       // Mode browser : charger depuis Supabase
@@ -2541,6 +2542,95 @@ function confirmReset(){
       lastBackup:null,lastModified:null
     };
     save();renderAll();showToast('Données réinitialisées');
+  }
+}
+
+async function syncPortailReservations(){
+  try {
+    // Récupérer les réservations confirmées non encore importées
+    var res = await fetch(SB_URL+'/rest/v1/reservations?statut=eq.confirmee&select=*,creneaux(*)', {
+      headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer '+SB_KEY }
+    });
+    var reservations = await res.json();
+    if(!Array.isArray(reservations)) return;
+
+    var changed = false;
+
+    for(var rdv of reservations){
+      // Vérifier si la séance existe déjà (via portailToken)
+      var exists = (DB.seances||[]).some(function(s){ return s.portailToken === rdv.token; });
+      if(exists) continue;
+
+      // Trouver le patient dans OrthoBuddy
+      var patient = (DB.patients||[]).find(function(p){ return p.id === rdv.patient_id; });
+      if(!patient) continue;
+
+      var creneau = rdv.creneaux;
+      if(!creneau) continue;
+
+      // Mettre à jour le statut du créneau local
+      var crenLocal = (DB.creneaux||[]).find(function(c){ return c.date === creneau.date && c.heure_debut && c.heure_debut.slice(0,5) === creneau.heure_debut.slice(0,5); });
+      if(crenLocal) crenLocal.statut = 'reserve';
+
+      // Créer la séance
+      var newSeance = {
+        id: uid(),
+        portailToken: rdv.token,
+        patientId: patient.id,
+        date: creneau.date,
+        heure: creneau.heure_debut.slice(0,5),
+        duree: 30,
+        amoCategory: 'none',
+        amoCode: '', amoLabel: '', amoTarif: 0,
+        meo: false, isGroupe: false, isTelesoin: false, enCollab: false,
+        note: '📱 Réservé via le portail patient',
+        activites: [], fichiers: [],
+        statut: 'planifiee'
+      };
+      if(!DB.seances) DB.seances = [];
+      DB.seances.push(newSeance);
+      changed = true;
+    }
+
+    // Récupérer les annulations non encore traitées
+    var resAnn = await fetch(SB_URL+'/rest/v1/reservations?statut=eq.annulee&select=*', {
+      headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer '+SB_KEY }
+    });
+    var annulations = await resAnn.json();
+    if(!Array.isArray(annulations)) return;
+
+    for(var ann of annulations){
+      // Vérifier si déjà traité
+      var dejaTraite = (DB.seances||[]).some(function(s){ return s.portailToken === ann.token && s.statut === 'annulee_portail'; });
+      if(dejaTraite) continue;
+
+      // Trouver la séance correspondante
+      var seance = (DB.seances||[]).find(function(s){ return s.portailToken === ann.token; });
+      if(seance){
+        seance.statut = 'annulee_portail';
+        seance.note = (seance.note||'') + '\n❌ Annulé par le patient via le portail';
+        changed = true;
+      }
+
+      // Incrémenter le compteur d'annulations excusées du patient
+      var patient = (DB.patients||[]).find(function(p){ return p.id === ann.patient_id; });
+      if(patient){
+        var deja = (DB.seances||[]).some(function(s){ return s.portailToken === ann.token && s._annulationComptee; });
+        if(!deja){
+          patient.nbAnnulationsExcusees = (patient.nbAnnulationsExcusees||0) + 1;
+          var s2 = (DB.seances||[]).find(function(s){ return s.portailToken === ann.token; });
+          if(s2) s2._annulationComptee = true;
+          changed = true;
+        }
+      }
+    }
+
+    if(changed){
+      save();
+      showToast('📱 Agenda mis à jour depuis le portail');
+    }
+  } catch(e) {
+    console.warn('syncPortailReservations erreur:', e);
   }
 }
 
@@ -6389,6 +6479,7 @@ function renderSeanceItem(s,p){
           ${s.amoCode?'<span class="seance-amo-tag">'+s.amoCode+'</span>':''}
           ${s.meo?'<span class="seance-tag" style="background:var(--green-ll);color:var(--green-mid);border:1px solid #9FE1CB;">🍼 MEO +6€</span>':''}
           ${s.isTelesoin?'<span class="seance-tag" style="background:#E3F2FD;color:#1565C0;border:1px solid #90CAF9;">📱 Télésoin</span>':''}
+          ${s.portailToken?'<span class="seance-tag" style="background:#FFF3E0;color:#E65100;border:1px solid #FFCC80;">🌐 Portail</span>':''}
           ${s.amoCode==='AMO 20'?'<span class="seance-tag" style="background:#FDF3FF;color:#7E22CE;border:1px solid #D8B4FE;">🍼 BPA</span>':''}
           ${s.enCollab?'<span class="seance-tag" style="background:#FFF7ED;color:#EA580C;border:1px solid #FED7AA;">🤝</span>':''}
           ${s.isGroupe?'<span class="seance-tag" style="background:#E8EBFC;color:#534AB7;border:1px solid #B8C9F5;">👥 Groupe</span>':''}
@@ -8503,11 +8594,12 @@ function getAllEvents(dateStr){
     const p=DB.patients.find(p=>p.id===s.patientId);
     const[hh,mm]=(s.heure||'09:00').split(':').map(Number);
     // Couleur : bilan = violet, télésoin = bleu, groupe = indigo, sinon couleur patient
-    var evColor = p?.color||'var(--green)';
+    var evColor = p?.color||'#0D7490';
     if(s.amoCategory==='bilan') evColor='#7C3AED';
     else if(s.amoCategory==='reunion') evColor='#B45309';
     else if(s.isTelesoin) evColor='#1565C0';
     else if(s.isGroupe) evColor='#534AB7';
+    else if(s.portailToken) evColor='#0D7490';
     // Emoji parcours : premier parcours du patient qui a des actes dans cette séance
     var parcEmoji = '';
     if(s.amoCode && p && p.parcours && p.parcours.length){
@@ -8517,7 +8609,7 @@ function getAllEvents(dateStr){
       if(!pc) pc = DB.parcours.find(function(pc){ return p.parcours.includes(pc.id); });
       if(pc) parcEmoji = pc.emoji+' ';
     }
-    var label = (s.amoCategory==='bilan'?'📋 ':'')+(s.amoCategory==='reunion'?'🏫 ':'')+(s.isTelesoin?'📱 ':'')+(s.isGroupe?'👥 ':'')+parcEmoji+(p?p.prenom+' '+p.nom:'Patient');
+    var label = (s.amoCategory==='bilan'?'📋 ':'')+(s.amoCategory==='reunion'?'🏫 ':'')+(s.isTelesoin?'📱 ':'')+(s.isGroupe?'👥 ':'')+(s.portailToken?'🌐 ':'')+parcEmoji+(p?p.prenom+' '+p.nom:'Patient');
     return{id:s.id,type:'patient',title:label,heure:s.heure,
       debut:hh*60+mm,fin:hh*60+mm+(s.duree||30),duree:s.duree||30,color:evColor,seanceId:s.id,patientId:s.patientId,
       isBilan:s.amoCategory==='bilan',isTelesoin:s.isTelesoin,isGroupe:s.isGroupe};
@@ -11024,9 +11116,23 @@ const FAMI_INDICATEURS = [
 
 const FAMI_BASE = 490;
 
-function renderCreneauxPage(){
+async function renderCreneauxPage(){
   var el = document.getElementById('creneaux-content');
   if(!el) return;
+
+  // Sync statuts créneaux depuis Supabase
+  try {
+    var res = await fetch(SB_URL+'/rest/v1/creneaux?user_id=eq.noelie&select=id,statut,date,heure_debut,heure_fin,patient_id', {
+      headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer '+SB_KEY }
+    });
+    var sbCreneaux = await res.json();
+    if(Array.isArray(sbCreneaux) && sbCreneaux.length){
+      (DB.creneaux||[]).forEach(function(c){
+        var sb = sbCreneaux.find(function(s){ return s.date===c.date && s.heure_debut && s.heure_debut.slice(0,5)===(c.heure_debut||'').slice(0,5); });
+        if(sb) c.statut = sb.statut;
+      });
+    }
+  } catch(e){ console.warn('sync créneaux:', e); }
 
   // Patients autonomes et surbooking
   var autonomes = DB.patients.filter(function(p){ return p.portail==='autonome' && (!p.statut||p.statut==='actif'); });
