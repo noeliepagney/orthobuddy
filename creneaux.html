@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Créneaux disponibles — OrthoBuddy</title>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0;}
+    body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#F4F6F3;color:#2C2C2A;min-height:100vh;}
+    .header{background:white;border-bottom:1px solid #E0E0D8;padding:16px 24px;display:flex;align-items:center;gap:12px;}
+    .logo{font-size:20px;font-weight:700;color:#1D9E75;}
+    .container{max-width:600px;margin:32px auto;padding:0 16px;}
+    .card{background:white;border:1px solid #E0E0D8;border-radius:12px;padding:24px;margin-bottom:16px;}
+    .title{font-size:20px;font-weight:600;margin-bottom:8px;}
+    .subtitle{font-size:14px;color:#5F5E5A;margin-bottom:24px;}
+    .creneau{border:1px solid #E0E0D8;border-radius:8px;padding:14px 16px;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between;transition:border-color .2s;}
+    .creneau:hover{border-color:#1D9E75;}
+    .creneau-date{font-weight:500;font-size:14px;text-transform:capitalize;}
+    .creneau-heure{font-size:13px;color:#5F5E5A;margin-top:2px;}
+    .btn{padding:10px 20px;border-radius:8px;border:none;cursor:pointer;font-size:14px;font-weight:500;}
+    .btn-green{background:#1D9E75;color:white;}
+    .btn-green:hover{background:#0F6E56;}
+    .btn-green:disabled{background:#9FE1CB;cursor:not-allowed;}
+    .empty{text-align:center;padding:48px 16px;color:#888;}
+    .empty-icon{font-size:48px;margin-bottom:12px;}
+    .loading{text-align:center;padding:48px;color:#888;}
+    .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#1D9E75;color:white;padding:12px 24px;border-radius:8px;font-size:14px;z-index:999;display:none;}
+    .toast.error{background:#e53e3e;}
+    .confirmed{background:#E1F5EE;border:1px solid #9FE1CB;border-radius:12px;padding:24px;text-align:center;}
+    .confirmed-icon{font-size:48px;margin-bottom:12px;}
+    .confirmed-title{font-size:18px;font-weight:600;color:#0F6E56;margin-bottom:8px;}
+    .confirmed-text{font-size:14px;color:#5F5E5A;}
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="logo">🦋 OrthoBuddy</div>
+  </div>
+  <div class="container">
+    <div id="content"><div class="loading">Chargement des créneaux...</div></div>
+  </div>
+  <div class="toast" id="toast"></div>
+
+  <script>
+    const SUPABASE_URL = 'https://xiznicrburryfmdfbjxk.supabase.co';
+    const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inhpem5pY3JidXJyeWZtZGZianhriiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDU3NTI0OTMsImV4cCI6MjA2MTMyODQ5M30.yCz3UJFpgOBhlqyFUPpZf0_gEfAFl3vCVqfnkITVLmI';
+
+    const params = new URLSearchParams(window.location.search);
+    const token = params.get('token');
+
+    function showToast(msg, type='ok'){
+      var t = document.getElementById('toast');
+      t.textContent = msg;
+      t.className = 'toast' + (type==='error'?' error':'');
+      t.style.display = 'block';
+      setTimeout(function(){ t.style.display='none'; }, 3000);
+    }
+
+    async function load(){
+      if(!token){
+        document.getElementById('content').innerHTML = '<div class="empty"><div class="empty-icon">🔒</div><p>Lien invalide ou expiré.</p></div>';
+        return;
+      }
+
+      // Vérifier le token
+      var tokRes = await fetch(SUPABASE_URL+'/rest/v1/patient_tokens?token=eq.'+token+'&select=*', {
+        headers: { 'apikey': SUPABASE_ANON, 'Authorization': 'Bearer '+SUPABASE_ANON }
+      });
+      var tokData = await tokRes.json();
+      if(!tokData.length){
+        document.getElementById('content').innerHTML = '<div class="empty"><div class="empty-icon">🔒</div><p>Lien invalide ou expiré.</p></div>';
+        return;
+      }
+      var patient = tokData[0];
+
+      // Charger les créneaux libres
+      var crenRes = await fetch(SUPABASE_URL+'/rest/v1/creneaux?statut=eq.libre&order=date.asc,heure_debut.asc&select=*', {
+        headers: { 'apikey': SUPABASE_ANON, 'Authorization': 'Bearer '+SUPABASE_ANON }
+      });
+      var creneaux = await crenRes.json();
+
+      render(patient, creneaux);
+    }
+
+    function render(patient, creneaux){
+      var h = '<div class="card">';
+      h += '<div class="title">Bonjour '+patient.patient_prenom+' 👋</div>';
+      h += '<div class="subtitle">Choisissez un créneau disponible. Les places sont attribuées par ordre d\'arrivée.</div>';
+
+      if(!creneaux.length){
+        h += '<div class="empty"><div class="empty-icon">📅</div><p>Aucun créneau disponible pour le moment.</p></div>';
+      } else {
+        creneaux.forEach(function(c){
+          var date = new Date(c.date+'T00:00:00').toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+          h += '<div class="creneau">';
+          h += '<div><div class="creneau-date">'+date+'</div><div class="creneau-heure">'+c.heure_debut.slice(0,5)+' – '+c.heure_fin.slice(0,5)+'</div></div>';
+          h += '<button class="btn btn-green" onclick="reserver(\''+c.id+'\',\''+patient.patient_id+'\',\''+patient.patient_prenom+'\',\''+patient.patient_email+'\')">Réserver</button>';
+          h += '</div>';
+        });
+      }
+      h += '</div>';
+      document.getElementById('content').innerHTML = h;
+    }
+
+    async function reserver(crenId, patientId, patientPrenom, patientEmail){
+      // Désactiver tous les boutons
+      document.querySelectorAll('.btn-green').forEach(function(b){ b.disabled=true; b.textContent='...'; });
+
+      // Réservation atomique
+      var res = await fetch(SUPABASE_URL+'/functions/v1/smooth-action', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer '+SUPABASE_ANON },
+        body: JSON.stringify({ creneau_id: crenId, patient_id: patientId, patient_prenom: patientPrenom, patient_email: patientEmail, token_patient: token })
+      });
+      var data = await res.json();
+
+      if(data.success){
+        document.getElementById('content').innerHTML =
+          '<div class="confirmed">'
+          +'<div class="confirmed-icon">✅</div>'
+          +'<div class="confirmed-title">Créneau réservé !</div>'
+          +'<div class="confirmed-text">Un email de confirmation vous a été envoyé.<br>Vous pourrez annuler depuis cet email si nécessaire.</div>'
+          +'</div>';
+      } else if(data.error === 'already_taken'){
+        showToast('Ce créneau vient d\'être pris. Choisissez-en un autre.', 'error');
+        load();
+      } else {
+        showToast('Erreur lors de la réservation.', 'error');
+        document.querySelectorAll('.btn-green').forEach(function(b){ b.disabled=false; b.textContent='Réserver'; });
+      }
+    }
+
+    load();
+  </script>
+</body>
+</html>
