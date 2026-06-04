@@ -9352,7 +9352,88 @@ function renderListView(days){
   document.getElementById('agenda-container').innerHTML=html||'<div class="empty-state"><div class="empty-state-icon">📅</div><p>Aucun événement.</p></div>';
 }
 
-function clickSlot(dateStr,heure){openRdvModal(null,dateStr,heure);}
+var _modeSelection = false;
+var _dureeSelection = 30;
+
+function activerModeSelection(){
+  _modeSelection = true;
+  showPage('agenda');
+  // Afficher le bandeau
+  var bandeau = document.getElementById('selection-bandeau');
+  if(!bandeau){
+    bandeau = document.createElement('div');
+    bandeau.id = 'selection-bandeau';
+    bandeau.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:9999;background:#1D9E75;color:white;text-align:center;padding:10px;font-size:13px;font-weight:600;display:flex;align-items:center;justify-content:center;gap:16px;';
+    bandeau.innerHTML = '<span>🗓️ Mode sélection créneaux — Cliquez sur les plages à ouvrir</span>'
+      +'<select id="duree-selection" style="padding:4px 8px;border-radius:6px;border:none;font-size:12px;color:#2C2C2A;" onchange="_dureeSelection=parseInt(this.value)">'
+      +'<option value="30">30 min</option>'
+      +'<option value="45">45 min</option>'
+      +'<option value="60">1h</option>'
+      +'</select>'
+      +'<button onclick="desactiverModeSelection()" style="background:white;color:#1D9E75;border:none;border-radius:6px;padding:6px 14px;cursor:pointer;font-weight:600;font-size:12px;">✓ Terminer</button>';
+    document.body.appendChild(bandeau);
+  }
+  bandeau.style.display = 'flex';
+}
+
+function confirmerCreneauSelection(dateStr){
+  var debut = document.getElementById('cren-sel-debut').value;
+  var duree = parseInt(document.getElementById('cren-sel-duree').value);
+  if(!debut){ showToast('Saisissez une heure','red'); return; }
+  var parts = debut.split(':');
+  var totalMin = parseInt(parts[0])*60 + parseInt(parts[1]) + duree;
+  var fin = String(Math.floor(totalMin/60)).padStart(2,'0')+':'+String(totalMin%60).padStart(2,'0');
+  if(!DB.creneaux) DB.creneaux = [];
+  var exists = DB.creneaux.some(function(c){ return c.date===dateStr && c.heure_debut===debut+':00'; });
+  if(exists){ showToast('Créneau déjà ajouté','red'); return; }
+  DB.creneaux.push({ id:uid(), date:dateStr, heure_debut:debut+':00', heure_fin:fin+':00', statut:'libre', patient_id:null, token_patient:uid() });
+  save();
+  document.getElementById('modal-creneau-selection-dyn').remove();
+  showToast('✅ Créneau ajouté — '+debut+' ('+duree+' min)');
+}
+
+function desactiverModeSelection(){
+  _modeSelection = false;
+  var bandeau = document.getElementById('selection-bandeau');
+  if(bandeau) bandeau.style.display = 'none';
+  showPage('creneaux');
+}
+
+function clickSlot(dateStr,heure){
+  if(_modeSelection){
+    // Mode sélection : afficher modal de confirmation
+    var dateStr2 = new Date(dateStr+'T00:00:00').toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long'});
+    var existing = document.getElementById('modal-creneau-selection-dyn');
+    if(existing) existing.remove();
+    var m = document.createElement('div');
+    m.id = 'modal-creneau-selection-dyn';
+    m.className = 'overlay';
+    m.innerHTML = '<div class="modal" style="max-width:380px;">'
+      +'<div class="modal-head"><div class="modal-title">➕ Ajouter un créneau</div>'
+      +'<button class="modal-close" onclick="document.getElementById(\'modal-creneau-selection-dyn\').remove()"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>'
+      +'<div style="padding:16px 0;">'
+      +'<div style="font-weight:600;margin-bottom:4px;">'+dateStr2+'</div>'
+      +'<div style="color:var(--text-soft);font-size:13px;margin-bottom:16px;">Début : '+heure+'</div>'
+      +'<div class="field"><label>Heure de début</label>'
+      +'<input type="time" id="cren-sel-debut" value="'+heure+'" style="margin-top:4px;"></div>'
+      +'<div class="field"><label>Durée</label>'
+      +'<select id="cren-sel-duree" style="margin-top:4px;">'
+      +'<option value="30">30 min</option>'
+      +'<option value="45">45 min</option>'
+      +'<option value="60">1h</option>'
+      +'<option value="90">1h30</option>'
+      +'</select></div>'
+      +'</div>'
+      +'<div class="modal-footer">'
+      +'<button class="btn btn-ghost" onclick="document.getElementById(\'modal-creneau-selection-dyn\').remove()">Annuler</button>'
+      +'<button class="btn btn-green" onclick="confirmerCreneauSelection(\''+dateStr+'\')">Ajouter</button>'
+      +'</div></div>';
+    document.body.appendChild(m);
+    m.classList.add('open');
+  } else {
+    openRdvModal(null,dateStr,heure);
+  }
+}
 function clickEvent(id,type){
   if(type==='patient'){const s=DB.seances.find(s=>s.id===id);if(s)openSeanceModal(s.patientId,s.id);}
   else openRdvModal(id);
@@ -11250,6 +11331,12 @@ async function renderCreneauxPage(){
   // ── Bouton synchroniser ──
   h += '<div style="display:flex;justify-content:flex-end;margin-bottom:12px;">';
   h += '<button class="btn btn-ghost" style="font-size:12px;" onclick="syncPortailReservations().then(()=>{renderAll();renderCreneauxPage();showToast(\'✅ Synchronisé\')})">🔄 Synchroniser avec le portail</button>';
+  h += '</div>';
+
+  // ── Bouton sélection depuis agenda ──
+  h += '<div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px 20px;margin-bottom:20px;display:flex;align-items:center;justify-content:space-between;">';
+  h += '<div><div style="font-weight:600;font-size:14px;">📅 Sélectionner depuis l\'agenda</div><div style="font-size:12px;color:var(--text-soft);margin-top:2px;">Cliquez sur des plages dans votre agenda pour les ajouter</div></div>';
+  h += '<button class="btn btn-green" style="font-size:13px;" onclick="activerModeSelection()">Ouvrir l\'agenda</button>';
   h += '</div>';
 
   // ── Générateur de créneaux ──
