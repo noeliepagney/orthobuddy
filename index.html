@@ -1339,6 +1339,26 @@ html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);colo
 </div>
 
 <!-- MODAL LISTE D'ATTENTE -->
+<div class="overlay" id="modal-preview-import">
+  <div class="modal" style="max-width:780px;max-height:90vh;display:flex;flex-direction:column;">
+    <div class="modal-head">
+      <div class="modal-title">☁️ Prévisualiser les nouvelles demandes</div>
+      <button class="modal-close" onclick="closeModal('modal-preview-import')"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+    </div>
+    <div style="padding:12px 16px;border-bottom:1px solid var(--border);font-size:12px;color:var(--text-soft);">
+      Cochez les demandes à intégrer, définissez l'urgence si besoin, supprimez les erreurs.
+    </div>
+    <div id="preview-import-list" style="overflow-y:auto;flex:1;padding:12px 16px;"></div>
+    <div style="padding:12px 16px;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;gap:8px;">
+      <span id="preview-import-count" style="font-size:12px;color:var(--text-soft);"></span>
+      <div style="display:flex;gap:8px;">
+        <button class="btn btn-ghost" onclick="closeModal('modal-preview-import')">Annuler</button>
+        <button class="btn btn-green" onclick="confirmerImportSelection()">✅ Importer la sélection</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <div class="overlay" id="modal-attente">
   <div class="modal" style="max-width:680px;">
     <div class="modal-head">
@@ -7057,6 +7077,8 @@ function toggleAttenteUrgence(){
   if(zone) zone.style.display = (val && val.value!=='aucune') ? 'block' : 'none';
 }
 
+var _previewImportRows = [];
+
 async function importerDemandesWeb(){
   if(!SB_URL||!SB_KEY||SB_URL===''){showToast('⚠️ Supabase non configuré');return;}
   var btn=document.querySelector('[onclick="importerDemandesWeb()"]');
@@ -7067,9 +7089,74 @@ async function importerDemandesWeb(){
     });
     if(!res.ok) throw new Error('HTTP '+res.status);
     var rows=await res.json();
-    if(!rows.length){showToast('Aucune nouvelle demande');if(btn){btn.textContent='☁️ Importer du web';btn.disabled=false;}return;}
-    var imported=0,skipped=0;
-    if(!DB.importedSupabaseIds) DB.importedSupabaseIds=[];
+    if(btn){btn.textContent='☁️ Importer du web';btn.disabled=false;}
+    if(!rows.length){showToast('Aucune nouvelle demande');return;}
+
+    // Filtrer les doublons avant prévisualisation
+    var nouvelles = rows.filter(function(row){
+      var d = (row.data && typeof row.data === 'object' && row.data.nom) ? row.data : row;
+      if(!d||!d.nom) return false;
+      var existsBySupabaseId=(DB.attente||[]).some(function(a){return a.supabaseId&&a.supabaseId===row.id;});
+      var alreadyImported=(DB.importedSupabaseIds||[]).includes(row.id);
+      var existsAttente=(DB.attente||[]).some(function(a){return a.nom===d.nom&&a.prenom===d.prenom;});
+      var existsPatient=(DB.patients||[]).some(function(p){return p.nom===d.nom&&p.prenom===d.prenom;});
+      return !existsBySupabaseId && !alreadyImported && !existsAttente && !existsPatient;
+    });
+
+    if(!nouvelles.length){showToast('Aucune nouvelle demande (tous déjà importés)');return;}
+
+    // Stocker et afficher la modal de prévisualisation
+    _previewImportRows = nouvelles.map(function(row){
+      var d = (row.data && typeof row.data === 'object' && row.data.nom) ? row.data : row;
+      return {row:row, d:d, checked:true, urgence: d.sortie_hospit?'urgent':(d.urgence&&d.urgence!=='normal'?d.urgence:'aucune'), deleted:false};
+    });
+    renderPreviewImport();
+    document.getElementById('modal-preview-import').classList.add('open');
+  }catch(e){
+    if(btn){btn.textContent='☁️ Importer du web';btn.disabled=false;}
+    showToast('⚠️ Erreur : '+e.message);
+  }
+}
+
+function togglePreviewUrgence(idx, niveau){
+  _previewImportRows[idx].urgence = _previewImportRows[idx].urgence === niveau ? 'aucune' : niveau;
+  renderPreviewImport();
+}
+
+function renderPreviewImport(){
+  var list = document.getElementById('preview-import-list');
+  var count = document.getElementById('preview-import-count');
+  var actives = _previewImportRows.filter(function(x){return !x.deleted;});
+  var cochees = actives.filter(function(x){return x.checked;});
+  count.textContent = cochees.length + ' / ' + actives.length + ' demande(s) sélectionnée(s)';
+  list.innerHTML = actives.map(function(item, idx){
+    var realIdx = _previewImportRows.indexOf(item);
+    var d = item.d;
+    var parcours = (d.parcours||[]).join(', ') || '—';
+    var urgBg = item.urgence==='urgent'?'#fee2e2':item.urgence==='prioritaire'?'#fef3c7':'var(--surface)';
+    return '<div style="border:1px solid var(--border);border-radius:8px;padding:12px;margin-bottom:8px;background:'+urgBg+';">'
+      +'<div style="display:flex;align-items:center;gap:10px;">'
+      +'<input type="checkbox" '+(item.checked?'checked':'')+' onchange="_previewImportRows['+realIdx+'].checked=this.checked;renderPreviewImport()" style="width:16px;height:16px;accent-color:var(--green);flex-shrink:0;">'
+      +'<div style="flex:1;">'
+      +'<div style="font-weight:600;font-size:13px;">'+escHtml(d.nom||'')+' '+escHtml(d.prenom||'')+'</div>'
+      +'<div style="font-size:11px;color:var(--text-soft);">'+escHtml(parcours)+(d.ddn?' · '+d.ddn:'')+(d.telephone?' · '+d.telephone:'')+'</div>'
+      +'</div>'
+      +'<div style="display:flex;gap:5px;flex-shrink:0;">'
+      +'<button class="btn btn-sm'+(item.urgence==='urgent'?' btn-red':'')+'" onclick="togglePreviewUrgence('+realIdx+',\'urgent\')" title="Urgent">🔴</button>'
+      +'<button class="btn btn-sm'+(item.urgence==='prioritaire'?' btn-amber':'')+'" onclick="togglePreviewUrgence('+realIdx+',\'prioritaire\')" title="Prioritaire">🟡</button>'
+      +'<button class="btn btn-sm" onclick="_previewImportRows['+realIdx+'].deleted=true;renderPreviewImport()" title="Supprimer" style="color:var(--red);">🗑️</button>'
+      +'</div>'
+      +'</div>'
+      +'</div>';
+  }).join('');
+}
+
+async function confirmerImportSelection(){
+  closeModal('modal-preview-import');
+  var selected = _previewImportRows.filter(function(x){return x.checked && !x.deleted;});
+  if(!selected.length){showToast('Aucune demande sélectionnée');return;}
+  var imported=0,skipped=0;
+  if(!DB.importedSupabaseIds) DB.importedSupabaseIds=[];
     var parcoursMap={
       'Langage oral':'p1',
       'Langage écrit':'p2',
@@ -7088,26 +7175,10 @@ async function importerDemandesWeb(){
     // Mapping format formulaire web : "Lundi matin", "Mercredi après-midi", etc.
     var horairesSuffixMap={'matin':'matin','midi':'midi','après-midi':'aprem','fin journée':'soir','fin de journée':'soir'};
     var indiffKeyword = 'indifférent';
-    for(var i=0;i<rows.length;i++){
-      var row=rows[i];
-      // Support both old format (row.data avec nom dedans) and new flat format
-      var d = (row.data && typeof row.data === 'object' && row.data.nom) ? row.data : row;
-      if(!d||!d.nom) continue;
-      // Dedup by supabaseId (most reliable) then nom+prenom fallback
-      var existsBySupabaseId=(DB.attente||[]).some(function(a){return a.supabaseId&&a.supabaseId===row.id;});
-      var alreadyImported=(DB.importedSupabaseIds||[]).includes(row.id);
-      var existsAttente=(DB.attente||[]).some(function(a){return a.nom===d.nom&&a.prenom===d.prenom;});
-      var existsPatient=(DB.patients||[]).some(function(p){return p.nom===d.nom&&p.prenom===d.prenom;});
-      if(alreadyImported||existsBySupabaseId||existsAttente||existsPatient){
-        // Still mark as treated in Supabase so it doesn't come back
-        if(!DB.importedSupabaseIds.includes(row.id)) DB.importedSupabaseIds.push(row.id);
-        await fetch(SB_URL+'/rest/v1/liste_attente?id=eq.'+row.id,{
-          method:'PATCH',
-          headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Content-Type':'application/json','Prefer':'return=minimal'},
-          body:JSON.stringify({traite:true})
-        });
-        skipped++;continue;
-      }
+    for(var i=0;i<selected.length;i++){
+      var item=selected[i];
+      var row=item.row;
+      var d=item.d;
       // Parcours
       var parcoursIds=[];
       (d.parcours||[]).forEach(function(n){if(parcoursMap[n])parcoursIds.push(parcoursMap[n]);});
@@ -7180,7 +7251,7 @@ async function importerDemandesWeb(){
         creneaux: creneaux,
         dateEntree: (row.created_at||new Date().toISOString()).slice(0,10),
         sourceDemande: 'Formulaire web',
-        urgence: d.sortie_hospit ? 'urgent' : (d.urgence&&d.urgence!=='normal' ? d.urgence : 'aucune'), urgenceCause: d.urgence_cause||d.urgenceCause||'',
+        urgence: item.urgence || 'aucune', urgenceCause: d.urgence_cause||d.urgenceCause||'',
         sortieHospit: !!(d.sortie_hospit),
         collab: false, renouvellements: 0,
       };
@@ -7199,8 +7270,6 @@ async function importerDemandesWeb(){
     var msg=imported+' demande'+(imported>1?'s':'')+' importée'+(imported>1?'s':'');
     if(skipped)msg+=' ('+skipped+' doublon'+(skipped>1?'s':'')+' ignoré'+(skipped>1?'s':'')+')';
     showToast('✅ '+msg);
-  }catch(e){console.error(e);showToast('⚠️ Erreur : '+e.message);}
-  if(btn){btn.textContent='☁️ Importer du web';btn.disabled=false;}
 }
 
 function openAttenteModal(attenteId){
