@@ -2158,7 +2158,7 @@ async function load(){
   // Try Tauri file storage first
   if(window.__TAURI__){
     try{
-      raw = await window.__TAURI__.core.invoke('load_data');
+      raw = await window.__TAURI__.core.invoke('load_data', {password: DB.password||''});
       if(raw && raw !== 'null'){
         // Also migrate from localStorage if file is empty but localStorage has data
         const p=JSON.parse(raw);
@@ -2171,7 +2171,7 @@ async function load(){
           const p=JSON.parse(local);
           if(p){ DB={...DB,...p}; }
           // Save to file immediately
-          await window.__TAURI__.core.invoke('save_data', {data: JSON.stringify(DB)});
+          await window.__TAURI__.core.invoke('save_data', {data: JSON.stringify(DB), password: DB.password||''});
           console.log('Migrated from localStorage to file storage');
         }
       }
@@ -2210,7 +2210,7 @@ function save(){
   if(window.__TAURI__){
     clearTimeout(_syncTimeout);
     // Sauvegarde immédiate (pas de debounce) pour ne pas perdre de données
-    window.__TAURI__.core.invoke('save_data', {data: json})
+    window.__TAURI__.core.invoke('save_data', {data: json, password: DB.password||''})
       .then(function(ok){ setSyncStatus(ok?'ok':'error'); setTimeout(()=>setSyncStatus('idle'),3000); })
       .catch(function(){ setSyncStatus('error'); });
   } else {
@@ -2430,6 +2430,13 @@ function getRdvFin(){return String(_rdvFH).padStart(2,'0')+':'+String(_rdvFM).pa
 // ═══════════════════════════════════════
 async function doLogin(){
   const pwd=document.getElementById('login-pwd').value;
+  // En mode Tauri, charger les données avec le mot de passe saisi
+  if(window.__TAURI__ && pwd){
+    const raw = await window.__TAURI__.core.invoke('load_data', {password: pwd});
+    if(raw && raw !== 'null'){
+      try{ const p=JSON.parse(raw); if(p) DB={...DB,...p}; }catch(e){}
+    }
+  }
   if(pwd===DB.password){
     sessionStorage.setItem('ob_auth','1');
     document.getElementById('login-screen').classList.add('hidden');
