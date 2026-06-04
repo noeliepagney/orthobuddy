@@ -7062,6 +7062,13 @@ function savePatient(){
   const prenom=document.getElementById('p-prenom').value.trim();
   const nom=document.getElementById('p-nom').value.trim();
   if(!prenom&&!nom){showToast('Saisissez un nom','red');return;}
+  var _portailCheck=(document.querySelector('input[name="p-portail"]:checked')||{value:'fixe'}).value;
+  var _emailCheck=(document.getElementById('p-email')||{value:''}).value.trim();
+  if((_portailCheck==='autonome'||_portailCheck==='surbooking')&&!_emailCheck){
+    showToast('Un email est requis pour les patients autonomes et surbooking','red');
+    document.getElementById('p-email').focus();
+    return;
+  }
   var nirRaw=(document.getElementById('p-nir').value||'').replace(/\s/g,'');
   var nirErr=document.getElementById('p-nir-error');
   if(nirRaw && !/^[0-9]{15}$/.test(nirRaw)){
