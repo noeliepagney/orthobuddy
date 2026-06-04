@@ -123,14 +123,14 @@
           +'</div>';
       } else if(data.error === 'already_taken'){
         showToast('Ce créneau vient d\'être pris. Choisissez-en un autre.', 'error');
-        load();
+        window.addEventListener('load', function(){ load(); });
       } else {
         showToast('Erreur lors de la réservation.', 'error');
         document.querySelectorAll('.btn-green').forEach(function(b){ b.disabled=false; b.textContent='Réserver'; });
       }
     }
 
-    load();
+    window.addEventListener('load', function(){ load(); });
   </script>
 </body>
 </html>
