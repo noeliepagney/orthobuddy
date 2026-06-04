@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mon espace — Cabinet d'orthophonie de Noëlie Lainé</title>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0;}
+    body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#F4F6F3;color:#2C2C2A;min-height:100vh;}
+    .header{background:white;border-bottom:1px solid #E0E0D8;padding:16px 24px;display:flex;align-items:center;justify-content:space-between;}
+    .logo{font-size:18px;font-weight:700;color:#1D9E75;}
+    .patient-name{font-size:13px;color:#5F5E5A;}
+    .container{max-width:640px;margin:0 auto;padding:24px 16px 60px;}
+    .tabs{display:flex;gap:4px;margin-bottom:20px;background:white;border:1px solid #E0E0D8;border-radius:10px;padding:4px;}
+    .tab{flex:1;padding:10px;border:none;background:none;cursor:pointer;font-size:13px;font-weight:500;color:#5F5E5A;border-radius:7px;transition:all .15s;}
+    .tab.active{background:#1D9E75;color:white;}
+    .tab:hover:not(.active){background:#F4F6F3;}
+    .tab-content{display:none;}
+    .tab-content.active{display:block;}
+    .card{background:white;border:1px solid #E0E0D8;border-radius:12px;padding:20px;margin-bottom:12px;}
+    .rdv-date{font-size:17px;font-weight:600;color:#0F6E56;text-transform:capitalize;margin-bottom:2px;}
+    .rdv-heure{font-size:14px;color:#1D9E75;}
+    .badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;}
+    .badge-ok{background:#E1F5EE;color:#0F6E56;}
+    .badge-annule{background:#FDECEA;color:#C0392B;}
+    .btn{padding:10px 18px;border-radius:8px;border:none;cursor:pointer;font-size:13px;font-weight:500;}
+    .btn-green{background:#1D9E75;color:white;}
+    .btn-green:hover{background:#0F6E56;}
+    .btn-green:disabled{background:#9FE1CB;cursor:not-allowed;}
+    .btn-red{background:#FDECEA;color:#C0392B;border:1px solid #F5C6C6;}
+    .btn-ghost{background:white;color:#5F5E5A;border:1px solid #E0E0D8;}
+    .empty{text-align:center;padding:40px 16px;color:#888;}
+    .empty-icon{font-size:40px;margin-bottom:10px;}
+    .loading{text-align:center;padding:40px;color:#888;}
+    .field{margin-bottom:12px;}
+    .field label{display:block;font-size:13px;font-weight:500;margin-bottom:4px;}
+    .field input,.field textarea,.field select{width:100%;padding:9px 10px;border:1px solid #E0E0D8;border-radius:8px;font-size:13px;font-family:inherit;}
+    .field textarea{resize:vertical;min-height:80px;}
+    .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#1D9E75;color:white;padding:12px 24px;border-radius:8px;font-size:13px;z-index:999;display:none;}
+    .toast.error{background:#e53e3e;}
+    .warning{background:#FFF8E6;border:1px solid #F5C06C;border-radius:8px;padding:12px 14px;font-size:12px;color:#7A4F00;margin-bottom:12px;line-height:1.5;}
+    .creneau-slot{border:1px solid #E0E0D8;border-radius:8px;padding:12px 14px;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;transition:border-color .15s;}
+    .creneau-slot:hover{border-color:#1D9E75;}
+    .creneau-slot.selected{border-color:#1D9E75;background:#E1F5EE;}
+    .creneau-slot.selected .slot-check{color:#1D9E75;}
+    .slot-check{font-size:18px;color:#E0E0D8;}
+    .week-nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;}
+    .week-label{font-size:14px;font-weight:600;}
+    .week-btn{background:none;border:1px solid #E0E0D8;border-radius:6px;padding:6px 12px;cursor:pointer;font-size:16px;}
+    .day-header{font-size:11px;font-weight:600;color:#5F5E5A;text-transform:uppercase;letter-spacing:.05em;margin:12px 0 6px;}
+    .footer-links{text-align:center;padding:20px;font-size:11px;color:#888;}
+    .footer-links a{color:#1D9E75;}
+    .annule-card{background:#FDECEA;border:1px solid #F5C6C6;border-radius:12px;padding:24px;text-align:center;margin-bottom:12px;}
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="logo">🦋 OrthoBuddy</div>
+    <div class="patient-name" id="header-patient-name"></div>
+  </div>
+  <div class="container">
+    <div id="tabs-container" style="display:none;">
+      <div class="tabs" id="tabs"></div>
+      <div id="tab-rdvs" class="tab-content active"></div>
+      <div id="tab-reserver" class="tab-content"></div>
+      <div id="tab-contact" class="tab-content"></div>
+    </div>
+    <div id="content-loading"><div class="loading">Chargement...</div></div>
+  </div>
+  <div class="footer-links">
+    <a href="/confidentialite.html">Politique de confidentialité</a>
+  </div>
+  <div class="toast" id="toast"></div>
+
+  <script>
+    const SUPABASE_URL = 'https://xiznicrburryfmdfbjxk.supabase.co';
+    const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inhpem5pY3JidXJyeWZtZGZianhrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAwNDM0NjEsImV4cCI6MjA5NTYxOTQ2MX0.vYuV7LIBXXkKJkHVwNPaI-lA7x1HwFROdU1K17ZB1Y8';
+    const SMOOTH_ACTION = SUPABASE_URL+'/functions/v1/smooth-action';
+
+    const params = new URLSearchParams(window.location.search);
+    const token = params.get('token');
+
+    var _patient = null;
+    var _creneaux = [];
+    var _reservations = [];
+    var _weekOffset = 0;
+    var _selectedSlots = [];
+
+    function showToast(msg, type='ok'){
+      var t = document.getElementById('toast');
+      t.textContent = msg;
+      t.className = 'toast'+(type==='error'?' error':'');
+      t.style.display = 'block';
+      setTimeout(function(){ t.style.display='none'; }, 3000);
+    }
+
+    function sb(path){
+      return fetch(SUPABASE_URL+'/rest/v1/'+path, {
+        headers: { 'apikey': SUPABASE_ANON, 'Authorization': 'Bearer '+SUPABASE_ANON }
+      }).then(r=>r.json());
+    }
+
+    async function load(){
+      if(!token){
+        document.getElementById('content-loading').innerHTML = '<div class="empty"><div class="empty-icon">🔒</div><p>Lien invalide.</p></div>';
+        return;
+      }
+
+      // Vérifier le token portail
+      var tokData = await sb('patient_portal_tokens?token=eq.'+token+'&select=*');
+      if(!tokData.length){
+        document.getElementById('content-loading').innerHTML = '<div class="empty"><div class="empty-icon">🔒</div><p>Lien invalide ou expiré.</p></div>';
+        return;
+      }
+
+      _patient = tokData[0];
+      document.getElementById('header-patient-name').textContent = 'Bonjour '+_patient.patient_prenom+' 👋';
+      document.getElementById('content-loading').style.display = 'none';
+      document.getElementById('tabs-container').style.display = 'block';
+
+      buildTabs();
+      renderRdvs();
+    }
+
+    function buildTabs(){
+      var tabs = document.getElementById('tabs');
+      var canReserve = _patient.portail === 'autonome' || _patient.portail === 'surbooking';
+      tabs.innerHTML = '<button class="tab active" onclick="switchTab(\'rdvs\',this)">📅 Mes RDV</button>'
+        + (canReserve ? '<button class="tab" onclick="switchTab(\'reserver\',this)">➕ Réserver</button>' : '')
+        + '<button class="tab" onclick="switchTab(\'contact\',this)">✉️ Me contacter</button>';
+    }
+
+    function switchTab(name, btn){
+      document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById('tab-'+name).classList.add('active');
+      if(name==='reserver') renderReserver();
+      if(name==='contact') renderContact();
+    }
+
+    async function renderRdvs(){
+      var el = document.getElementById('tab-rdvs');
+      el.innerHTML = '<div class="loading">Chargement...</div>';
+
+      var rdvs = await sb('reservations?patient_id=eq.'+_patient.patient_id+'&order=created_at.desc&select=*');
+      _reservations = rdvs;
+
+      if(!rdvs.length){
+        el.innerHTML = '<div class="empty"><div class="empty-icon">📅</div><p>Aucun RDV pour le moment.</p></div>';
+        return;
+      }
+
+      var h = '';
+      for(var rdv of rdvs){
+        var cren = await sb('creneaux?id=eq.'+rdv.creneau_id+'&select=*');
+        var c = cren[0];
+        if(!c) continue;
+        var date = new Date(c.date+'T00:00:00').toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+        var heure = c.heure_debut.slice(0,5)+' – '+c.heure_fin.slice(0,5);
+        if(rdv.statut==='annulee'){
+          h += '<div class="annule-card"><div style="font-size:13px;font-weight:600;margin-bottom:4px;">'+date+'</div><div style="font-size:12px;color:#C0392B;">'+heure+' — Annulé</div></div>';
+        } else {
+          var rdvDate = new Date(c.date+'T'+c.heure_debut);
+          var now = new Date();
+          var diffH = (rdvDate-now)/(1000*60*60);
+          var tardif = diffH < 48 && diffH > 0;
+          h += '<div class="card">';
+          h += '<div style="margin-bottom:12px;"><span class="badge badge-ok">✅ Confirmé</span></div>';
+          h += '<div class="rdv-date">'+date+'</div>';
+          h += '<div class="rdv-heure">'+heure+'</div>';
+          h += '<hr style="margin:14px 0;border:none;border-top:1px solid #E0E0D8;">';
+          h += '<button class="btn btn-red" style="font-size:12px;" onclick="demanderAnnulation(\''+rdv.token+'\',\''+c.date+'\',\''+c.heure_debut+'\')">Annuler ce RDV</button>';
+          h += '</div>';
+        }
+      }
+      el.innerHTML = h || '<div class="empty"><div class="empty-icon">📅</div><p>Aucun RDV.</p></div>';
+    }
+
+    var _annulationToken = null;
+    function demanderAnnulation(rdvToken, date, heure){
+      _annulationToken = rdvToken;
+      var rdvDate = new Date(date+'T'+heure);
+      var now = new Date();
+      var diffH = (rdvDate-now)/(1000*60*60);
+      var tardif = diffH < 48 && diffH > 0;
+
+      var el = document.getElementById('tab-rdvs');
+      var formHtml = '<div class="card" id="form-annulation">'
+        + (tardif ? '<div class="warning">⚠️ Votre séance est dans moins de 48h. Les annulations tardives répétées peuvent compromettre la continuité de votre suivi orthophonique.</div>' : '')
+        + '<div style="font-weight:600;margin-bottom:12px;">Motif d\'annulation</div>'
+        + '<div class="field"><label>Raison <span style="color:#C0392B;">*</span></label>'
+        + '<select id="motif-select" onchange="toggleAutreMotif()">'
+        + '<option value="">— Sélectionnez —</option>'
+        + '<option value="Maladie / urgence">Maladie / urgence</option>'
+        + '<option value="Indisponibilité professionnelle">Indisponibilité professionnelle</option>'
+        + '<option value="Indisponibilité personnelle">Indisponibilité personnelle</option>'
+        + '<option value="Autre">Autre (préciser)</option>'
+        + '</select></div>'
+        + '<div class="field" id="autre-motif-field" style="display:none;"><label>Précisez</label>'
+        + '<textarea id="autre-motif" placeholder="Décrivez la raison..."></textarea></div>'
+        + '<div style="display:flex;gap:8px;margin-top:8px;">'
+        + '<button class="btn btn-red" onclick="confirmerAnnulation()">Confirmer l\'annulation</button>'
+        + '<button class="btn btn-ghost" onclick="renderRdvs()">Retour</button>'
+        + '</div></div>';
+      el.innerHTML = formHtml + el.innerHTML;
+      el.scrollIntoView({behavior:'smooth'});
+    }
+
+    function toggleAutreMotif(){
+      var val = document.getElementById('motif-select').value;
+      document.getElementById('autre-motif-field').style.display = val==='Autre'?'block':'none';
+    }
+
+    async function confirmerAnnulation(){
+      var motif = document.getElementById('motif-select').value;
+      if(!motif){ showToast('Sélectionnez un motif','error'); return; }
+      var detail = motif==='Autre' ? (document.getElementById('autre-motif').value.trim()) : '';
+      if(motif==='Autre'&&!detail){ showToast('Précisez le motif','error'); return; }
+      var motifFinal = motif==='Autre' ? 'Autre : '+detail : motif;
+
+      var btn = document.querySelector('#form-annulation .btn-red');
+      if(btn){ btn.disabled=true; btn.textContent='Annulation...'; }
+
+      var res = await fetch(SMOOTH_ACTION, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer '+SUPABASE_ANON },
+        body: JSON.stringify({ action: 'annuler', token: _annulationToken, motif: motifFinal })
+      });
+      var data = await res.json();
+      if(data.success){
+        showToast('RDV annulé');
+        renderRdvs();
+      } else {
+        showToast('Erreur lors de l\'annulation','error');
+        if(btn){ btn.disabled=false; btn.textContent='Confirmer l\'annulation'; }
+      }
+    }
+
+    async function renderReserver(){
+      var el = document.getElementById('tab-reserver');
+      el.innerHTML = '<div class="loading">Chargement...</div>';
+
+      // Compter les réservations actives cette semaine
+      var actives = (_reservations||[]).filter(r=>r.statut==='confirmee');
+      if(actives.length >= 2){
+        el.innerHTML = '<div class="card"><div class="empty-icon" style="text-align:center;padding:20px 0;">📅</div><p style="text-align:center;font-size:13px;color:#5F5E5A;">Vous avez déjà '+actives.length+' RDV réservé'+(actives.length>1?'s':'')+'. Maximum 2 réservations actives.</p></div>';
+        return;
+      }
+
+      var creneaux = await sb('creneaux?statut=eq.libre&order=date.asc,heure_debut.asc&select=*');
+      _creneaux = creneaux;
+
+      if(!creneaux.length){
+        el.innerHTML = '<div class="empty"><div class="empty-icon">📅</div><p>Aucun créneau disponible pour le moment.</p></div>';
+        return;
+      }
+
+      // Vue semaine
+      var today = new Date();
+      today.setHours(0,0,0,0);
+      var weekStart = new Date(today);
+      weekStart.setDate(today.getDate() - today.getDay() + 1 + _weekOffset*7);
+      var weekEnd = new Date(weekStart);
+      weekEnd.setDate(weekStart.getDate()+6);
+
+      var weekLabel = weekStart.toLocaleDateString('fr-FR',{day:'numeric',month:'long'})
+        +' – '+weekEnd.toLocaleDateString('fr-FR',{day:'numeric',month:'long',year:'numeric'});
+
+      var h = '<div class="week-nav">'
+        + '<button class="week-btn" onclick="_weekOffset--;renderReserver()">‹</button>'
+        + '<div class="week-label">'+weekLabel+'</div>'
+        + '<button class="week-btn" onclick="_weekOffset++;renderReserver()">›</button>'
+        + '</div>';
+
+      var slotsThisWeek = creneaux.filter(function(c){
+        var d = new Date(c.date+'T00:00:00');
+        return d >= weekStart && d <= weekEnd;
+      });
+
+      if(!slotsThisWeek.length){
+        h += '<div style="text-align:center;padding:24px;color:#888;font-size:13px;">Aucun créneau cette semaine.</div>';
+      } else {
+        var parDate = {};
+        slotsThisWeek.forEach(function(c){
+          if(!parDate[c.date]) parDate[c.date]=[];
+          parDate[c.date].push(c);
+        });
+        Object.keys(parDate).sort().forEach(function(date){
+          var dateStr = new Date(date+'T00:00:00').toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long'});
+          h += '<div class="day-header">'+dateStr+'</div>';
+          parDate[date].forEach(function(c){
+            var selected = _selectedSlots.includes(c.id);
+            h += '<div class="creneau-slot'+(selected?' selected':'')+'" onclick="toggleSlot(\''+c.id+'\')">'
+              + '<div><div style="font-weight:500;font-size:13px;">'+c.heure_debut.slice(0,5)+' – '+c.heure_fin.slice(0,5)+'</div></div>'
+              + '<span class="slot-check">'+(selected?'✅':'○')+'</span>'
+              + '</div>';
+          });
+        });
+      }
+
+      var maxSlots = 2 - actives.length;
+      h += '<div style="margin-top:16px;">';
+      if(_selectedSlots.length > 0){
+        h += '<button class="btn btn-green" onclick="confirmerReservation()" style="width:100%;">Réserver '+_selectedSlots.length+' créneau'+(_selectedSlots.length>1?'x':'')+' sélectionné'+(_selectedSlots.length>1?'s':'')+'</button>';
+      }
+      if(maxSlots > 1){
+        h += '<div style="font-size:11px;color:#888;text-align:center;margin-top:8px;">Vous pouvez sélectionner jusqu\'à '+maxSlots+' créneau'+(maxSlots>1?'x':'')+' par ouverture.</div>';
+      }
+      h += '</div>';
+
+      el.innerHTML = h;
+    }
+
+    function toggleSlot(cid){
+      var idx = _selectedSlots.indexOf(cid);
+      var actives = (_reservations||[]).filter(r=>r.statut==='confirmee').length;
+      var maxSlots = 2 - actives;
+      if(idx>=0){
+        _selectedSlots.splice(idx,1);
+      } else {
+        if(_selectedSlots.length >= maxSlots){
+          showToast('Maximum '+maxSlots+' créneau'+(maxSlots>1?'x':'')+' sélectionnable'+(maxSlots>1?'s':''),'error');
+          return;
+        }
+        _selectedSlots.push(cid);
+      }
+      renderReserver();
+    }
+
+    async function confirmerReservation(){
+      if(!_selectedSlots.length) return;
+      var btn = document.querySelector('#tab-reserver .btn-green');
+      if(btn){ btn.disabled=true; btn.textContent='Réservation...'; }
+
+      var success = 0;
+      for(var cid of _selectedSlots){
+        var res = await fetch(SMOOTH_ACTION, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer '+SUPABASE_ANON },
+          body: JSON.stringify({
+            creneau_id: cid,
+            patient_id: _patient.patient_id,
+            patient_prenom: _patient.patient_prenom,
+            patient_email: _patient.patient_email,
+            token_patient: token
+          })
+        });
+        var data = await res.json();
+        if(data.success) success++;
+        else if(data.error==='already_taken') showToast('Un créneau vient d\'être pris par quelqu\'un d\'autre','error');
+      }
+
+      _selectedSlots = [];
+      if(success>0) showToast(success+' créneau'+(success>1?'x':'')+' réservé'+(success>1?'s':'')+' ✅');
+
+      // Recharger les réservations
+      var rdvs = await sb('reservations?patient_id=eq.'+_patient.patient_id+'&order=created_at.desc&select=*');
+      _reservations = rdvs;
+      renderReserver();
+    }
+
+    function renderContact(){
+      var el = document.getElementById('tab-contact');
+      el.innerHTML = '<div class="card">'
+        + '<div style="font-size:14px;font-weight:600;margin-bottom:16px;">Envoyer un message</div>'
+        + '<div class="field"><label>Objet</label><input type="text" id="contact-objet" placeholder="Ex: Question sur ma séance..."></div>'
+        + '<div class="field"><label>Message <span style="color:#C0392B;">*</span></label><textarea id="contact-message" placeholder="Votre message..."></textarea></div>'
+        + '<button class="btn btn-green" onclick="envoyerMessage()">Envoyer</button>'
+        + '</div>';
+    }
+
+    async function envoyerMessage(){
+      var objet = document.getElementById('contact-objet').value.trim();
+      var message = document.getElementById('contact-message').value.trim();
+      if(!message){ showToast('Écrivez un message','error'); return; }
+
+      var btn = document.querySelector('#tab-contact .btn-green');
+      if(btn){ btn.disabled=true; btn.textContent='Envoi...'; }
+
+      var res = await fetch(SMOOTH_ACTION, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer '+SUPABASE_ANON },
+        body: JSON.stringify({
+          action: 'contact',
+          patient_id: _patient.patient_id,
+          patient_prenom: _patient.patient_prenom,
+          patient_email: _patient.patient_email,
+          objet: objet || 'Message depuis le portail',
+          message: message
+        })
+      });
+      var data = await res.json();
+      if(data.success){
+        showToast('Message envoyé ✅');
+        document.getElementById('tab-contact').innerHTML = '<div class="card" style="text-align:center;padding:32px;"><div style="font-size:40px;margin-bottom:12px;">✅</div><div style="font-weight:600;color:#0F6E56;">Message envoyé !</div><div style="font-size:13px;color:#888;margin-top:8px;">Vous recevrez une réponse par email.</div></div>';
+      } else {
+        showToast('Erreur lors de l\'envoi','error');
+        if(btn){ btn.disabled=false; btn.textContent='Envoyer'; }
+      }
+    }
+
+    window.addEventListener('load', function(){ load(); });
+  </script>
+</body>
+</html>

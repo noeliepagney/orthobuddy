@@ -6635,6 +6635,7 @@ function renderDossierTab(p){
     +'</div>'
     +'<div style="display:flex;gap:8px;">'
     +'<button class="btn btn-sm" onclick="openPatientModal(\'' + p.id + '\')">\u270F\uFE0F Modifier</button>'
+    +'<button class="btn btn-sm" style="background:var(--green-ll);color:var(--green-d);border:1px solid var(--green);" onclick="gererLienPortail(\'' + p.id + '\')">🔗 Portail patient</button>'
     +'<button class="btn btn-sm btn-red" onclick="deletePatient(\'' + p.id + '\')">\uD83D\uDDD1\uFE0F Supprimer</button>'
     +'</div>';
 }
@@ -7103,6 +7104,61 @@ function updateContactField(pid, field, val){
   }
   save();
 }
+
+function gererLienPortail(pid){
+  var p = DB.patients.find(function(x){ return x.id===pid; });
+  if(!p) return;
+  if(!p.portailToken){
+    p.portailToken = uid();
+    save();
+    fetch(SB_URL+'/rest/v1/patient_portal_tokens', {
+      method: 'POST',
+      headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer '+SB_KEY, 'Content-Type': 'application/json', 'Prefer': 'return=minimal' },
+      body: JSON.stringify({ token: p.portailToken, patient_id: p.id, patient_prenom: p.prenom, patient_email: p.email||'', portail: p.portail||'fixe' })
+    }).catch(function(e){ console.warn('Erreur save portail token:', e); });
+  } else {
+    fetch(SB_URL+'/rest/v1/patient_portal_tokens?token=eq.'+p.portailToken, {
+      method: 'PATCH',
+      headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer '+SB_KEY, 'Content-Type': 'application/json', 'Prefer': 'return=minimal' },
+      body: JSON.stringify({ patient_prenom: p.prenom, patient_email: p.email||'', portail: p.portail||'fixe' })
+    }).catch(function(e){ console.warn('Erreur update portail token:', e); });
+  }
+  var lien = 'https://orthobuddy.fr/portail.html?token='+p.portailToken;
+  var accesDesc = p.portail==='fixe' ? 'Voir ses RDV + Me contacter'
+    : p.portail==='autonome' ? 'Voir ses RDV + Réserver + Me contacter'
+    : 'Voir ses RDV + Alertes + Me contacter';
+  var existing = document.getElementById('modal-portail-lien-dyn');
+  if(existing) existing.remove();
+  var m = document.createElement('div');
+  m.id = 'modal-portail-lien-dyn';
+  m.className = 'overlay';
+  m.innerHTML = '<div class="modal">'
+    + '<div class="modal-head"><div class="modal-title">🔗 Lien portail — '+escHtml(p.prenom)+' '+escHtml(p.nom)+'</div>'
+    + '<button class="modal-close" onclick="document.getElementById(\'modal-portail-lien-dyn\').remove()"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>'
+    + '<div style="padding:16px 0;">'
+    + '<div style="font-size:13px;color:var(--text-soft);margin-bottom:12px;">Copiez ce lien et envoyez-le à votre patient. Il pourra y accéder à tout moment.</div>'
+    + '<div id="portail-lien-display" style="background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px 12px;font-size:12px;font-family:monospace;word-break:break-all;margin-bottom:12px;">'+escHtml(lien)+'</div>'
+    + '<div style="display:flex;gap:8px;">'
+    + '<button class="btn btn-green" id="btn-copier-portail">📋 Copier le lien</button>'
+    + '<button class="btn btn-ghost" id="btn-regenerer-portail">↩️ Regénérer</button>'
+    + '</div>'
+    + '</div>'
+    + '<div style="font-size:12px;color:var(--text-soft);padding-top:12px;border-top:1px solid var(--border);">Accès : '+accesDesc+'</div>'
+    + '</div>';
+  document.body.appendChild(m);
+  m.classList.add('open');
+  document.getElementById('btn-copier-portail').onclick = function(){
+    navigator.clipboard.writeText(lien).then(function(){ showToast('✅ Lien copié'); });
+  };
+  document.getElementById('btn-regenerer-portail').onclick = function(){
+    if(confirm('Regénérer un nouveau lien ? L ancien lien ne fonctionnera plus.')){
+      p.portailToken = uid(); save();
+      document.getElementById('modal-portail-lien-dyn').remove();
+      gererLienPortail(pid);
+    }
+  };
+}
+
 
 function deletePatient(pid){
   // suppression directe
