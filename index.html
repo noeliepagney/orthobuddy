@@ -525,6 +525,7 @@ html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);colo
     </nav>
     <div class="sidebar-bottom">
       <div id="sync-indicator" style="text-align:center;padding:4px 8px 6px;min-height:20px;"></div>
+      <div id="services-health" style="text-align:center;padding:0 8px 8px;min-height:16px;"></div>
       <button class="btn btn-sm btn-ghost" onclick="exportData()" style="width:100%;justify-content:center;">
         <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
         Sauvegarde locale
@@ -2164,8 +2165,34 @@ async function sbSave(){
   }
 }
 
+async function checkServicesHealth(){
+  var el = document.getElementById('services-health');
+  if(!el) return;
+  if(!SB_URL||!SB_KEY){ setTimeout(checkServicesHealth, 1000); return; }
+
+  // Vérifier Supabase
+  var sbOk = false;
+  try {
+    var r = await fetch(SB_URL+'/rest/v1/orthobuddy_data?user_id=eq.__health_check__&select=user_id&limit=1', {
+      headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer '+SB_KEY }
+    });
+    sbOk = r.status === 200 || r.status === 404 || r.status === 406;
+  } catch(e){ sbOk = false; }
+
+  var sbHtml = sbOk
+    ? '<span style="font-size:10px;color:var(--green-mid);">🟢 Supabase</span>'
+    : '<span style="font-size:10px;color:var(--red);">🔴 Supabase hors ligne</span>';
+
+  el.innerHTML = sbHtml;
+
+  if(!sbOk){
+    showToast('⚠️ Supabase inaccessible — le portail patient ne fonctionne pas', 'red');
+  }
+}
+
 function setSyncStatus(s){
   _syncStatus=s;
+  if(s==='ok'||s==='idle') setTimeout(checkServicesHealth, 500);
   const el=document.getElementById('sync-indicator');
   if(!el)return;
   const states={
@@ -2473,6 +2500,7 @@ async function doLogin(){
       sbSave().then(()=>{setSyncStatus('ok');setTimeout(()=>setSyncStatus('idle'),2000);}).catch(()=>setSyncStatus('error'));
       await syncPortailReservations();
       renderAll();checkBackupReminder();updateEnvBanner();updateEnvButtons();
+      setInterval(checkServicesHealth, 5*60*1000);
     } else {
       // Mode browser : charger depuis Supabase
       document.getElementById('patients-list').innerHTML='<div style="text-align:center;padding:40px;color:var(--text-soft);"><div style="font-size:32px;margin-bottom:10px;">☁️</div><p style="font-size:13px;">Chargement de vos données…</p></div>';
@@ -2481,6 +2509,7 @@ async function doLogin(){
       setSyncStatus(loaded?'ok':'error');
       if(loaded) setTimeout(()=>setSyncStatus('idle'),3000);
       renderAll();checkBackupReminder();updateEnvBanner();updateEnvButtons();
+      setInterval(checkServicesHealth, 5*60*1000);
     }
   } else {
     document.getElementById('login-error').textContent='Mot de passe incorrect';
