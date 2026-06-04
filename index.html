@@ -1161,6 +1161,27 @@ html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);colo
 
     <hr class="divider">
 
+    <!-- PORTAIL PATIENT -->
+    <div class="modal-section">
+      <div class="modal-section-label">🔗 Portail patient</div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;">
+        <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:13px;">
+          <input type="radio" name="p-portail" value="fixe" id="p-portail-fixe">
+          <span title="Créneau récurrent, tu gères les séances">📅 Fixe</span>
+        </label>
+        <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:13px;">
+          <input type="radio" name="p-portail" value="autonome" id="p-portail-autonome">
+          <span title="Gère ses RDV via le portail, prioritaire">🟣 Autonome</span>
+        </label>
+        <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:13px;">
+          <input type="radio" name="p-portail" value="surbooking" id="p-portail-surbooking">
+          <span title="Alerté si créneau libéré ou places restantes">🟠 Surbooking</span>
+        </label>
+      </div>
+    </div>
+
+    <hr class="divider">
+
     <!-- 2. CONTACT -->
     <div class="modal-section">
       <div class="modal-section-label">📞 Contact</div>
@@ -2862,6 +2883,8 @@ function renderFilterChips(){
 
   // ── Filtres fixes ──
   var fixedFilters = [
+    { key:'portail_autonome',   label:'🟣 Autonome',      cls:'active' },
+    { key:'portail_surbooking', label:'🟠 Surbooking',    cls:'active' },
     { key:'collab',    label:'🤝 Collab',          cls:'active-collab' },
     { key:'domicile',  label:'🏠 Domicile',         cls:'active' },
     { key:'alertes',   label:'🔔 Alertes',          cls:'active-alert' },
@@ -2981,6 +3004,8 @@ function renderPatients(){
           var parcId = key.slice(5);
           return (p.parcours||[]).includes(parcId);
         }
+        if(key==='portail_autonome') return p.portail==='autonome';
+        if(key==='portail_surbooking') return p.portail==='surbooking';
         if(key==='collab') return !!p.enCollab;
         if(key==='domicile') return !!p.domicile;
         if(key==='age6'){ var a=getAge(p.ddn); return a!==null&&a<6; }
@@ -3050,6 +3075,7 @@ function renderPatients(){
             ${p.isNew?'<span title="Importé récemment" style="font-size:10px;background:#3b82f6;color:white;border-radius:8px;padding:1px 7px;font-weight:600;letter-spacing:.3px;">NEW</span>':''}
             ${isPerdVue(p)?'<span title="Pas de séance depuis 4 semaines" style="font-size:10px;background:#f97316;color:white;border-radius:8px;padding:1px 7px;font-weight:600;">👻 Perdu de vue</span>':''}
             ${p.enCollab?'<span title="En collaboration" style="font-size:11px;opacity:.55;">🤝</span>':''}
+            ${p.portail==='autonome'?'<span onclick="event.stopPropagation()" title="Portail autonome" style="font-size:10px;background:#7c3aed;color:white;border-radius:8px;padding:1px 7px;font-weight:600;">🟣 Autonome</span>':p.portail==='surbooking'?'<span onclick="event.stopPropagation()" title="Portail surbooking" style="font-size:10px;background:#ea580c;color:white;border-radius:8px;padding:1px 7px;font-weight:600;">🟠 Surbooking</span>':''}
             ${p.genre==='F'?'<span title="Féminin" style="font-size:10px;color:var(--text-soft);opacity:.6;margin-left:1px;">♀</span>':p.genre==='M'?'<span title="Masculin" style="font-size:10px;color:var(--text-soft);opacity:.6;margin-left:1px;">♂</span>':''}
           </div>
           <div class="patient-meta">
@@ -3067,7 +3093,7 @@ function renderPatients(){
           <span class="chevron">&#9662;</span>
         </div>
       </div>
-      <div class="patient-body" id="pbody-${p.id}" style="display:none;">
+      <div class="patient-body" id="pbody-${p.id}">
         <div class="patient-tabs">
           <button class="patient-tab active" onclick="switchPTab('${p.id}','seances',this)">📋 Séances</button>
           <button class="patient-tab" onclick="switchPTab('${p.id}','dossier',this)">📁 Dossier</button>
@@ -3117,7 +3143,7 @@ function togglePatient(pid){
     if(badge) badge.remove();
   }
   if(isExpanded){
-    document.getElementById('pbody-'+pid).style.display = 'block';
+    document.getElementById('pbody-'+pid).style.display = '';
     const seancesTab = document.getElementById('ptab-'+pid+'-seances');
     if(seancesTab && !seancesTab.dataset.loaded){ seancesTab.innerHTML = renderSeancesTab(p); seancesTab.dataset.loaded='1'; }
     const dossierTab = document.getElementById('ptab-'+pid+'-dossier');
@@ -3605,6 +3631,8 @@ function openPatientModalFromAttente(a){
   document.getElementById('p-nir').value='';
   document.getElementById('p-color').value='#1D9E75';
   document.getElementById('p-statut').value='actif';
+  var _fixeRadio=document.getElementById('p-portail-fixe');
+  if(_fixeRadio)_fixeRadio.checked=true;
   document.getElementById('p-domicile').checked=!!(a.domicile);
   toggleDistanceField(!!(a.domicile));
   document.getElementById('p-distance').value='';
@@ -6960,6 +6988,9 @@ function openPatientModal(pid){
   var nirErr=document.getElementById('p-nir-error');if(nirErr)nirErr.style.display='none';
   document.getElementById('p-color').value=p?.color||'#1D9E75';
   document.getElementById('p-statut').value=p?.statut||'actif';
+  var _portailVal=p?.portail||'fixe';
+  var _portailRadio=document.querySelector('input[name="p-portail"][value="'+_portailVal+'"]');
+  if(_portailRadio)_portailRadio.checked=true;
   document.getElementById('p-domicile').checked=p?.domicile||false;
   toggleDistanceField(p?.domicile||false);
   document.getElementById('p-distance').value=p?.distanceKm||'';
@@ -7070,6 +7101,7 @@ function savePatient(){
     memeAgglo:document.getElementById('p-meme-agglo').checked,
     hospi:document.getElementById('p-hospi').checked,
     hospiSortie:dpGet('dp-hospi-sortie-wrap'),
+    portail:(document.querySelector('input[name="p-portail"]:checked')||{value:'fixe'}).value,
     premierSuivi: _psVal,
     nomOrthoPrec: _psVal==='non'?(document.getElementById('p-ortho-prec')||{value:''}).value.trim():'',
     dureeSuiviPrecedent: _psVal==='non'?(document.getElementById('p-duree-suivi')||{value:''}).value.trim():'',
