@@ -7111,17 +7111,12 @@ function gererLienPortail(pid){
   if(!p.portailToken){
     p.portailToken = uid();
     save();
+    // Upsert dans Supabase (insert ou update si existe déjà)
     fetch(SB_URL+'/rest/v1/patient_portal_tokens', {
       method: 'POST',
-      headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer '+SB_KEY, 'Content-Type': 'application/json', 'Prefer': 'return=minimal' },
+      headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer '+SB_KEY, 'Content-Type': 'application/json', 'Prefer': 'resolution=merge-duplicates,return=minimal' },
       body: JSON.stringify({ token: p.portailToken, patient_id: p.id, patient_prenom: p.prenom, patient_email: p.email||'', portail: p.portail||'fixe' })
-    }).catch(function(e){ console.warn('Erreur save portail token:', e); });
-  } else {
-    fetch(SB_URL+'/rest/v1/patient_portal_tokens?token=eq.'+p.portailToken, {
-      method: 'PATCH',
-      headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer '+SB_KEY, 'Content-Type': 'application/json', 'Prefer': 'return=minimal' },
-      body: JSON.stringify({ patient_prenom: p.prenom, patient_email: p.email||'', portail: p.portail||'fixe' })
-    }).catch(function(e){ console.warn('Erreur update portail token:', e); });
+    }).catch(function(e){ console.warn('Erreur upsert portail token:', e); });
   }
   var lien = 'https://orthobuddy.fr/portail.html?token='+p.portailToken;
   var accesDesc = p.portail==='fixe' ? 'Voir ses RDV + Me contacter'
