@@ -11195,18 +11195,31 @@ function confirmerCreneaux(){
   renderCreneauxPage();
 }
 
-function supprimerTousCreneaux(){
+async function supprimerTousCreneaux(){
   if(!confirm('Supprimer tous les créneaux définis ?')) return;
   DB.creneaux = [];
   save();
+  // Supprimer aussi dans Supabase
+  try {
+    await fetch(SB_URL+'/rest/v1/creneaux?user_id=eq.noelie', {
+      method: 'DELETE',
+      headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer '+SB_KEY }
+    });
+  } catch(e) { console.warn('Erreur suppression Supabase:', e); }
   showToast('Tous les créneaux supprimés');
   renderCreneauxPage();
 }
 
-function supprimerCreneau(cid){
+async function supprimerCreneau(cid){
   if(!confirm('Supprimer ce créneau ?')) return;
   DB.creneaux = (DB.creneaux||[]).filter(function(c){ return c.id!==cid; });
   save();
+  try {
+    await fetch(SB_URL+'/rest/v1/creneaux?id=eq.'+cid, {
+      method: 'DELETE',
+      headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer '+SB_KEY }
+    });
+  } catch(e) { console.warn('Erreur suppression Supabase:', e); }
   showToast('Créneau supprimé');
   renderCreneauxPage();
 }
