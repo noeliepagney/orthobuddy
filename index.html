@@ -11094,7 +11094,12 @@ function renderCreneauxPage(){
     h += '<div style="font-size:13px;color:var(--text-soft);margin-bottom:16px;">'+libres.length+' créneau'+(libres.length>1?'x':'')+' libre'+(libres.length>1?'s':'')+' — ';
     h += autonomes.length+' patient'+(autonomes.length>1?'s':'')+' autonome'+(autonomes.length>1?'s':'')+', ';
     h += surbooking.length+' surbooking</div>';
-    h += '<button class="btn btn-green" onclick="ouvrirPlages()" style="font-size:14px;padding:10px 24px;">🚀 Envoyer les invitations</button>';
+    h += '<div style="display:flex;gap:12px;flex-wrap:wrap;">';
+    h += '<button class="btn btn-green" onclick="ouvrirPlages()" style="font-size:14px;padding:10px 24px;">🚀 Envoyer les invitations — Autonomes</button>';
+    if(surbooking.length){
+      h += '<button class="btn" style="font-size:14px;padding:10px 24px;background:var(--amber-ll);color:var(--amber-d);border:1px solid var(--amber-b);" onclick="alerterSurbooking()">🟠 Alerter les surbooking</button>';
+    }
+    h += '</div>';
     h += '</div>';
   }
 
@@ -11198,8 +11203,106 @@ function supprimerCreneau(cid){
   renderCreneauxPage();
 }
 
-function ouvrirPlages(){
-  showToast('Fonctionnalité d\'envoi des emails — bientôt disponible !','blue');
+async function alerterSurbooking(){
+  var creneaux = (DB.creneaux||[]).filter(function(c){ return c.statut==='libre'; });
+  if(!creneaux.length){ showToast('Aucun créneau libre','red'); return; }
+
+  // Construire la liste surbooking (autonomes + surbooking dédiés), avec possibilité de décocher
+  var tous = DB.patients.filter(function(p){
+    return (p.portail==='autonome'||p.portail==='surbooking') && (!p.statut||p.statut==='actif') && p.email;
+  });
+  if(!tous.length){ showToast('Aucun patient surbooking avec un email','red'); return; }
+
+  // Afficher un modal de sélection
+  var existing = document.getElementById('modal-surbooking-dyn');
+  if(existing) existing.remove();
+  var m = document.createElement('div');
+  m.id = 'modal-surbooking-dyn';
+  m.className = 'overlay';
+  var listHtml = tous.map(function(p){
+    return '<label style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--border-light);cursor:pointer;font-size:13px;">'
+      +'<input type="checkbox" class="sb-patient-check" value="'+p.id+'" checked>'
+      +'<span>'+p.prenom+' '+p.nom+'</span>'
+      +'<span style="font-size:11px;color:var(--text-soft);">('+p.email+')</span>'
+      +'<span style="margin-left:auto;font-size:10px;background:'+(p.portail==='autonome'?'#7c3aed':'#ea580c')+';color:white;border-radius:8px;padding:1px 7px;">'+(p.portail==='autonome'?'Autonome':'Surbooking')+'</span>'
+      +'</label>';
+  }).join('');
+  m.innerHTML = '<div class="modal">'
+    +'<div class="modal-head"><div class="modal-title">🟠 Alerter les surbooking</div>'
+    +'<button class="modal-close" onclick="document.getElementById(\'modal-surbooking-dyn\').remove()"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>'
+    +'<div style="padding:16px 0;font-size:13px;color:var(--text-soft);margin-bottom:8px;">'+creneaux.length+' créneau'+(creneaux.length>1?'x':'')+' libre'+(creneaux.length>1?'s':'')+' — sélectionnez les patients à alerter :</div>'
+    +'<div>'+listHtml+'</div>'
+    +'<div class="modal-footer" style="margin-top:16px;">'
+    +'<button class="btn btn-ghost" onclick="document.getElementById(\'modal-surbooking-dyn\').remove()">Annuler</button>'
+    +'<button class="btn btn-green" onclick="envoyerAlerteSurbooking()">Envoyer les alertes</button>'
+    +'</div></div>';
+  document.body.appendChild(m);
+  m.classList.add('open');
+}
+
+async function envoyerAlerteSurbooking(){
+  var creneaux = (DB.creneaux||[]).filter(function(c){ return c.statut==='libre'; });
+  var checked = [...document.querySelectorAll('.sb-patient-check:checked')].map(function(cb){ return cb.value; });
+  var patients = DB.patients.filter(function(p){ return checked.includes(p.id); });
+  if(!patients.length){ showToast('Sélectionnez au moins un patient','red'); return; }
+
+  document.getElementById('modal-surbooking-dyn').remove();
+
+  try {
+    var res = await fetch(SB_URL+'/functions/v1/dynamic-processor', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer '+SB_KEY },
+      body: JSON.stringify({
+        creneaux: creneaux,
+        patients: patients.map(function(p){ return { id:p.id, prenom:p.prenom, email:p.email }; })
+      })
+    });
+    var data = await res.json();
+    if(data.success){
+      var nb = data.results.filter(function(r){ return r.status==='ok'; }).length;
+      showToast(nb+' alerte'+(nb>1?'s':'')+' envoyée'+(nb>1?'s':'')+'  ✅');
+    } else {
+      showToast('Erreur : '+(data.error||'inconnue'),'red');
+    }
+  } catch(e) {
+    showToast('Erreur réseau : '+e.message,'red');
+  }
+}
+
+async function ouvrirPlages(){
+  var creneaux = (DB.creneaux||[]).filter(function(c){ return c.statut==='libre'; });
+  if(!creneaux.length){ showToast('Aucun créneau libre à ouvrir','red'); return; }
+
+  var autonomes = DB.patients.filter(function(p){
+    return p.portail==='autonome' && (!p.statut||p.statut==='actif') && p.email;
+  });
+  if(!autonomes.length){ showToast('Aucun patient autonome avec un email','red'); return; }
+
+  var btn = document.querySelector('[onclick="ouvrirPlages()"]');
+  if(btn){ btn.disabled=true; btn.textContent='Envoi en cours...'; }
+
+  try {
+    var res = await fetch(SB_URL+'/functions/v1/dynamic-processor', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer '+SB_KEY },
+      body: JSON.stringify({
+        creneaux: creneaux,
+        patients: autonomes.map(function(p){ return { id:p.id, prenom:p.prenom, email:p.email }; })
+      })
+    });
+    var data = await res.json();
+    if(data.success){
+      var nb = data.results.filter(function(r){ return r.status==='ok'; }).length;
+      showToast(nb+' invitation'+(nb>1?'s':'')+' envoyée'+(nb>1?'s':'')+'  ✅');
+      renderCreneauxPage();
+    } else {
+      showToast('Erreur lors de l\'envoi : '+(data.error||'inconnue'),'red');
+    }
+  } catch(e) {
+    showToast('Erreur réseau : '+e.message,'red');
+  } finally {
+    if(btn){ btn.disabled=false; btn.textContent='🚀 Envoyer les invitations'; }
+  }
 }
 
 function getFamiMontant(indicateurs){
