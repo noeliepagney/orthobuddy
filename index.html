@@ -11061,7 +11061,7 @@ function renderCreneauxPage(){
   var creneaux = (DB.creneaux||[]).sort(function(a,b){ return (a.date+a.heure_debut).localeCompare(b.date+b.heure_debut); });
 
   h += '<div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px;margin-bottom:20px;">';
-  h += '<div style="font-weight:600;font-size:15px;margin-bottom:12px;">📋 Créneaux définis</div>';
+  h += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;"><div style="font-weight:600;font-size:15px;">📋 Créneaux définis</div>'+(creneaux.length?'<button class="btn btn-ghost" style="font-size:12px;color:var(--red);" onclick="supprimerTousCreneaux()">🗑 Tout supprimer</button>':'')+'</div>';
 
   if(!creneaux.length){
     h += '<div style="color:var(--text-soft);font-size:13px;">Aucun créneau défini. Ajoutez des créneaux ci-dessus.</div>';
@@ -11195,6 +11195,14 @@ function confirmerCreneaux(){
   renderCreneauxPage();
 }
 
+function supprimerTousCreneaux(){
+  if(!confirm('Supprimer tous les créneaux définis ?')) return;
+  DB.creneaux = [];
+  save();
+  showToast('Tous les créneaux supprimés');
+  renderCreneauxPage();
+}
+
 function supprimerCreneau(cid){
   if(!confirm('Supprimer ce créneau ?')) return;
   DB.creneaux = (DB.creneaux||[]).filter(function(c){ return c.id!==cid; });
@@ -11269,7 +11277,7 @@ async function envoyerAlerteSurbooking(){
   }
 }
 
-async function ouvrirPlages(){
+function ouvrirPlages(){
   var creneaux = (DB.creneaux||[]).filter(function(c){ return c.statut==='libre'; });
   if(!creneaux.length){ showToast('Aucun créneau libre à ouvrir','red'); return; }
 
@@ -11278,8 +11286,38 @@ async function ouvrirPlages(){
   });
   if(!autonomes.length){ showToast('Aucun patient autonome avec un email','red'); return; }
 
-  var btn = document.querySelector('[onclick="ouvrirPlages()"]');
-  if(btn){ btn.disabled=true; btn.textContent='Envoi en cours...'; }
+  var existing = document.getElementById('modal-autonomes-dyn');
+  if(existing) existing.remove();
+  var m = document.createElement('div');
+  m.id = 'modal-autonomes-dyn';
+  m.className = 'overlay';
+  var listHtml = autonomes.map(function(p){
+    return '<label style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--border-light);cursor:pointer;font-size:13px;">'
+      +'<input type="checkbox" class="auto-patient-check" value="'+p.id+'" checked>'
+      +'<span>'+p.prenom+' '+p.nom+'</span>'
+      +'<span style="font-size:11px;color:var(--text-soft);">('+p.email+')</span>'
+      +'</label>';
+  }).join('');
+  m.innerHTML = '<div class="modal">'
+    +'<div class="modal-head"><div class="modal-title">🚀 Envoyer les invitations</div>'
+    +'<button class="modal-close" onclick="document.getElementById(\'modal-autonomes-dyn\').remove()"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>'
+    +'<div style="padding:16px 0;font-size:13px;color:var(--text-soft);margin-bottom:8px;">'+creneaux.length+' créneau'+(creneaux.length>1?'x':'')+' libre'+(creneaux.length>1?'s':'')+' — sélectionnez les patients à inviter :</div>'
+    +'<div>'+listHtml+'</div>'
+    +'<div class="modal-footer" style="margin-top:16px;">'
+    +'<button class="btn btn-ghost" onclick="document.getElementById(\'modal-autonomes-dyn\').remove()">Annuler</button>'
+    +'<button class="btn btn-green" onclick="envoyerInvitations()">Envoyer</button>'
+    +'</div></div>';
+  document.body.appendChild(m);
+  m.classList.add('open');
+}
+
+async function envoyerInvitations(){
+  var creneaux = (DB.creneaux||[]).filter(function(c){ return c.statut==='libre'; });
+  var checked = [...document.querySelectorAll('.auto-patient-check:checked')].map(function(cb){ return cb.value; });
+  var patients = DB.patients.filter(function(p){ return checked.includes(p.id); });
+  if(!patients.length){ showToast('Sélectionnez au moins un patient','red'); return; }
+
+  document.getElementById('modal-autonomes-dyn').remove();
 
   try {
     var res = await fetch(SB_URL+'/functions/v1/dynamic-processor', {
@@ -11287,7 +11325,7 @@ async function ouvrirPlages(){
       headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer '+SB_KEY },
       body: JSON.stringify({
         creneaux: creneaux,
-        patients: autonomes.map(function(p){ return { id:p.id, prenom:p.prenom, email:p.email }; })
+        patients: patients.map(function(p){ return { id:p.id, prenom:p.prenom, email:p.email }; })
       })
     });
     var data = await res.json();
@@ -11296,12 +11334,10 @@ async function ouvrirPlages(){
       showToast(nb+' invitation'+(nb>1?'s':'')+' envoyée'+(nb>1?'s':'')+'  ✅');
       renderCreneauxPage();
     } else {
-      showToast('Erreur lors de l\'envoi : '+(data.error||'inconnue'),'red');
+      showToast('Erreur : '+(data.error||'inconnue'),'red');
     }
   } catch(e) {
     showToast('Erreur réseau : '+e.message,'red');
-  } finally {
-    if(btn){ btn.disabled=false; btn.textContent='🚀 Envoyer les invitations'; }
   }
 }
 
