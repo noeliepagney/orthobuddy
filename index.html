@@ -2800,8 +2800,8 @@ async function loadGestionPraticiens(){
       h += '</div>';
       if(!isMe){
         h += '<div style="display:flex;gap:16px;">';
-        h += '<label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer;"><input type="checkbox" '+(p.can_use_bibliotheque?'checked':'')+' onchange="updatePermission(''+p.user_id+'','can_use_bibliotheque',this.checked)"> 📚 Bibliothèque</label>';
-        h += '<label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer;"><input type="checkbox" '+(p.can_switch_env?'checked':'')+' onchange="updatePermission(''+p.user_id+'','can_switch_env',this.checked)"> 🧪 Env. test</label>';
+        h += '<label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer;"><input type="checkbox" '+(p.can_use_bibliotheque?'checked':'')+' onchange="updatePermission(\''+p.user_id+'\',\'can_use_bibliotheque\',this.checked)"> 📚 Bibliothèque</label>';
+        h += '<label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer;"><input type="checkbox" '+(p.can_switch_env?'checked':'')+' onchange="updatePermission(\''+p.user_id+'\',\'can_switch_env\',this.checked)"> 🧪 Env. test</label>';
         h += '</div>';
       } else {
         h += '<div style="font-size:11px;color:var(--text-soft);">Toutes les permissions (vous)</div>';
