@@ -715,6 +715,36 @@ html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);colo
           </div>
         </div>
 
+        <!-- FORMULAIRE PUBLIC -->
+        <div class="settings-section"><div class="settings-section-title" onclick="toggleSettingsSection('sec_formulaire')"><span>📋 Mon formulaire public</span><span class="settings-section-chevron">▼</span></div><div class="settings-section-body" id="sec_formulaire">
+          <p style="font-size:12px;color:var(--text-soft);margin-bottom:14px;">Personnalisez les textes affichés sur votre formulaire de liste d'attente.</p>
+          <div class="field" style="margin-bottom:12px;">
+            <label>Texte d'introduction</label>
+            <textarea id="setting-texte-intro" style="min-height:80px;margin-top:4px;" placeholder="Bienvenue sur mon formulaire…"></textarea>
+          </div>
+          <div class="field" style="margin-bottom:12px;">
+            <label>Message de confirmation</label>
+            <textarea id="setting-texte-confirmation" style="min-height:60px;margin-top:4px;" placeholder="Votre demande a bien été reçue…"></textarea>
+          </div>
+          <button class="btn btn-green btn-sm" onclick="saveInfosPraticien()">Enregistrer</button>
+          <div id="praticien-save-msg" style="font-size:12px;color:var(--green-mid);margin-top:8px;display:none;">✓ Enregistré</div>
+        </div></div>
+
+        <!-- FORMULAIRE PUBLIC -->
+        <div class="settings-section"><div class="settings-section-title" onclick="toggleSettingsSection('sec_formulaire')"><span>📋 Mon formulaire public</span><span class="settings-section-chevron">▼</span></div><div class="settings-section-body" id="sec_formulaire">
+          <p style="font-size:12px;color:var(--text-soft);margin-bottom:14px;">Personnalisez les textes affichés sur votre formulaire de liste d'attente.</p>
+          <div class="field" style="margin-bottom:12px;">
+            <label>Texte d'introduction</label>
+            <textarea id="setting-texte-intro" style="min-height:80px;margin-top:4px;" placeholder="Bienvenue sur mon formulaire…"></textarea>
+          </div>
+          <div class="field" style="margin-bottom:12px;">
+            <label>Message de confirmation</label>
+            <textarea id="setting-texte-confirmation" style="min-height:60px;margin-top:4px;" placeholder="Votre demande a bien été reçue…"></textarea>
+          </div>
+          <button class="btn btn-green btn-sm" onclick="saveInfosPraticien()">Enregistrer</button>
+          <div id="praticien-save-msg" style="font-size:12px;color:var(--green-mid);margin-top:8px;display:none;">✓ Enregistré</div>
+        </div></div>
+
         <!-- 2. SÉCURITÉ -->
         <div class="settings-section"><div class="settings-section-title" onclick="toggleSettingsSection('sec_securite')"><span>🔐 Sécurité</span><span class="settings-section-chevron">▼</span></div><div class="settings-section-body" id="sec_securite">
           <div class="field-grid field-grid-2" style="max-width:400px;">
@@ -2641,6 +2671,38 @@ async function doLogin(){
   }
 }
 
+async function loadInfosPraticien(){
+  if(!sessionStorage.getItem('sb_token')) return;
+  try {
+    const r = await fetch(SB_URL+'/rest/v1/praticiens?user_id=eq.'+getSbUserId()+'&select=*', {
+      headers: sbHeaders()
+    });
+    const data = await r.json();
+    if(data && data[0]){
+      var p = data[0];
+      var intro = document.getElementById('setting-texte-intro');
+      var confirm = document.getElementById('setting-texte-confirmation');
+      if(intro) intro.value = p.texte_intro || '';
+      if(confirm) confirm.value = p.texte_confirmation || '';
+    }
+  } catch(e){ console.error('loadInfosPraticien', e); }
+}
+
+async function saveInfosPraticien(){
+  var intro = document.getElementById('setting-texte-intro')?.value || '';
+  var confirmation = document.getElementById('setting-texte-confirmation')?.value || '';
+  try {
+    const r = await fetch(SB_URL+'/rest/v1/praticiens?user_id=eq.'+getSbUserId(), {
+      method: 'PATCH',
+      headers: {...sbHeaders(), 'Prefer':'return=minimal'},
+      body: JSON.stringify({texte_intro: intro, texte_confirmation: confirmation})
+    });
+    if(!r.ok) throw new Error('Erreur sauvegarde');
+    var msg = document.getElementById('praticien-save-msg');
+    if(msg){ msg.style.display='block'; setTimeout(()=>msg.style.display='none', 2000); }
+  } catch(e){ showToast('Erreur lors de la sauvegarde', 'red'); }
+}
+
 function initLiensPublics(){
   var uid = getSbUserId();
   var base = 'https://orthobuddy.fr/';
@@ -2912,7 +2974,7 @@ function showPage(name, statut){
   if(name==='agenda')renderAgenda();
   if(name==='creneaux')renderCreneauxPage();
   if(name==='patients')renderPatients();
-  if(name==='settings'){renderSettings();setTimeout(function(){var el=document.getElementById('setting-urgence-days');if(el)el.value=(DB.settings&&DB.settings.urgenceDays!=null?DB.settings.urgenceDays:2);initLiensPublics();},50);}
+  if(name==='settings'){renderSettings();setTimeout(function(){var el=document.getElementById('setting-urgence-days');if(el)el.value=(DB.settings&&DB.settings.urgenceDays!=null?DB.settings.urgenceDays:2);initLiensPublics();loadInfosPraticien();},50);}
   if(name==='taches')renderTachesPage();
   if(name==='outils')renderOutilsPage();
   if(name==='resultats'){setResPeriod(_resPeriod);}
