@@ -447,6 +447,14 @@ html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);colo
     <input class="login-input" type="password" id="login-pwd" placeholder="Mot de passe" onkeydown="if(event.key==='Enter')doLogin()">
     <button class="login-btn" onclick="doLogin()">Accéder</button>
     <div class="login-error" id="login-error"></div>
+    <div id="login-reset-zone" style="display:none;margin-top:16px;padding-top:16px;border-top:1px solid #eee;">
+      <div style="font-size:12px;color:#888;margin-bottom:8px;">Entrez votre email pour recevoir un lien de réinitialisation.</div>
+      <button class="login-btn" style="background:#888;" onclick="doResetPassword()">Envoyer le lien</button>
+      <div id="login-reset-msg" style="font-size:12px;margin-top:8px;min-height:18px;"></div>
+    </div>
+    <div style="margin-top:14px;">
+      <span style="font-size:12px;color:#aaa;cursor:pointer;text-decoration:underline;" onclick="toggleResetZone()">Mot de passe oublié ?</span>
+    </div>
   </div>
 </div>
 
@@ -2701,6 +2709,30 @@ function copyLien(id){
   navigator.clipboard.writeText(el.value).then(function(){
     showToast('✓ Lien copié !');
   });
+}
+
+function toggleResetZone(){
+  var zone = document.getElementById('login-reset-zone');
+  if(zone) zone.style.display = zone.style.display === 'none' ? 'block' : 'none';
+}
+
+async function doResetPassword(){
+  var email = document.getElementById('login-email')?.value||'';
+  var msg = document.getElementById('login-reset-msg');
+  if(!email){ if(msg) msg.textContent='Saisissez votre email ci-dessus'; return; }
+  try {
+    const r = await fetch(SB_URL+'/auth/v1/recover', {
+      method:'POST',
+      headers:{'Content-Type':'application/json','apikey':SB_KEY},
+      body: JSON.stringify({email})
+    });
+    if(msg){
+      msg.style.color = r.ok ? 'var(--green-mid)' : 'var(--red)';
+      msg.textContent = r.ok ? '✓ Email envoyé ! Vérifiez votre boîte mail.' : "Erreur, vérifiez l'email saisi.";
+    }
+  } catch(e){
+    if(msg){ msg.style.color='var(--red)'; msg.textContent='Erreur de connexion'; }
+  }
 }
 
 function doLogout(){
