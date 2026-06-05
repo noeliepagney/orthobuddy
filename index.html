@@ -443,6 +443,7 @@ html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);colo
     </svg>
     <div class="login-title">OrthoBuddy</div>
     <div class="login-sub">by Noëlie Lainé</div>
+    <input class="login-input" type="email" id="login-email" placeholder="Email" style="margin-bottom:10px;" onkeydown="if(event.key==='Enter')doLogin()">
     <input class="login-input" type="password" id="login-pwd" placeholder="Mot de passe" onkeydown="if(event.key==='Enter')doLogin()">
     <button class="login-btn" onclick="doLogin()">Accéder</button>
     <div class="login-error" id="login-error"></div>
@@ -721,6 +722,12 @@ html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);colo
             <div class="field"><label>Confirmer</label><input type="password" id="new-pwd2" placeholder="••••••"></div>
           </div>
           <button class="btn btn-green btn-sm" style="margin-top:12px;" onclick="changePassword()">Enregistrer</button>
+        </div></div>
+
+        <!-- DÉCONNEXION -->
+        <div class="settings-section"><div class="settings-section-title" onclick="toggleSettingsSection('sec_deconnexion')"><span>🚪 Déconnexion</span><span class="settings-section-chevron">▼</span></div><div class="settings-section-body" id="sec_deconnexion">
+          <p style="font-size:12px;color:var(--text-soft);margin-bottom:14px;">Déconnectez-vous de votre session OrthoBuddy.</p>
+          <button class="btn btn-red btn-sm" onclick="doLogout()">🚪 Se déconnecter</button>
         </div></div>
 
         <!-- 3. CLÉS & TARIFS AMO -->
@@ -2075,7 +2082,9 @@ const SB_CONFIGS = {
 const _sbEnv = localStorage.getItem('sb_env') || 'prod';
 let SB_URL = SB_CONFIGS[_sbEnv].url;
 let SB_KEY = SB_CONFIGS[_sbEnv].key;
-const SB_USER = 'noelie'; // identifiant unique dans la table
+const SB_USER = 'noelie'; // identifiant unique dans la table (legacy Tauri)
+function getSbUserId(){ return sessionStorage.getItem('sb_user_id') || SB_USER; }
+function getSbToken(){ return sessionStorage.getItem('sb_token') || SB_KEY; }
 
 let _syncTimeout = null;
 
@@ -2101,12 +2110,13 @@ function closePrintOverlay(){
 let _syncStatus = 'idle'; // idle | syncing | ok | error
 
 function sbHeaders(){
-  return {'Content-Type':'application/json','apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY};
+  const token = getSbToken();
+  return {'Content-Type':'application/json','apikey':SB_KEY,'Authorization':'Bearer '+token};
 }
 
 async function sbLoad(){
   try{
-    const r = await fetch(`${SB_URL}/rest/v1/orthobuddy_data?user_id=eq.${SB_USER}&limit=1`,{headers:sbHeaders()});
+    const r = await fetch(`${SB_URL}/rest/v1/orthobuddy_data?user_id=eq.${getSbUserId()}&limit=1`,{headers:sbHeaders()});
     if(!r.ok) throw new Error('HTTP '+r.status);
     const rows = await r.json();
     if(rows.length){
@@ -2146,9 +2156,9 @@ async function sbSave(){
     const payload = JSON.stringify(DB);
     const dbLight = JSON.parse(payload);
     (dbLight.seances||[]).forEach(s=>{(s.fichiers||[]).forEach(f=>{f.data='';});});
-    const body = JSON.stringify({user_id:SB_USER, data:dbLight, updated_at:new Date().toISOString()});
+    const body = JSON.stringify({user_id:getSbUserId(), data:dbLight, updated_at:new Date().toISOString()});
     // Try PATCH first (update existing row)
-    const r = await fetch(`${SB_URL}/rest/v1/orthobuddy_data?user_id=eq.${SB_USER}`,{
+    const r = await fetch(`${SB_URL}/rest/v1/orthobuddy_data?user_id=eq.${getSbUserId()}`,{
       method:'PATCH',
       headers:{...sbHeaders(),'Prefer':'return=minimal'},
       body: body
@@ -2517,7 +2527,43 @@ function getRdvFin(){return String(_rdvFH).padStart(2,'0')+':'+String(_rdvFM).pa
 // ═══════════════════════════════════════
 async function doLogin(){
   const pwd=document.getElementById('login-pwd').value;
+  const email=document.getElementById('login-email')?.value||'';
   if(!pwd){ document.getElementById('login-error').textContent='Saisissez un mot de passe'; return; }
+
+  // Mode browser : auth Supabase
+  if(!window.__TAURI__ && email){
+    document.getElementById('login-error').textContent='';
+    try {
+      const r = await fetch(SB_URL+'/auth/v1/token?grant_type=password', {
+        method:'POST',
+        headers:{'Content-Type':'application/json','apikey':SB_KEY},
+        body: JSON.stringify({email, password:pwd})
+      });
+      const data = await r.json();
+      if(!r.ok || !data.access_token){
+        document.getElementById('login-error').textContent = data.error_description || 'Email ou mot de passe incorrect';
+        return;
+      }
+      // Stocker le token et l'UUID
+      sessionStorage.setItem('sb_token', data.access_token);
+      sessionStorage.setItem('sb_user_id', data.user.id);
+      sessionStorage.setItem('ob_auth','1');
+      document.getElementById('login-screen').classList.add('hidden');
+      document.getElementById('app').style.display='flex';
+      document.getElementById('patients-list').innerHTML='<div style="text-align:center;padding:40px;color:var(--text-soft);"><div style="font-size:32px;margin-bottom:10px;">☁️</div><p style="font-size:13px;">Chargement de vos données…</p></div>';
+      setSyncStatus('syncing');
+      const loaded = await sbLoad();
+      setSyncStatus(loaded?'ok':'error');
+      if(loaded) setTimeout(()=>setSyncStatus('idle'),3000);
+      renderAll();checkBackupReminder();updateEnvBanner();updateEnvButtons();
+      setInterval(checkServicesHealth, 5*60*1000);
+      setInterval(checkNouvellesReservations, 2*60*1000);
+      return;
+    } catch(e){
+      document.getElementById('login-error').textContent='Erreur de connexion';
+      return;
+    }
+  }
 
   if(window.__TAURI__){
     // Mode Tauri : vérification via Argon2
@@ -2581,6 +2627,13 @@ async function doLogin(){
     document.getElementById('login-error').textContent='Mot de passe incorrect';
     setTimeout(()=>document.getElementById('login-error').textContent='',2000);
   }
+}
+
+function doLogout(){
+  sessionStorage.removeItem('ob_auth');
+  sessionStorage.removeItem('sb_token');
+  sessionStorage.removeItem('sb_user_id');
+  location.reload();
 }
 
 async function changePassword(){
