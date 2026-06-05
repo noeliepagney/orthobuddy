@@ -724,6 +724,18 @@ html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);colo
           <button class="btn btn-green btn-sm" style="margin-top:12px;" onclick="changePassword()">Enregistrer</button>
         </div></div>
 
+        <!-- LIENS PUBLICS -->
+        <div class="settings-section"><div class="settings-section-title" onclick="toggleSettingsSection('sec_liens')"><span>🔗 Mes liens publics</span><span class="settings-section-chevron">▼</span></div><div class="settings-section-body" id="sec_liens">
+          <p style="font-size:12px;color:var(--text-soft);margin-bottom:14px;">Partagez ces liens à vos patients. Chaque lien est unique à votre compte.</p>
+          <div style="margin-bottom:12px;">
+            <div style="font-size:12px;font-weight:600;margin-bottom:6px;">📋 Formulaire liste d'attente</div>
+            <div style="display:flex;gap:8px;align-items:center;">
+              <input type="text" id="lien-attente" readonly style="flex:1;padding:8px 10px;font-size:11px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--bg);color:var(--text);">
+              <button class="btn btn-sm btn-green" onclick="copyLien('lien-attente')">Copier</button>
+            </div>
+          </div>
+        </div></div>
+
         <!-- DÉCONNEXION -->
         <div class="settings-section"><div class="settings-section-title" onclick="toggleSettingsSection('sec_deconnexion')"><span>🚪 Déconnexion</span><span class="settings-section-chevron">▼</span></div><div class="settings-section-body" id="sec_deconnexion">
           <p style="font-size:12px;color:var(--text-soft);margin-bottom:14px;">Déconnectez-vous de votre session OrthoBuddy.</p>
@@ -2629,6 +2641,21 @@ async function doLogin(){
   }
 }
 
+function initLiensPublics(){
+  var uid = getSbUserId();
+  var base = 'https://orthobuddy.fr/';
+  var lienAttente = document.getElementById('lien-attente');
+  if(lienAttente) lienAttente.value = base + 'liste-attente.html?user=' + uid;
+}
+
+function copyLien(id){
+  var el = document.getElementById(id);
+  if(!el) return;
+  navigator.clipboard.writeText(el.value).then(function(){
+    showToast('✓ Lien copié !');
+  });
+}
+
 function doLogout(){
   sessionStorage.removeItem('ob_auth');
   sessionStorage.removeItem('sb_token');
@@ -2885,7 +2912,7 @@ function showPage(name, statut){
   if(name==='agenda')renderAgenda();
   if(name==='creneaux')renderCreneauxPage();
   if(name==='patients')renderPatients();
-  if(name==='settings'){renderSettings();setTimeout(function(){var el=document.getElementById('setting-urgence-days');if(el)el.value=(DB.settings&&DB.settings.urgenceDays!=null?DB.settings.urgenceDays:2);},50);}
+  if(name==='settings'){renderSettings();setTimeout(function(){var el=document.getElementById('setting-urgence-days');if(el)el.value=(DB.settings&&DB.settings.urgenceDays!=null?DB.settings.urgenceDays:2);initLiensPublics();},50);}
   if(name==='taches')renderTachesPage();
   if(name==='outils')renderOutilsPage();
   if(name==='resultats'){setResPeriod(_resPeriod);}

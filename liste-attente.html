@@ -288,7 +288,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'DM Sans', sans-serif; ba
       <div class="rgpd">
         <label>
           <input type="checkbox" id="rgpd_consent" required>
-          <span>J'accepte que mes données personnelles soient collectées et traitées par le cabinet d'orthophonie de Noëlie Lainé dans le cadre de ma demande de prise en soins. Ces données sont confidentielles et ne seront pas transmises à des tiers. Conformément au RGPD, vous disposez d'un droit d'accès, de rectification et de suppression de vos données. <a href='/confidentialite.html' target='_blank' style='color:#1D9E75;'>Politique de confidentialité</a></span>
+          <span>J'accepte que mes données personnelles soient collectées et traitées par le cabinet d'orthophonie de Noëlie Lainé dans le cadre de ma demande de prise en soins. Ces données sont confidentielles et ne seront pas transmises à des tiers. Conformément au RGPD, vous disposez d'un droit d'accès, de rectification et de suppression de vos données.</span>
         </label>
       </div>
 
@@ -402,6 +402,7 @@ function toggleContactZone(sel){
 function toggleParentZone(sel){ toggleContactZone(sel); }
 
 const SB_URL = 'https://xiznicrburryfmdfbjxk.supabase.co';
+const _praticienId = new URLSearchParams(window.location.search).get('user') || 'noelie';
 const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inhpem5pY3JidXJyeWZtZGZianhrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAwNDM0NjEsImV4cCI6MjA5NTYxOTQ2MX0.vYuV7LIBXXkKJkHVwNPaI-lA7x1HwFROdU1K17ZB1Y8';
 
 function getChecked(name){ return [...document.querySelectorAll('input[name="'+name+'"]:checked')].map(el=>el.value); }
@@ -500,7 +501,7 @@ async function submitForm(){
     var res=await fetch('https://xiznicrburryfmdfbjxk.supabase.co/functions/v1/quick-action',{
       method:'POST',
       headers:{'Content-Type':'application/json','Authorization':'Bearer '+SB_KEY},
-      body:JSON.stringify({...newPatient,created_at:now,data:{}})
+      body:JSON.stringify({...newPatient,created_at:now,data:{},praticien_id:_praticienId})
     });
     if(!res.ok){var err=await res.text();throw new Error(err);}
     document.getElementById('form-container').style.display='none';
