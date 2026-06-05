@@ -382,7 +382,7 @@ html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);colo
 .postit-card-header{display:flex;align-items:center;gap:8px;margin-bottom:10px;}
 .postit-card-name{font-size:13px;font-weight:600;flex:1;}
 .postit-card-count{font-size:11px;padding:1px 7px;border-radius:10px;background:rgba(0,0,0,.08);color:rgba(0,0,0,.5);}
-.postit-item{display:flex;align-items:center;gap:7px;padding:4px 0;border-bottom:1px solid rgba(0,0,0,.06);}
+.postit-item{display:flex;align-items:center;gap:7px;padding:4px 0;}
 .postit-item:last-child{border-bottom:none;}
 .postit-item input[type=checkbox]{width:14px;height:14px;border-radius:3px;border:1.5px solid rgba(0,0,0,.25);cursor:pointer;flex-shrink:0;appearance:none;-webkit-appearance:none;background:white;}
 .postit-item input[type=checkbox]:checked{background:rgba(0,0,0,.35);border-color:rgba(0,0,0,.35);}
@@ -10306,7 +10306,7 @@ function renderDocsPage(){
         h += '</div>';
         byPat[pid].forEach(function(d){
           var ic = getDocIcon(d.type);
-          h += '<div class="postit-item" style="cursor:pointer;" onclick="previewOrEditDoc(\''+d.id+'\')">'+ic.icon+' <span class="postit-item-text">'+d.titre+'</span></div>';
+          h += '<div class="postit-item" style="cursor:pointer;" onclick="previewOrEditDoc(\''+d.id+'\')">'+ic.icon+' <span class="postit-item-text">'+d.titre+'</span>'+(d.categorie?'<span style="font-size:10px;color:rgba(0,0,0,.4);margin-left:auto;">'+d.categorie+'</span>':'')+' </div>';
         });
         h += '<div class="postit-footer"><button class="btn btn-sm" style="font-size:11px;padding:3px 8px;background:rgba(0,0,0,.06);border-color:rgba(0,0,0,.1);" onclick="openUploadModal(null,\''+pid+'\')">+ Document</button></div>';
         h += '</div>';
@@ -10409,6 +10409,15 @@ function openUploadModal(docId, prefPid){
     document.getElementById('modal-doc-head-title').textContent = 'Ajouter un document';
   }
   openModal('modal-doc');
+  // Remplir le datalist avec les catégories existantes
+  initDocsDB(function(db){
+    var req = db.transaction('docs','readonly').objectStore('docs').getAll();
+    req.onsuccess = function(e){
+      var cats = [...new Set((e.target.result||[]).map(function(d){return d.categorie;}).filter(Boolean))].sort();
+      var dl = document.getElementById('doc-categories-list');
+      if(dl) dl.innerHTML = cats.map(function(c){return '<option value="'+c+'">';}).join('');
+    };
+  });
   setTimeout(function(){document.getElementById('modal-doc-title-input').focus();},100);
 }
 
@@ -15015,7 +15024,7 @@ function activerModeleFromModal(mid){
     </div>
     <div class="field-grid" style="gap:12px;">
       <div class="field"><label>Titre</label><input type="text" id="modal-doc-title-input" placeholder="Ex: Ordonnance du 01/06/26"></div>
-      <div class="field"><label>Catégorie (optionnel)</label><input type="text" id="modal-doc-categorie" placeholder="Ex: Ordonnance, Bilan, CR..."></div>
+      <div class="field"><label>Catégorie (optionnel)</label><input type="text" id="modal-doc-categorie" placeholder="Ex: Ordonnance, Bilan, CR..." list="doc-categories-list" autocomplete="off"><datalist id="doc-categories-list"></datalist></div>
       <div class="field"><label>Patient (optionnel)</label>
         <select id="modal-doc-patient"><option value="">— Autres —</option></select>
       </div>
