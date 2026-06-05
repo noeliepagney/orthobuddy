@@ -8464,7 +8464,9 @@ function checkSuggestions(pid){
   // ── Note d'évolution — tous groupes ──
   var hasCDRenouv = ['A','B','C','D'].some(function(g){
     var nb = countSeancesGroupe(pid, g);
-    return nb >= info.bilanRenouvAt - 3 && nb <= info.bilanRenouvAt + 1;
+    var info2 = AMO_GROUPE_INFOS[g];
+    if(!info2) return false;
+    return nb >= info2.bilanRenouvAt - 3 && nb <= info2.bilanRenouvAt + 1;
   });
   if(hasCDRenouv){
     suggestions.push({
