@@ -730,21 +730,6 @@ html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);colo
           <div id="praticien-save-msg" style="font-size:12px;color:var(--green-mid);margin-top:8px;display:none;">✓ Enregistré</div>
         </div></div>
 
-        <!-- FORMULAIRE PUBLIC -->
-        <div class="settings-section"><div class="settings-section-title" onclick="toggleSettingsSection('sec_formulaire')"><span>📋 Mon formulaire public</span><span class="settings-section-chevron">▼</span></div><div class="settings-section-body" id="sec_formulaire">
-          <p style="font-size:12px;color:var(--text-soft);margin-bottom:14px;">Personnalisez les textes affichés sur votre formulaire de liste d'attente.</p>
-          <div class="field" style="margin-bottom:12px;">
-            <label>Texte d'introduction</label>
-            <textarea id="setting-texte-intro" style="min-height:80px;margin-top:4px;" placeholder="Bienvenue sur mon formulaire…"></textarea>
-          </div>
-          <div class="field" style="margin-bottom:12px;">
-            <label>Message de confirmation</label>
-            <textarea id="setting-texte-confirmation" style="min-height:60px;margin-top:4px;" placeholder="Votre demande a bien été reçue…"></textarea>
-          </div>
-          <button class="btn btn-green btn-sm" onclick="saveInfosPraticien()">Enregistrer</button>
-          <div id="praticien-save-msg" style="font-size:12px;color:var(--green-mid);margin-top:8px;display:none;">✓ Enregistré</div>
-        </div></div>
-
         <!-- 2. SÉCURITÉ -->
         <div class="settings-section"><div class="settings-section-title" onclick="toggleSettingsSection('sec_securite')"><span>🔐 Sécurité</span><span class="settings-section-chevron">▼</span></div><div class="settings-section-body" id="sec_securite">
           <div class="field-grid field-grid-2" style="max-width:400px;">
