@@ -2553,6 +2553,7 @@ async function doLogin(){
       setSyncStatus('syncing');
       sbSave().then(()=>{setSyncStatus('ok');setTimeout(()=>setSyncStatus('idle'),2000);}).catch(()=>setSyncStatus('error'));
       await syncPortailReservations();
+      await syncSeancesRappel();
       renderAll();checkBackupReminder();updateEnvBanner();updateEnvButtons();
       setInterval(checkServicesHealth, 5*60*1000);
       setInterval(checkNouvellesReservations, 2*60*1000);
@@ -2634,6 +2635,50 @@ function confirmReset(){
     };
     save();renderAll();showToast('Données réinitialisées');
   }
+}
+
+async function syncSeancesRappel(){
+  try {
+    if(!SB_URL||!SB_KEY) return;
+
+    // Date de demain
+    var tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate()+1);
+    var tomorrowStr = tomorrow.toISOString().slice(0,10);
+
+    // Trouver les séances de demain avec email patient
+    var seancesDemain = (DB.seances||[]).filter(function(s){
+      return s.date === tomorrowStr && !s.absence;
+    });
+
+    if(!seancesDemain.length) return;
+
+    // Supprimer les anciennes entrées de demain
+    await fetch(SB_URL+'/rest/v1/seances_rappel?date=eq.'+tomorrowStr, {
+      method: 'DELETE',
+      headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer '+SB_KEY }
+    });
+
+    // Insérer les nouvelles
+    for(var s of seancesDemain){
+      var p = (DB.patients||[]).find(function(x){ return x.id===s.patientId; });
+      if(!p || !p.email) continue;
+
+      await fetch(SB_URL+'/rest/v1/seances_rappel', {
+        method: 'POST',
+        headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer '+SB_KEY, 'Content-Type': 'application/json', 'Prefer': 'return=minimal' },
+        body: JSON.stringify({
+          id: s.id,
+          patient_id: p.id,
+          patient_prenom: p.prenom,
+          patient_email: p.email,
+          date: s.date,
+          heure: s.heure+':00',
+          portal_token: p.portailToken||null
+        })
+      });
+    }
+  } catch(e){ console.warn('syncSeancesRappel:', e); }
 }
 
 async function syncPortailReservations(){
