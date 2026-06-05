@@ -895,7 +895,7 @@ html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);colo
           <button class="btn btn-sm" style="margin-top:10px;" onclick="openModeleModal()">+ Nouveau modèle</button>
         </div></div>
 
-        <div class="settings-section"><div class="settings-section-title" onclick="toggleSettingsSection('sec_environnement')"><span>🧪 Environnement (test / production)</span><span class="settings-section-chevron">▼</span></div><div class="settings-section-body" id="sec_environnement"><div style="margin-bottom:12px;font-size:13px;color:var(--text-soft);">Bascule entre la base de données de test et la base de production. En mode test, aucune donnée réelle n'est affectée.</div><div style="display:flex;align-items:center;gap:12px;"><button id="btn-env-prod" class="btn btn-sm" onclick="switchEnv('prod')" style="min-width:120px;">🟢 Production</button><button id="btn-env-test" class="btn btn-sm" onclick="switchEnv('test')" style="min-width:120px;">🧪 Test</button><span id="env-current-label" style="font-size:13px;font-weight:600;"></span></div></div></div>
+        <div id="sec-admin-env" style="display:none;"><div class="settings-section"><div class="settings-section-title" onclick="toggleSettingsSection('sec_environnement')"><span>🧪 Environnement (test / production)</span><span class="settings-section-chevron">▼</span></div><div class="settings-section-body" id="sec_environnement"><div style="margin-bottom:12px;font-size:13px;color:var(--text-soft);">Bascule entre la base de données de test et la base de production. En mode test, aucune donnée réelle n'est affectée.</div><div style="display:flex;align-items:center;gap:12px;"><button id="btn-env-prod" class="btn btn-sm" onclick="switchEnv('prod')" style="min-width:120px;">🟢 Production</button><button id="btn-env-test" class="btn btn-sm" onclick="switchEnv('test')" style="min-width:120px;">🧪 Test</button><span id="env-current-label" style="font-size:13px;font-weight:600;"></span></div></div></div></div>
         <div class="settings-section"><div class="settings-section-title" onclick="toggleSettingsSection('sec_donnees')"><span>💾 Données</span><span class="settings-section-chevron">▼</span></div><div class="settings-section-body" id="sec_donnees">
           <div style="display:flex;gap:8px;flex-wrap:wrap;">
             <button class="btn btn-sm" onclick="exportData()">📥 Exporter (JSON)</button>
@@ -2134,6 +2134,7 @@ let SB_KEY = SB_CONFIGS[_sbEnv].key;
 const SB_USER = 'noelie'; // identifiant unique dans la table (legacy Tauri)
 function getSbUserId(){ return sessionStorage.getItem('sb_user_id') || SB_USER; }
 function getSbToken(){ return sessionStorage.getItem('sb_token') || SB_KEY; }
+function isAdmin(){ return sessionStorage.getItem('sb_role') === 'admin'; }
 
 let _syncTimeout = null;
 
@@ -2597,6 +2598,8 @@ async function doLogin(){
       sessionStorage.setItem('sb_token', data.access_token);
       sessionStorage.setItem('sb_user_id', data.user.id);
       sessionStorage.setItem('ob_auth','1');
+      // Charger le rôle du praticien
+      fetch(SB_URL+'/rest/v1/praticiens?user_id=eq.'+data.user.id+'&select=role',{headers:{'apikey':SB_KEY,'Authorization':'Bearer '+data.access_token}}).then(function(r){return r.json();}).then(function(d){if(d&&d[0])sessionStorage.setItem('sb_role',d[0].role||'user');});
       document.getElementById('login-screen').classList.add('hidden');
       document.getElementById('app').style.display='flex';
       document.getElementById('patients-list').innerHTML='<div style="text-align:center;padding:40px;color:var(--text-soft);"><div style="font-size:32px;margin-bottom:10px;">☁️</div><p style="font-size:13px;">Chargement de vos données…</p></div>';
@@ -2722,9 +2725,11 @@ async function checkIsAdmin(){
 }
 
 async function loadAdminSection(){
-  var isAdmin = await checkIsAdmin();
+  var admin = await checkIsAdmin();
   var sec = document.getElementById('sec-admin');
-  if(sec) sec.style.display = isAdmin ? 'block' : 'none';
+  if(sec) sec.style.display = admin ? 'block' : 'none';
+  var secEnv = document.getElementById('sec-admin-env');
+  if(secEnv) secEnv.style.display = admin ? 'block' : 'none';
 }
 
 function initLiensPublics(){
@@ -5077,7 +5082,7 @@ function renderObjectifsTab(pid){
   }
   h += '</div>';
   h += '<div style="display:flex;gap:6px;">';
-  h += '<button onclick="openBibliothequeModal(\''+pid+'\')" style="display:flex;align-items:center;gap:5px;padding:7px 14px;background:white;color:#185FA5;border:1.5px solid #185FA5;border-radius:20px;cursor:pointer;font-size:12px;font-weight:600;">📚 Bibliothèque</button>';
+  if(isAdmin()) h += '<button onclick="openBibliothequeModal(\''+pid+'\')" style="display:flex;align-items:center;gap:5px;padding:7px 14px;background:white;color:#185FA5;border:1.5px solid #185FA5;border-radius:20px;cursor:pointer;font-size:12px;font-weight:600;">📚 Bibliothèque</button>';
   h += '<button onclick="addObjectifParent(\''+pid+'\')" style="display:flex;align-items:center;gap:5px;padding:7px 14px;background:var(--green);color:white;border:none;border-radius:20px;cursor:pointer;font-size:12px;font-weight:600;box-shadow:0 2px 6px rgba(29,158,117,.3);">＋ Objectif long terme</button>';
   h += '</div>';
   h += '</div>';
