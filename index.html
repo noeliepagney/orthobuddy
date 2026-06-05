@@ -7368,7 +7368,7 @@ function gererLienPortail(pid){
     fetch(SB_URL+'/rest/v1/patient_portal_tokens', {
       method: 'POST',
       headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer '+SB_KEY, 'Content-Type': 'application/json', 'Prefer': 'resolution=merge-duplicates,return=minimal' },
-      body: JSON.stringify({ token: p.portailToken, patient_id: p.id, patient_prenom: p.prenom, patient_email: p.email||'', portail: p.portail||'fixe' })
+      body: JSON.stringify({ token: p.portailToken, patient_id: p.id, patient_prenom: p.prenom, patient_email: p.email||'', portail: p.portail||'fixe', user_id: getSbUserId() })
     }).catch(function(e){ console.warn('Erreur upsert portail token:', e); });
   }
   var lien = 'https://orthobuddy.fr/portail.html?token='+p.portailToken;
@@ -11859,7 +11859,8 @@ async function envoyerAlerteSurbooking(){
       headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer '+SB_KEY },
       body: JSON.stringify({
         creneaux: creneaux,
-        patients: patients.map(function(p){ return { id:p.id, prenom:p.prenom, email:p.email }; })
+        patients: patients.map(function(p){ return { id:p.id, prenom:p.prenom, email:p.email }; }),
+        user_id: getSbUserId()
       })
     });
     var data = await res.json();
@@ -11949,7 +11950,8 @@ async function envoyerAlerteRemise(cid){
       headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer '+SB_KEY },
       body: JSON.stringify({
         creneaux: [creneau],
-        patients: patients.map(function(p){ return { id:p.id, prenom:p.prenom, email:p.email }; })
+        patients: patients.map(function(p){ return { id:p.id, prenom:p.prenom, email:p.email }; }),
+        user_id: getSbUserId()
       })
     });
     var data = await res.json();
@@ -12010,7 +12012,8 @@ async function envoyerInvitations(){
       headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer '+SB_KEY },
       body: JSON.stringify({
         creneaux: creneaux,
-        patients: patients.map(function(p){ return { id:p.id, prenom:p.prenom, email:p.email }; })
+        patients: patients.map(function(p){ return { id:p.id, prenom:p.prenom, email:p.email }; }),
+        user_id: getSbUserId()
       })
     });
     var data = await res.json();

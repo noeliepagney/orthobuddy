@@ -225,7 +225,7 @@
       var res = await fetch(SMOOTH_ACTION, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer '+SUPABASE_ANON },
-        body: JSON.stringify({ action: 'annuler', token: _annulationToken, motif: motifFinal })
+        body: JSON.stringify({ action: 'annuler', token: _annulationToken, motif: motifFinal, user_id: _patient.user_id })
       });
       var data = await res.json();
       if(data.success){
@@ -387,7 +387,8 @@
           patient_prenom: _patient.patient_prenom,
           patient_email: _patient.patient_email,
           objet: objet || 'Message depuis le portail',
-          message: message
+          message: message,
+          user_id: _patient.user_id
         })
       });
       var data = await res.json();
