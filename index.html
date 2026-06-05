@@ -1722,6 +1722,15 @@ html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);colo
       </div>
     </div>
 
+    <div style="margin-bottom:14px;padding:10px 12px;background:#F0FDF4;border:1px solid #BBF7D0;border-radius:var(--radius-sm);">
+      <label style="display:flex;align-items:center;gap:10px;cursor:pointer;">
+        <input type="checkbox" id="carte-vitale-checkbox" style="width:16px;height:16px;accent-color:var(--green);cursor:pointer;">
+        <div>
+          <div style="font-size:13px;font-weight:500;color:var(--green-mid);">💳 Carte vitale présentée</div>
+          <div style="font-size:11px;color:var(--text-soft);margin-top:1px;">Décocher si le patient n'a pas présenté sa carte</div>
+        </div>
+      </label>
+    </div>
     <div class="field" style="margin-bottom:14px;"><label>Note de séance</label><textarea id="s-note" placeholder="Observations générales…" style="min-height:56px;"></textarea></div>
 
     <hr class="divider">
@@ -3111,6 +3120,7 @@ function renderFilterChips(){
     { key:'alertes',   label:'🔔 Alertes',          cls:'active-alert' },
     { key:'telesoin',  label:'📱 Télésoin',          cls:'active' },
     { key:'perdvue',   label:'👻 Perdus de vue',      cls:'active' },
+    { key:'cartevitale', label:'✳️ Carte vitale',        cls:'active' },
     { key:'aujourdhui',label:'📅 Aujourd\'hui',        cls:'active' },
   ];
   fixedFilters.forEach(function(f){
@@ -3233,6 +3243,7 @@ function renderPatients(){
         if(key==='telesoin') return DB.seances.some(function(s){return s.patientId===p.id&&s.isTelesoin;});
         if(key==='nouveaux') return !!p.isNew;
         if(key==='perdvue') return isPerdVue(p);
+        if(key==='cartevitale') return hasAlerteCarteVitale(p);
         if(key==='aujourdhui'){ var today=new Date().toISOString().slice(0,10); return (DB.rdvs||[]).some(function(r){return r.patientId===p.id&&r.date===today;})||(DB.seances||[]).some(function(s){return s.patientId===p.id&&s.date===today;}); }
         if(key==='genre_F') return p.genre==='F';
         if(key==='genre_M') return p.genre==='M';
@@ -3295,6 +3306,7 @@ function renderPatients(){
 
             ${p.isNew?'<span title="Importé récemment" style="font-size:10px;background:#3b82f6;color:white;border-radius:8px;padding:1px 7px;font-weight:600;letter-spacing:.3px;">NEW</span>':''}
             ${isPerdVue(p)?'<span title="Pas de séance depuis 4 semaines" style="font-size:10px;background:#f97316;color:white;border-radius:8px;padding:1px 7px;font-weight:600;">👻 Perdu de vue</span>':''}
+            ${hasAlerteCarteVitale(p)?'<span class="badge-cartevitale" title="3 séances consécutives sans carte vitale" style="font-size:10px;background:#dc2626;color:white;border-radius:8px;padding:1px 7px;font-weight:600;">✳️ Carte vitale</span>':''}
             ${p.enCollab?'<span title="En collaboration" style="font-size:11px;opacity:.55;">🤝</span>':''}
             ${p.portail==='autonome'?'<span onclick="event.stopPropagation()" title="Portail autonome" style="font-size:10px;background:#7c3aed;color:white;border-radius:8px;padding:1px 7px;font-weight:600;">🟣 Autonome</span>':p.portail==='surbooking'?'<span onclick="event.stopPropagation()" title="Portail surbooking" style="font-size:10px;background:#ea580c;color:white;border-radius:8px;padding:1px 7px;font-weight:600;">🟠 Surbooking</span>':''}
             ${p.genre==='F'?'<span title="Féminin" style="font-size:10px;color:var(--text-soft);opacity:.6;margin-left:1px;">♀</span>':p.genre==='M'?'<span title="Masculin" style="font-size:10px;color:var(--text-soft);opacity:.6;margin-left:1px;">♂</span>':''}
@@ -3339,6 +3351,15 @@ function renderPatients(){
 function toggleRappelPerdVue(pid, checked){
   var p = DB.patients.find(function(x){return x.id===pid;});
   if(p){ p.rappelPerdVue = checked; save(); }
+}
+
+function hasAlerteCarteVitale(p){
+  var today = new Date().toISOString().slice(0,10);
+  var seances = (DB.seances||[])
+    .filter(function(s){ return s.patientId===p.id && s.date <= today && s.carteVitale !== undefined; })
+    .sort(function(a,b){ return (b.date||'').localeCompare(a.date||''); });
+  if(seances.length < 3) return false;
+  return seances.slice(0,3).every(function(s){ return s.carteVitale === false; });
 }
 
 function isPerdVue(p){
@@ -7880,6 +7901,8 @@ function openSeanceModal(pid,sid){
   document.getElementById('edit-seance-id').value=sid||'';
   document.getElementById('edit-seance-patient-id').value=pid;
   document.getElementById('s-note').value=s?.note||'';
+  var cvCb=document.getElementById('carte-vitale-checkbox');
+  if(cvCb) cvCb.checked = !s || s.carteVitale !== false;
 
   // Date
   createDatePicker('dp-seance-date-wrap',s?.date||today());
@@ -8545,6 +8568,7 @@ function saveSeance(){
     isTelesoin:_isTelesoin && _amoCategory==='reedu',
     enCollab:!!(document.getElementById('collab-seance-checkbox')?.checked),
     indemnForfait,indemnIK,
+    carteVitale: !!(document.getElementById('carte-vitale-checkbox')?.checked),
     note:document.getElementById('s-note').value,
     activites:_modalActivites.map(function(a){
       var ac=Object.assign({},a);
@@ -8613,6 +8637,24 @@ function refreshPatientAfterSeance(pid){
   updateTachesBadge();
   updateDocsNav();
   updateAlertesBadge();
+  // Badge carte vitale
+  var cvBadge = document.querySelector('#pcard-'+pid+' .badge-cartevitale');
+  var p2 = DB.patients.find(function(x){return x.id===pid;});
+  if(p2){
+    var hasCV = hasAlerteCarteVitale(p2);
+    if(cvBadge && !hasCV) cvBadge.remove();
+    if(!cvBadge && hasCV){
+      var bandeau = document.querySelector('#pcard-'+pid+' .patient-badges');
+      if(bandeau){
+        var sp = document.createElement('span');
+        sp.className = 'badge-cartevitale';
+        sp.title = '3 séances consécutives sans carte vitale';
+        sp.style.cssText = 'font-size:10px;background:#dc2626;color:white;border-radius:8px;padding:1px 7px;font-weight:600;';
+        sp.textContent = '✳️ Carte vitale';
+        bandeau.appendChild(sp);
+      }
+    }
+  }
 }
 
 function deleteSeance(){
