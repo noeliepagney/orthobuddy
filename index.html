@@ -759,6 +759,20 @@ html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);colo
           </div>
         </div></div>
 
+        <!-- ADMIN -->
+        <div id="sec-admin" style="display:none;">
+          <div class="settings-section"><div class="settings-section-title" onclick="toggleSettingsSection('sec_invitation')"><span>👥 Inviter un praticien</span><span class="settings-section-chevron">▼</span></div><div class="settings-section-body" id="sec_invitation">
+            <p style="font-size:12px;color:var(--text-soft);margin-bottom:14px;">Invitez un autre orthophoniste à rejoindre OrthoBuddy. Il recevra un email avec un lien pour créer son compte.</p>
+            <div class="field-grid field-grid-2" style="max-width:480px;gap:12px;">
+              <div class="field"><label>Prénom</label><input type="text" id="invite-prenom" placeholder="Marie"></div>
+              <div class="field"><label>Nom</label><input type="text" id="invite-nom" placeholder="Dupont"></div>
+              <div class="field field-full"><label>Email</label><input type="email" id="invite-email" placeholder="marie.dupont@gmail.com"></div>
+            </div>
+            <button class="btn btn-green btn-sm" style="margin-top:12px;" onclick="inviterPraticien()">Envoyer l'invitation</button>
+            <div id="invite-msg" style="font-size:12px;margin-top:8px;min-height:18px;"></div>
+          </div></div>
+        </div>
+
         <!-- DÉCONNEXION -->
         <div class="settings-section"><div class="settings-section-title" onclick="toggleSettingsSection('sec_deconnexion')"><span>🚪 Déconnexion</span><span class="settings-section-chevron">▼</span></div><div class="settings-section-body" id="sec_deconnexion">
           <p style="font-size:12px;color:var(--text-soft);margin-bottom:14px;">Déconnectez-vous de votre session OrthoBuddy.</p>
@@ -2696,6 +2710,23 @@ async function saveInfosPraticien(){
   } catch(e){ showToast('Erreur lors de la sauvegarde', 'red'); }
 }
 
+async function checkIsAdmin(){
+  if(!sessionStorage.getItem('sb_token')) return false;
+  try {
+    const r = await fetch(SB_URL+'/rest/v1/praticiens?user_id=eq.'+getSbUserId()+'&select=role', {
+      headers: sbHeaders()
+    });
+    const data = await r.json();
+    return data && data[0] && data[0].role === 'admin';
+  } catch(e){ return false; }
+}
+
+async function loadAdminSection(){
+  var isAdmin = await checkIsAdmin();
+  var sec = document.getElementById('sec-admin');
+  if(sec) sec.style.display = isAdmin ? 'block' : 'none';
+}
+
 function initLiensPublics(){
   var uid = getSbUserId();
   var base = 'https://orthobuddy.fr/';
@@ -2729,6 +2760,36 @@ async function doResetPassword(){
     if(msg){
       msg.style.color = r.ok ? 'var(--green-mid)' : 'var(--red)';
       msg.textContent = r.ok ? '✓ Email envoyé ! Vérifiez votre boîte mail.' : "Erreur, vérifiez l'email saisi.";
+    }
+  } catch(e){
+    if(msg){ msg.style.color='var(--red)'; msg.textContent='Erreur de connexion'; }
+  }
+}
+
+async function inviterPraticien(){
+  var prenom = document.getElementById('invite-prenom')?.value.trim();
+  var nom = document.getElementById('invite-nom')?.value.trim();
+  var email = document.getElementById('invite-email')?.value.trim();
+  var msg = document.getElementById('invite-msg');
+  if(!email){ if(msg){ msg.style.color='var(--red)'; msg.textContent='Saisissez un email'; } return; }
+  try {
+    const r = await fetch(SB_URL+'/functions/v1/smart-api', {
+      method: 'POST',
+      headers: {...sbHeaders(), 'Content-Type':'application/json'},
+      body: JSON.stringify({ email, prenom, nom, invited_by: getSbUserId() })
+    });
+    const data = await r.json();
+    if(msg){
+      if(data.success){
+        msg.style.color='var(--green-mid)';
+        msg.textContent='✓ Invitation envoyée à '+email;
+        document.getElementById('invite-prenom').value='';
+        document.getElementById('invite-nom').value='';
+        document.getElementById('invite-email').value='';
+      } else {
+        msg.style.color='var(--red)';
+        msg.textContent='Erreur : '+(data.error||'inconnue');
+      }
     }
   } catch(e){
     if(msg){ msg.style.color='var(--red)'; msg.textContent='Erreur de connexion'; }
@@ -2991,7 +3052,7 @@ function showPage(name, statut){
   if(name==='agenda')renderAgenda();
   if(name==='creneaux')renderCreneauxPage();
   if(name==='patients')renderPatients();
-  if(name==='settings'){renderSettings();setTimeout(function(){var el=document.getElementById('setting-urgence-days');if(el)el.value=(DB.settings&&DB.settings.urgenceDays!=null?DB.settings.urgenceDays:2);initLiensPublics();loadInfosPraticien();},50);}
+  if(name==='settings'){renderSettings();setTimeout(function(){var el=document.getElementById('setting-urgence-days');if(el)el.value=(DB.settings&&DB.settings.urgenceDays!=null?DB.settings.urgenceDays:2);initLiensPublics();loadInfosPraticien();loadAdminSection();},50);}
   if(name==='taches')renderTachesPage();
   if(name==='outils')renderOutilsPage();
   if(name==='resultats'){setResPeriod(_resPeriod);}
