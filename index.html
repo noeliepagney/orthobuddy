@@ -761,6 +761,12 @@ html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);colo
 
         <!-- ADMIN -->
         <div id="sec-admin" style="display:none;">
+          <div class="settings-section"><div class="settings-section-title" onclick="toggleSettingsSection('sec_gestion_prat')"><span>⚙️ Gérer les praticiens</span><span class="settings-section-chevron">▼</span></div><div class="settings-section-body" id="sec_gestion_prat">
+            <p style="font-size:12px;color:var(--text-soft);margin-bottom:14px;">Gérez les permissions des praticiens invités.</p>
+            <div id="praticiens-list-admin" style="display:flex;flex-direction:column;gap:8px;">
+              <div style="font-size:12px;color:var(--text-soft);">Chargement…</div>
+            </div>
+          </div></div>
           <div class="settings-section"><div class="settings-section-title" onclick="toggleSettingsSection('sec_invitation')"><span>👥 Inviter un praticien</span><span class="settings-section-chevron">▼</span></div><div class="settings-section-body" id="sec_invitation">
             <p style="font-size:12px;color:var(--text-soft);margin-bottom:14px;">Invitez un autre orthophoniste à rejoindre OrthoBuddy. Il recevra un email avec un lien pour créer son compte.</p>
             <div class="field-grid field-grid-2" style="max-width:480px;gap:12px;">
@@ -2135,6 +2141,8 @@ const SB_USER = 'noelie'; // identifiant unique dans la table (legacy Tauri)
 function getSbUserId(){ return sessionStorage.getItem('sb_user_id') || SB_USER; }
 function getSbToken(){ return sessionStorage.getItem('sb_token') || SB_KEY; }
 function isAdmin(){ return sessionStorage.getItem('sb_role') === 'admin'; }
+function canUseBibliotheque(){ return isAdmin() || sessionStorage.getItem('sb_can_bibliotheque') === '1'; }
+function canSwitchEnv(){ return isAdmin() || sessionStorage.getItem('sb_can_env') === '1'; }
 
 let _syncTimeout = null;
 
@@ -2598,8 +2606,8 @@ async function doLogin(){
       sessionStorage.setItem('sb_token', data.access_token);
       sessionStorage.setItem('sb_user_id', data.user.id);
       sessionStorage.setItem('ob_auth','1');
-      // Charger le rôle du praticien
-      fetch(SB_URL+'/rest/v1/praticiens?user_id=eq.'+data.user.id+'&select=role',{headers:{'apikey':SB_KEY,'Authorization':'Bearer '+data.access_token}}).then(function(r){return r.json();}).then(function(d){if(d&&d[0])sessionStorage.setItem('sb_role',d[0].role||'user');});
+      // Charger le rôle et permissions du praticien
+      fetch(SB_URL+'/rest/v1/praticiens?user_id=eq.'+data.user.id+'&select=role,can_use_bibliotheque,can_switch_env',{headers:{'apikey':SB_KEY,'Authorization':'Bearer '+data.access_token}}).then(function(r){return r.json();}).then(function(d){if(d&&d[0]){sessionStorage.setItem('sb_role',d[0].role||'user');sessionStorage.setItem('sb_can_bibliotheque',d[0].can_use_bibliotheque?'1':'0');sessionStorage.setItem('sb_can_env',d[0].can_switch_env?'1':'0');}});
       document.getElementById('login-screen').classList.add('hidden');
       document.getElementById('app').style.display='flex';
       document.getElementById('patients-list').innerHTML='<div style="text-align:center;padding:40px;color:var(--text-soft);"><div style="font-size:32px;margin-bottom:10px;">☁️</div><p style="font-size:13px;">Chargement de vos données…</p></div>';
@@ -2729,7 +2737,7 @@ async function loadAdminSection(){
   var sec = document.getElementById('sec-admin');
   if(sec) sec.style.display = admin ? 'block' : 'none';
   var secEnv = document.getElementById('sec-admin-env');
-  if(secEnv) secEnv.style.display = admin ? 'block' : 'none';
+  if(secEnv) secEnv.style.display = canSwitchEnv() ? 'block' : 'none';
 }
 
 function initLiensPublics(){
@@ -2769,6 +2777,52 @@ async function doResetPassword(){
   } catch(e){
     if(msg){ msg.style.color='var(--red)'; msg.textContent='Erreur de connexion'; }
   }
+}
+
+async function loadGestionPraticiens(){
+  if(!isAdmin()) return;
+  try {
+    const r = await fetch(SB_URL+'/rest/v1/praticiens?select=*&order=created_at.asc', {
+      headers: sbHeaders()
+    });
+    const data = await r.json();
+    var el = document.getElementById('praticiens-list-admin');
+    if(!el) return;
+    if(!data || !data.length){ el.innerHTML='<div style="font-size:12px;color:var(--text-soft);">Aucun praticien.</div>'; return; }
+    var h = '';
+    data.forEach(function(p){
+      var isMe = p.user_id === getSbUserId();
+      h += '<div style="padding:10px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--surface);">';
+      h += '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">';
+      h += '<div><span style="font-size:13px;font-weight:600;">'+p.prenom+' '+p.nom+'</span>';
+      h += '<span style="font-size:11px;color:var(--text-soft);margin-left:8px;">'+p.email_contact+'</span></div>';
+      h += '<span style="font-size:10px;background:'+(p.role==='admin'?'var(--green-l)':'var(--bg)')+';color:'+(p.role==='admin'?'var(--green-mid)':'var(--text-soft)')+';border-radius:8px;padding:1px 7px;border:1px solid var(--border);">'+p.role+'</span>';
+      h += '</div>';
+      if(!isMe){
+        h += '<div style="display:flex;gap:16px;">';
+        h += '<label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer;"><input type="checkbox" '+(p.can_use_bibliotheque?'checked':'')+' onchange="updatePermission(''+p.user_id+'','can_use_bibliotheque',this.checked)"> 📚 Bibliothèque</label>';
+        h += '<label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer;"><input type="checkbox" '+(p.can_switch_env?'checked':'')+' onchange="updatePermission(''+p.user_id+'','can_switch_env',this.checked)"> 🧪 Env. test</label>';
+        h += '</div>';
+      } else {
+        h += '<div style="font-size:11px;color:var(--text-soft);">Toutes les permissions (vous)</div>';
+      }
+      h += '</div>';
+    });
+    el.innerHTML = h;
+  } catch(e){ console.error('loadGestionPraticiens', e); }
+}
+
+async function updatePermission(userId, permission, value){
+  try {
+    const body = {};
+    body[permission] = value;
+    await fetch(SB_URL+'/rest/v1/praticiens?user_id=eq.'+userId, {
+      method: 'PATCH',
+      headers: {...sbHeaders(), 'Prefer':'return=minimal'},
+      body: JSON.stringify(body)
+    });
+    showToast('✓ Permission mise à jour');
+  } catch(e){ showToast('Erreur', 'red'); }
 }
 
 async function inviterPraticien(){
@@ -3057,7 +3111,7 @@ function showPage(name, statut){
   if(name==='agenda')renderAgenda();
   if(name==='creneaux')renderCreneauxPage();
   if(name==='patients')renderPatients();
-  if(name==='settings'){renderSettings();setTimeout(function(){var el=document.getElementById('setting-urgence-days');if(el)el.value=(DB.settings&&DB.settings.urgenceDays!=null?DB.settings.urgenceDays:2);initLiensPublics();loadInfosPraticien();loadAdminSection();},50);}
+  if(name==='settings'){renderSettings();setTimeout(function(){var el=document.getElementById('setting-urgence-days');if(el)el.value=(DB.settings&&DB.settings.urgenceDays!=null?DB.settings.urgenceDays:2);initLiensPublics();loadInfosPraticien();loadAdminSection();loadGestionPraticiens();},50);}
   if(name==='taches')renderTachesPage();
   if(name==='outils')renderOutilsPage();
   if(name==='resultats'){setResPeriod(_resPeriod);}
@@ -5082,7 +5136,7 @@ function renderObjectifsTab(pid){
   }
   h += '</div>';
   h += '<div style="display:flex;gap:6px;">';
-  if(isAdmin()) h += '<button onclick="openBibliothequeModal(\''+pid+'\')" style="display:flex;align-items:center;gap:5px;padding:7px 14px;background:white;color:#185FA5;border:1.5px solid #185FA5;border-radius:20px;cursor:pointer;font-size:12px;font-weight:600;">📚 Bibliothèque</button>';
+  if(canUseBibliotheque()) h += '<button onclick="openBibliothequeModal(\''+pid+'\')" style="display:flex;align-items:center;gap:5px;padding:7px 14px;background:white;color:#185FA5;border:1.5px solid #185FA5;border-radius:20px;cursor:pointer;font-size:12px;font-weight:600;">📚 Bibliothèque</button>';
   h += '<button onclick="addObjectifParent(\''+pid+'\')" style="display:flex;align-items:center;gap:5px;padding:7px 14px;background:var(--green);color:white;border:none;border-radius:20px;cursor:pointer;font-size:12px;font-weight:600;box-shadow:0 2px 6px rgba(29,158,117,.3);">＋ Objectif long terme</button>';
   h += '</div>';
   h += '</div>';
