@@ -407,15 +407,12 @@ const _praticienId = new URLSearchParams(window.location.search).get('user') || 
 async function loadPraticienInfos(){
   if(!_praticienId || _praticienId === 'noelie') return;
   try {
-    const r = await fetch(SB_URL+'/rest/v1/praticiens?user_id=eq.'+_praticienId+'&select=nom,prenom,cabinet,texte_intro,texte_confirmation', {
-      headers: {'apikey': SB_KEY, 'Authorization': 'Bearer '+SB_KEY}
-    });
-    const data = await r.json();
-    if(data && data[0]){
-      var p = data[0];
+    const r = await fetch(SB_URL+'/functions/v1/dynamic-service?user_id='+_praticienId);
+    const p = await r.json();
+    if(p && !p.error){
       if(p.texte_intro){
         var introEl = document.getElementById('form-intro-text');
-        if(introEl) introEl.textContent = p.texte_intro;
+        if(introEl) introEl.innerHTML = p.texte_intro;
       }
       if(p.texte_confirmation){
         var confirmEl = document.getElementById('success-message');
