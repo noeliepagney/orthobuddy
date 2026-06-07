@@ -2918,42 +2918,48 @@ async function loadGestionPraticiens(){
     var h = '';
     data.forEach(function(p){
       var isMe = p.user_id === getSbUserId();
-      h += '<div style="padding:10px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--surface);">';
-      h += '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">';
-      h += '<div><span style="font-size:13px;font-weight:600;">'+p.prenom+' '+p.nom+'</span>';
-      h += '<span style="font-size:11px;color:var(--text-soft);margin-left:8px;">'+p.email_contact+'</span></div>';
-      h += '<span style="font-size:10px;background:'+(p.role==='admin'?'var(--green-l)':'var(--bg)')+';color:'+(p.role==='admin'?'var(--green-mid)':'var(--text-soft)')+';border-radius:8px;padding:1px 7px;border:1px solid var(--border);">'+p.role+'</span>';
-      h += '</div>';
-      // Stats connexion
+      var pid = p.user_id.replace(/-/g,'');
       var lastLogin = p.last_login ? new Date(p.last_login).toLocaleDateString('fr-FR',{day:'2-digit',month:'2-digit',year:'2-digit',hour:'2-digit',minute:'2-digit'}) : null;
       var avgMin = (p.login_count && p.total_session_minutes) ? Math.round(p.total_session_minutes / p.login_count) : null;
       var statusBadge = !p.last_login
-        ? '<span style="font-size:10px;background:#FFF8E6;color:#7A4F00;border:1px solid #F5C06C;border-radius:8px;padding:1px 7px;">⏳ En attente</span>'
-        : '<span style="font-size:10px;background:var(--green-l);color:var(--green-mid);border:1px solid var(--green-b);border-radius:8px;padding:1px 7px;">✅ Actif</span>';
-      h += '<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;flex-wrap:wrap;">';
-      h += statusBadge;
-      if(lastLogin) h += '<span style="font-size:11px;color:var(--text-soft);">Dernière connexion : '+lastLogin+'</span>';
+        ? '<span style="font-size:10px;background:#FFF8E6;color:#7A4F00;border:1px solid #F5C06C;border-radius:8px;padding:1px 6px;">&#x23F3; En attente</span>'
+        : (p.actif===false ? '<span style="font-size:10px;background:#F3F4F6;color:#6B7280;border:1px solid #D1D5DB;border-radius:8px;padding:1px 6px;">&#x23F8; Desactive</span>'
+        : '<span style="font-size:10px;background:var(--green-l);color:var(--green-mid);border:1px solid var(--green-b);border-radius:8px;padding:1px 6px;">&#x2705; Actif</span>');
+      var roleBadge = '<span style="font-size:10px;background:'+(p.role==='admin'?'var(--green-l)':'var(--bg)')+';color:'+(p.role==='admin'?'var(--green-mid)':'var(--text-soft)')+';border-radius:8px;padding:1px 7px;border:1px solid var(--border);">'+p.role+'</span>';
+      h += '<div style="border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--surface);margin-bottom:6px;">';
+      h += '<div style="display:flex;align-items:center;gap:10px;padding:10px 12px;cursor:pointer;" data-pid="'+pid+'" onclick="var el=document.getElementById(\'prat-detail-\'+this.dataset.pid);el.style.display=el.style.display===\'none\'?\'block\':\'none\';">';
+      h += '<div style="flex:1;min-width:0;display:flex;align-items:center;gap:8px;flex-wrap:wrap;">';
+      h += '<span style="font-size:13px;font-weight:600;">'+p.prenom+' '+p.nom+'</span>';
+      h += '<span style="font-size:11px;color:var(--text-soft);">'+p.email_contact+'</span>';
+      h += statusBadge+roleBadge;
+      h += '</div>';
+      h += '<span style="font-size:11px;color:var(--text-soft);">&#x25BC;</span>';
+      h += '</div>';
+      h += '<div id="prat-detail-'+pid+'" style="display:none;padding:10px 12px;border-top:1px solid var(--border);">';
+      h += '<div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:10px;">';
+      if(lastLogin) h += '<span style="font-size:11px;color:var(--text-soft);">Derniere connexion : '+lastLogin+'</span>';
       if(p.login_count) h += '<span style="font-size:11px;color:var(--text-soft);">· '+p.login_count+' connexion'+(p.login_count>1?'s':'')+'</span>';
       if(avgMin) h += '<span style="font-size:11px;color:var(--text-soft);">· ~'+avgMin+' min/session</span>';
       h += '</div>';
       if(!isMe){
-        h += '<div style="display:flex;gap:16px;">';
-        h += '<label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer;"><input type="checkbox" '+(p.can_use_bibliotheque?'checked':'')+' onchange="updatePermission(\''+p.user_id+'\',\'can_use_bibliotheque\',this.checked)"> 📚 Bibliothèque</label>';
-        h += '<label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer;"><input type="checkbox" '+(p.can_switch_env?'checked':'')+' onchange="updatePermission(\''+p.user_id+'\',\'can_switch_env\',this.checked)"> 🧪 Env. test</label>';
-        h += '<label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer;"><input type="checkbox" '+(p.can_use_outils_cliniques?'checked':'')+' onchange="updatePermission(\''+p.user_id+'\',\'can_use_outils_cliniques\',this.checked)"> 🌳 Outils cliniques</label>';
+        h += '<div style="font-size:11px;font-weight:600;color:var(--text-soft);margin-bottom:6px;text-transform:uppercase;letter-spacing:.05em;">Permissions</div>';
+        h += '<div style="display:flex;gap:16px;flex-wrap:wrap;margin-bottom:10px;">';
+        h += '<label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer;"><input type="checkbox" '+(p.can_use_bibliotheque?'checked':'')+' data-uid="'+p.user_id+'" data-perm="can_use_bibliotheque" onchange="updatePermission(this.dataset.uid,this.dataset.perm,this.checked)"> Bibliotheque</label>';
+        h += '<label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer;"><input type="checkbox" '+(p.can_switch_env?'checked':'')+' data-uid="'+p.user_id+'" data-perm="can_switch_env" onchange="updatePermission(this.dataset.uid,this.dataset.perm,this.checked)"> Env. test</label>';
+        h += '<label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer;"><input type="checkbox" '+(p.can_use_outils_cliniques?'checked':'')+' data-uid="'+p.user_id+'" data-perm="can_use_outils_cliniques" onchange="updatePermission(this.dataset.uid,this.dataset.perm,this.checked)"> Outils cliniques</label>';
         h += '</div>';
-        // Boutons désactiver/supprimer
-        h += '<div style="display:flex;gap:8px;margin-top:8px;">';
+        h += '<div style="display:flex;gap:8px;">';
         if(p.actif !== false){
-          h += '<button class="btn btn-sm" style="font-size:11px;background:#FFF8E6;color:#7A4F00;border:1px solid #F5C06C;" data-uid="'+p.user_id+'" onclick="togglePraticienActif(this.dataset.uid,false)">⏸ Désactiver</button>';
+          h += '<button class="btn btn-sm" style="font-size:11px;background:#FFF8E6;color:#7A4F00;border:1px solid #F5C06C;" data-uid="'+p.user_id+'" onclick="togglePraticienActif(this.dataset.uid,false)">Desactiver</button>';
         } else {
-          h += '<button class="btn btn-sm" style="font-size:11px;background:var(--green-l);color:var(--green-mid);border:1px solid var(--green-b);" data-uid="'+p.user_id+'" onclick="togglePraticienActif(this.dataset.uid,true)">▶ Réactiver</button>';
+          h += '<button class="btn btn-sm" style="font-size:11px;background:var(--green-l);color:var(--green-mid);border:1px solid var(--green-b);" data-uid="'+p.user_id+'" onclick="togglePraticienActif(this.dataset.uid,true)">Reactiver</button>';
         }
-        h += '<button class="btn btn-sm btn-red" style="font-size:11px;" data-uid="'+p.user_id+'" data-nom="'+p.prenom+' '+p.nom+'" onclick="supprimerPraticien(this.dataset.uid,this.dataset.nom)">🗑 Supprimer</button>';
+        h += '<button class="btn btn-sm btn-red" style="font-size:11px;" data-uid="'+p.user_id+'" data-nom="'+p.prenom+' '+p.nom+'" onclick="supprimerPraticien(this.dataset.uid,this.dataset.nom)">Supprimer</button>';
         h += '</div>';
       } else {
         h += '<div style="font-size:11px;color:var(--text-soft);">Toutes les permissions (vous)</div>';
       }
+      h += '</div>';
       h += '</div>';
     });
     el.innerHTML = h;
