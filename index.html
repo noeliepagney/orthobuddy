@@ -2298,7 +2298,7 @@ async function checkNouvellesReservations(){
         sessionStorage.setItem('last_notif_att', attente.length.toString());
       } else if(attente.length > lastAttCount){
         var nb = attente.length - lastAttCount;
-        sendNotification('📋 Nouvelle demande liste d'attente', nb+' nouvelle'+(nb>1?'s':'')+' demande'+(nb>1?'s':'')+' reçue'+(nb>1?'s':''));
+        sendNotification('📋 Nouvelle demande liste d\'attente', nb+' nouvelle'+(nb>1?'s':'')+' demande'+(nb>1?'s':'')+' reçue'+(nb>1?'s':''));
         sessionStorage.setItem('last_notif_att', attente.length.toString());
       }
     }
