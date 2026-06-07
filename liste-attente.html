@@ -525,7 +525,7 @@ async function submitForm(){
     var res=await fetch('https://xiznicrburryfmdfbjxk.supabase.co/functions/v1/quick-action',{
       method:'POST',
       headers:{'Content-Type':'application/json','Authorization':'Bearer '+SB_KEY},
-      body:JSON.stringify({...newPatient,created_at:now,data:{},praticien_id:_praticienId})
+      body:JSON.stringify({...newPatient,created_at:now,data:{},praticien_id:_praticienId,user_id:_praticienId})
     });
     if(!res.ok){var err=await res.text();throw new Error(err);}
     document.getElementById('form-container').style.display='none';

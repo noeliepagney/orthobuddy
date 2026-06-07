@@ -7799,7 +7799,7 @@ async function importerDemandesWeb(){
   var btn=document.querySelector('[onclick="importerDemandesWeb()"]');
   if(btn){btn.textContent='☁️ Chargement…';btn.disabled=true;}
   try{
-    var res=await fetch(SB_URL+'/rest/v1/liste_attente?traite=eq.false&order=created_at.asc',{
+    var res=await fetch(SB_URL+'/rest/v1/liste_attente?traite=eq.false&user_id=eq.'+getSbUserId()+'&order=created_at.asc',{
       headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Content-Type':'application/json'}
     });
     if(!res.ok) throw new Error('HTTP '+res.status);
