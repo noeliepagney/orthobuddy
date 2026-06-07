@@ -738,6 +738,13 @@ html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);colo
           <div id="praticien-save-msg" style="font-size:12px;color:var(--green-mid);margin-top:8px;display:none;">✓ Enregistré</div>
         </div></div>
 
+        <!-- 2. NOTIFICATIONS -->
+        <div class="settings-section"><div class="settings-section-title" onclick="toggleSettingsSection('sec_notifs')"><span>🔔 Notifications</span><span class="settings-section-chevron">▼</span></div><div class="settings-section-body" id="sec_notifs">
+          <p style="font-size:12px;color:var(--text-soft);margin-bottom:14px;">Recevez une notification dans le navigateur quand un patient réserve ou annule un créneau.</p>
+          <div id="notif-status" style="font-size:12px;margin-bottom:10px;"></div>
+          <button class="btn btn-green btn-sm" onclick="activerNotifications()">🔔 Activer les notifications</button>
+        </div></div>
+
         <!-- 2. SÉCURITÉ -->
         <div class="settings-section"><div class="settings-section-title" onclick="toggleSettingsSection('sec_securite')"><span>🔐 Sécurité</span><span class="settings-section-chevron">▼</span></div><div class="settings-section-body" id="sec_securite">
           <div class="field-grid field-grid-2" style="max-width:400px;">
@@ -2757,6 +2764,40 @@ async function loadAdminSection(){
   if(navOutils) navOutils.style.display = canUseOutilsCliniques() ? 'flex' : 'none';
 }
 
+function updateNotifStatus(){
+  var el = document.getElementById('notif-status');
+  if(!el) return;
+  if(!('Notification' in window)){
+    el.innerHTML = '<span style="color:var(--red);">❌ Votre navigateur ne supporte pas les notifications.</span>';
+    return;
+  }
+  if(Notification.permission === 'granted'){
+    el.innerHTML = '<span style="color:var(--green-mid);">✅ Notifications activées</span>';
+  } else if(Notification.permission === 'denied'){
+    el.innerHTML = '<span style="color:var(--red);">❌ Notifications bloquées — autorisez-les dans les réglages du navigateur.</span>';
+  } else {
+    el.innerHTML = '<span style="color:var(--text-soft);">⚪ Notifications non activées</span>';
+  }
+}
+
+async function activerNotifications(){
+  if(!('Notification' in window)){ showToast('Navigateur non compatible','red'); return; }
+  var perm = await Notification.requestPermission();
+  if(perm === 'granted'){
+    showToast('✅ Notifications activées !');
+    new Notification('OrthoBuddy', {body: 'Les notifications sont activées 🎉', icon: '/favicon.ico'});
+  } else {
+    showToast('Notifications refusées','red');
+  }
+  updateNotifStatus();
+}
+
+function sendNotification(titre, corps){
+  if(!('Notification' in window)) return;
+  if(Notification.permission !== 'granted') return;
+  new Notification(titre, {body: corps, icon: '/favicon.ico'});
+}
+
 function initLiensPublics(){
   var uid = getSbUserId();
   var base = 'https://orthobuddy.fr/';
@@ -3059,6 +3100,11 @@ async function syncPortailReservations(){
       if(!DB.seances) DB.seances = [];
       DB.seances.push(newSeance);
       changed = true;
+      // Notification
+      var nomPatient = patient.prenom + ' ' + patient.nom;
+      var dateRdv = creneau.date ? new Date(creneau.date+'T00:00:00').toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long'}) : '';
+      var heureRdv = creneau.heure_debut ? creneau.heure_debut.slice(0,5) : '';
+      sendNotification('📅 Nouvelle réservation', nomPatient+' — '+dateRdv+' à '+heureRdv);
     }
 
     // Récupérer les annulations non encore traitées
@@ -3080,6 +3126,9 @@ async function syncPortailReservations(){
         seance.statut = 'annulee_portail';
         seance.note = (seance.note||'') + '\n❌ Annulé par le patient via le portail';
         changed = true;
+        // Notification annulation
+        var patAnn = (DB.patients||[]).find(function(p){ return p.id === seance.patientId; });
+        if(patAnn) sendNotification('❌ Annulation portail', patAnn.prenom+' '+patAnn.nom+' a annulé son RDV');
       }
     }
 
@@ -3156,7 +3205,7 @@ function showPage(name, statut){
   if(name==='agenda')renderAgenda();
   if(name==='creneaux')renderCreneauxPage();
   if(name==='patients')renderPatients();
-  if(name==='settings'){renderSettings();setTimeout(function(){var el=document.getElementById('setting-urgence-days');if(el)el.value=(DB.settings&&DB.settings.urgenceDays!=null?DB.settings.urgenceDays:2);initLiensPublics();loadInfosPraticien();loadAdminSection();loadGestionPraticiens();},50);}
+  if(name==='settings'){renderSettings();setTimeout(function(){var el=document.getElementById('setting-urgence-days');if(el)el.value=(DB.settings&&DB.settings.urgenceDays!=null?DB.settings.urgenceDays:2);initLiensPublics();loadInfosPraticien();loadAdminSection();loadGestionPraticiens();updateNotifStatus();},50);}
   if(name==='taches')renderTachesPage();
   if(name==='outils')renderOutilsPage();
   if(name==='resultats'){setResPeriod(_resPeriod);}
