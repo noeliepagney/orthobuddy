@@ -7731,7 +7731,7 @@ function savePatient(){
         dFin.setFullYear(dFin.getFullYear()+1);
         finOrdo = dFin.toISOString().slice(0,10);
       }
-      var ordonnancesInit = [{
+      var ordonnancesInit = debutOrdo ? [{
         id: uid(),
         parcoursId: firstParcoursId||'',
         prescripteur: a.adressePar||'',
@@ -7740,7 +7740,7 @@ function savePatient(){
         debut: debutOrdo,
         fin: finOrdo,
         _importeeListeAttente: true,
-      }];
+      }] : [];
       extraData = {
         adresse: data.adresse||a.adresse||'',
         contacts: contacts,
