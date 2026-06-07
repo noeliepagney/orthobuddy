@@ -10516,9 +10516,37 @@ function getDocsByPatient(pid, cb){
     var tx = db.transaction('docs','readonly');
     var idx = tx.objectStore('docs').index('patientId');
     var req = idx.getAll(pid);
-    req.onsuccess = function(e){cb(e.target.result||[]);};
+    req.onsuccess = function(e){
+      var localDocs = e.target.result || [];
+      // Charger aussi depuis orthobuddy_files (docs portail)
+      if(SB_URL && SB_KEY){
+        fetch(SB_URL+'/rest/v1/orthobuddy_files?patient_id=eq.'+pid+'&select=*', {
+          headers: {'apikey': SB_KEY, 'Authorization': 'Bearer '+getSbToken()}
+        }).then(function(r){ return r.json(); }).then(function(sbDocs){
+          if(!Array.isArray(sbDocs)) sbDocs = [];
+          var localIds = localDocs.map(function(d){ return d.id; });
+          var extra = sbDocs.filter(function(d){ return !localIds.includes(d.id); }).map(function(d){
+            return {
+              id: d.id,
+              patientId: d.patient_id,
+              titre: d.titre || d.name,
+              name: d.name,
+              type: d.type,
+              categorie: d.categorie || 'portail',
+              storageKey: d.storage_key,
+              createdAt: d.created_at,
+              fromPortail: d.categorie === 'portail'
+            };
+          });
+          cb(localDocs.concat(extra));
+        }).catch(function(){ cb(localDocs); });
+      } else {
+        cb(localDocs);
+      }
+    };
   });
 }
+
 
 // ── Helpers ──
 function getDocIcon(type){
@@ -10548,6 +10576,11 @@ function renderDocPreview(doc){
 }
 
 function renderDocCard(doc, showPatient){
+  if(doc.fromPortail && doc.storageKey){
+    var ic = getDocIcon(doc.type);
+    var portalBadge = '<span style="font-size:10px;background:#FFF8E6;color:#7A4F00;padding:1px 7px;border-radius:10px;margin-left:6px;font-weight:500;">&#x1F4F1; portail</span>';
+    return '<div id="doccard-'+doc.id+'" style="display:flex;align-items:center;gap:10px;padding:9px 12px;border-bottom:1px solid var(--border);">'+'<div style="width:32px;height:32px;border-radius:7px;background:'+ic.bg+';display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;">'+ic.icon+'</div>'+'<div style="flex:1;min-width:0;"><div style="font-size:13px;font-weight:500;">'+doc.titre+portalBadge+'</div><div style="font-size:11px;color:var(--text-soft);">'+fmtDocDate(doc.createdAt)+'</div></div>'+'<button class="icon-btn" data-key="'+doc.storageKey+'" onclick="downloadStorageDoc(this.dataset.key)" style="padding:4px;display:flex;align-items:center;"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></button></div>';
+  }
   var ic = getDocIcon(doc.type);
   var p = showPatient&&doc.patientId ? DB.patients.find(function(x){return x.id===doc.patientId;}) : null;
   var patBadge = p ? '<span style="font-size:10px;background:var(--green-ll);color:var(--green-mid);padding:1px 7px;border-radius:10px;margin-left:6px;font-weight:500;">'+p.prenom+' '+p.nom+'</span>' : '';
@@ -10566,6 +10599,12 @@ function renderDocCard(doc, showPatient){
   '</div>'+
   '<div id="'+previewId+'" style="display:none;padding:0 12px 12px 54px;border-bottom:1px solid var(--border);">'+renderDocPreview(doc)+'</div>';
 }
+async function downloadStorageDoc(storageKey){
+  var fakeDoc = {storageKey: storageKey};
+  var url = await getDocUrl(fakeDoc);
+  if(url){ window.open(url, '_blank'); } else { showToast('Erreur téléchargement','red'); }
+}
+
 function toggleDocPreview(id){
   var el = document.getElementById('docprev-'+id);
   if(el) el.style.display = el.style.display==='none' ? 'block' : 'none';
