@@ -2786,8 +2786,32 @@ async function activerNotifications(){
   if(perm === 'granted'){
     showToast('✅ Notifications activées !');
     new Notification('OrthoBuddy', {body: 'Les notifications sont activées 🎉', icon: '/favicon.ico'});
-  } else {
+    // Afficher le message d'aide pour les réglages système
+    var existing = document.getElementById('notif-help-msg');
+    if(!existing){
+      var helpEl = document.createElement('div');
+      helpEl.id = 'notif-help-msg';
+      helpEl.style.cssText = 'margin-top:12px;padding:12px 14px;background:#F0F9F5;border:1px solid var(--green-b);border-radius:8px;font-size:12px;color:var(--text);line-height:1.6;';
+      helpEl.innerHTML = '<strong>💡 Si vous ne recevez pas les notifications</strong><br>Vérifiez que les notifications Chrome sont bien autorisées dans les réglages de votre système :<br><br>'
+        + '<strong>Sur Mac :</strong> Préférences Système → Notifications → Google Chrome → Autoriser les notifications<br><br>'
+        + '<strong>Sur Windows :</strong> Paramètres → Système → Notifications → Google Chrome → Activé';
+      var statusEl = document.getElementById('notif-status');
+      if(statusEl) statusEl.parentNode.insertBefore(helpEl, statusEl.nextSibling);
+    }
+  } else if(perm === 'denied'){
     showToast('Notifications refusées','red');
+    var existing = document.getElementById('notif-help-msg');
+    if(!existing){
+      var helpEl = document.createElement('div');
+      helpEl.id = 'notif-help-msg';
+      helpEl.style.cssText = 'margin-top:12px;padding:12px 14px;background:#FEF2F2;border:1px solid #F5C6C6;border-radius:8px;font-size:12px;color:var(--text);line-height:1.6;';
+      helpEl.innerHTML = '<strong>❌ Notifications bloquées</strong><br>Pour les réactiver :<br><br>'
+        + '<strong>Sur Mac :</strong> Préférences Système → Notifications → Google Chrome → Autoriser les notifications<br><br>'
+        + '<strong>Sur Windows :</strong> Paramètres → Système → Notifications → Google Chrome → Activé<br><br>'
+        + 'Puis rechargez la page et réessayez.';
+      var statusEl = document.getElementById('notif-status');
+      if(statusEl) statusEl.parentNode.insertBefore(helpEl, statusEl.nextSibling);
+    }
   }
   updateNotifStatus();
 }
