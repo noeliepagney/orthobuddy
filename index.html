@@ -10259,10 +10259,28 @@ function saveDoc(doc, cb){
 }
 
 function deleteDocFromDB(id, cb){
+  // Supprimer depuis Storage si storageKey existe
   initDocsDB(function(db){
-    var tx = db.transaction('docs','readwrite');
-    tx.objectStore('docs').delete(id);
-    tx.oncomplete = function(){if(cb)cb();};
+    var req = db.transaction('docs','readonly').objectStore('docs').get(id);
+    req.onsuccess = function(e){
+      var doc = e.target.result;
+      if(doc && doc.storageKey && SB_URL && SB_KEY){
+        // Supprimer depuis Supabase Storage
+        fetch(SB_URL+'/storage/v1/object/orthobuddy-docs/'+doc.storageKey, {
+          method: 'DELETE',
+          headers: {'apikey': SB_KEY, 'Authorization': 'Bearer '+getSbToken()}
+        }).catch(function(err){ console.warn('Storage delete error:', err); });
+        // Supprimer depuis orthobuddy_files
+        fetch(SB_URL+'/rest/v1/orthobuddy_files?id=eq.'+id, {
+          method: 'DELETE',
+          headers: sbHeaders()
+        }).catch(function(err){ console.warn('Files delete error:', err); });
+      }
+      // Supprimer depuis IndexedDB
+      var tx = db.transaction('docs','readwrite');
+      tx.objectStore('docs').delete(id);
+      tx.oncomplete = function(){if(cb)cb();};
+    };
   });
 }
 
@@ -10536,21 +10554,73 @@ function saveDocModal(){
       };
     });
   } else {
-    var doc = {
-      id: uid(),
-      titre: titre,
-      nom: _editDocFile ? _editDocFile.name : titre,
-      type: _editDocFile ? _editDocFile.type : '',
-      categorie: cat,
-      patientId: pid,
-      data: _editDocData,
-      createdAt: new Date().toISOString()
-    };
-    saveDoc(doc, function(){
-      closeModal('modal-doc');
-      showToast('Document ajouté');
-      refreshDocsViews(pid);
-    });
+    var docId = uid();
+    var ext = _editDocFile ? _editDocFile.name.split('.').pop() : 'bin';
+    var storageKey = getSbUserId() + '/' + docId + '.' + ext;
+    // Upload vers Supabase Storage
+    if(_editDocFile && SB_URL && SB_KEY){
+      var base64 = _editDocData.split(',')[1];
+      var binary = atob(base64);
+      var bytes = new Uint8Array(binary.length);
+      for(var i=0;i<binary.length;i++) bytes[i]=binary.charCodeAt(i);
+      var blob = new Blob([bytes], {type: _editDocFile.type});
+      fetch(SB_URL+'/storage/v1/object/orthobuddy-docs/'+storageKey, {
+        method: 'POST',
+        headers: {'apikey': SB_KEY, 'Authorization': 'Bearer '+getSbToken(), 'Content-Type': _editDocFile.type},
+        body: blob
+      }).then(function(r){
+        if(!r.ok) throw new Error('Upload Storage failed');
+        // Sauvegarder métadonnées dans orthobuddy_files
+        return fetch(SB_URL+'/rest/v1/orthobuddy_files', {
+          method: 'POST',
+          headers: {...sbHeaders(), 'Prefer': 'return=minimal'},
+          body: JSON.stringify({
+            id: docId,
+            user_id: getSbUserId(),
+            name: _editDocFile.name,
+            type: _editDocFile.type,
+            titre: titre,
+            categorie: cat,
+            patient_id: pid,
+            storage_key: storageKey,
+            created_at: new Date().toISOString()
+          })
+        });
+      }).then(function(){
+        // Aussi sauvegarder en IndexedDB pour accès offline
+        var doc = {id:docId, titre:titre, nom:_editDocFile.name, type:_editDocFile.type, categorie:cat, patientId:pid, data:_editDocData, storageKey:storageKey, createdAt:new Date().toISOString()};
+        saveDoc(doc, function(){
+          closeModal('modal-doc');
+          showToast('Document ajouté');
+          refreshDocsViews(pid);
+        });
+      }).catch(function(err){
+        console.error('Storage upload error:', err);
+        // Fallback : sauvegarder uniquement en IndexedDB
+        var doc = {id:docId, titre:titre, nom:_editDocFile.name, type:_editDocFile.type, categorie:cat, patientId:pid, data:_editDocData, createdAt:new Date().toISOString()};
+        saveDoc(doc, function(){
+          closeModal('modal-doc');
+          showToast('Document ajouté (local)');
+          refreshDocsViews(pid);
+        });
+      });
+    } else {
+      var doc = {
+        id: docId,
+        titre: titre,
+        nom: _editDocFile ? _editDocFile.name : titre,
+        type: _editDocFile ? _editDocFile.type : '',
+        categorie: cat,
+        patientId: pid,
+        data: _editDocData,
+        createdAt: new Date().toISOString()
+      };
+      saveDoc(doc, function(){
+        closeModal('modal-doc');
+        showToast('Document ajouté');
+        refreshDocsViews(pid);
+      });
+    }
   }
 }
 
