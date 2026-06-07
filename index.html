@@ -12047,8 +12047,8 @@ async function renderCreneauxPage(){
   h += '<div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px;margin-bottom:20px;">';
   h += '<div style="font-weight:600;font-size:15px;margin-bottom:16px;">➕ Générer des créneaux</div>';
   h += '<div style="display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;margin-bottom:12px;">';
-  h += '<div class="field" style="margin:0;"><label>Du</label><input type="date" id="cren-date-debut" style="margin-top:4px;font-size:13px;padding:6px 8px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--surface);color:var(--text);" min="'+today+'"></div>';
-  h += '<div class="field" style="margin:0;"><label>Au</label><input type="date" id="cren-date-fin" style="margin-top:4px;font-size:13px;padding:6px 8px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--surface);color:var(--text);" min="'+today+'"></div>';
+  h += '<div class="field" style="margin:0;"><label>Du</label><div id="dp-cren-debut" style="margin-top:4px;"></div></div>';
+  h += '<div class="field" style="margin:0;"><label>Au</label><div id="dp-cren-fin" style="margin-top:4px;"></div></div>';
   h += '<div class="field" style="margin:0;"><label>Heure début</label><input type="time" id="cren-heure-debut" style="margin-top:4px;" value="09:00"></div>';
   h += '<div class="field" style="margin:0;"><label>Heure fin</label><input type="time" id="cren-heure-fin" style="margin-top:4px;" value="12:00"></div>';
   h += '<div class="field" style="margin:0;"><label>Durée (min)</label><select id="cren-duree" style="margin-top:4px;"><option value="30">30 min</option><option value="45">45 min</option><option value="60">1h</option></select></div>';
@@ -12115,12 +12115,15 @@ async function renderCreneauxPage(){
   }
 
   el.innerHTML = h;
-
+  // Initialiser les datepickers
+  var today2 = new Date().toISOString().slice(0,10);
+  createDatePicker('dp-cren-debut', today2);
+  createDatePicker('dp-cren-fin', today2);
 }
 
 function previsualiserCreneaux(){
-  var dateDebut = document.getElementById('cren-date-debut').value;
-  var dateFin = document.getElementById('cren-date-fin').value;
+  var dateDebut = dpGet('dp-cren-debut');
+  var dateFin = dpGet('dp-cren-fin');
   var heureDebut = document.getElementById('cren-heure-debut').value;
   var heureFin = document.getElementById('cren-heure-fin').value;
   var duree = parseInt(document.getElementById('cren-duree').value);
