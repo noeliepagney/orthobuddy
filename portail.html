@@ -248,7 +248,7 @@
         return;
       }
 
-      var creneaux = await sb('creneaux?statut=eq.libre&order=date.asc,heure_debut.asc&select=*');
+      var creneaux = await sb('creneaux?statut=eq.libre&user_id=eq.'+_patient.user_id+'&order=date.asc,heure_debut.asc&select=*');
       _creneaux = creneaux;
 
       if(!creneaux.length){
