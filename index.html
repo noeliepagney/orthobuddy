@@ -12116,9 +12116,11 @@ async function renderCreneauxPage(){
 
   el.innerHTML = h;
   // Initialiser les datepickers
-  var today2 = new Date().toISOString().slice(0,10);
-  createDatePicker('dp-cren-debut', today2);
-  createDatePicker('dp-cren-fin', today2);
+  setTimeout(function(){
+    var today2 = new Date().toISOString().slice(0,10);
+    createDatePicker('dp-cren-debut', today2);
+    createDatePicker('dp-cren-fin', today2);
+  }, 50);
 }
 
 function previsualiserCreneaux(){
