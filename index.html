@@ -6697,7 +6697,7 @@ function getArbreSVG(id){
 // ═══════════════════════════════════════
 var _materielData = [];
 var _materielFiltre = '';
-var _materielTags = '';
+var _materielTags = [];
 var _materielFormat = '';
 var _materielNiveau = '';
 var _materielCategorie = '';
@@ -6736,15 +6736,48 @@ function getMaterielFiltres(){
     });
   }
   if(_materielCategorie) data = data.filter(function(m){ return (m.categorie||'').toLowerCase().includes(_materielCategorie.toLowerCase()); });
-  if(_materielFormat) data = data.filter(function(m){ return (m.format||'').toLowerCase().includes(_materielFormat.toLowerCase()); });
-  if(_materielNiveau) data = data.filter(function(m){ return (m.niveau||'').toLowerCase().includes(_materielNiveau.toLowerCase()); });
-  if(_materielTags) data = data.filter(function(m){ return (m.tags||'').toLowerCase().includes(_materielTags.toLowerCase()); });
+  if(_materielFormat) data = data.filter(function(m){ return (m.format||'').split(',').map(function(f){return f.trim().toLowerCase();}).includes(_materielFormat.toLowerCase()); });
+  if(_materielNiveau) data = data.filter(function(m){ return (m.niveau||'').split(',').map(function(n){return n.trim().toLowerCase();}).includes(_materielNiveau.toLowerCase()); });
+  if(Array.isArray(_materielTags)&&_materielTags.length){ data = data.filter(function(m){ var mt=(m.tags||'').toLowerCase(); return _materielTags.every(function(t){ return mt.includes(t.toLowerCase()); }); }); }
   if(_materielDuree) data = data.filter(function(m){ return (m.duree||'').toLowerCase().includes(_materielDuree.toLowerCase()); });
   if(_materielJai==='oui') data = data.filter(function(m){ return m.j_ai===true; });
   if(_materielJai==='non') data = data.filter(function(m){ return !m.j_ai; });
   return data;
   return data;
 }
+
+function setMaterielFormat(f){
+  _materielFormat = (_materielFormat===f) ? '' : f;
+  _materielPage=0; renderMaterielUI();
+}
+function setMaterielNiveau(n){
+  _materielNiveau = (_materielNiveau===n) ? '' : n;
+  _materielPage=0; renderMaterielUI();
+}
+
+function toggleMaterielTagsDropdown(){
+  var d = document.getElementById('materiel-tags-dropdown');
+  if(d) d.style.display = d.style.display==='none' ? 'block' : 'none';
+}
+
+function toggleMaterielTag(tag){
+  if(!Array.isArray(_materielTags)) _materielTags = [];
+  var idx = _materielTags.indexOf(tag);
+  if(idx>=0){ _materielTags.splice(idx,1); } else { _materielTags.push(tag); }
+  _materielPage = 0;
+  renderMaterielUI();
+}
+
+function filterTagsList(q){
+  var list = document.getElementById('materiel-tags-list');
+  if(!list) return;
+  q = q.toLowerCase();
+  list.querySelectorAll('label').forEach(function(l){
+    var t = l.textContent.toLowerCase();
+    l.style.display = t.includes(q) ? '' : 'none';
+  });
+}
+
 
 function renderMaterielUI(){
   var el = document.getElementById('materiel-content');
@@ -6757,35 +6790,107 @@ function renderMaterielUI(){
   
   // Extraire valeurs uniques pour filtres
   var cats = [...new Set(_materielData.map(function(m){return m.categorie;}).filter(Boolean))].sort();
-  var formats = [...new Set(_materielData.map(function(m){return m.format;}).filter(Boolean))].sort();
+  var formats = [...new Set(_materielData.flatMap(function(m){ return (m.format||'').split(',').map(function(f){return f.trim();}).filter(Boolean); }))].sort();
   
   var h = '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:8px;">';
   h += '<div style="font-size:13px;color:var(--text-soft);">'+total+' matériel'+(total>1?'s':'')+(total<_materielData.length?' sur '+_materielData.length:'')+'</div>';
   h += '<button class="btn btn-sm btn-green" onclick="openMaterielModal(null)">+ Ajouter</button>';
   h += '</div>';
   
-  // Barre de recherche
-  var niveaux = [...new Set(_materielData.map(function(m){return m.niveau;}).filter(Boolean))].sort();
+  // Filtres
+  var allTags = [];
+  var tagCount = {};
+  _materielData.forEach(function(m){
+    (m.tags||'').split(',').forEach(function(t){
+      t = t.trim();
+      if(t){ tagCount[t]=(tagCount[t]||0)+1; if(!allTags.includes(t)) allTags.push(t); }
+    });
+  });
+  // Trier : domaines (avec emoji) en premier, puis le reste
+  var domainesTags = allTags.filter(function(t){ return /\p{Emoji}/u.test(t); }).sort();
+  var autresTags = allTags.filter(function(t){ return !/\p{Emoji}/u.test(t); }).sort();
+  allTags = domainesTags.concat(autresTags);
+  var niveaux = [...new Set(_materielData.flatMap(function(m){ return (m.niveau||'').split(',').map(function(n){return n.trim();}).filter(Boolean); }))].sort();
   var durees = [...new Set(_materielData.map(function(m){return m.duree;}).filter(Boolean))].sort();
-  var sel = 'padding:7px 10px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:12px;background:white;';
-  h += '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;">';
+  var formats = [...new Set(_materielData.map(function(m){return m.format;}).filter(Boolean))].sort();
+  var sel = 'padding:7px 10px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:12px;background:white;cursor:pointer;';
+
+  h += '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px;">';
   h += '<input type="text" placeholder="🔍 Rechercher titre, auteur, tag..." value="'+(_materielFiltre||'')+'" oninput="_materielFiltre=this.value;_materielPage=0;renderMaterielUI()" style="flex:1;min-width:200px;padding:8px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:13px;">';
   h += '</div>';
+
+  // Tags dropdown avec recherche
+  var selectedTags = Array.isArray(_materielTags) ? _materielTags : (_materielTags ? [_materielTags] : []);
+  var DOMAINES = ['\u270d LE LANGAGE ECRIT','\ud83d\udcac LO LANGAGE ORAL','\ud83d\udd22 COGNITION MATH','\ud83e\udde0 NEURO'];
+  var autresTags = allTags.filter(function(t){ return !DOMAINES.includes(t); });
+
+  // 4 bullets domaines
+  h += '<div style="margin-bottom:10px;">';
+  h += '<div style="font-size:11px;font-weight:600;color:var(--text-soft);margin-bottom:6px;text-transform:uppercase;letter-spacing:.04em;">Domaine</div>';
+  h += '<div style="display:flex;gap:8px;flex-wrap:wrap;">';
+  DOMAINES.forEach(function(d){
+    var active = selectedTags.includes(d);
+    h += '<label style="display:flex;align-items:center;gap:6px;padding:6px 12px;border-radius:20px;cursor:pointer;border:1px solid '+(active?'var(--green-mid)':'var(--border)')+';background:'+(active?'var(--green-ll)':'white')+';font-size:12px;">';
+    h += '<input type="checkbox" data-tag="'+d.replace(/"/g,'&quot;')+'" '+(active?'checked':'')+' onchange="toggleMaterielTag(this.dataset.tag)" style="cursor:pointer;">';
+    h += '<span>'+d+'</span>';
+    h += '</label>';
+  });
+  h += '</div></div>';
+
+  // Dropdown autres tags
+  h += '<div style="margin-bottom:10px;">';
+  h += '<div style="font-size:11px;font-weight:600;color:var(--text-soft);margin-bottom:6px;text-transform:uppercase;letter-spacing:.04em;">Autres tags</div>';
+  var autresSelected = selectedTags.filter(function(t){ return !DOMAINES.includes(t); });
+  h += '<div style="position:relative;">';
+  h += '<div onclick="toggleMaterielTagsDropdown()" style="padding:8px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:12px;background:white;cursor:pointer;display:flex;align-items:center;justify-content:space-between;">';
+  h += '<span>'+(autresSelected.length>0 ? autresSelected.length+' tag'+(autresSelected.length>1?'s':'')+' sélectionné'+(autresSelected.length>1?'s':'') : 'Filtrer par tag...')+'</span><span>▾</span></div>';
+  h += '<div id="materiel-tags-dropdown" style="display:none;position:absolute;z-index:100;width:100%;max-height:280px;overflow-y:auto;background:white;border:1px solid var(--border);border-radius:var(--radius-sm);box-shadow:0 4px 12px rgba(0,0,0,.1);padding:8px;">';
+  h += '<input type="text" placeholder="Rechercher..." oninput="filterTagsList(this.value)" style="width:100%;padding:6px 8px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:12px;margin-bottom:6px;">';
+  h += '<div id="materiel-tags-list">';
+  autresTags.forEach(function(t){
+    var checked = selectedTags.includes(t);
+    h += '<label style="display:flex;align-items:center;gap:8px;padding:4px 6px;border-radius:4px;cursor:pointer;font-size:12px;">';
+    h += '<input type="checkbox" '+(checked?'checked':'')+' data-tag="'+t.replace(/"/g,'&quot;')+'" onchange="toggleMaterielTag(this.dataset.tag)" style="cursor:pointer;">';
+    h += '<span>'+t+'</span><span style="color:var(--text-soft);font-size:10px;margin-left:auto;">'+(tagCount[t]||0)+'</span>';
+    h += '</label>';
+  });
+  h += '</div></div></div>';
+  if(autresSelected.length>0){
+    h += '<div style="display:flex;gap:4px;flex-wrap:wrap;margin-top:6px;">';
+    autresSelected.forEach(function(t){
+      h += '<span style="font-size:11px;background:var(--green-ll);color:var(--green-mid);padding:2px 8px;border-radius:10px;display:flex;align-items:center;gap:4px;">'+t+'<span data-tag="'+t.replace(/"/g,'&quot;')+'" onclick="toggleMaterielTag(this.dataset.tag)" style="cursor:pointer;font-weight:700;">×</span></span>';
+    });
+    h += '</div>';
+  }
+  h += '</div>';
+
+  // Format select
+  h += '<div style="margin-bottom:10px;">';
+  h += '<select onchange="setMaterielFormat(this.value)" style="padding:8px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:13px;background:white;width:100%;">';
+  h += '<option value="">Tous les formats</option>';
+  formats.forEach(function(f){ h += '<option value="'+f+'"'+(_materielFormat===f?' selected':'')+'>'+f+'</option>'; });
+  h += '</select>';
+  h += '</div>';
+
+  // Niveau chips
+  h += '<div style="margin-bottom:10px;">';
+  h += '<div style="font-size:11px;font-weight:600;color:var(--text-soft);margin-bottom:6px;text-transform:uppercase;letter-spacing:.04em;">Niveau</div>';
+  h += '<div style="display:flex;gap:6px;flex-wrap:wrap;">';
+  niveaux.forEach(function(n){
+    var parts = n.split(',');
+    parts.forEach(function(np){
+      np = np.trim();
+      if(!np) return;
+      var active = _materielNiveau===np;
+      h += '<span data-niv="'+np+'" onclick="setMaterielNiveau(this.dataset.niv)" style="font-size:11px;padding:3px 10px;border-radius:20px;cursor:pointer;border:1px solid '+(_materielNiveau===np?'var(--green-mid)':'var(--border)')+';background:'+(_materielNiveau===np?'var(--green-ll)':'white')+';color:'+(_materielNiveau===np?'var(--green-mid)':'var(--text)')+';white-space:nowrap;">'+np+'</span>';
+    });
+  });
+  h += '</div></div>';
+
+  // Durée + J'ai
   h += '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;">';
-  h += '<select onchange="_materielCategorie=this.value;_materielPage=0;renderMaterielUI()" style="'+sel+'">';
-  h += '<option value="">Toutes catégories</option>';
-  cats.forEach(function(c){ h += '<option value="'+c+'"'+(c===_materielCategorie?' selected':'')+'>'+c+'</option>'; });
-  h += '</select>';
-  h += '<select onchange="_materielFormat=this.value;_materielPage=0;renderMaterielUI()" style="'+sel+'">';
-  h += '<option value="">Tous formats</option>';
-  formats.forEach(function(f){ h += '<option value="'+f+'"'+(f===_materielFormat?' selected':'')+'>'+f+'</option>'; });
-  h += '</select>';
-  h += '<select onchange="_materielNiveau=this.value;_materielPage=0;renderMaterielUI()" style="'+sel+'">';
-  h += '<option value="">Tous niveaux</option>';
-  niveaux.forEach(function(n){ h += '<option value="'+n+'"'+(_materielNiveau===n?' selected':'')+'>'+n+'</option>'; });
-  h += '</select>';
   h += '<select onchange="_materielDuree=this.value;_materielPage=0;renderMaterielUI()" style="'+sel+'">';
-  h += '<option value="">Toutes durées</option>';
+  h += '<option value="">Durée</option>';
   durees.forEach(function(d){ h += '<option value="'+d+'"'+(_materielDuree===d?' selected':'')+'>'+d+'</option>'; });
   h += '</select>';
   h += '<select onchange="_materielJai=this.value;_materielPage=0;renderMaterielUI()" style="'+sel+'">';
@@ -6793,11 +6898,11 @@ function renderMaterielUI(){
   h += '<option value="oui"'+((_materielJai==='oui')?' selected':'')+'>✅ Je possède</option>';
   h += '<option value="non"'+((_materielJai==='non')?' selected':'')+'>❌ Je ne possède pas</option>';
   h += '</select>';
-  if(_materielFiltre||_materielCategorie||_materielFormat||_materielNiveau||_materielTags||_materielDuree||_materielJai){
-    h += '<button class="btn btn-sm" onclick="_materielFiltre=\'\';_materielCategorie=\'\';_materielFormat=\'\';_materielNiveau=\'\';_materielTags=\'\';_materielDuree=\'\';_materielJai=\'\';_materielPage=0;renderMaterielUI()" style="white-space:nowrap;">✕ Effacer</button>';
+  var hasFiltre = _materielFiltre||(Array.isArray(_materielTags)&&_materielTags.length)||_materielFormat||_materielNiveau||_materielDuree||_materielJai;
+  if(hasFiltre){
+    h += '<button class="btn btn-sm" onclick="_materielFiltre=\'\';_materielTags=[];_materielFormat=\'\';_materielNiveau=\'\';_materielDuree=\'\';_materielJai=\'\';_materielPage=0;renderMaterielUI()" style="white-space:nowrap;">✕ Tout effacer</button>';
   }
   h += '</div>';
-  
   // Liste
   if(!page.length){
     h += '<div style="text-align:center;padding:40px;color:var(--text-soft);">Aucun matériel trouvé.</div>';
