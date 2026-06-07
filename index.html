@@ -1976,41 +1976,41 @@ const SK = 'orthobuddy_v3';
 
 const DEFAULT_PARCOURS = [
   {id:'p1', emoji:'🗣️', nom:'Langage oral',
-   bilanAmo:[{code:'AMO 34,01',label:'Bilan comm. & langage oral',tarif:88.43},{code:'AMO 23,81',label:'Renouvellement (-30%)',tarif:61.91}],
-   reeduAmo:[{code:'AMO 9,7',label:'Troubles articulation',tarif:25.22},{code:'AMO 12,1',label:'Retard parole / LO',tarif:31.46},{code:'AMO 12,6',label:'Retard parole 3-6 ans',tarif:32.76},{code:'AMO 14',label:'TND - dysphasies',tarif:36.40}]},
+   bilanAmo:[{code:'AMO 34,01',label:'Bilan comm. & langage oral',tarif:88.43,valeur_acte:34.0115},{code:'AMO 23,81',label:'Renouvellement (-30%)',tarif:61.91,valeur_acte:23.8115}],
+   reeduAmo:[{code:'AMO 9,7',label:'Troubles articulation',tarif:25.22,valeur_acte:9.7},{code:'AMO 12,1',label:'Retard parole / LO',tarif:31.46,valeur_acte:12.1},{code:'AMO 12,6',label:'Retard parole 3-6 ans',tarif:32.76,valeur_acte:12.6},{code:'AMO 14',label:'TND - dysphasies',tarif:36.40,valeur_acte:14.0}]},
   {id:'p2', emoji:'📖', nom:'Langage écrit',
-   bilanAmo:[{code:'AMO 34,02',label:'Bilan comm. & langage écrit',tarif:88.45},{code:'AMO 23,81',label:'Renouvellement (-30%)',tarif:61.91}],
-   reeduAmo:[{code:'AMO 11,6',label:'Dyslexie / dysorthographie',tarif:30.16},{code:'AMO 11,5',label:'Troubles graphisme / dysgraphie',tarif:29.90}]},
+   bilanAmo:[{code:'AMO 34,02',label:'Bilan comm. & langage écrit',tarif:88.45,valeur_acte:34.0192},{code:'AMO 23,81',label:'Renouvellement (-30%)',tarif:61.91,valeur_acte:23.8115}],
+   reeduAmo:[{code:'AMO 11,6',label:'Dyslexie / dysorthographie',tarif:30.16,valeur_acte:11.6},{code:'AMO 11,5',label:'Troubles graphisme / dysgraphie',tarif:29.90,valeur_acte:11.5}]},
   {id:'p3', emoji:'🧮', nom:'Cognition mathématique',
-   bilanAmo:[{code:'AMO 34,03',label:'Bilan cognition math.',tarif:88.48},{code:'AMO 23,82',label:'Renouvellement (-30%)',tarif:61.93}],
-   reeduAmo:[{code:'AMO 11,7',label:'Dyscalculie / logico-math.',tarif:30.42}]},
+   bilanAmo:[{code:'AMO 34,03',label:'Bilan cognition math.',tarif:88.48,valeur_acte:34.0308},{code:'AMO 23,82',label:'Renouvellement (-30%)',tarif:61.93,valeur_acte:23.8192}],
+   reeduAmo:[{code:'AMO 11,7',label:'Dyscalculie / logico-math.',tarif:30.42,valeur_acte:11.7}]},
   {id:'p4', emoji:'🧠', nom:'Neurologie',
-   bilanAmo:[{code:'AMO 39,99',label:'Bilan troubles neurologiques',tarif:103.97},{code:'AMO 27,99',label:'Renouvellement (-30%)',tarif:72.77}],
-   reeduAmo:[{code:'AMO 15,7',label:'Pathologies neurologiques',tarif:40.82},{code:'AMO 15,6',label:'Pathologies neuro-dégénératives',tarif:40.56}]},
+   bilanAmo:[{code:'AMO 39,99',label:'Bilan troubles neurologiques',tarif:103.97,valeur_acte:39.9885},{code:'AMO 27,99',label:'Renouvellement (-30%)',tarif:72.77,valeur_acte:27.9885}],
+   reeduAmo:[{code:'AMO 15,7',label:'Pathologies neurologiques',tarif:40.82,valeur_acte:15.7},{code:'AMO 15,6',label:'Pathologies neuro-dégénératives',tarif:40.56,valeur_acte:15.6}]},
   {id:'p5', emoji:'😋', nom:'Déglutition',
-   bilanAmo:[{code:'AMO 26',label:'Bilan déglutition & fonctions vt',tarif:67.60},{code:'AMO 18,2',label:'Renouvellement (-30%)',tarif:47.32}],
-   reeduAmo:[{code:'AMO 9,8',label:'Déglutition dysfonctionnelle',tarif:25.48},{code:'AMO 9,9',label:'Vélotubotympanique',tarif:25.74},{code:'AMO 12,8',label:'Dysphagies',tarif:33.28}]},
+   bilanAmo:[{code:'AMO 26',label:'Bilan déglutition & fonctions vt',tarif:67.60,valeur_acte:26.0},{code:'AMO 18,2',label:'Renouvellement (-30%)',tarif:47.32,valeur_acte:18.2}],
+   reeduAmo:[{code:'AMO 9,8',label:'Déglutition dysfonctionnelle',tarif:25.48,valeur_acte:9.8},{code:'AMO 9,9',label:'Vélotubotympanique',tarif:25.74,valeur_acte:9.9},{code:'AMO 12,8',label:'Dysphagies',tarif:33.28,valeur_acte:12.8}]},
   {id:'p6', emoji:'🌊', nom:'Bégaiement',
-   bilanAmo:[{code:'AMO 40,01',label:'Bilan bégaiement & fluence',tarif:104.03},{code:'AMO 28,01',label:'Renouvellement (-30%)',tarif:72.83}],
-   reeduAmo:[{code:'AMO 12,2',label:'Bégaiement & troubles fluence',tarif:31.72}]},
+   bilanAmo:[{code:'AMO 40,01',label:'Bilan bégaiement & fluence',tarif:104.03,valeur_acte:40.0115},{code:'AMO 28,01',label:'Renouvellement (-30%)',tarif:72.83,valeur_acte:28.0115}],
+   reeduAmo:[{code:'AMO 12,2',label:'Bégaiement & troubles fluence',tarif:31.72,valeur_acte:12.2}]},
   {id:'p7', emoji:'👂', nom:'Surdité',
-   bilanAmo:[{code:'AMO 40,02',label:'Bilan comm. & LO – surdité/handicap',tarif:104.05},{code:'AMO 28,01',label:'Renouvellement (-30%)',tarif:72.83}],
-   reeduAmo:[{code:'AMO 12',label:'Surdité acquise appareillée',tarif:31.20},{code:'AMO 15,4',label:'Démutisation / implant cochléaire',tarif:40.04}]},
+   bilanAmo:[{code:'AMO 40,02',label:'Bilan comm. & LO – surdité/handicap',tarif:104.05,valeur_acte:40.0192},{code:'AMO 28,01',label:'Renouvellement (-30%)',tarif:72.83,valeur_acte:28.0115}],
+   reeduAmo:[{code:'AMO 12',label:'Surdité acquise appareillée',tarif:31.20,valeur_acte:12.0},{code:'AMO 15,4',label:'Démutisation / implant cochléaire',tarif:40.04,valeur_acte:15.4}]},
   {id:'p8', emoji:'🌈', nom:'Handicap / TSA',
-   bilanAmo:[{code:'AMO 40,01',label:'Bilan comm. & LO – handicap/TSA',tarif:104.05},{code:'AMO 28,01',label:'Renouvellement (-30%)',tarif:72.83}],
-   reeduAmo:[{code:'AMO 12,8',label:'Dysphagies',tarif:33.28},{code:'AMO 13,8',label:'Handicap moteur/sensoriel/TSA',tarif:35.88}]},
+   bilanAmo:[{code:'AMO 40,01',label:'Bilan comm. & LO – handicap/TSA',tarif:104.05,valeur_acte:40.0192},{code:'AMO 28,01',label:'Renouvellement (-30%)',tarif:72.83,valeur_acte:28.0115}],
+   reeduAmo:[{code:'AMO 12,8',label:'Dysphagies',tarif:33.28,valeur_acte:12.8},{code:'AMO 13,8',label:'Handicap moteur/sensoriel/TSA',tarif:35.88,valeur_acte:13.8}]},
   {id:'p9', emoji:'🌱', nom:'Prévention',
-   bilanAmo:[{code:'AMO 20',label:'Bilan prévention & accompagnement parental',tarif:52.00}],
+   bilanAmo:[{code:'AMO 20',label:'Bilan prévention & accompagnement parental',tarif:52.00,valeur_acte:20.0}],
    reeduAmo:[]},
   {id:'p10', emoji:'🎙️', nom:'Phonation',
-   bilanAmo:[{code:'AMO 33,98',label:'Bilan phonation',tarif:88.35},{code:'AMO 23,79',label:'Renouvellement (-30%)',tarif:61.85}],
-   reeduAmo:[{code:'AMO 11,4',label:'Troubles voix organique/fonctionnel',tarif:29.64},{code:'AMO 13',label:'Voix tumeurs / oro-œsoph.',tarif:33.80}]},
+   bilanAmo:[{code:'AMO 33,98',label:'Bilan phonation',tarif:88.35,valeur_acte:33.9808},{code:'AMO 23,79',label:'Renouvellement (-30%)',tarif:61.85,valeur_acte:23.7885}],
+   reeduAmo:[{code:'AMO 11,4',label:'Troubles voix organique/fonctionnel',tarif:29.64,valeur_acte:11.4},{code:'AMO 13',label:'Voix tumeurs / oro-œsoph.',tarif:33.80,valeur_acte:13.0}]},
   {id:'p11', emoji:'👄', nom:'Oralité / OMF',
-   bilanAmo:[{code:'AMO 33,99',label:'Bilan fonctions oro-myo-faciales',tarif:88.37},{code:'AMO 23,79',label:'Renouvellement (-30%)',tarif:61.85}],
-   reeduAmo:[{code:'AMO 13,5',label:'Anomalies fonctions OMF & oralité',tarif:35.10}]},
+   bilanAmo:[{code:'AMO 33,99',label:'Bilan fonctions oro-myo-faciales',tarif:88.37,valeur_acte:33.9885},{code:'AMO 23,79',label:'Renouvellement (-30%)',tarif:61.85,valeur_acte:23.7885}],
+   reeduAmo:[{code:'AMO 13,5',label:'Anomalies fonctions OMF & oralité',tarif:35.10,valeur_acte:13.5}]},
   {id:'p12', emoji:'👥', nom:'Séance de groupe',
    bilanAmo:[],
-   reeduAmo:[{code:'AMO 9',label:'Rééducation en groupe (/ patient / séance)',tarif:23.40}]},
+   reeduAmo:[{code:'AMO 9',label:'Rééducation en groupe (/ patient / séance)',tarif:23.40,valeur_acte:9.0}]},
 ];
 
 // ═══════════════════════════════════════
@@ -2094,9 +2094,35 @@ let DB = {
   password:'vnvn',
   patients:[],seances:[],rdvs:[],
   parcours: JSON.parse(JSON.stringify(DEFAULT_PARCOURS)),
-  taches:[],modelesTodo:[],settings:{urgenceDays:2},foh:[],ftd:[],fami:[],tex:[],
+  taches:[],modelesTodo:[],settings:{urgenceDays:2, amoHistorique:[{valeur:2.60,date_debut:'2024-01-01'}]},foh:[],ftd:[],fami:[],tex:[],
   lastBackup:null,lastModified:null
 };
+
+
+function getAmoKey(dateStr){
+  var d = dateStr || today();
+  // Utiliser tarifsHistorique.cleAmo si disponible (système existant)
+  if(DB.settings && DB.settings.tarifsHistorique && DB.settings.tarifsHistorique.cleAmo){
+    var histo = DB.settings.tarifsHistorique.cleAmo;
+    // histo = [{val: ancienneValeur, fin: date_changement}]
+    var current = (DB.settings.forfaitsCustom && DB.settings.forfaitsCustom.cleAmo) || AMO_CLE_DEFAULT;
+    // Trier par fin décroissant
+    var sorted = histo.slice().sort(function(a,b){ return b.fin.localeCompare(a.fin); });
+    // Si date < fin du plus ancien changement, utiliser ancienne valeur
+    for(var i=sorted.length-1;i>=0;i--){
+      if(d < sorted[i].fin) return sorted[i].val;
+    }
+    return current;
+  }
+  // Sinon utiliser cleAmo simple ou défaut
+  return (DB.settings && DB.settings.forfaitsCustom && DB.settings.forfaitsCustom.cleAmo) || AMO_CLE_DEFAULT;
+}
+
+function calcAmoTarif(valeurActe, majoration, dateStr){
+  var key = getAmoKey(dateStr);
+  return Math.round((valeurActe * key + (majoration||0)) * 100) / 100;
+}
+
 
 // ═══════════════════════════════════════
 // SUPABASE
@@ -8529,10 +8555,10 @@ function renderAmoList(pid){
         }
       }
       const isSel=a.code===_amoSelectedCode;
-      html+=`<div class="amo-card${isSel?' selected':''}" onclick="selectAmoActe('${a.code}','${a.label.replace(/'/g,"\\'")}',${a.tarif},'${pid}')">
+      html+=`<div class="amo-card${isSel?' selected':''}" onclick="selectAmoActe('${a.code}','${a.label.replace(/'/g,"\\'")}',${calcAmoTarif(a.valeur_acte||(a.tarif/2.60))},'${pid}')">
         <span class="amo-card-code">${a.code}</span>
         <div class="amo-card-label">${a.label}</div>
-        <div class="amo-card-price">${a.tarif.toFixed(2)} €</div>
+        <div class="amo-card-price">${calcAmoTarif(a.valeur_acte||(a.tarif/2.60)).toFixed(2)} €</div>
       </div>`;
     });
     html+=`</div></div>`;
@@ -12747,7 +12773,7 @@ function toggleTelesoin(checked){
           var pc = DB.parcours.find(function(x){return x.id===pcId;});
           if(pc){
             (pc.reeduAmo||[]).forEach(function(a){
-              if(a.code===_amoSelectedCode) found = a.tarif;
+              if(a.code===_amoSelectedCode) found = calcAmoTarif(a.valeur_acte||(a.tarif/2.60));
             });
           }
         });
@@ -12774,7 +12800,7 @@ function renderTelesoinInfo(pid){
     if(p){
       (p.parcours||[]).forEach(function(pcId){
         var pc = DB.parcours.find(function(x){return x.id===pcId;});
-        if(pc)(pc.reeduAmo||[]).forEach(function(a){if(a.code===_amoSelectedCode)tarifAmo=a.tarif;});
+        if(pc)(pc.reeduAmo||[]).forEach(function(a){if(a.code===_amoSelectedCode)tarifAmo=calcAmoTarif(a.valeur_acte||(a.tarif/2.60));});
       });
     }
     if(tarifTmo !== null){
