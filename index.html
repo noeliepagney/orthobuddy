@@ -10533,6 +10533,7 @@ function saveDocModal(){
   var titre = document.getElementById('modal-doc-title-input').value.trim();
   if(!titre){showToast('Saisissez un titre','red');return;}
   if(!_editDocData&&!_editDocId){showToast('Ajoutez un fichier','red');return;}
+  if(_editDocFile && _editDocFile.size > 20*1024*1024){showToast('Fichier trop volumineux (max 20 Mo)','red');return;}
   var pid = document.getElementById('modal-doc-patient').value||null;
   var cat = document.getElementById('modal-doc-categorie').value.trim()||null;
   if(_editDocId){
@@ -10564,6 +10565,8 @@ function saveDocModal(){
       var bytes = new Uint8Array(binary.length);
       for(var i=0;i<binary.length;i++) bytes[i]=binary.charCodeAt(i);
       var blob = new Blob([bytes], {type: _editDocFile.type});
+      var btnSave = document.querySelector('#modal-doc .btn-green');
+      if(btnSave){btnSave.textContent='⏳ Upload…';btnSave.disabled=true;}
       fetch(SB_URL+'/storage/v1/object/orthobuddy-docs/'+storageKey, {
         method: 'POST',
         headers: {'apikey': SB_KEY, 'Authorization': 'Bearer '+getSbToken(), 'Content-Type': _editDocFile.type},
@@ -10596,11 +10599,13 @@ function saveDocModal(){
         });
       }).catch(function(err){
         console.error('Storage upload error:', err);
+        var btnSave = document.querySelector('#modal-doc .btn-green');
+        if(btnSave){btnSave.textContent='Enregistrer';btnSave.disabled=false;}
         // Fallback : sauvegarder uniquement en IndexedDB
         var doc = {id:docId, titre:titre, nom:_editDocFile.name, type:_editDocFile.type, categorie:cat, patientId:pid, data:_editDocData, createdAt:new Date().toISOString()};
         saveDoc(doc, function(){
           closeModal('modal-doc');
-          showToast('Document ajouté (local)');
+          showToast('Document ajouté (local uniquement)');
           refreshDocsViews(pid);
         });
       });
