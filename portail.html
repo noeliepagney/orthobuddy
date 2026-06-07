@@ -75,6 +75,7 @@
       <div id="tab-rdvs" class="tab-content active"></div>
       <div id="tab-reserver" class="tab-content"></div>
       <div id="tab-contact" class="tab-content"></div>
+      <div id="tab-documents" class="tab-content"></div>
     </div>
     <div id="content-loading"><div class="loading">Chargement...</div></div>
   </div>
@@ -139,7 +140,8 @@
       var canReserve = _patient.portail === 'autonome' || _patient.portail === 'surbooking';
       tabs.innerHTML = '<button class="tab active" onclick="switchTab(\'rdvs\',this)">📅 Mes RDV</button>'
         + (canReserve ? '<button class="tab" onclick="switchTab(\'reserver\',this)">➕ Réserver</button>' : '')
-        + '<button class="tab" onclick="switchTab(\'contact\',this)">✉️ Me contacter</button>';
+        + "<button class='tab' onclick='switchTab(\"contact\",this)'>&#x2709;&#xFE0F; Me contacter</button>"
+        + "<button class='tab' onclick='switchTab(\"documents\",this)'>&#x1F4CE; Documents</button>";
     }
 
     function switchTab(name, btn){
@@ -149,6 +151,7 @@
       document.getElementById('tab-'+name).classList.add('active');
       if(name==='reserver') renderReserver();
       if(name==='contact') renderContact();
+      if(name==='documents') renderDocuments();
     }
 
     async function renderRdvs(){
@@ -385,6 +388,56 @@
         if(btn){ btn.disabled=false; btn.textContent='Envoyer'; }
       }
     }
+
+
+    function renderDocuments(){
+      var el = document.getElementById('tab-documents');
+      el.innerHTML = '<div class="card">'
+        + '<div style="font-size:14px;font-weight:600;margin-bottom:8px;">Envoyer un document</div>'
+        + '<div style="font-size:12px;color:#5F5E5A;margin-bottom:16px;">Ordonnance, bilan, courrier... Votre orthophoniste recevra une notification.</div>'
+        + '<div class="field"><label>Fichier <span style="color:#C0392B;">*</span></label>'
+        + '<label for="doc-fichier" style="display:flex;align-items:center;gap:10px;padding:10px 14px;border:1px dashed #A8DFC9;border-radius:8px;cursor:pointer;background:#F9FDFB;"><span style="font-size:20px;">📎</span><span id="doc-label-text" style="font-size:13px;color:#5F5E5A;">Choisir un fichier...</span></label><input type="file" id="doc-fichier" style="display:none;" onchange="document.getElementById(' + "'doc-label-text'" + ').textContent=this.files[0]?this.files[0].name:' + "'Choisir un fichier...'" + ';"></div>'
+        + '<div class="field"><label>Nom du document (optionnel)</label>'
+        + '<input type="text" id="doc-nom" placeholder="Ex: Ordonnance Dr Martin..."></div>'
+        + '<button class="btn btn-green" onclick="envoyerDocument()" style="width:100%;">Envoyer le document</button>'
+        + '</div>';
+    }
+
+    async function envoyerDocument(){
+      var fileInput = document.getElementById('doc-fichier');
+      var nomInput = document.getElementById('doc-nom');
+      if(!fileInput.files.length){ showToast('Choisissez un fichier','error'); return; }
+      var file = fileInput.files[0];
+      var nom = nomInput.value.trim() || file.name;
+      var btn = document.querySelector('#tab-documents .btn-green');
+      if(btn){ btn.disabled=true; btn.textContent='Envoi en cours...'; }
+      var reader = new FileReader();
+      reader.onload = async function(e){
+        var base64 = e.target.result.split(',')[1];
+        var res = await fetch(SMOOTH_ACTION, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer '+SUPABASE_ANON },
+          body: JSON.stringify({
+            action: 'upload_document',
+            user_id: _patient.user_id,
+            patient_id: _patient.patient_id,
+            patient_prenom: _patient.patient_prenom,
+            nom_fichier: nom,
+            type_fichier: file.type,
+            data_base64: base64
+          })
+        });
+        var data = await res.json();
+        if(data.success){
+          document.getElementById('tab-documents').innerHTML = '<div class="card" style="text-align:center;padding:32px;"><div style="font-size:40px;margin-bottom:12px;">✅</div><div style="font-weight:600;color:#0F6E56;">Document envoyé !</div><div style="font-size:13px;color:#888;margin-top:8px;">Votre orthophoniste a été notifiée.</div><button class="btn btn-ghost" onclick="renderDocuments()" style="margin-top:16px;">Envoyer un autre document</button></div>';
+        } else {
+          showToast('Erreur lors de l\'envoi','error');
+          if(btn){ btn.disabled=false; btn.textContent='Envoyer le document'; }
+        }
+      };
+      reader.readAsDataURL(file);
+    }
+
 
     window.addEventListener('load', function(){ load(); });
   </script>
