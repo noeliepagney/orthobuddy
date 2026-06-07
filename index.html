@@ -2275,11 +2275,47 @@ async function checkNouvellesReservations(){
       if(nouvelles.length > 0){
         badge.textContent = nouvelles.length;
         badge.style.display = 'inline';
+        // Notif si nouvelles réservations non encore signalées
+        var lastNotifCount = parseInt(sessionStorage.getItem('last_notif_resa')||'0');
+        if(nouvelles.length > lastNotifCount){
+          sendNotification('📅 Nouvelle réservation portail', nouvelles.length+' réservation'+(nouvelles.length>1?'s':'')+' en attente de synchronisation');
+          sessionStorage.setItem('last_notif_resa', nouvelles.length.toString());
+        }
       } else {
         badge.style.display = 'none';
+        sessionStorage.setItem('last_notif_resa', '0');
+      }
+    }
+
+    // Vérifier nouvelles demandes liste d'attente
+    var resAtt = await fetch(SB_URL+'/rest/v1/liste_attente?traite=eq.false&user_id=eq.'+getSbUserId()+'&select=id', {
+      headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer '+getSbToken() }
+    });
+    var attente = await resAtt.json();
+    if(Array.isArray(attente)){
+      var lastAttCount = parseInt(sessionStorage.getItem('last_notif_att')||'-1');
+      if(lastAttCount === -1){
+        sessionStorage.setItem('last_notif_att', attente.length.toString());
+      } else if(attente.length > lastAttCount){
+        var nb = attente.length - lastAttCount;
+        sendNotification('📋 Nouvelle demande liste d'attente', nb+' nouvelle'+(nb>1?'s':'')+' demande'+(nb>1?'s':'')+' reçue'+(nb>1?'s':''));
+        sessionStorage.setItem('last_notif_att', attente.length.toString());
       }
     }
   } catch(e){ console.warn('checkNouvellesReservations:', e); }
+}
+
+function notifSeancesAujourdhui(){
+  if(!DB.seances) return;
+  var today = new Date().toISOString().slice(0,10);
+  var seancesAujourdhui = (DB.seances||[]).filter(function(s){
+    return s.date === today && s.statut !== 'annulee_portail' && s.statut !== 'absence';
+  });
+  if(seancesAujourdhui.length > 0){
+    sendNotification('📅 Agenda du jour', 'Vous avez '+seancesAujourdhui.length+' séance'+(seancesAujourdhui.length>1?'s':'')+' aujourd'hui');
+  } else {
+    sendNotification('📅 Agenda du jour', 'Aucune séance prévue aujourd'hui');
+  }
 }
 
 async function checkServicesHealth(){
@@ -2643,7 +2679,7 @@ async function doLogin(){
       const loaded = await sbLoad();
       setSyncStatus(loaded?'ok':'error');
       if(loaded) setTimeout(()=>setSyncStatus('idle'),3000);
-      renderAll();checkBackupReminder();updateEnvBanner();updateEnvButtons();
+      renderAll();checkBackupReminder();updateEnvBanner();updateEnvButtons();setTimeout(notifSeancesAujourdhui, 2000);
       setInterval(checkServicesHealth, 5*60*1000);
       setInterval(checkNouvellesReservations, 2*60*1000);
       return;
@@ -2697,7 +2733,7 @@ async function doLogin(){
       sbSave().then(()=>{setSyncStatus('ok');setTimeout(()=>setSyncStatus('idle'),2000);}).catch(()=>setSyncStatus('error'));
       await syncPortailReservations();
       await syncSeancesRappel();
-      renderAll();checkBackupReminder();updateEnvBanner();updateEnvButtons();
+      renderAll();checkBackupReminder();updateEnvBanner();updateEnvButtons();setTimeout(notifSeancesAujourdhui, 2000);
       setInterval(checkServicesHealth, 5*60*1000);
       setInterval(checkNouvellesReservations, 2*60*1000);
     } else {
@@ -2707,7 +2743,7 @@ async function doLogin(){
       const loaded = await sbLoad();
       setSyncStatus(loaded?'ok':'error');
       if(loaded) setTimeout(()=>setSyncStatus('idle'),3000);
-      renderAll();checkBackupReminder();updateEnvBanner();updateEnvButtons();
+      renderAll();checkBackupReminder();updateEnvBanner();updateEnvButtons();setTimeout(notifSeancesAujourdhui, 2000);
       setInterval(checkServicesHealth, 5*60*1000);
       setInterval(checkNouvellesReservations, 2*60*1000);
     }
