@@ -12118,6 +12118,10 @@ async function renderCreneauxPage(){
   // Initialiser les datepickers
   setTimeout(function(){
     var today2 = new Date().toISOString().slice(0,10);
+    var d1 = document.getElementById('dp-cren-debut');
+    var d2 = document.getElementById('dp-cren-fin');
+    if(d1) d1.style.position='relative';
+    if(d2) d2.style.position='relative';
     createDatePicker('dp-cren-debut', today2);
     createDatePicker('dp-cren-fin', today2);
   }, 50);
