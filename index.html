@@ -521,7 +521,7 @@ html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);colo
         <span id="nav-docs-total" style="display:none;flex-shrink:0;margin-left:auto;background:var(--bg);color:var(--text-soft);border:1px solid var(--border);border-radius:20px;font-size:10px;padding:1px 6px;"></span>
       </button>
 
-      <button class="nav-item nav-item-secondary" onclick="showPage('outils')" id="nav-outils" style="flex-wrap:nowrap;overflow:hidden;"><span class="nav-icon" style="flex-shrink:0;">🌳</span><span class="nav-label" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Outils cliniques</span></button>
+      <button class="nav-item nav-item-secondary" onclick="showPage('outils')" id="nav-outils" style="flex-wrap:nowrap;overflow:hidden;display:none;"><span class="nav-icon" style="flex-shrink:0;">🌳</span><span class="nav-label" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Outils cliniques</span></button>
 
       <!-- RÉGLAGES -->
       <div style="margin:8px 4px 4px;border-top:1px solid var(--border);"></div>
@@ -2143,6 +2143,7 @@ function getSbToken(){ return sessionStorage.getItem('sb_token') || SB_KEY; }
 function isAdmin(){ return sessionStorage.getItem('sb_role') === 'admin'; }
 function canUseBibliotheque(){ return isAdmin() || sessionStorage.getItem('sb_can_bibliotheque') === '1'; }
 function canSwitchEnv(){ return isAdmin() || sessionStorage.getItem('sb_can_env') === '1'; }
+function canUseOutilsCliniques(){ return isAdmin() || sessionStorage.getItem('sb_can_outils') === '1'; }
 
 let _syncTimeout = null;
 
@@ -2607,7 +2608,7 @@ async function doLogin(){
       sessionStorage.setItem('sb_user_id', data.user.id);
       sessionStorage.setItem('ob_auth','1');
       // Charger le rôle et permissions du praticien
-      fetch(SB_URL+'/rest/v1/praticiens?user_id=eq.'+data.user.id+'&select=role,can_use_bibliotheque,can_switch_env',{headers:{'apikey':SB_KEY,'Authorization':'Bearer '+data.access_token}}).then(function(r){return r.json();}).then(function(d){if(d&&d[0]){sessionStorage.setItem('sb_role',d[0].role||'user');sessionStorage.setItem('sb_can_bibliotheque',d[0].can_use_bibliotheque?'1':'0');sessionStorage.setItem('sb_can_env',d[0].can_switch_env?'1':'0');}});
+      fetch(SB_URL+'/rest/v1/praticiens?user_id=eq.'+data.user.id+'&select=role,can_use_bibliotheque,can_switch_env,can_use_outils_cliniques',{headers:{'apikey':SB_KEY,'Authorization':'Bearer '+data.access_token}}).then(function(r){return r.json();}).then(function(d){if(d&&d[0]){sessionStorage.setItem('sb_role',d[0].role||'user');sessionStorage.setItem('sb_can_bibliotheque',d[0].can_use_bibliotheque?'1':'0');sessionStorage.setItem('sb_can_env',d[0].can_switch_env?'1':'0');sessionStorage.setItem('sb_can_outils',d[0].can_use_outils_cliniques?'1':'0');}});
       document.getElementById('login-screen').classList.add('hidden');
       document.getElementById('app').style.display='flex';
       document.getElementById('patients-list').innerHTML='<div style="text-align:center;padding:40px;color:var(--text-soft);"><div style="font-size:32px;margin-bottom:10px;">☁️</div><p style="font-size:13px;">Chargement de vos données…</p></div>';
@@ -2738,6 +2739,8 @@ async function loadAdminSection(){
   if(sec) sec.style.display = admin ? 'block' : 'none';
   var secEnv = document.getElementById('sec-admin-env');
   if(secEnv) secEnv.style.display = canSwitchEnv() ? 'block' : 'none';
+  var navOutils = document.getElementById('nav-outils');
+  if(navOutils) navOutils.style.display = canUseOutilsCliniques() ? 'flex' : 'none';
 }
 
 function initLiensPublics(){
@@ -2802,6 +2805,7 @@ async function loadGestionPraticiens(){
         h += '<div style="display:flex;gap:16px;">';
         h += '<label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer;"><input type="checkbox" '+(p.can_use_bibliotheque?'checked':'')+' onchange="updatePermission(\''+p.user_id+'\',\'can_use_bibliotheque\',this.checked)"> 📚 Bibliothèque</label>';
         h += '<label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer;"><input type="checkbox" '+(p.can_switch_env?'checked':'')+' onchange="updatePermission(\''+p.user_id+'\',\'can_switch_env\',this.checked)"> 🧪 Env. test</label>';
+        h += '<label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer;"><input type="checkbox" '+(p.can_use_outils_cliniques?'checked':'')+' onchange="updatePermission(\''+p.user_id+'\',\'can_use_outils_cliniques\',this.checked)"> 🌳 Outils cliniques</label>';
         h += '</div>';
       } else {
         h += '<div style="font-size:11px;color:var(--text-soft);">Toutes les permissions (vous)</div>';
