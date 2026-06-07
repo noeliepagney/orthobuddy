@@ -6715,7 +6715,7 @@ async function renderMaterielPage(){
   el.innerHTML = '<div class="loading" style="padding:40px;text-align:center;color:var(--text-soft);">Chargement...</div>';
   
   var url = SB_URL+'/rest/v1/materiel?user_id=eq.'+getSbUserId()+'&order=titre.asc&select=*';
-  var r = await fetch(url, {headers: {...sbHeaders(), 'Range-Unit':'items', 'Range':'0-9999'}});
+  var r = await fetch(url, {headers: {...sbHeaders(), 'Range-Unit':'items', 'Range':'0-2999', 'Prefer':'count=none'}});
   _materielData = await r.json();
   if(!Array.isArray(_materielData)) _materielData = [];
   
