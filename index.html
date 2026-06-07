@@ -2312,9 +2312,9 @@ function notifSeancesAujourdhui(){
     return s.date === today && s.statut !== 'annulee_portail' && s.statut !== 'absence';
   });
   if(seancesAujourdhui.length > 0){
-    sendNotification('📅 Agenda du jour', 'Vous avez '+seancesAujourdhui.length+' séance'+(seancesAujourdhui.length>1?'s':'')+' aujourd'hui');
+    sendNotification('📅 Agenda du jour', 'Vous avez '+seancesAujourdhui.length+' séance'+(seancesAujourdhui.length>1?'s':'')+" aujourd'hui");
   } else {
-    sendNotification('📅 Agenda du jour', 'Aucune séance prévue aujourd'hui');
+    sendNotification('📅 Agenda du jour', "Aucune séance prévue aujourd'hui");
   }
 }
 
