@@ -2607,6 +2607,20 @@ async function doLogin(){
       sessionStorage.setItem('sb_token', data.access_token);
       sessionStorage.setItem('sb_user_id', data.user.id);
       sessionStorage.setItem('ob_auth','1');
+      sessionStorage.setItem('login_start', Date.now().toString());
+      // Enregistrer le login dans praticiens
+      fetch(SB_URL+'/rest/v1/praticiens?user_id=eq.'+data.user.id, {
+        method: 'PATCH',
+        headers: {'apikey':SB_KEY,'Authorization':'Bearer '+data.access_token,'Content-Type':'application/json','Prefer':'return=minimal'},
+        body: JSON.stringify({last_login: new Date().toISOString(), login_count: null})
+      }).then(function(){
+        // Incrémenter login_count via RPC
+        fetch(SB_URL+'/rest/v1/rpc/increment_login_count', {
+          method: 'POST',
+          headers: {'apikey':SB_KEY,'Authorization':'Bearer '+data.access_token,'Content-Type':'application/json'},
+          body: JSON.stringify({p_user_id: data.user.id})
+        }).catch(function(e){ console.warn('increment_login_count error', e); });
+      }).catch(function(e){ console.warn('last_login update error', e); });
       // Charger le rôle et permissions du praticien
       fetch(SB_URL+'/rest/v1/praticiens?user_id=eq.'+data.user.id+'&select=role,can_use_bibliotheque,can_switch_env,can_use_outils_cliniques',{headers:{'apikey':SB_KEY,'Authorization':'Bearer '+data.access_token}}).then(function(r){return r.json();}).then(function(d){if(d&&d[0]){sessionStorage.setItem('sb_role',d[0].role||'user');sessionStorage.setItem('sb_can_bibliotheque',d[0].can_use_bibliotheque?'1':'0');sessionStorage.setItem('sb_can_env',d[0].can_switch_env?'1':'0');sessionStorage.setItem('sb_can_outils',d[0].can_use_outils_cliniques?'1':'0');}});
       document.getElementById('login-screen').classList.add('hidden');
@@ -2801,6 +2815,18 @@ async function loadGestionPraticiens(){
       h += '<span style="font-size:11px;color:var(--text-soft);margin-left:8px;">'+p.email_contact+'</span></div>';
       h += '<span style="font-size:10px;background:'+(p.role==='admin'?'var(--green-l)':'var(--bg)')+';color:'+(p.role==='admin'?'var(--green-mid)':'var(--text-soft)')+';border-radius:8px;padding:1px 7px;border:1px solid var(--border);">'+p.role+'</span>';
       h += '</div>';
+      // Stats connexion
+      var lastLogin = p.last_login ? new Date(p.last_login).toLocaleDateString('fr-FR',{day:'2-digit',month:'2-digit',year:'2-digit',hour:'2-digit',minute:'2-digit'}) : null;
+      var avgMin = (p.login_count && p.total_session_minutes) ? Math.round(p.total_session_minutes / p.login_count) : null;
+      var statusBadge = !p.last_login
+        ? '<span style="font-size:10px;background:#FFF8E6;color:#7A4F00;border:1px solid #F5C06C;border-radius:8px;padding:1px 7px;">⏳ En attente</span>'
+        : '<span style="font-size:10px;background:var(--green-l);color:var(--green-mid);border:1px solid var(--green-b);border-radius:8px;padding:1px 7px;">✅ Actif</span>';
+      h += '<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;flex-wrap:wrap;">';
+      h += statusBadge;
+      if(lastLogin) h += '<span style="font-size:11px;color:var(--text-soft);">Dernière connexion : '+lastLogin+'</span>';
+      if(p.login_count) h += '<span style="font-size:11px;color:var(--text-soft);">· '+p.login_count+' connexion'+(p.login_count>1?'s':'')+'</span>';
+      if(avgMin) h += '<span style="font-size:11px;color:var(--text-soft);">· ~'+avgMin+' min/session</span>';
+      h += '</div>';
       if(!isMe){
         h += '<div style="display:flex;gap:16px;">';
         h += '<label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer;"><input type="checkbox" '+(p.can_use_bibliotheque?'checked':'')+' onchange="updatePermission(\''+p.user_id+'\',\'can_use_bibliotheque\',this.checked)"> 📚 Bibliothèque</label>';
@@ -2860,9 +2886,24 @@ async function inviterPraticien(){
 }
 
 function doLogout(){
+  // Enregistrer la durée de session
+  var loginStart = sessionStorage.getItem('login_start');
+  var userId = getSbUserId();
+  var token = getSbToken();
+  if(loginStart && userId && token){
+    var durationMinutes = Math.round((Date.now() - parseInt(loginStart)) / 60000);
+    if(durationMinutes > 0){
+      fetch(SB_URL+'/rest/v1/rpc/add_session_duration', {
+        method: 'POST',
+        headers: {'apikey':SB_KEY,'Authorization':'Bearer '+token,'Content-Type':'application/json'},
+        body: JSON.stringify({p_user_id: userId, p_minutes: durationMinutes})
+      }).catch(function(e){ console.warn('session duration error', e); });
+    }
+  }
   sessionStorage.removeItem('ob_auth');
   sessionStorage.removeItem('sb_token');
   sessionStorage.removeItem('sb_user_id');
+  sessionStorage.removeItem('login_start');
   location.reload();
 }
 
