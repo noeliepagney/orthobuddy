@@ -713,6 +713,7 @@ html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);colo
       </div>
 
       <div class="page" id="page-settings">
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text-soft);padding:0 2px 8px;margin-bottom:4px;">👤 Mon compte</div>
         <div class="settings-section"><div class="settings-section-title" onclick="toggleSettingsSection('sec_votreprofil')"><span>👤 Votre profil</span><span class="settings-section-chevron">▼</span></div><div class="settings-section-body" id="sec_votreprofil">
           <div class="field-grid field-grid-2" style="max-width:480px;gap:12px;">
             <div class="field"><label>Prénom</label><input type="text" id="setting-prenom-ortho" placeholder="Noëlie" style="margin-top:4px;" oninput="DB.settings.prenomOrtho=this.value;save();"></div>
@@ -723,6 +724,7 @@ html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);colo
           </div>
         </div>
 
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text-soft);padding:16px 2px 8px;margin-bottom:4px;">🌐 Mon cabinet public</div>
         <!-- FORMULAIRE PUBLIC -->
         <div class="settings-section"><div class="settings-section-title" onclick="toggleSettingsSection('sec_formulaire')"><span>📋 Mon formulaire public</span><span class="settings-section-chevron">▼</span></div><div class="settings-section-body" id="sec_formulaire">
           <p style="font-size:12px;color:var(--text-soft);margin-bottom:14px;">Personnalisez les textes affichés sur votre formulaire de liste d'attente.</p>
@@ -766,6 +768,7 @@ html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);colo
           </div>
         </div></div>
 
+        <div id="sec-admin-label" style="display:none;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text-soft);padding:16px 2px 8px;margin-bottom:4px;">⚙️ Administration</div>
         <!-- ADMIN -->
         <div id="sec-admin" style="display:none;">
           <div class="settings-section"><div class="settings-section-title" onclick="toggleSettingsSection('sec_gestion_prat')"><span>⚙️ Gérer les praticiens</span><span class="settings-section-chevron">▼</span></div><div class="settings-section-body" id="sec_gestion_prat">
@@ -792,6 +795,7 @@ html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);colo
           <button class="btn btn-red btn-sm" onclick="doLogout()">🚪 Se déconnecter</button>
         </div></div>
 
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text-soft);padding:16px 2px 8px;margin-bottom:4px;">💶 Facturation & tarifs</div>
         <!-- 3. CLÉS & TARIFS AMO -->
         <div class="settings-section"><div class="settings-section-title" onclick="toggleSettingsSection('sec_clesdecotationta')"><span>💶 Clés de cotation & tarifs AMO</span><span class="settings-section-chevron">▼</span></div><div class="settings-section-body" id="sec_clesdecotationta">
           <p style="font-size:12px;color:var(--text-soft);margin-bottom:14px;">Ces clés sont fixées par la NGAP. Modifiez-les uniquement en cas de revalorisation conventionnelle, et renseignez la date d'effet pour que les résultats soient calculés correctement.</p>
@@ -875,6 +879,7 @@ html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);colo
           </div>
         </div></div>
 
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text-soft);padding:16px 2px 8px;margin-bottom:4px;">🗂️ Organisation clinique</div>
         <!-- 8. PARCOURS DE SOINS -->
         <div class="settings-section"><div class="settings-section-title" onclick="toggleSettingsSection('sec_parcoursdesoins')"><span>🗂️ Parcours de soins</span><span class="settings-section-chevron">▼</span></div><div class="settings-section-body" id="sec_parcoursdesoins">
           <p style="font-size:12px;color:var(--text-soft);margin-bottom:12px;">Modifiez les parcours (nom, emoji, actes AMO bilan et rééducation).</p>
@@ -909,6 +914,7 @@ html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);colo
         </div></div>
 
         <div id="sec-admin-env" style="display:none;"><div class="settings-section"><div class="settings-section-title" onclick="toggleSettingsSection('sec_environnement')"><span>🧪 Environnement (test / production)</span><span class="settings-section-chevron">▼</span></div><div class="settings-section-body" id="sec_environnement"><div style="margin-bottom:12px;font-size:13px;color:var(--text-soft);">Bascule entre la base de données de test et la base de production. En mode test, aucune donnée réelle n'est affectée.</div><div style="display:flex;align-items:center;gap:12px;"><button id="btn-env-prod" class="btn btn-sm" onclick="switchEnv('prod')" style="min-width:120px;">🟢 Production</button><button id="btn-env-test" class="btn btn-sm" onclick="switchEnv('test')" style="min-width:120px;">🧪 Test</button><span id="env-current-label" style="font-size:13px;font-weight:600;"></span></div></div></div></div>
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text-soft);padding:16px 2px 8px;margin-bottom:4px;">💾 Données</div>
         <div class="settings-section"><div class="settings-section-title" onclick="toggleSettingsSection('sec_donnees')"><span>💾 Données</span><span class="settings-section-chevron">▼</span></div><div class="settings-section-body" id="sec_donnees">
           <div style="display:flex;gap:8px;flex-wrap:wrap;">
             <button class="btn btn-sm" onclick="exportData()">📥 Exporter (JSON)</button>
@@ -2758,6 +2764,8 @@ async function loadAdminSection(){
   var admin = await checkIsAdmin();
   var sec = document.getElementById('sec-admin');
   if(sec) sec.style.display = admin ? 'block' : 'none';
+  var secLabel = document.getElementById('sec-admin-label');
+  if(secLabel) secLabel.style.display = admin ? 'block' : 'none';
   var secEnv = document.getElementById('sec-admin-env');
   if(secEnv) secEnv.style.display = canSwitchEnv() ? 'block' : 'none';
   var navOutils = document.getElementById('nav-outils');
