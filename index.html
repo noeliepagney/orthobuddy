@@ -2945,11 +2945,11 @@ async function loadGestionPraticiens(){
         // Boutons désactiver/supprimer
         h += '<div style="display:flex;gap:8px;margin-top:8px;">';
         if(p.actif !== false){
-          h += '<button class="btn btn-sm" style="font-size:11px;background:#FFF8E6;color:#7A4F00;border:1px solid #F5C06C;" onclick="togglePraticienActif(''+p.user_id+'',false)">⏸ Désactiver</button>';
+          h += '<button class="btn btn-sm" style="font-size:11px;background:#FFF8E6;color:#7A4F00;border:1px solid #F5C06C;" data-uid="'+p.user_id+'" onclick="togglePraticienActif(this.dataset.uid,false)">⏸ Désactiver</button>';
         } else {
-          h += '<button class="btn btn-sm" style="font-size:11px;background:var(--green-l);color:var(--green-mid);border:1px solid var(--green-b);" onclick="togglePraticienActif(''+p.user_id+'',true)">▶ Réactiver</button>';
+          h += '<button class="btn btn-sm" style="font-size:11px;background:var(--green-l);color:var(--green-mid);border:1px solid var(--green-b);" data-uid="'+p.user_id+'" onclick="togglePraticienActif(this.dataset.uid,true)">▶ Réactiver</button>';
         }
-        h += '<button class="btn btn-sm btn-red" style="font-size:11px;" onclick="supprimerPraticien(''+p.user_id+'',''+p.prenom+' '+p.nom+'')">🗑 Supprimer</button>';
+        h += '<button class="btn btn-sm btn-red" style="font-size:11px;" data-uid="'+p.user_id+'" data-nom="'+p.prenom+' '+p.nom+'" onclick="supprimerPraticien(this.dataset.uid,this.dataset.nom)">🗑 Supprimer</button>';
         h += '</div>';
       } else {
         h += '<div style="font-size:11px;color:var(--text-soft);">Toutes les permissions (vous)</div>';
