@@ -2942,6 +2942,15 @@ async function loadGestionPraticiens(){
         h += '<label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer;"><input type="checkbox" '+(p.can_switch_env?'checked':'')+' onchange="updatePermission(\''+p.user_id+'\',\'can_switch_env\',this.checked)"> 🧪 Env. test</label>';
         h += '<label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer;"><input type="checkbox" '+(p.can_use_outils_cliniques?'checked':'')+' onchange="updatePermission(\''+p.user_id+'\',\'can_use_outils_cliniques\',this.checked)"> 🌳 Outils cliniques</label>';
         h += '</div>';
+        // Boutons désactiver/supprimer
+        h += '<div style="display:flex;gap:8px;margin-top:8px;">';
+        if(p.actif !== false){
+          h += '<button class="btn btn-sm" style="font-size:11px;background:#FFF8E6;color:#7A4F00;border:1px solid #F5C06C;" onclick="togglePraticienActif(''+p.user_id+'',false)">⏸ Désactiver</button>';
+        } else {
+          h += '<button class="btn btn-sm" style="font-size:11px;background:var(--green-l);color:var(--green-mid);border:1px solid var(--green-b);" onclick="togglePraticienActif(''+p.user_id+'',true)">▶ Réactiver</button>';
+        }
+        h += '<button class="btn btn-sm btn-red" style="font-size:11px;" onclick="supprimerPraticien(''+p.user_id+'',''+p.prenom+' '+p.nom+'')">🗑 Supprimer</button>';
+        h += '</div>';
       } else {
         h += '<div style="font-size:11px;color:var(--text-soft);">Toutes les permissions (vous)</div>';
       }
@@ -2949,6 +2958,37 @@ async function loadGestionPraticiens(){
     });
     el.innerHTML = h;
   } catch(e){ console.error('loadGestionPraticiens', e); }
+}
+
+async function togglePraticienActif(userId, actif){
+  try {
+    await fetch(SB_URL+'/rest/v1/praticiens?user_id=eq.'+userId, {
+      method: 'PATCH',
+      headers: {...sbHeaders(), 'Prefer':'return=minimal'},
+      body: JSON.stringify({actif: actif})
+    });
+    showToast(actif ? '✅ Praticien réactivé' : '⏸ Praticien désactivé');
+    loadGestionPraticiens();
+  } catch(e){ showToast('Erreur', 'red'); }
+}
+
+async function supprimerPraticien(userId, nom){
+  if(!confirm('Supprimer définitivement le compte de '+nom+' ? Cette action est irréversible et supprimera toutes ses données.')) return;
+  if(!confirm('Confirmez-vous la suppression de '+nom+' ?')) return;
+  try {
+    // Supprimer depuis praticiens
+    await fetch(SB_URL+'/rest/v1/praticiens?user_id=eq.'+userId, {
+      method: 'DELETE',
+      headers: sbHeaders()
+    });
+    // Supprimer depuis orthobuddy_data
+    await fetch(SB_URL+'/rest/v1/orthobuddy_data?user_id=eq.'+userId, {
+      method: 'DELETE',
+      headers: sbHeaders()
+    });
+    showToast('✅ Praticien supprimé');
+    loadGestionPraticiens();
+  } catch(e){ showToast('Erreur suppression', 'red'); }
 }
 
 async function updatePermission(userId, permission, value){
