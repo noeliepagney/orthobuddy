@@ -521,6 +521,8 @@ html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);colo
         <span id="nav-docs-total" style="display:none;flex-shrink:0;margin-left:auto;background:var(--bg);color:var(--text-soft);border:1px solid var(--border);border-radius:20px;font-size:10px;padding:1px 6px;"></span>
       </button>
 
+      <button class="nav-item nav-item-secondary" onclick="showPage('materiel')" id="nav-materiel" style="flex-wrap:nowrap;overflow:hidden;"><span class="nav-icon" style="flex-shrink:0;">🎲</span><span class="nav-label" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Matériel</span></button>
+
       <button class="nav-item nav-item-secondary" onclick="showPage('outils')" id="nav-outils" style="flex-wrap:nowrap;overflow:hidden;display:none;"><span class="nav-icon" style="flex-shrink:0;">🌳</span><span class="nav-label" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Outils cliniques</span></button>
 
       <!-- RÉGLAGES -->
@@ -704,6 +706,8 @@ html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);colo
       </div>
 
       <!-- OUTILS CLINIQUES -->
+      <div class="page" id="page-materiel"><div id="materiel-content" style="padding:16px;"></div></div>
+
       <div class="page" id="page-outils"><div id="outils-content" style="padding:16px;"></div></div>
 
       <!-- SETTINGS -->
@@ -3337,7 +3341,8 @@ function showPage(name, statut){
       recap:    ['📑 Récapitulatif',       "Vue d'ensemble de l'activité"],
       resultats:['💶 Résultats',           "Chiffre d'affaires & statistiques"],
       taches:   ['✅ Mes tâches',          'Suivi des actions en cours'],
-      outils:   ['🌳 Outils cliniques',    'Arbres décisionnels & références']
+      outils:   ['🌳 Outils cliniques',    'Arbres décisionnels & références'],
+      materiel: ['🎲 Matériel',              'Base de matériel orthophonique']
     };
     var t = titles[name]||[name,''];
     setTopbar(t[0], t[1]);
@@ -3348,6 +3353,7 @@ function showPage(name, statut){
   if(name==='settings'){renderSettings();setTimeout(function(){var el=document.getElementById('setting-urgence-days');if(el)el.value=(DB.settings&&DB.settings.urgenceDays!=null?DB.settings.urgenceDays:2);initLiensPublics();loadInfosPraticien();loadAdminSection();loadGestionPraticiens();updateNotifStatus();},50);}
   if(name==='taches')renderTachesPage();
   if(name==='outils')renderOutilsPage();
+  if(name==='materiel'){setTopbar('🎲 Matériel','Base de matériel orthophonique');renderMaterielPage();}
   if(name==='resultats'){setResPeriod(_resPeriod);}
   if(name==='docs'){setTopbar('📎 Mes documents','Fichiers & pièces jointes');renderDocsPage();updateDocsNav();}
   if(name==='alertes'){setTopbar('🔔 Alertes & rappels','Notifications et points d\'attention');renderAlertesPage();}
@@ -6682,6 +6688,262 @@ function getArbreSVG(id){
 
 
   return '<p style="color:#999;font-size:12px;">Arbre non disponible</p>';
+}
+
+
+
+// ═══════════════════════════════════════
+// PAGE MATÉRIEL
+// ═══════════════════════════════════════
+var _materielData = [];
+var _materielFiltre = '';
+var _materielTags = '';
+var _materielFormat = '';
+var _materielNiveau = '';
+var _materielCategorie = '';
+var _materielPage = 0;
+var _materielCategorie = '';
+var _materielDuree = '';
+var _materielJai = '';
+var _materielPageSize = 30;
+var _materielDuree = '';
+var _materielJai = '';
+
+async function renderMaterielPage(){
+  var el = document.getElementById('materiel-content');
+  if(!el) return;
+  el.innerHTML = '<div class="loading" style="padding:40px;text-align:center;color:var(--text-soft);">Chargement...</div>';
+  
+  var url = SB_URL+'/rest/v1/materiel?user_id=eq.'+getSbUserId()+'&order=titre.asc&select=*';
+  var r = await fetch(url, {headers: {...sbHeaders(), 'Range-Unit':'items', 'Range':'0-9999'}});
+  _materielData = await r.json();
+  if(!Array.isArray(_materielData)) _materielData = [];
+  
+  _materielPage = 0;
+  renderMaterielUI();
+}
+
+function getMaterielFiltres(){
+  var data = _materielData;
+  if(_materielFiltre){
+    var q = _materielFiltre.toLowerCase();
+    data = data.filter(function(m){
+      return (m.titre||'').toLowerCase().includes(q)
+        || (m.auteur||'').toLowerCase().includes(q)
+        || (m.editeur||'').toLowerCase().includes(q)
+        || (m.tags||'').toLowerCase().includes(q)
+        || (m.description||'').toLowerCase().includes(q);
+    });
+  }
+  if(_materielCategorie) data = data.filter(function(m){ return (m.categorie||'').toLowerCase().includes(_materielCategorie.toLowerCase()); });
+  if(_materielFormat) data = data.filter(function(m){ return (m.format||'').toLowerCase().includes(_materielFormat.toLowerCase()); });
+  if(_materielNiveau) data = data.filter(function(m){ return (m.niveau||'').toLowerCase().includes(_materielNiveau.toLowerCase()); });
+  if(_materielTags) data = data.filter(function(m){ return (m.tags||'').toLowerCase().includes(_materielTags.toLowerCase()); });
+  if(_materielDuree) data = data.filter(function(m){ return (m.duree||'').toLowerCase().includes(_materielDuree.toLowerCase()); });
+  if(_materielJai==='oui') data = data.filter(function(m){ return m.j_ai===true; });
+  if(_materielJai==='non') data = data.filter(function(m){ return !m.j_ai; });
+  return data;
+  return data;
+}
+
+function renderMaterielUI(){
+  var el = document.getElementById('materiel-content');
+  if(!el) return;
+  
+  var filtered = getMaterielFiltres();
+  var total = filtered.length;
+  var start = _materielPage * _materielPageSize;
+  var page = filtered.slice(start, start + _materielPageSize);
+  
+  // Extraire valeurs uniques pour filtres
+  var cats = [...new Set(_materielData.map(function(m){return m.categorie;}).filter(Boolean))].sort();
+  var formats = [...new Set(_materielData.map(function(m){return m.format;}).filter(Boolean))].sort();
+  
+  var h = '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:8px;">';
+  h += '<div style="font-size:13px;color:var(--text-soft);">'+total+' matériel'+(total>1?'s':'')+(total<_materielData.length?' sur '+_materielData.length:'')+'</div>';
+  h += '<button class="btn btn-sm btn-green" onclick="openMaterielModal(null)">+ Ajouter</button>';
+  h += '</div>';
+  
+  // Barre de recherche
+  var niveaux = [...new Set(_materielData.map(function(m){return m.niveau;}).filter(Boolean))].sort();
+  var durees = [...new Set(_materielData.map(function(m){return m.duree;}).filter(Boolean))].sort();
+  var sel = 'padding:7px 10px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:12px;background:white;';
+  h += '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;">';
+  h += '<input type="text" placeholder="🔍 Rechercher titre, auteur, tag..." value="'+(_materielFiltre||'')+'" oninput="_materielFiltre=this.value;_materielPage=0;renderMaterielUI()" style="flex:1;min-width:200px;padding:8px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:13px;">';
+  h += '</div>';
+  h += '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;">';
+  h += '<select onchange="_materielCategorie=this.value;_materielPage=0;renderMaterielUI()" style="'+sel+'">';
+  h += '<option value="">Toutes catégories</option>';
+  cats.forEach(function(c){ h += '<option value="'+c+'"'+(c===_materielCategorie?' selected':'')+'>'+c+'</option>'; });
+  h += '</select>';
+  h += '<select onchange="_materielFormat=this.value;_materielPage=0;renderMaterielUI()" style="'+sel+'">';
+  h += '<option value="">Tous formats</option>';
+  formats.forEach(function(f){ h += '<option value="'+f+'"'+(f===_materielFormat?' selected':'')+'>'+f+'</option>'; });
+  h += '</select>';
+  h += '<select onchange="_materielNiveau=this.value;_materielPage=0;renderMaterielUI()" style="'+sel+'">';
+  h += '<option value="">Tous niveaux</option>';
+  niveaux.forEach(function(n){ h += '<option value="'+n+'"'+(_materielNiveau===n?' selected':'')+'>'+n+'</option>'; });
+  h += '</select>';
+  h += '<select onchange="_materielDuree=this.value;_materielPage=0;renderMaterielUI()" style="'+sel+'">';
+  h += '<option value="">Toutes durées</option>';
+  durees.forEach(function(d){ h += '<option value="'+d+'"'+(_materielDuree===d?' selected':'')+'>'+d+'</option>'; });
+  h += '</select>';
+  h += '<select onchange="_materielJai=this.value;_materielPage=0;renderMaterielUI()" style="'+sel+'">';
+  h += '<option value="">J\'ai / J\'ai pas</option>';
+  h += '<option value="oui"'+((_materielJai==='oui')?' selected':'')+'>✅ Je possède</option>';
+  h += '<option value="non"'+((_materielJai==='non')?' selected':'')+'>❌ Je ne possède pas</option>';
+  h += '</select>';
+  if(_materielFiltre||_materielCategorie||_materielFormat||_materielNiveau||_materielTags||_materielDuree||_materielJai){
+    h += '<button class="btn btn-sm" onclick="_materielFiltre=\'\';_materielCategorie=\'\';_materielFormat=\'\';_materielNiveau=\'\';_materielTags=\'\';_materielDuree=\'\';_materielJai=\'\';_materielPage=0;renderMaterielUI()" style="white-space:nowrap;">✕ Effacer</button>';
+  }
+  h += '</div>';
+  
+  // Liste
+  if(!page.length){
+    h += '<div style="text-align:center;padding:40px;color:var(--text-soft);">Aucun matériel trouvé.</div>';
+  } else {
+    h += '<div style="border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;background:var(--surface);">';
+    page.forEach(function(m){
+      var tags = (m.tags||'').split(',').map(function(t){return t.trim();}).filter(Boolean).slice(0,3);
+      h += '<div data-mid="'+m.id+'" onclick="openMaterielModal(this.dataset.mid)" style="display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid var(--border);cursor:pointer;">';
+      h += '<div style="flex:1;min-width:0;">';
+      h += '<div style="font-size:13px;font-weight:500;color:var(--text);display:flex;align-items:center;gap:6px;flex-wrap:wrap;">';
+      h += (m.titre||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+      if(!m.j_ai) h += '<span style="font-size:10px;background:#FDECEA;color:#C0392B;padding:1px 6px;border-radius:8px;">Non possédé</span>';
+      h += '</div>';
+      h += '<div style="font-size:11px;color:var(--text-soft);margin-top:2px;display:flex;gap:6px;flex-wrap:wrap;">';
+      if(m.auteur) h += '<span>'+m.auteur+'</span>';
+      if(m.editeur) h += '<span>· '+m.editeur+'</span>';
+      if(m.format) h += '<span style="background:var(--bg);padding:0 5px;border-radius:6px;border:1px solid var(--border);">'+m.format+'</span>';
+      if(m.duree) h += '<span style="color:var(--text-soft);">⏱ '+m.duree+'</span>';
+      h += '</div>';
+      if(tags.length){
+        h += '<div style="margin-top:4px;display:flex;gap:4px;flex-wrap:wrap;">';
+        tags.forEach(function(t){ h += '<span style="font-size:10px;background:var(--green-ll);color:var(--green-mid);padding:1px 7px;border-radius:10px;">'+t+'</span>'; });
+        h += '</div>';
+      }
+      h += '</div>';
+      if(m.lien) h += '<a href="'+m.lien+'" target="_blank" onclick="event.stopPropagation()" style="font-size:18px;text-decoration:none;flex-shrink:0;" title="Voir en ligne">🔗</a>';
+      h += '</div>';
+    });
+    h += '</div>';
+  }
+  
+  // Pagination
+  if(total > _materielPageSize){
+    var nbPages = Math.ceil(total/_materielPageSize);
+    h += '<div style="display:flex;justify-content:center;gap:8px;margin-top:16px;">';
+    if(_materielPage>0) h += '<button class="btn btn-sm btn-ghost" onclick="_materielPage--;renderMaterielUI()">‹ Précédent</button>';
+    h += '<span style="font-size:12px;color:var(--text-soft);padding:6px 10px;">Page '+(_materielPage+1)+'/'+nbPages+'</span>';
+    if(_materielPage<nbPages-1) h += '<button class="btn btn-sm btn-ghost" onclick="_materielPage++;renderMaterielUI()">Suivant ›</button>';
+    h += '</div>';
+  }
+  
+  el.innerHTML = h;
+}
+
+// Modal fiche matériel
+var _materielEditId = null;
+
+function openMaterielModal(id){
+  _materielEditId = id;
+  var m = id ? _materielData.find(function(x){return x.id===id;}) : null;
+  var h = '<div style="padding:20px;max-width:600px;margin:0 auto;">';
+  h += '<div style="font-size:16px;font-weight:600;margin-bottom:16px;">'+(m?m.titre:'Nouveau matériel')+'</div>';
+  if(m){
+    h += '<div style="display:flex;flex-direction:column;gap:10px;">';
+    if(m.description) h += '<div style="font-size:13px;color:var(--text-soft);line-height:1.5;">'+m.description+'</div>';
+    h += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">';
+    if(m.auteur) h += '<div><span style="font-size:11px;color:var(--text-soft);">Auteur</span><div style="font-size:13px;">'+m.auteur+'</div></div>';
+    if(m.editeur) h += '<div><span style="font-size:11px;color:var(--text-soft);">Éditeur</span><div style="font-size:13px;">'+m.editeur+'</div></div>';
+    if(m.format) h += '<div><span style="font-size:11px;color:var(--text-soft);">Format</span><div style="font-size:13px;">'+m.format+'</div></div>';
+    if(m.duree) h += '<div><span style="font-size:11px;color:var(--text-soft);">Durée</span><div style="font-size:13px;">'+m.duree+'</div></div>';
+    if(m.niveau) h += '<div><span style="font-size:11px;color:var(--text-soft);">Niveau</span><div style="font-size:13px;">'+m.niveau+'</div></div>';
+    if(m.localisation) h += '<div><span style="font-size:11px;color:var(--text-soft);">Rangé</span><div style="font-size:13px;">'+m.localisation+'</div></div>';
+    if(m.prix_achat) h += '<div><span style="font-size:11px;color:var(--text-soft);">Prix</span><div style="font-size:13px;">'+m.prix_achat+' €</div></div>';
+    if(m.statut) h += '<div><span style="font-size:11px;color:var(--text-soft);">Statut</span><div style="font-size:13px;">'+m.statut+'</div></div>';
+    h += '</div>';
+    if(m.tags){
+      var tags = m.tags.split(',').map(function(t){return t.trim();}).filter(Boolean);
+      h += '<div style="display:flex;gap:4px;flex-wrap:wrap;">';
+      tags.forEach(function(t){ h += '<span style="font-size:11px;background:var(--green-ll);color:var(--green-mid);padding:2px 8px;border-radius:10px;">'+t+'</span>'; });
+      h += '</div>';
+    }
+    if(m.lien) h += '<a href="'+m.lien+'" target="_blank" class="btn btn-sm btn-ghost" style="display:inline-flex;align-items:center;gap:6px;">🔗 Voir en ligne</a>';
+    h += '<div style="display:flex;gap:8px;margin-top:8px;">';
+    h += '<button class="btn btn-sm btn-ghost" onclick="editMateriel(\''+m.id+'\')">✏️ Modifier</button>';
+    h += '<button class="btn btn-sm" style="background:#FDECEA;color:#C0392B;" onclick="deleteMateriel(\''+m.id+'\')">🗑 Supprimer</button>';
+    h += '</div>';
+    h += '</div>';
+  }
+  h += '</div>';
+  document.getElementById('modal-materiel-body').innerHTML = h;
+  openModal('modal-materiel');
+}
+
+async function deleteMateriel(id){
+  if(!confirm('Supprimer ce matériel ?')) return;
+  await fetch(SB_URL+'/rest/v1/materiel?id=eq.'+id, {method:'DELETE', headers:sbHeaders()});
+  _materielData = _materielData.filter(function(m){return m.id!==id;});
+  closeModal('modal-materiel');
+  renderMaterielUI();
+  showToast('Matériel supprimé');
+}
+
+function editMateriel(id){
+  var m = _materielData.find(function(x){return x.id===id;});
+  if(!m) return;
+  var h = '<div style="padding:20px;max-width:600px;margin:0 auto;display:flex;flex-direction:column;gap:10px;">';
+  h += '<div style="font-size:16px;font-weight:600;margin-bottom:4px;">Modifier le matériel</div>';
+  h += '<div class="field"><label>Titre</label><input type="text" id="medit-titre" value="'+m.titre.replace(/"/g,'&quot;')+'"></div>';
+  h += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">';
+  h += '<div class="field"><label>Auteur</label><input type="text" id="medit-auteur" value="'+(m.auteur||'').replace(/"/g,'&quot;')+'"></div>';
+  h += '<div class="field"><label>Éditeur</label><input type="text" id="medit-editeur" value="'+(m.editeur||'').replace(/"/g,'&quot;')+'"></div>';
+  h += '<div class="field"><label>Catégorie</label><input type="text" id="medit-categorie" value="'+(m.categorie||'')+'"></div>';
+  h += '<div class="field"><label>Format</label><input type="text" id="medit-format" value="'+(m.format||'')+'"></div>';
+  h += '<div class="field"><label>Durée</label><input type="text" id="medit-duree" value="'+(m.duree||'')+'"></div>';
+  h += '<div class="field"><label>Niveau</label><input type="text" id="medit-niveau" value="'+(m.niveau||'')+'"></div>';
+  h += '<div class="field"><label>Rangé</label><input type="text" id="medit-localisation" value="'+(m.localisation||'')+'"></div>';
+  h += '<div class="field"><label>Prix</label><input type="number" id="medit-prix" value="'+(m.prix_achat||'')+'"></div>';
+  h += '</div>';
+  h += '<div class="field"><label>Tags (séparés par virgule)</label><input type="text" id="medit-tags" value="'+(m.tags||'').replace(/"/g,'&quot;')+'"></div>';
+  h += '<div class="field"><label>Lien</label><input type="text" id="medit-lien" value="'+(m.lien||'')+'"></div>';
+  h += '<div class="field"><label>Description</label><textarea id="medit-desc" style="min-height:80px;">'+(m.description||'')+'</textarea></div>';
+  h += '<div style="display:flex;align-items:center;gap:8px;"><input type="checkbox" id="medit-jai" '+(m.j_ai?'checked':'')+' style="width:16px;height:16px;"><label for="medit-jai" style="font-size:13px;">Je possède ce matériel</label></div>';
+  h += '<button class="btn btn-green" onclick="saveMateriel(\''+id+'\')">Enregistrer</button>';
+  h += '</div>';
+  document.getElementById('modal-materiel-body').innerHTML = h;
+}
+
+async function saveMateriel(id){
+  var data = {
+    titre: document.getElementById('medit-titre').value.trim(),
+    auteur: document.getElementById('medit-auteur').value.trim() || null,
+    editeur: document.getElementById('medit-editeur').value.trim() || null,
+    categorie: document.getElementById('medit-categorie').value.trim() || null,
+    format: document.getElementById('medit-format').value.trim() || null,
+    duree: document.getElementById('medit-duree').value.trim() || null,
+    niveau: document.getElementById('medit-niveau').value.trim() || null,
+    localisation: document.getElementById('medit-localisation').value.trim() || null,
+    prix_achat: parseFloat(document.getElementById('medit-prix').value) || null,
+    tags: document.getElementById('medit-tags').value.trim() || null,
+    lien: document.getElementById('medit-lien').value.trim() || null,
+    description: document.getElementById('medit-desc').value.trim() || null,
+    j_ai: document.getElementById('medit-jai').checked,
+  };
+  if(id){
+    await fetch(SB_URL+'/rest/v1/materiel?id=eq.'+id, {method:'PATCH', headers:{...sbHeaders(),'Content-Type':'application/json'}, body:JSON.stringify(data)});
+    var idx = _materielData.findIndex(function(m){return m.id===id;});
+    if(idx>=0) _materielData[idx] = {..._materielData[idx], ...data};
+  } else {
+    data.user_id = getSbUserId();
+    var r = await fetch(SB_URL+'/rest/v1/materiel', {method:'POST', headers:{...sbHeaders(),'Content-Type':'application/json','Prefer':'return=representation'}, body:JSON.stringify(data)});
+    var newM = await r.json();
+    if(newM && newM[0]) _materielData.unshift(newM[0]);
+  }
+  closeModal('modal-materiel');
+  renderMaterielUI();
+  showToast('Matériel enregistré ✅');
 }
 
 
@@ -15372,6 +15634,15 @@ function activerModeleFromModal(mid){
     <span style="color:rgba(255,255,255,.8);font-size:12px;">Pour enregistrer en PDF : choisissez "Enregistrer en PDF" dans la boîte de dialogue d'impression</span>
   </div>
   <iframe id="print-frame" style="flex:1;border:none;width:100%;"></iframe>
+</div>
+<div class="overlay" id="modal-materiel" onclick="if(event.target===this)closeModal('modal-materiel')">
+  <div class="modal" style="max-width:640px;max-height:85vh;overflow-y:auto;">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--border);">
+      <div class="modal-title" id="modal-materiel-title">Matériel</div>
+      <button class="modal-close" onclick="closeModal('modal-materiel')"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+    </div>
+    <div id="modal-materiel-body" style="padding:0;"></div>
+  </div>
 </div>
 </body>
 </html>
