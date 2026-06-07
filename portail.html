@@ -51,6 +51,17 @@
     .footer-links{text-align:center;padding:20px;font-size:11px;color:#888;}
     .footer-links a{color:#1D9E75;}
     .annule-card{background:#FDECEA;border:1px solid #F5C6C6;border-radius:12px;padding:24px;text-align:center;margin-bottom:12px;}
+    .view-toggle{display:flex;gap:4px;margin-bottom:16px;background:#F4F6F3;border-radius:8px;padding:3px;}
+    .view-btn{flex:1;padding:7px;border:none;background:none;cursor:pointer;font-size:12px;font-weight:500;color:#5F5E5A;border-radius:6px;transition:all .15s;}
+    .view-btn.active{background:white;color:#1D9E75;box-shadow:0 1px 3px rgba(0,0,0,.1);}
+    .week-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:12px;}
+    .week-day-col{min-width:0;}
+    .week-day-header{font-size:10px;font-weight:600;color:#5F5E5A;text-align:center;padding:4px 2px;text-transform:uppercase;border-bottom:1px solid #E0E0D8;margin-bottom:4px;}
+    .week-day-header.today{color:#1D9E75;}
+    .week-slot{background:#E1F5EE;border:1px solid #A8DFC9;border-radius:5px;padding:3px 2px;margin-bottom:3px;cursor:pointer;text-align:center;font-size:10px;font-weight:500;color:#0F6E56;}
+    .week-slot.selected{background:#1D9E75;color:white;border-color:#1D9E75;}
+    .week-slot:hover{background:#1D9E75;color:white;}
+    .week-day-empty{text-align:center;color:#E0E0D8;padding:6px 0;font-size:14px;}
   </style>
 </head>
 <body>
@@ -85,6 +96,7 @@
     var _reservations = [];
     var _weekOffset = 0;
     var _selectedSlots = [];
+    var _viewMode = 'semaine';
 
     function showToast(msg, type='ok'){
       var t = document.getElementById('toast');
@@ -238,93 +250,66 @@
     }
 
     async function renderReserver(){
-      var el = document.getElementById('tab-reserver');
-      el.innerHTML = '<div class="loading">Chargement...</div>';
-
-      // Compter les réservations actives cette semaine
-      var actives = (_reservations||[]).filter(r=>r.statut==='confirmee');
-      if(actives.length >= 2){
-        el.innerHTML = '<div class="card"><div class="empty-icon" style="text-align:center;padding:20px 0;">📅</div><p style="text-align:center;font-size:13px;color:#5F5E5A;">Vous avez déjà '+actives.length+' RDV réservé'+(actives.length>1?'s':'')+'. Maximum 2 réservations actives.</p></div>';
-        return;
-      }
-
-      var creneaux = await sb('creneaux?statut=eq.libre&user_id=eq.'+_patient.user_id+'&order=date.asc,heure_debut.asc&select=*');
+      var el = document.getElementById("tab-reserver");
+      el.innerHTML = "<div class=\"loading\">Chargement...</div>";
+      var creneaux = await sb("creneaux?statut=eq.libre&user_id=eq."+_patient.user_id+"&order=date.asc,heure_debut.asc&select=*");
       _creneaux = creneaux;
-
-      if(!creneaux.length){
-        el.innerHTML = '<div class="empty"><div class="empty-icon">📅</div><p>Aucun créneau disponible pour le moment.</p></div>';
-        return;
-      }
-
-      // Vue semaine
-      var today = new Date();
-      today.setHours(0,0,0,0);
-      var weekStart = new Date(today);
-      weekStart.setDate(today.getDate() - today.getDay() + 1 + _weekOffset*7);
-      var weekEnd = new Date(weekStart);
-      weekEnd.setDate(weekStart.getDate()+6);
-
-      var weekLabel = weekStart.toLocaleDateString('fr-FR',{day:'numeric',month:'long'})
-        +' – '+weekEnd.toLocaleDateString('fr-FR',{day:'numeric',month:'long',year:'numeric'});
-
-      var h = '<div class="week-nav">'
-        + '<button class="week-btn" onclick="_weekOffset--;renderReserver()">‹</button>'
-        + '<div class="week-label">'+weekLabel+'</div>'
-        + '<button class="week-btn" onclick="_weekOffset++;renderReserver()">›</button>'
-        + '</div>';
-
-      var slotsThisWeek = creneaux.filter(function(c){
-        var d = new Date(c.date+'T00:00:00');
-        return d >= weekStart && d <= weekEnd;
-      });
-
-      if(!slotsThisWeek.length){
-        h += '<div style="text-align:center;padding:24px;color:#888;font-size:13px;">Aucun créneau cette semaine.</div>';
-      } else {
-        var parDate = {};
-        slotsThisWeek.forEach(function(c){
-          if(!parDate[c.date]) parDate[c.date]=[];
-          parDate[c.date].push(c);
-        });
-        Object.keys(parDate).sort().forEach(function(date){
-          var dateStr = new Date(date+'T00:00:00').toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long'});
-          h += '<div class="day-header">'+dateStr+'</div>';
-          parDate[date].forEach(function(c){
-            var selected = _selectedSlots.includes(c.id);
-            h += '<div class="creneau-slot'+(selected?' selected':'')+'" onclick="toggleSlot(\''+c.id+'\')">'
-              + '<div><div style="font-weight:500;font-size:13px;">'+c.heure_debut.slice(0,5)+' – '+c.heure_fin.slice(0,5)+'</div></div>'
-              + '<span class="slot-check">'+(selected?'✅':'○')+'</span>'
-              + '</div>';
-          });
-        });
-      }
-
-      var maxSlots = 2 - actives.length;
-      h += '<div style="margin-top:16px;">';
-      if(_selectedSlots.length > 0){
-        h += '<button class="btn btn-green" onclick="confirmerReservation()" style="width:100%;">Réserver '+_selectedSlots.length+' créneau'+(_selectedSlots.length>1?'x':'')+' sélectionné'+(_selectedSlots.length>1?'s':'')+'</button>';
-      }
-      if(maxSlots > 1){
-        h += '<div style="font-size:11px;color:#888;text-align:center;margin-top:8px;">Vous pouvez sélectionner jusqu\'à '+maxSlots+' créneau'+(maxSlots>1?'x':'')+' par ouverture.</div>';
+      if(!creneaux.length){ el.innerHTML = "<div class=\"empty\"><p>Aucun creneau disponible.</p></div>"; return; }
+      var h = "<div class=\"view-toggle\"><button class=\"view-btn" + (_viewMode==="semaine"?" active":"") + "\" onclick=\"_viewMode='semaine';renderReserver()\">Semaine</button><button class=\"view-btn" + (_viewMode==="liste"?" active":"") + "\" onclick=\"_viewMode='liste';renderReserver()\">Liste</button></div>";
+      if(_viewMode === "liste"){ h += renderVueListe(creneaux); } else { h += renderVueSemaine(creneaux); }
+      h += "<div style=\"margin-top:16px;\">";
+      if(_selectedSlots.length > 0){ h += "<button class=\"btn btn-green\" onclick=\"confirmerReservation()\" style=\"width:100%;\">Reserver "+_selectedSlots.length+" creneau"+(_selectedSlots.length>1?"x":"")+" selectionne"+(_selectedSlots.length>1?"s":"")+"</button>"; }
+      h += "</div>";
+      el.innerHTML = h;
+    }
+    function renderVueSemaine(creneaux){
+      var today = new Date(); today.setHours(0,0,0,0);
+      var dow = today.getDay(); var diff = (dow===0)?-6:1-dow;
+      var mon = new Date(today); mon.setDate(today.getDate()+diff);
+      if(_weekOffset<0) _weekOffset=0;
+      var weekStart = new Date(mon); weekStart.setDate(mon.getDate()+_weekOffset*7);
+      var weekEnd = new Date(weekStart); weekEnd.setDate(weekStart.getDate()+6);
+      var weekLabel = weekStart.toLocaleDateString('fr-FR',{day:'numeric',month:'long'})+' - '+weekEnd.toLocaleDateString('fr-FR',{day:'numeric',month:'long',year:'numeric'});
+      var prevDis = (_weekOffset<=0)?' disabled':'';
+      var h = '<div class="week-nav"><button class="week-btn"'+prevDis+' onclick="if(_weekOffset>0){_weekOffset--;renderReserver();}">&#8249;</button><div class="week-label">'+weekLabel+'</div><button class="week-btn" onclick="_weekOffset++;renderReserver()">&#8250;</button></div>';
+      var jours = ['Lun','Mar','Mer','Jeu','Ven','Sam','Dim'];
+      h += '<div class="week-grid">';
+      for(var i=0;i<7;i++){
+        var day = new Date(weekStart); day.setDate(weekStart.getDate()+i);
+        var dateStr = day.getFullYear()+'-'+String(day.getMonth()+1).padStart(2,'0')+'-'+String(day.getDate()).padStart(2,'0');
+        var isToday = day.getTime()===today.getTime();
+        h += '<div class="week-day-col">';
+        h += '<div class="week-day-header'+(isToday?' today':'')+'">'+jours[i]+'<br><span style="font-size:11px;font-weight:400;">'+day.getDate()+'</span></div>';
+        var daySlots = creneaux.filter(function(c){ return c.date===dateStr; });
+        if(!daySlots.length){ h += '<div class="week-day-empty">—</div>'; }
+        else { daySlots.forEach(function(c){ var sel=_selectedSlots.includes(c.id); h+='<div class="week-slot'+(sel?' selected':'')+'" onclick="toggleSlot(\''+c.id+'\')">'+c.heure_debut.slice(0,5)+'</div>'; }); }
+        h += '</div>';
       }
       h += '</div>';
+      return h;
+    }
 
-      el.innerHTML = h;
+    function renderVueListe(creneaux){
+      var today=new Date(); today.setHours(0,0,0,0);
+      var futurs=creneaux.filter(function(c){ return new Date(c.date+'T00:00:00')>=today; });
+      if(!futurs.length) return '<div style="text-align:center;padding:24px;color:#888;">Aucun creneau disponible.</div>';
+      var parDate={};
+      futurs.forEach(function(c){ if(!parDate[c.date]) parDate[c.date]=[]; parDate[c.date].push(c); });
+      var h='';
+      Object.keys(parDate).sort().forEach(function(date){
+        var ds=new Date(date+'T00:00:00').toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long'});
+        h+='<div class="day-header" style="text-transform:capitalize;">'+ds+'</div>';
+        parDate[date].forEach(function(c){
+          var sel=_selectedSlots.includes(c.id);
+          h+='<div class="creneau-slot'+(sel?' selected':'')+'" onclick="toggleSlot(\''+c.id+'\')"><div style="font-weight:500;font-size:13px;">'+c.heure_debut.slice(0,5)+' - '+c.heure_fin.slice(0,5)+'</div><span class="slot-check">'+(sel?'✅':'○')+'</span></div>';
+        });
+      });
+      return h;
     }
 
     function toggleSlot(cid){
-      var idx = _selectedSlots.indexOf(cid);
-      var actives = (_reservations||[]).filter(r=>r.statut==='confirmee').length;
-      var maxSlots = 2 - actives;
-      if(idx>=0){
-        _selectedSlots.splice(idx,1);
-      } else {
-        if(_selectedSlots.length >= maxSlots){
-          showToast('Maximum '+maxSlots+' créneau'+(maxSlots>1?'x':'')+' sélectionnable'+(maxSlots>1?'s':''),'error');
-          return;
-        }
-        _selectedSlots.push(cid);
-      }
+      var idx=_selectedSlots.indexOf(cid);
+      if(idx>=0){ _selectedSlots.splice(idx,1); } else { _selectedSlots.push(cid); }
       renderReserver();
     }
 
