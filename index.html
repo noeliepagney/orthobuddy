@@ -200,9 +200,9 @@ html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);colo
 .gir-actions{display:flex;gap:8px;flex-wrap:wrap;}
 .filter-chip{font-size:11px;padding:3px 10px;border:1px solid var(--border);border-radius:20px;cursor:pointer;background:var(--bg);color:var(--text-mid);transition:all .12s;white-space:nowrap;display:inline-flex;align-items:center;gap:4px;}
 .filter-chip:hover{border-color:var(--green);color:var(--green);}
-.filter-chip.active{background:var(--green);color:white;border-color:var(--green);}
-.filter-chip.active-collab{background:#EA580C;color:white;border-color:#EA580C;}
-.filter-chip.active-alert{background:var(--red);color:white;border-color:var(--red);}
+.filter-chip.active{background:var(--green-ll);color:var(--green-mid);border-color:var(--green-b);}
+.filter-chip.active-collab{background:#FFF7ED;color:#C2410C;border-color:#FDBA74;}
+.filter-chip.active-alert{background:var(--red-l);color:var(--red);border-color:var(--red-b);}
 .filter-chip.active-parc{border-color:var(--green);color:var(--green);background:var(--green-ll);}
 .patient-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:8px;box-shadow:var(--shadow);overflow:hidden;transition:border-color .15s;position:relative;z-index:1;}
 .patient-card.expanded{border-color:#9FE1CB;}
@@ -3976,7 +3976,7 @@ function renderPatients(){
             ${getAgeEmoji(age,isUnder6)}
             ${p.domicile?'<span title="Séances à domicile" style="font-size:13px;">🏠</span>':''}
 
-            ${p.isNew?'<span title="Importé récemment" style="font-size:10px;background:#3b82f6;color:white;border-radius:8px;padding:1px 7px;font-weight:600;letter-spacing:.3px;">NEW</span>':''}
+            ${p.isNew?'<span title="Importé récemment" style="font-size:10px;background:#EFF6FF;color:#3B82F6;border:1px solid #BFDBFE;border-radius:8px;padding:1px 7px;font-weight:600;letter-spacing:.3px;">NEW</span>':''}
             ${isPerdVue(p)?'<span title="Pas de séance depuis 4 semaines" style="font-size:10px;background:#FEF3EA;color:#C4723A;border:1px solid #F0B88A;border-radius:8px;padding:1px 7px;font-weight:600;">Perdu de vue</span>':''}
             ${hasAlerteCarteVitale(p)?'<span class="badge-cartevitale" title="3 séances consécutives sans carte vitale" style="font-size:10px;background:#FDF4E3;color:#B87C2A;border:1px solid #E8B96A;border-radius:8px;padding:1px 7px;font-weight:600;">⚠ Carte vitale</span>':''}
             ${p.enCollab?'<span title="En collaboration" style="font-size:11px;opacity:.55;">🤝</span>':''}
@@ -4140,7 +4140,7 @@ function renderAttenteList(){
         +'<span style="font-size:13px;">'+pc.emoji+'</span>'
         +'<span style="font-size:11px;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">'+pc.nom+'</span>'
         +'<div style="flex:2;background:var(--border);border-radius:4px;height:6px;overflow:hidden;">'
-        +'<div style="height:6px;background:#6D28D9;border-radius:4px;width:'+pct+'%;"></div></div>'
+        +'<div style="height:6px;background:var(--green);border-radius:4px;width:'+pct+'%;"></div></div>'
         +'<span style="font-size:10px;color:var(--text-soft);min-width:20px;text-align:right;">'+parParcours[pcid]+'</span>'
         +'</div>';
     }).join('');
@@ -4229,9 +4229,9 @@ function renderAttenteList(){
     +'" oninput="onAttenteSearch(this.value)" style="font-size:11px;padding:3px 10px;border:1px solid var(--border);border-radius:20px;background:var(--bg);outline:none;min-width:130px;">'
     +'<select onchange="onAttenteFiltreSelect(this,\'parcours\')" style="'+_sStyle+'">'+_pOpts+'</select>'
     +'<select onchange="onAttenteFiltreSelect(this,\'creneaux\')" style="'+_sStyle+'">'+_cOpts+'</select>'
-    +'<span class="'+_chipU+'" onclick="toggleAttenteFiltre(\'alertes\',\'urgent\')">🔴 Urgent</span>'
-    +'<span class="'+_chipP+'" onclick="toggleAttenteFiltre(\'alertes\',\'prioritaire\')">🟡 Prioritaire</span>'
-    +'<span class="'+_chip3+'" onclick="toggleAttenteFiltre(\'alertes\',\'3mois\')">⏰ +3 mois</span>'
+    +'<span class="'+_chipU+'" onclick="toggleAttenteFiltre(\'alertes\',\'urgent\')">🚨 Urgent</span>'
+    +'<span class="'+_chipP+'" onclick="toggleAttenteFiltre(\'alertes\',\'prioritaire\')">⚡ Prioritaire</span>'
+    +'<span class="'+_chip3+'" onclick="toggleAttenteFiltre(\'alertes\',\'3mois\')">⏳ +3 mois</span>'
     +'<span class="'+_chipC+'" onclick="toggleAttenteFiltre(\'collab\')">🤝 Collab</span>'
     +'<span class="'+_chipD+'" onclick="toggleAttenteFiltre(\'domicile\')">🏠 Domicile</span>'
     +'<span class="'+_chipN+'" onclick="toggleAttenteFiltre(\'nouveaux\')">🆕 Nouveaux</span>'
@@ -4264,8 +4264,8 @@ function renderAttenteList(){
     var moisAttente = Math.floor(joursAttente/30);
     var isAlert3m = joursAttente >= 90;
     var urgBadge = '';
-    if(a.urgence==='urgent') urgBadge='<span style="font-size:10px;font-weight:700;background:var(--red);color:white;padding:1px 7px;border-radius:10px;">\ud83d\udd34 Urgent</span>';
-    else if(a.urgence==='prioritaire') urgBadge='<span style="font-size:10px;font-weight:700;background:var(--amber);color:white;padding:1px 7px;border-radius:10px;">\ud83d\udfe1 Prioritaire</span>';
+    if(a.urgence==='urgent') urgBadge='<span style="font-size:10px;font-weight:600;background:var(--red-l);color:var(--red);border:1px solid var(--red-b);padding:1px 7px;border-radius:10px;">Urgent</span>';
+    else if(a.urgence==='prioritaire') urgBadge='<span style="font-size:10px;font-weight:600;background:var(--amber-l);color:var(--amber);border:1px solid var(--amber-b);padding:1px 7px;border-radius:10px;">Prioritaire</span>';
     var parcours = (a.parcours||[]).map(function(pid){
       var pc=DB.parcours.find(function(x){return x.id===pid;});
       return pc?'<span title="'+pc.nom+'">'+pc.emoji+'</span>':'';
@@ -4274,16 +4274,16 @@ function renderAttenteList(){
     var renouvellements = a.renouvellements||0;
     var renouvelBadge = renouvellements>0 ? '<span style="font-size:10px;background:#EDE9FE;color:#6D28D9;border:1px solid #C4B5FD;padding:1px 7px;border-radius:10px;">\ud83d\udd04 Renouvel\u00e9 \xd7'+renouvellements+'</span>' : '';
     var contact = a.nomContact && a.nomContact!==(a.prenom+' '+a.nom) ? a.nomContact+(a.lienContact?' ('+a.lienContact+')':'') : '';
-    var _collabB = a.collab ? '<span style="font-size:10px;background:#EDE9FE;color:#6D28D9;padding:1px 6px;border-radius:8px;">🤝</span>' : '';
+    var _collabB = a.collab ? '<span style="font-size:10px;background:var(--green-ll);color:var(--green-mid);padding:1px 6px;border-radius:8px;">🤝</span>' : '';
     var _domicileB = a.domicile ? '<span style="font-size:10px;background:#EFF6FF;color:#1D4ED8;padding:1px 6px;border-radius:8px;">🏠</span>' : '';
     var borderStyle = isAlert3m||a.urgence==='urgent' ? 'border-left:3px solid var(--red);' : a.urgence==='prioritaire' ? 'border-left:3px solid var(--amber);' : '';
     var initials = ((a.prenom||'?')[0]+(a.nom||'?')[0]).toUpperCase();
     var dateStr = a.dateEntree ? 'En attente depuis le '+new Date(a.dateEntree+'T00:00:00').toLocaleDateString('fr-FR') : '';
     var card = '<div class="patient-card" data-attente-id="'+a.id+'" style="'+borderStyle+'">'
       +'<div class="patient-row" onclick="toggleAttenteCard(this)">'
-      +'<div class="avatar" style="background:linear-gradient(135deg,#6D28D9,#4C1D95);color:white;font-size:11px;font-weight:700;">'+initials+'</div>'
+      +'<div class="avatar" style="background:linear-gradient(135deg,var(--green),var(--green-mid));color:white;font-size:11px;font-weight:700;">'+initials+'</div>'
       +'<div class="patient-info">'
-      +(a.isNew?'<span style="font-size:10px;background:#3b82f6;color:white;border-radius:8px;padding:1px 7px;font-weight:600;margin-right:4px;">NEW</span>':'')
+      +(a.isNew?'<span style="font-size:10px;background:#EFF6FF;color:#3B82F6;border:1px solid #BFDBFE;border-radius:8px;padding:1px 7px;font-weight:600;margin-right:4px;">NEW</span>':'')
       +'<div style="font-weight:600;font-size:13px;">'+escHtml(a.nom||'')+' '+escHtml(a.prenom||'')+(function(){var _age=getAge(a.ddn);var _ageStr=_age!==null?(_age+' ans'):(a.age||'');var _sexeStr=a.sexe==='F'?'F':a.sexe==='M'?'M':'';var _parts=[];if(_ageStr)_parts.push(_ageStr);if(_sexeStr)_parts.push(_sexeStr);return _parts.length?' <span style="font-size:11px;color:var(--text-soft);">'+_parts.join(' · ')+'</span>':'';}())+'</div>'
       +'<div style="font-size:11px;color:var(--text-soft);">'+dateStr+(moisAttente>0?' ('+moisAttente+' mois)':'')+'</div>'
       +(contact?'<div style="font-size:11px;color:var(--text-soft);">Contact : '+escHtml(contact)+'</div>':'')
@@ -4378,7 +4378,7 @@ function toggleAttenteCard(rowEl){
 
 function renderAttenteBody(a){
   var h = '<div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px;">';
-  if(a.collab) h += '<span style="font-size:11px;padding:4px 10px;background:#EDE9FE;color:#6D28D9;border-radius:var(--radius-sm);">🤝 Collab</span>';
+  if(a.collab) h += '<span style="font-size:11px;padding:4px 10px;background:var(--green-ll);color:var(--green-mid);border-radius:var(--radius-sm);">🤝 Collab</span>';
   if(a.domicile) h += '<span style="font-size:11px;padding:4px 10px;background:#EFF6FF;color:#1D4ED8;border-radius:var(--radius-sm);">🏠 '+(a.domicileVille||'Domicile')+'</span>';
 
   if(a.urgence && a.urgence!=='aucune' && a.urgence!=='normal'){
