@@ -6995,26 +6995,30 @@ async function deleteMateriel(id){
   showToast('Matériel supprimé');
 }
 
-function _meditAddCb(input, cls){
-  // Ajouter une case a cocher quand on tape Entree ou virgule
-  input.onkeydown = function(e){
-    if(e.key==='Enter'||e.key===','){
-      e.preventDefault();
-      var v = input.value.trim();
-      if(!v) return;
-      // Verifier si existe deja
-      var existing = [...document.querySelectorAll('.'+cls)].find(function(cb){return cb.value===v;});
-      if(existing){ existing.checked=true; input.value=''; return; }
-      var lbl = document.createElement('label');
-      lbl.style.cssText = 'display:flex;align-items:center;gap:5px;font-size:12px;cursor:pointer;padding:3px 8px;background:white;border:1px solid var(--border);border-radius:20px;';
-      var cb = document.createElement('input');
-      cb.type='checkbox'; cb.className=cls; cb.value=v; cb.checked=true;
-      cb.style.accentColor='var(--green)';
-      lbl.appendChild(cb);
-      lbl.appendChild(document.createTextNode(v));
-      input.parentNode.insertBefore(lbl, input);
-      input.value='';
-    }
+function _meditUpdateLabel(cls, labelId){
+  var vals = [...document.querySelectorAll('.'+cls+':checked')].map(function(cb){return cb.value;});
+  var lbl = document.getElementById(labelId);
+  if(lbl) lbl.textContent = vals.length ? vals.join(', ') : 'Sélectionner...';
+}
+
+function _meditAddCb(input, cls, labelId, e){
+  if(e) e.preventDefault();
+  var v = input.value.trim();
+  if(!v) return;
+  var existing = [...document.querySelectorAll('.'+cls)].find(function(cb){return cb.value===v;});
+  if(existing){ existing.checked=true; input.value=''; if(labelId)_meditUpdateLabel(cls,labelId); return; }
+  var lbl = document.createElement('label');
+  lbl.style.cssText = 'display:flex;align-items:center;gap:5px;font-size:12px;cursor:pointer;padding:3px 8px;background:white;border:1px solid var(--border);border-radius:20px;';
+  var cb = document.createElement('input');
+  cb.type='checkbox'; cb.className=cls; cb.value=v; cb.checked=true;
+  cb.style.accentColor='var(--green)';
+  if(labelId) cb.onchange=function(){_meditUpdateLabel(cls,labelId);};
+  lbl.appendChild(cb);
+  lbl.appendChild(document.createTextNode(v));
+  input.parentNode.insertBefore(lbl, input);
+  input.value='';
+  if(labelId) _meditUpdateLabel(cls,labelId);
+}
   };
 }
 
@@ -7060,30 +7064,29 @@ function editMateriel(id){
   h += _dl('dl-duree', _durees);
   h += _dl('dl-niveau', _niveaux);
   h += _dl('dl-localisation', _localisations);
-  // Categorie : cases a cocher
-  var _catVals = (m&&m.categorie||'').split('/').map(function(c){return c.trim();}).filter(Boolean);
-  var _catBoxes = _categories.map(function(cat){var chk=_catVals.includes(cat)?'checked':'';return '<label style="display:flex;align-items:center;gap:5px;font-size:12px;cursor:pointer;padding:3px 8px;background:white;border:1px solid var(--border);border-radius:20px;"><input type="checkbox" class="medit-cat-cb" value="'+cat.replace(/"/g,'&quot;')+'" '+chk+' style="accent-color:var(--green);">'+cat+'</label>';}).join('');
-  h += '<div class="field"><label>Cat&#233;gorie <span style="font-size:10px;font-weight:400;color:var(--text-soft);">(cochez tout ce qui s\'applique)</span></label><div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px;padding:8px;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-sm);">'+_catBoxes+'<input type="text" id="medit-cat-new" placeholder="+ Nouvelle..." style="border:none;background:transparent;font-size:12px;outline:none;min-width:90px;" oninput="_meditAddCb(this,\'medit-cat-cb\')"></div></div>';
-  // Format : cases a cocher
-  var _fmtVals = (m&&m.format||'').split(/[,+]/).map(function(f){return f.trim();}).filter(Boolean);
-  var _fmtBoxes = _formats.map(function(fmt){var chk=_fmtVals.includes(fmt)?'checked':'';return '<label style="display:flex;align-items:center;gap:5px;font-size:12px;cursor:pointer;padding:3px 8px;background:white;border:1px solid var(--border);border-radius:20px;"><input type="checkbox" class="medit-fmt-cb" value="'+fmt.replace(/"/g,'&quot;')+'" '+chk+' style="accent-color:var(--green);">'+fmt+'</label>';}).join('');
-  h += '<div class="field"><label>Format <span style="font-size:10px;font-weight:400;color:var(--text-soft);">(cochez tout ce qui s\'applique)</span></label><div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px;padding:8px;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-sm);">'+_fmtBoxes+'<input type="text" id="medit-fmt-new" placeholder="+ Nouveau..." style="border:none;background:transparent;font-size:12px;outline:none;min-width:90px;" oninput="_meditAddCb(this,\'medit-fmt-cb\')"></div></div>';
-  h += '<div class="field"><label>Auteur</label><input type="text" id="medit-auteur" list="dl-auteur" autocomplete="off" value="'+(m&&m.auteur||'').replace(/"/g,'&quot;')+'">'+'</div>';
-  h += '<div class="field"><label>&#201;diteur</label><input type="text" id="medit-editeur" list="dl-editeur" autocomplete="off" value="'+(m&&m.editeur||'').replace(/"/g,'&quot;')+'">'+'</div>';
-  h += '<div class="field"><label>Dur&#233;e</label><input type="text" id="medit-duree" list="dl-duree" autocomplete="off" value="'+(m&&m.duree||'')+'">'+'</div>';
-  h += '<div class="field"><label>Niveau</label><input type="text" id="medit-niveau" list="dl-niveau" autocomplete="off" value="'+(m&&m.niveau||'')+'">'+'</div>';
-  h += '<div class="field"><label>Rang&#233;</label><input type="text" id="medit-localisation" list="dl-localisation" autocomplete="off" value="'+(m&&m.localisation||'')+'">'+'</div>';
-  h += '<div class="field"><label>Prix</label><input type="number" id="medit-prix" value="'+(m&&m.prix_achat||'')+'"></div>';
-  h += '</div>';
-  h += '<div class="field"><label>Tags (séparés par virgule)</label><input type="text" id="medit-tags" value="'+(m&&m.tags||'').replace(/"/g,'&quot;')+'"></div>';
-  h += '<div class="field"><label>Lien</label><input type="text" id="medit-lien" value="'+(m&&m.lien||'')+'"></div>';
-  h += '<div class="field"><label>Description</label><textarea id="medit-desc" style="min-height:80px;">'+(m&&m.description||'')+'</textarea></div>';
-  h += '<div style="display:flex;align-items:center;gap:8px;"><input type="checkbox" id="medit-jai" '+((m&&m.j_ai)?'checked':'')+' style="width:16px;height:16px;"><label for="medit-jai" style="font-size:13px;">Je possède ce matériel</label></div>';
-  h += '<button class="btn btn-green" onclick="saveMateriel('+(id?"'"+id+"'":'null')+');">Enregistrer</button>';
-  h += '</div>';
-  document.getElementById('modal-materiel-body').innerHTML = h;
-  var _tagsInput = document.getElementById('medit-tags');
-  if(_tagsInput) _meditTagInput(_tagsInput, _allTags||[]);
+  // Categorie : dropdown avec cases a cocher
+  var _catVals = (m&&m.categorie||'').split(/[\/,]/).map(function(c){return c.trim();}).filter(Boolean);
+  var _catBoxes = _categories.map(function(cat){var chk=_catVals.includes(cat)?'checked':'';return '<label style="display:flex;align-items:center;gap:5px;font-size:12px;cursor:pointer;padding:4px 8px;border-radius:4px;" onmouseover="this.style.background=\'var(--bg)\'" onmouseout="this.style.background=\'\'"><input type="checkbox" class="medit-cat-cb" value="'+cat.replace(/"/g,'&quot;')+'" '+chk+' style="accent-color:var(--green);">'+cat+'</label>';}).join('');
+  h += '<div class="field"><label>Cat&#233;gorie</label>'
+    + '<div style="position:relative;">'
+    + '<div id="medit-cat-display" onclick="document.getElementById(\'medit-cat-drop\').style.display=document.getElementById(\'medit-cat-drop\').style.display===\'none\'?\'block\':\'none\'" style="padding:8px 11px;font-size:13px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--bg);cursor:pointer;display:flex;align-items:center;justify-content:space-between;"><span id="medit-cat-label">Sélectionner...</span><span>▾</span></div>'
+    + '<div id="medit-cat-drop" style="display:none;position:absolute;top:calc(100% + 2px);left:0;right:0;z-index:200;background:white;border:1px solid var(--border);border-radius:var(--radius-sm);box-shadow:0 4px 12px rgba(0,0,0,.1);padding:6px;max-height:220px;overflow-y:auto;">'+_catBoxes
+    + '<div style="border-top:1px solid var(--border);padding-top:6px;margin-top:4px;"><input type="text" id="medit-cat-new" placeholder="+ Nouvelle catégorie..." style="width:100%;padding:5px 8px;font-size:12px;border:1px solid var(--border);border-radius:var(--radius-sm);" onkeydown="_meditAddCb(this,\'medit-cat-cb\',\'medit-cat-label\')"></div>'
+    + '</div></div></div>';
+  setTimeout(function(){_meditUpdateLabel('medit-cat-cb','medit-cat-label');document.querySelectorAll('.medit-cat-cb').forEach(function(cb){cb.onchange=function(){_meditUpdateLabel('medit-cat-cb','medit-cat-label');};});},50);
+  // Tags : cases a cocher
+  var _tagVals = (m&&m.tags||'').split(',').map(function(t){return t.trim();}).filter(Boolean);
+  var _DOMAINES = ["✍ LE LANGAGE ECRIT","📚 LO LANGAGE ORAL","🔢 COGNITION MATH","🧠 NEURO"];
+  var _autresTags = _allTags.filter(function(t){return !_DOMAINES.includes(t);});
+  function _tagBox(t){
+    var chk = _tagVals.includes(t)?'checked':'';
+    return '<label style="display:flex;align-items:center;gap:5px;font-size:12px;cursor:pointer;padding:3px 8px;background:white;border:1px solid var(--border);border-radius:20px;"><input type="checkbox" class="medit-tag-cb" value="'+t.replace(/"/g,'&quot;')+'" '+chk+' style="accent-color:var(--green);">'+t+'</label>';
+  }
+  var _domaineBoxes = _DOMAINES.map(_tagBox).join('');
+  var _autresBoxes = _autresTags.map(_tagBox).join('');
+  h += '<div class="field"><label>Tags — Domaines principaux</label><div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px;padding:8px;background:#EBF4FF;border:1px solid #93C5FD;border-radius:var(--radius-sm);">'+_domaineBoxes+'</div></div>';
+  h += '<div class="field"><label>Tags — Autres <span style="font-size:10px;font-weight:400;color:var(--text-soft);">(cochez tout ce qui s\'applique)</span></label><div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px;padding:8px;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-sm);">'+_autresBoxes+'<input type="text" id="medit-tag-new" placeholder="+ Nouveau tag..." style="border:none;background:transparent;font-size:12px;outline:none;min-width:100px;"></div></div>';
+  setTimeout(function(){var inp=document.getElementById('medit-tag-new');if(inp)inp.onkeydown=function(e){_meditAddCb(this,'medit-tag-cb',null,e);};},50);
   openModal('modal-materiel');
 }
 
@@ -7098,7 +7101,7 @@ async function saveMateriel(id){
     niveau: document.getElementById('medit-niveau').value.trim() || null,
     localisation: document.getElementById('medit-localisation').value.trim() || null,
     prix_achat: parseFloat(document.getElementById('medit-prix').value) || null,
-    tags: document.getElementById('medit-tags').value.trim() || null,
+    tags: [...document.querySelectorAll('.medit-tag-cb:checked')].map(function(cb){return cb.value;}).join(', ') || null,
     lien: document.getElementById('medit-lien').value.trim() || null,
     description: document.getElementById('medit-desc').value.trim() || null,
     j_ai: document.getElementById('medit-jai').checked,
