@@ -3317,7 +3317,7 @@ let _patientStatutFilter = 'actif';
 function setTopbar(title, subtitle){
   var t = document.getElementById('topbar-title');
   var s = document.getElementById('topbar-subtitle');
-  if(t) t.textContent = title;
+  if(t) t.innerHTML = title;
   if(s){ s.textContent = subtitle||''; s.style.display = subtitle ? 'block' : 'none'; }
 }
 
@@ -3330,10 +3330,10 @@ function showPage(name, statut){
     const navId = statut==='actif'?'nav-patients':statut==='attente'?'nav-patients-attente':statut==='pause'?'nav-patients-pause':'nav-patients-termine';
     document.getElementById(navId).classList.add('active');
     const titles={
-      actif:  ['👥 Mes patients',   'Dossiers actifs'],
-      attente:['⏳ Liste d\'attente','Demandes en attente de prise en soin'],
-      pause:  ['🌿 En suspens',     'Patients en pause de suivi'],
-      termine:['📦 Dossiers clos',  'Suivis terminés']
+      actif:  ['<i class="ti ti-users"></i> Mes patients',   'Dossiers actifs'],
+      attente:['<i class="ti ti-clock"></i> Liste d\'attente','Demandes en attente de prise en soin'],
+      pause:  ['<i class="ti ti-leaf"></i> En suspens',     'Patients en pause de suivi'],
+      termine:['<i class="ti ti-archive"></i> Dossiers clos',  'Suivis terminés']
     };
     var t = titles[statut]||['Patients',''];
     setTopbar(t[0], t[1]);
@@ -3341,16 +3341,16 @@ function showPage(name, statut){
     const el=document.getElementById('nav-'+name);
     if(el)el.classList.add('active');
     const titles={
-      agenda:   ['📅 Mon agenda',        'Planification & séances'],
-      creneaux: ['🗓️ Créneaux ouverts',   'Gestion des réservations patients'],
-      settings: ['⚙️ Paramètres',         'Configuration'],
-      docs:     ['📎 Mes documents',      'Fichiers & pièces jointes'],
-      alertes:  ['🔔 Alertes & rappels',  "Notifications et points d'attention"],
-      recap:    ['📑 Récap collab',       "Vue d'ensemble de l'activité"],
-      resultats:['💶 Résultats',           "Chiffre d'affaires & statistiques"],
-      taches:   ['✅ Mes tâches',          'Suivi des actions en cours'],
-      outils:   ['🌳 Outils cliniques',    'Arbres décisionnels & références'],
-      materiel: ['🎲 Mon matériel','Ma base de matériel orthophonique']
+      agenda:   ['<i class="ti ti-calendar"></i> Mon agenda',        'Planification & séances'],
+      creneaux: ['<i class="ti ti-calendar-event"></i> Créneaux ouverts',   'Gestion des réservations patients'],
+      settings: ['<i class="ti ti-settings"></i> Paramètres',         'Configuration'],
+      docs:     ['<i class="ti ti-paperclip"></i> Mes documents',      'Fichiers & pièces jointes'],
+      alertes:  ['<i class="ti ti-bell"></i> Alertes & rappels',  "Notifications et points d'attention"],
+      recap:    ['<i class="ti ti-file-analytics"></i> Récap collab',       "Vue d'ensemble de l'activité"],
+      resultats:['<i class="ti ti-chart-bar"></i> Résultats',           "Chiffre d'affaires & statistiques"],
+      taches:   ['<i class="ti ti-check"></i> Mes tâches',          'Suivi des actions en cours'],
+      outils:   ['<i class="ti ti-binary-tree"></i> Outils cliniques',    'Arbres décisionnels & références'],
+      materiel: ['<i class="ti ti-puzzle"></i> Mon matériel','Ma base de matériel orthophonique']
     };
     var t = titles[name]||[name,''];
     setTopbar(t[0], t[1]);
@@ -3361,11 +3361,11 @@ function showPage(name, statut){
   if(name==='settings'){renderSettings();setTimeout(function(){var el=document.getElementById('setting-urgence-days');if(el)el.value=(DB.settings&&DB.settings.urgenceDays!=null?DB.settings.urgenceDays:2);initLiensPublics();loadInfosPraticien();loadAdminSection();loadGestionPraticiens();updateNotifStatus();},50);}
   if(name==='taches')renderTachesPage();
   if(name==='outils')renderOutilsPage();
-  if(name==='materiel'){setTopbar('🎲 Mon matériel','Ma base de matériel orthophonique');renderMaterielPage();}
+  if(name==='materiel'){setTopbar('<i class="ti ti-puzzle"></i> Mon matériel','Ma base de matériel orthophonique');renderMaterielPage();}
   if(name==='resultats'){setResPeriod(_resPeriod);}
-  if(name==='docs'){setTopbar('📎 Mes documents','Fichiers & pièces jointes');renderDocsPage();updateDocsNav();}
-  if(name==='alertes'){setTopbar('🔔 Alertes & rappels','Notifications et points d\'attention');renderAlertesPage();}
-  if(name==='recap'){setTopbar('📑 Récap collab',"Vue d'ensemble de l'activité");renderRecapPage();}
+  if(name==='docs'){setTopbar('<i class="ti ti-paperclip"></i> Mes documents','Fichiers & pièces jointes');renderDocsPage();updateDocsNav();}
+  if(name==='alertes'){setTopbar('<i class="ti ti-bell"></i> Alertes & rappels','Notifications et points d\'attention');renderAlertesPage();}
+  if(name==='recap'){setTopbar('<i class="ti ti-file-analytics"></i> Récap collab',"Vue d'ensemble de l'activité");renderRecapPage();}
 }
 
 function openModal(id){document.getElementById(id).classList.add('open');}
