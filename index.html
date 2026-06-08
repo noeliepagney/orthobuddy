@@ -4316,6 +4316,8 @@ function buildCreneauxGrid(cr){
 function onAttenteSearch(val){
   _attenteFilters.search=val||'';
   renderAttenteList();
+  var inp=document.querySelector('[oninput^="onAttenteSearch"]');
+  if(inp){inp.focus();var l=inp.value.length;inp.setSelectionRange(l,l);}
 }
 
 function onAttenteFiltreSelect(sel,type){
@@ -13263,25 +13265,15 @@ function updateAlertesBadge(){
   else{el.style.display='none';}
 }
 
-function renderAlertesPage(showAllUrgent, showAllWarn, showAllInfo){
+function renderAlertesPage(){
   updateAlertesBadge();
   var alertes=getAllAlertes().concat(getAlertesGlobales());
   var el=document.getElementById('alertes-page-content');
   if(!el)return;
   if(!alertes.length){
-    el.innerHTML='<div class="empty-state" style="margin-top:60px;"><div class="empty-state-icon">✅</div><p>Aucune alerte. Tout est à jour !</p></div>';
+    el.innerHTML='<div class="empty-state" style="margin-top:60px;"><div class="empty-state-icon">✅</div><p>Aucune alerte. Tout est à jour !</p></div>';
     return;
   }
-
-  var LIMIT = 5;
-
-  alertes.sort(function(a,b){
-    var nd=ALERTE_NIVEAUX[a.niveau]-ALERTE_NIVEAUX[b.niveau];
-    if(nd!==0)return nd;
-    var pa=a.patient?a.patient.nom+a.patient.prenom:'';
-    var pb=b.patient?b.patient.nom+b.patient.prenom:'';
-    return pa.localeCompare(pb);
-  });
 
   var urgent = alertes.filter(function(a){return a.niveau==='urgent';});
   var warn   = alertes.filter(function(a){return a.niveau==='warn';});
@@ -13289,106 +13281,105 @@ function renderAlertesPage(showAllUrgent, showAllWarn, showAllInfo){
 
   function renderCard(a){
     var niveauColors={urgent:'var(--red)',warn:'var(--amber)',info:'var(--blue)'};
-    var niveauBadge={
-      urgent:'<span style="font-size:9px;font-weight:700;background:var(--red);color:white;padding:1px 5px;border-radius:8px;text-transform:uppercase;letter-spacing:.04em;">Urgent</span>',
-      warn:  '<span style="font-size:9px;font-weight:700;background:var(--amber);color:white;padding:1px 5px;border-radius:8px;text-transform:uppercase;letter-spacing:.04em;">Important</span>',
-      info:  '<span style="font-size:9px;font-weight:700;background:var(--blue);color:white;padding:1px 5px;border-radius:8px;text-transform:uppercase;letter-spacing:.04em;">Info</span>'
-    };
     var nc=niveauColors[a.niveau];
     var initials=a.patient?((a.patient.prenom||'')[0]+(a.patient.nom||'')[0]).toUpperCase():'?';
     var h='<div style="display:flex;align-items:flex-start;gap:10px;padding:10px 12px;background:var(--surface);border:1px solid var(--border);border-left:3px solid '+nc+';border-radius:var(--radius-sm);margin-bottom:6px;">';
     h+='<div class="avatar" style="width:26px;height:26px;font-size:9px;flex-shrink:0;margin-top:1px;background:'+patientGradient(a.patient||{})+';">'+initials+'</div>';
     h+='<div style="flex:1;min-width:0;">';
     h+='<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:2px;">';
-    h+=niveauBadge[a.niveau];
     h+='<span style="font-size:12px;font-weight:600;color:'+nc+';">'+a.icon+' '+a.titre+'</span>';
     if(a.patient) h+='<span style="font-size:11px;color:var(--text-mid);">'+a.patient.prenom+' '+a.patient.nom+'</span>';
     h+='</div>';
     h+='<div style="font-size:11px;color:var(--text-soft);'+(a.action?'margin-bottom:5px;':'')+'">'+a.texte+'</div>';
     if(a.action || a.dismissKey){
       h += '<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-top:5px;">';
-      if(a.action){
-        h+='<button onclick="'+a.action+'" style="font-size:11px;padding:3px 10px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--bg);cursor:pointer;color:var(--text-mid);">'+a.actionLabel+' →</button>';
-      }
-      if(a.dismissKey){
-        h+='<button data-dismiss="'+a.dismissKey+'" onclick="dismissAlertEvt(this)" style="font-size:11px;padding:3px 10px;border:1px solid #86EFAC;border-radius:var(--radius-sm);background:#F0FDF4;cursor:pointer;color:#15803D;display:inline-flex;align-items:center;gap:4px;">✓ Marquer comme fait</button>';
-      }
+      if(a.action) h+='<button onclick="'+a.action+'" style="font-size:11px;padding:3px 10px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--bg);cursor:pointer;color:var(--text-mid);">'+a.actionLabel+' →</button>';
+      if(a.dismissKey) h+='<button data-dismiss="'+a.dismissKey+'" onclick="dismissAlertEvt(this)" style="font-size:11px;padding:3px 10px;border:1px solid #86EFAC;border-radius:var(--radius-sm);background:#F0FDF4;cursor:pointer;color:#15803D;display:inline-flex;align-items:center;gap:4px;">✓ Marquer comme fait</button>';
       h += '</div>';
     }
     h+='</div></div>';
     return h;
   }
 
-  function renderSection(list, showAll, color, emoji, label, expandFn){
-    if(!list.length) return '';
-    var displayed = showAll ? list : list.slice(0, LIMIT);
-    var hidden = list.length - displayed.length;
-    var h='<div class="todo-section">';
-    h+='<div class="todo-section-title" style="color:'+color+';">'+emoji+' '+label+' ('+list.length+')</div>';
-    displayed.forEach(function(a){h+=renderCard(a);});
-    if(hidden>0){
-      h+='<button onclick="'+expandFn+'" style="width:100%;margin-top:4px;padding:6px;font-size:12px;border:1px dashed var(--border);border-radius:var(--radius-sm);background:none;cursor:pointer;color:var(--text-soft);">Voir '+hidden+' alerte'+(hidden>1?'s':'')+' de plus ▼</button>';
-    } else if(showAll && list.length > LIMIT){
-      h+='<button onclick="renderAlertesPage(false,false,false)" style="width:100%;margin-top:4px;padding:6px;font-size:12px;border:1px dashed var(--border);border-radius:var(--radius-sm);background:none;cursor:pointer;color:var(--text-soft);">Réduire ▲</button>';
-    }
-    h+='</div>';
-    return h;
-  }
-
-  // Section Info classée par catégorie puis par patient
-  function renderInfoSection(list, showAll){
-    if(!list.length) return '';
+  function groupByCat(list){
     var cats={};
     list.forEach(function(a){
       var key=a.categorie||'Autre';
       if(!cats[key])cats[key]=[];
       cats[key].push(a);
     });
-    // Trier chaque catégorie par nom patient
-    Object.keys(cats).forEach(function(cat){
-      cats[cat].sort(function(a,b){
-        var pa=a.patient?a.patient.nom+a.patient.prenom:'';
-        var pb=b.patient?b.patient.nom+b.patient.prenom:'';
-        return pa.localeCompare(pb);
-      });
+    return cats;
+  }
+
+  if(!window._alerteAccordionOpen) window._alerteAccordionOpen={};
+  var _ao = window._alerteAccordionOpen;
+
+  function renderNiveauSection(list, color, emoji, label, niveauKey){
+    if(!list.length) return '';
+    var cats = groupByCat(list);
+    var catKeys = Object.keys(cats).sort();
+    var sectionOpen = _ao[niveauKey] === true;
+    var sectionId = 'alerte-section-'+niveauKey;
+    var h='<div style="margin-bottom:10px;">';
+    h+='<div onclick="toggleAlertSection(\''+niveauKey+'\')" style="display:flex;align-items:center;justify-content:space-between;cursor:pointer;padding:9px 14px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);margin-bottom:6px;">';
+    h+='<span style="font-size:13px;font-weight:700;color:'+color+';">'+emoji+' '+label+' <span style="font-weight:500;opacity:.75;">('+list.length+')</span></span>';
+    h+='<span style="font-size:11px;color:var(--text-soft);">'+(sectionOpen?'▲':'▼')+'</span>';
+    h+='</div>';
+    h+='<div id="'+sectionId+'"'+(sectionOpen?'':' style="display:none;"')+'>';
+    catKeys.forEach(function(cat){
+      var catList = cats[cat];
+      var catKey = niveauKey+'__'+cat;
+      var catOpen = _ao[catKey] === true;
+      var catId = 'ac-'+niveauKey+'-'+cat.replace(/[^a-z0-9]/gi,'_');
+      var catIcon = (ALERTE_CAT_ICONS&&ALERTE_CAT_ICONS[cat])||'📌';
+      h+='<div style="margin-bottom:6px;border:1px solid var(--border);border-radius:var(--radius-sm);overflow:hidden;">';
+      h+='<div onclick="toggleAlertCat(this.dataset.cat,this.dataset.id)" data-cat="'+catKey+'" data-id="'+catId+'" style="display:flex;align-items:center;justify-content:space-between;cursor:pointer;padding:7px 12px;background:var(--bg);">';
+      h+='<span style="font-size:12px;font-weight:600;color:var(--text-mid);">'+catIcon+' '+cat+' <span style="font-weight:500;opacity:.75;">('+catList.length+')</span></span>';
+      h+='<span style="display:flex;align-items:center;gap:8px;"><span style="font-size:11px;font-weight:700;color:'+color+';">'+catList.length+'</span><span style="font-size:10px;color:var(--text-soft);">'+(catOpen?'▲':'▼')+'</span></span>';
+      h+='</div>';
+      h+='<div id="'+catId+'"'+(catOpen?'':' style="display:none;"')+' style="padding:8px 8px 2px;">';
+      catList.forEach(function(a){ h+=renderCard(a); });
+      h+='</div>';
+      h+='</div>';
     });
-    var all=[];
-    Object.keys(cats).sort().forEach(function(cat){cats[cat].forEach(function(a){all.push({a:a,cat:cat});});});
-    var displayed = showAll ? all : all.slice(0,LIMIT);
-    var hidden = all.length - displayed.length;
-    var h='<div class="todo-section">';
-    h+='<div class="todo-section-title" style="color:var(--blue);">🔵 Info ('+all.length+')</div>';
-    var lastCat='';
-    displayed.forEach(function(item){
-      if(item.cat!==lastCat){
-        if(lastCat) h+='</div>';
-        h+='<div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--text-soft);margin:8px 0 4px;">'+(ALERTE_CAT_ICONS[item.cat]||'📌')+' '+item.cat+'</div><div>';
-        lastCat=item.cat;
-      }
-      h+=renderCard(item.a);
-    });
-    if(lastCat) h+='</div>';
-    if(hidden>0){
-      h+='<button onclick="renderAlertesPage(false,false,true)" style="width:100%;margin-top:4px;padding:6px;font-size:12px;border:1px dashed var(--border);border-radius:var(--radius-sm);background:none;cursor:pointer;color:var(--text-soft);">Voir '+hidden+' info'+(hidden>1?'s':'')+' de plus ▼</button>';
-    } else if(showAll && all.length > LIMIT){
-      h+='<button onclick="renderAlertesPage(false,false,false)" style="width:100%;margin-top:4px;padding:6px;font-size:12px;border:1px dashed var(--border);border-radius:var(--radius-sm);background:none;cursor:pointer;color:var(--text-soft);">Réduire ▲</button>';
-    }
+    h+='</div>';
     h+='</div>';
     return h;
   }
 
   var html='';
   var nbBadge=urgent.length+warn.length;
-  html+='<div style="font-size:11px;color:var(--text-soft);margin-bottom:16px;padding:8px 12px;background:var(--bg);border-radius:var(--radius-sm);border:1px solid var(--border);">';
-  html+='Le badge <span style="background:var(--red);color:white;border-radius:10px;padding:0 6px;font-weight:700;">'+nbBadge+'</span> compte les alertes <strong>Urgent</strong> et <strong>Important</strong>.';
-  if(info.length) html+=' Les <strong>'+info.length+' info</strong>'+(info.length>1?'s':'')+' ne s\'affichent pas dans le badge.';
+  html+='<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;">';
+  if(urgent.length) html+='<span style="font-size:12px;padding:4px 10px;background:#FEF2F2;border:1px solid #FECACA;border-radius:20px;color:var(--red);font-weight:600;">🔴 '+urgent.length+' urgent'+(urgent.length>1?'s':'')+'</span>';
+  if(warn.length)   html+='<span style="font-size:12px;padding:4px 10px;background:#FFFBEB;border:1px solid #FCD34D;border-radius:20px;color:var(--amber);font-weight:600;">🟠 '+warn.length+' important'+(warn.length>1?'s':'')+'</span>';
+  if(info.length)   html+='<span style="font-size:12px;padding:4px 10px;background:#EFF6FF;border:1px solid #93C5FD;border-radius:20px;color:var(--blue);font-weight:600;">🔵 '+info.length+' info'+(info.length>1?'s':'')+'</span>';
   html+='</div>';
-
-  html+=renderSection(urgent, showAllUrgent, 'var(--red)', '🔴', 'Urgent', 'renderAlertesPage(true,false,false)');
-  html+=renderSection(warn,   showAllWarn,   'var(--amber)','🟠', 'Important', 'renderAlertesPage(false,true,false)');
-  html+=renderInfoSection(info, showAllInfo);
-
+  html+=renderNiveauSection(urgent,'var(--red)','🔴','Urgent','urgent');
+  html+=renderNiveauSection(warn,'var(--amber)','🟠','Important','warn');
+  html+=renderNiveauSection(info,'var(--blue)','🔵','Info','info');
   el.innerHTML=html;
+}
+
+function toggleAlertSection(niveauKey){
+  if(!window._alerteAccordionOpen) window._alerteAccordionOpen={};
+  var open = window._alerteAccordionOpen;
+  open[niveauKey] = open[niveauKey] === false ? true : false;
+  renderAlertesPage();
+}
+
+function toggleAlertCat(catKey, catId){
+  if(!window._alerteAccordionOpen) window._alerteAccordionOpen={};
+  var open = window._alerteAccordionOpen;
+  open[catKey] = open[catKey] === false ? true : false;
+  var el = document.getElementById(catId);
+  if(el){
+    el.style.display = open[catKey] === false ? 'none' : 'block';
+    var header = el.previousElementSibling;
+    if(header){
+      var chevron = header.querySelector('span:last-child span:last-child');
+      if(chevron) chevron.textContent = open[catKey] === false ? '▼' : '▲';
+    }
+  }
 }
 
 // ═══════════════════════════════════════
