@@ -5699,6 +5699,19 @@ function renderObjectifsTab(pid){
           if(childSeances.length) h += '<span style="font-size:10px;color:var(--text-soft);cursor:pointer;text-decoration:underline;text-underline-offset:2px;" onclick="showObjectifDetail(\''+pid+'\',\''+child.id+'\')">'+childSeances.length+' séance'+(childSeances.length>1?'s':'')+'</span>';
           h += '</div>';
           if(child.smart) h += '<div style="font-size:11px;color:var(--text-soft);margin-top:2px;font-style:italic;line-height:1.4;">📋 '+escHtml(child.smart)+'</div>';
+          if(child.materiels&&child.materiels.length){
+            var maxShow = 3;
+            h += '<div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:4px;align-items:center;">';
+            child.materiels.slice(0,maxShow).forEach(function(m,mi){
+              h += '<span style="font-size:10px;background:var(--green-ll);color:var(--green-d);border:1px solid var(--green-l);border-radius:12px;padding:1px 8px;display:inline-flex;align-items:center;gap:3px;">'
+                + '<span style="opacity:.6;font-size:9px;">'+(m.ordre||mi+1)+'.</span> '+escHtml(m.titre)
+                + '</span>';
+            });
+            if(child.materiels.length>maxShow){
+              h += '<span onclick="openMaterielsObjectif(\''+pid+'\',\''+child.id+'\')" style="font-size:10px;background:var(--bg);color:var(--text-soft);border:1px solid var(--border);border-radius:12px;padding:1px 8px;cursor:pointer;">+'+( child.materiels.length-maxShow)+' autres</span>';
+            }
+            h += '</div>';
+          }
           if(child.dateAtteint&&child.status==='atteint') h += '<div style="font-size:10px;color:var(--green-d);margin-top:2px;font-weight:600;">✓ Atteint le '+new Date(child.dateAtteint+'T00:00:00').toLocaleDateString('fr-FR',{day:'numeric',month:'long'})+'</div>';
           h += '</div>';
           h += '<div style="display:flex;gap:2px;flex-shrink:0;">';
@@ -5965,15 +5978,24 @@ function openMaterielsObjectif(pid, objId){
     overlay.id = 'obj-mat-overlay';
     overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:10002;display:flex;align-items:center;justify-content:center;padding:16px;';
     var currentIds = obj.materiels.map(function(m){return m.id;});
-    var items = mesMateriels.map(function(m){
+    var checkedMats = mesMateriels.filter(function(m){ return currentIds.includes(m.id); });
+    var uncheckedMats = mesMateriels.filter(function(m){ return !currentIds.includes(m.id); });
+    function _matItem(m){
       var checked = currentIds.includes(m.id);
       var ordre = checked ? (obj.materiels.find(function(x){return x.id===m.id;})||{}).ordre||'' : '';
-      return '<label style="display:flex;align-items:center;gap:8px;padding:6px 10px;border-bottom:1px solid var(--border);cursor:pointer;font-size:12px;">'
+      return '<label style="display:flex;align-items:center;gap:8px;padding:6px 10px;border-bottom:1px solid var(--border);cursor:pointer;font-size:12px;'+(checked?'background:var(--green-ll);':'')+'">'
         + '<input type="checkbox" data-id="'+m.id+'" data-titre="'+m.titre.replace(/"/g,'&quot;')+'" '+(checked?'checked':'')+' style="accent-color:var(--green);cursor:pointer;">'
-        + '<span style="flex:1;">'+m.titre+'</span>'
+        + '<span style="flex:1;'+(checked?'font-weight:500;color:var(--green-d);':'')+'">'+m.titre+'</span>'
         + '<input type="number" min="1" max="99" placeholder="Ordre" value="'+ordre+'" data-ord="'+m.id+'" style="width:52px;padding:3px 6px;border:1px solid var(--border);border-radius:4px;font-size:11px;text-align:center;" onclick="event.stopPropagation();">'
         + '</label>';
-    }).join('');
+    }
+    var items = '';
+    if(checkedMats.length){
+      items += '<div style="font-size:10px;font-weight:600;color:var(--green-d);text-transform:uppercase;letter-spacing:.04em;padding:6px 10px 2px;background:var(--green-ll);">Sélectionnés ('+checkedMats.length+')</div>';
+      items += checkedMats.map(_matItem).join('');
+      items += '<div style="font-size:10px;font-weight:600;color:var(--text-soft);text-transform:uppercase;letter-spacing:.04em;padding:6px 10px 2px;border-top:2px solid var(--border);">Autres matériels</div>';
+    }
+    items += uncheckedMats.map(_matItem).join('');
     overlay.innerHTML = '<div style="background:white;border-radius:14px;width:480px;max-width:100%;max-height:80vh;display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(0,0,0,.25);">'
       + '<div style="padding:14px 18px;border-bottom:1px solid var(--border);">'
       + '<div style="font-size:13px;font-weight:600;">Matériels pour : '+escHtml(obj.titre)+'</div>'
