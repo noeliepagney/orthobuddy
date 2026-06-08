@@ -1236,9 +1236,17 @@ html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);colo
           </select>
         </div>
         <div class="field"><label>Statut</label>
-          <select id="p-statut">
+          <select id="p-statut" onchange="toggleDateCloture(this.value)">
             <option value="actif">Actif</option><option value="pause">En pause</option><option value="termine">Terminé</option>
           </select>
+        </div>
+        <div class="field" id="field-date-cloture" style="display:none;">
+          <label>Date de clôture du dossier</label>
+          <div class="date-picker-wrap" id="dp-date-cloture-wrap"></div>
+        </div>
+        <div class="field">
+          <label>Date de décès <span style="font-size:10px;font-weight:400;color:var(--text-soft);">(optionnel — RGPD : conservation 10 ans)</span></label>
+          <div class="date-picker-wrap" id="dp-date-deces-wrap"></div>
         </div>
       </div>
     </div>
@@ -2181,8 +2189,8 @@ const _sbEnv = localStorage.getItem('sb_env') || 'prod';
 let SB_URL = SB_CONFIGS[_sbEnv].url;
 let SB_KEY = SB_CONFIGS[_sbEnv].key;
 const SB_USER = 'noelie'; // identifiant unique dans la table (legacy Tauri)
-function getSbUserId(){ return sessionStorage.getItem('sb_user_id') || SB_USER; }
-function getSbToken(){ return sessionStorage.getItem('sb_token') || SB_KEY; }
+function getSbUserId(){ return sessionStorage.getItem('sb_user_id')||localStorage.getItem('sb_user_id')|| SB_USER; }
+function getSbToken(){ return sessionStorage.getItem('sb_token') || localStorage.getItem('sb_token') || SB_KEY; }
 function isAdmin(){ return sessionStorage.getItem('sb_role') === 'admin'; }
 function canUseBibliotheque(){ return isAdmin() || sessionStorage.getItem('sb_can_bibliotheque') === '1'; }
 function canSwitchEnv(){ return isAdmin() || sessionStorage.getItem('sb_can_env') === '1'; }
@@ -2684,8 +2692,11 @@ async function doLogin(){
       }
       // Stocker le token et l'UUID
       sessionStorage.setItem('sb_token', data.access_token);
+      localStorage.setItem('sb_token', data.access_token);
       sessionStorage.setItem('sb_user_id', data.user.id);
+      localStorage.setItem('sb_user_id', data.user.id);
       sessionStorage.setItem('ob_auth','1');
+      if(data.refresh_token) localStorage.setItem('sb_refresh_token', data.refresh_token);
       sessionStorage.setItem('login_start', Date.now().toString());
       // Enregistrer le login dans praticiens
       fetch(SB_URL+'/rest/v1/praticiens?user_id=eq.'+data.user.id, {
@@ -3087,6 +3098,8 @@ function doLogout(){
   }
   sessionStorage.removeItem('ob_auth');
   sessionStorage.removeItem('sb_token');
+  localStorage.removeItem('sb_token');
+  localStorage.removeItem('sb_user_id');
   sessionStorage.removeItem('sb_user_id');
   sessionStorage.removeItem('login_start');
   location.reload();
@@ -8317,6 +8330,9 @@ function openPatientModal(pid){
   if(hospiEl){hospiEl.checked=!!(p&&p.hospi);toggleHospiField(!!(p&&p.hospi));}
   createDatePicker('dp-hospi-sortie-wrap',p?.hospiSortie||'');
   createDatePicker('dp-ddn-wrap',p?.ddn||'');
+  createDatePicker('dp-date-cloture-wrap', p?.date_cloture||'');
+  createDatePicker('dp-date-deces-wrap', p?.date_deces||'');
+  toggleDateCloture(p?.statut||'actif');
 
   // Contact
   var c = (p?.contacts&&p.contacts.length) ? p.contacts[0] : null;
@@ -8374,6 +8390,11 @@ function toggleModalParcours(pcId,el){
   el.classList.toggle('active',_modalParcours.includes(pcId));
 }
 
+function toggleDateCloture(val){
+  var f = document.getElementById('field-date-cloture');
+  if(f) f.style.display = val==='termine' ? '' : 'none';
+}
+
 function savePatient(){
   const pid=document.getElementById('edit-patient-id').value;
   const prenom=document.getElementById('p-prenom').value.trim();
@@ -8415,6 +8436,8 @@ function savePatient(){
     diagnostic:document.getElementById('p-diagnostic').value,
     color:document.getElementById('p-color').value,
     statut:document.getElementById('p-statut').value,
+    date_cloture:dpGet('dp-date-cloture-wrap')||null,
+    date_deces:dpGet('dp-date-deces-wrap')||null,
     parcours:[..._modalParcours],
     regime:document.getElementById('p-regime').value,
     couverture:document.getElementById('p-couverture').value,
@@ -8442,6 +8465,14 @@ function savePatient(){
     data.contacts=[{id:uid(),prenom:cParts.length>1?cParts.slice(0,-1).join(' '):_nomContactVal,nom:cParts.length>1?cParts[cParts.length-1]:'',lien:_lienContactVal,tel:_telContactVal,email:_emailContactVal,professionPere:_profPereVal,professionMere:_profMereVal}];
   } else {
     data.contacts=[];
+  }
+  // RGPD : date_cloture automatique quand statut passe a termine
+  if(data.statut==='termine'){
+    const pExist = pid ? DB.patients.find(x=>x.id===pid) : null;
+    if(!pExist||!pExist.date_cloture) data.date_cloture = data.date_cloture || new Date().toISOString().slice(0,10);
+    else data.date_cloture = pExist.date_cloture;
+  } else {
+    data.date_cloture = data.date_cloture || null;
   }
   if(pid){const p=DB.patients.find(x=>x.id===pid);if(p)Object.assign(p,data);}
   else {
@@ -15528,11 +15559,29 @@ load().then(function(){
       // Browser mode: refresh from Supabase in background
       document.getElementById('patients-list').innerHTML='<div style="text-align:center;padding:40px;color:var(--text-soft);"><div style="font-size:32px;margin-bottom:10px;">☁️</div><p style="font-size:13px;">Synchronisation…</p></div>';
       setSyncStatus('syncing');
-      sbLoad().then(loaded=>{
-        setSyncStatus(loaded?'ok':'error');
-        if(loaded) setTimeout(()=>setSyncStatus('idle'),3000);
-        renderAll(); checkBackupReminder();
-      });
+      // Restaurer le token Supabase si perdu au refresh
+      var _restoreToken = function(cb){
+        if(sessionStorage.getItem('sb_token')){ cb(); return; }
+        fetch(SB_URL+'/auth/v1/token?grant_type=refresh_token', {
+          method:'POST',
+          headers:{'apikey':SB_KEY,'Content-Type':'application/json'},
+          body:JSON.stringify({refresh_token: localStorage.getItem('sb_refresh_token')||''})
+        }).then(function(r){return r.json();}).then(function(d){
+          if(d&&d.access_token){
+            sessionStorage.setItem('sb_token', d.access_token);
+            sessionStorage.setItem('sb_user_id', d.user&&d.user.id||'');
+            if(d.refresh_token) localStorage.setItem('sb_refresh_token', d.refresh_token);
+          }
+          cb();
+        }).catch(function(){ cb(); });
+      };
+      _restoreToken(function(){
+        sbLoad().then(loaded=>{
+          setSyncStatus(loaded?'ok':'error');
+          if(loaded) setTimeout(()=>setSyncStatus('idle'),3000);
+          renderAll(); checkBackupReminder();
+        });
+      }); // fin _restoreToken
     }
   }
 });
