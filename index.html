@@ -3686,7 +3686,7 @@ function patientGradient(p){
   // Convert to HSL for pleasant colors
   var hue1 = h1 % 360;
   var hue2 = (hue1 + 40 + (h2 % 80)) % 360;
-  return 'linear-gradient(135deg, hsl('+hue1+',65%,52%), hsl('+hue2+',72%,44%))';
+  return 'linear-gradient(135deg, hsl('+hue1+',35%,62%), hsl('+hue2+',40%,52%))';
 }
 
 function patientInitials(p){
@@ -3832,10 +3832,10 @@ function renderPatients(){
             ${p.domicile?'<span title="Séances à domicile" style="font-size:13px;">🏠</span>':''}
 
             ${p.isNew?'<span title="Importé récemment" style="font-size:10px;background:#3b82f6;color:white;border-radius:8px;padding:1px 7px;font-weight:600;letter-spacing:.3px;">NEW</span>':''}
-            ${isPerdVue(p)?'<span title="Pas de séance depuis 4 semaines" style="font-size:10px;background:#f97316;color:white;border-radius:8px;padding:1px 7px;font-weight:600;">👻 Perdu de vue</span>':''}
-            ${hasAlerteCarteVitale(p)?'<span class="badge-cartevitale" title="3 séances consécutives sans carte vitale" style="font-size:10px;background:#dc2626;color:white;border-radius:8px;padding:1px 7px;font-weight:600;">✳️ Carte vitale</span>':''}
+            ${isPerdVue(p)?'<span title="Pas de séance depuis 4 semaines" style="font-size:10px;background:#FEF3EA;color:#C4723A;border:1px solid #F0B88A;border-radius:8px;padding:1px 7px;font-weight:600;">Perdu de vue</span>':''}
+            ${hasAlerteCarteVitale(p)?'<span class="badge-cartevitale" title="3 séances consécutives sans carte vitale" style="font-size:10px;background:#FDF4E3;color:#B87C2A;border:1px solid #E8B96A;border-radius:8px;padding:1px 7px;font-weight:600;">⚠ Carte vitale</span>':''}
             ${p.enCollab?'<span title="En collaboration" style="font-size:11px;opacity:.55;">🤝</span>':''}
-            ${p.portail==='autonome'?'<span onclick="event.stopPropagation()" title="Portail autonome" style="font-size:10px;background:#7c3aed;color:white;border-radius:8px;padding:1px 7px;font-weight:600;">🟣 Autonome</span>':p.portail==='surbooking'?'<span onclick="event.stopPropagation()" title="Portail surbooking" style="font-size:10px;background:#ea580c;color:white;border-radius:8px;padding:1px 7px;font-weight:600;">🟠 Surbooking</span>':''}
+            ${p.portail==='autonome'?'<span onclick="event.stopPropagation()" title="Portail autonome" style="font-size:10px;background:#EAF2EC;color:#3D6B4F;border:1px solid #8BB89A;border-radius:8px;padding:1px 7px;font-weight:600;">Autonome</span>':p.portail==='surbooking'?'<span onclick="event.stopPropagation()" title="Portail surbooking" style="font-size:10px;background:#FEF3EA;color:#C4723A;border:1px solid #F0B88A;border-radius:8px;padding:1px 7px;font-weight:600;">Surbooking</span>':''}
             ${p.genre==='F'?'<span title="Féminin" style="font-size:10px;color:var(--text-soft);opacity:.6;margin-left:1px;">♀</span>':p.genre==='M'?'<span title="Masculin" style="font-size:10px;color:var(--text-soft);opacity:.6;margin-left:1px;">♂</span>':''}
           </div>
           <div class="patient-meta">
