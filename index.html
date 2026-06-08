@@ -7509,7 +7509,7 @@ function printGir(pid){
     +'<div class="info-field"><label>R\u00e9f. scolaire</label><span>'+(girData.niveauScolaire||'\u2014')+'</span></div>'
     +'<div class="info-field"><label>Classe</label><span>'+(girData.classeEleve||'\u2014')+'</span></div>'
     +'</div>'
-    +'<div class="toolbar"><button class="btn btn-blue" onclick="window.print()">\uD83D\uDDB6\uFE0F Imprimer / PDF</button></div>'
+    +'<div class="toolbar"><button class="btn btn-blue" onclick="window.print()">🖨️ Imprimer</button><button class="btn" style="background:#7C3AED;color:white;margin-left:8px;" onclick="_dlPdf()">📥 Télécharger PDF</button></div>'
     +'<div class="body">'
     +'<div class="legend">'
     +'<div class="leg-item"><div class="leg-dot" style="background:#22C55E;"></div><span>Dans la norme</span></div>'
@@ -7529,6 +7529,8 @@ function printGir(pid){
     +'<div class="fno-note">Grille \u00e9labor\u00e9e par la FNO avec la participation de la DGESCO. Propos\u00e9e \u00e0 titre indicatif.</div>'
     +'</div>'
     +'<div class="pg-footer"><span>'+ortho.nom+' \u00b7 Orthophoniste</span><span>'+_girRef+'</span></div>'
+    +'<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"><\/script>'
+    +'<script>function _dlPdf(){var el=document.querySelector(".gir-page")||document.body;html2pdf().set({margin:0,filename:"grille_impact_residuel.pdf",image:{type:"jpeg",quality:0.98},html2canvas:{scale:2,useCORS:true},jsPDF:{unit:"mm",format:"a4",orientation:"portrait"}}).from(el).save();}<\/script>'
     +'</div></body></html>';
 
   openDocumentWindow(html);
@@ -11795,7 +11797,7 @@ function _dlPdf(){
 
     +'<div class="toolbar">'
     +'<span class="toolbar-hint">\u270f\ufe0f Cliquez sur les <span style="background:#FFFBEB;border-bottom:1.5px dashed #F59E0B;color:#92400E;padding:0 4px;border-radius:2px;font-size:11px;">champs en jaune</span> pour les modifier \u00b7 Cases \u00e0 cocher cliquables</span>'
-    +'<button class="btn btn-main" onclick="window.print()">\uD83D\uDDB6\uFE0F Imprimer / PDF</button>'
+    +'<button class="btn btn-main" onclick="window.print()">\uD83D\uDDB6\uFE0F Imprimer</button>'
     +'<button class="btn btn-blue" onclick="exportDocx()">\uD83D\uDCC4 Exporter Word</button>'
     +'<button class="btn" style="background:#7C3AED;color:white;" onclick="_dlPdf()">📥 Télécharger PDF</button>'
     +'</div>'
@@ -14941,7 +14943,7 @@ function exportCollabDoc(){
     +'</div></div>'
 
     +'<div class="toolbar">'
-    +'<button class="btn btn-orange" onclick="window.print()">\uD83D\uDDB6\uFE0F Imprimer / PDF</button>'
+    +'<button class="btn btn-orange" onclick="window.print()">\uD83D\uDDB6\uFE0F Imprimer</button>'
     +'<button class="btn" style="background:#7C3AED;color:white;" onclick="_dlPdf()">📥 Télécharger PDF</button>'
     +'</div>'
 
@@ -15578,7 +15580,8 @@ function genererFacture(){
     </div>
   </div>
   <div class="toolbar">
-    <button class="btn btn-blue" onclick="window.print()">🖨️ Imprimer / PDF</button>
+    <button class="btn btn-blue" onclick="window.print()">🖨️ Imprimer</button>
+    <button class="btn" style="background:#7C3AED;color:white;" onclick="_dlPdf()">📥 Télécharger PDF</button>
   </div>
   <div class="body">
   <div class="pat-block">
@@ -15631,7 +15634,7 @@ function genererFacture(){
   </div></div>
   </div>
   <div class="pg-footer"><span>${nomOrtho} · Orthophoniste</span><span>${_factRef}</span></div>
-  </div></body></html>`;
+  </div><script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"><\/script><script>function _dlPdf(){var el=document.querySelector(".page");html2pdf().set({margin:0,filename:"facture.pdf",image:{type:"jpeg",quality:0.98},html2canvas:{scale:2,useCORS:true},jsPDF:{unit:"mm",format:"a4",orientation:"portrait"}}).from(el).save();}<\/script></body></html>`;
   
   openDocumentWindow(html);
   closeModal('modal-facture');
@@ -16078,7 +16081,7 @@ function activerModeleFromModal(mid){
 <div id="print-overlay" style="display:none;position:fixed;inset:0;background:white;z-index:99999;flex-direction:column;">
   <div style="display:flex;align-items:center;gap:10px;padding:10px 16px;background:#1D9E75;flex-shrink:0;">
     <button onclick="closePrintOverlay()" style="background:rgba(255,255,255,.2);color:white;border:none;border-radius:6px;padding:6px 12px;font-size:13px;cursor:pointer;font-weight:600;">✕ Fermer</button>
-    <button onclick="var f=document.getElementById('print-frame');if(f&&f.contentWindow){f.contentWindow.focus();f.contentWindow.print();}" style="background:white;color:#1D9E75;border:none;border-radius:6px;padding:6px 14px;font-size:13px;cursor:pointer;font-weight:600;">🖨️ Imprimer / PDF</button>
+    <button onclick="var f=document.getElementById('print-frame');if(f&&f.contentWindow){f.contentWindow.focus();f.contentWindow.print();}" style="background:white;color:#1D9E75;border:none;border-radius:6px;padding:6px 14px;font-size:13px;cursor:pointer;font-weight:600;">🖨️ Imprimer</button>
     <span style="color:rgba(255,255,255,.8);font-size:12px;">Pour enregistrer en PDF : choisissez "Enregistrer en PDF" dans la boîte de dialogue d'impression</span>
   </div>
   <iframe id="print-frame" style="flex:1;border:none;width:100%;"></iframe>
