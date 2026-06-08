@@ -6995,34 +6995,84 @@ async function deleteMateriel(id){
   showToast('Matériel supprimé');
 }
 
+function _meditAddCb(input, cls){
+  // Ajouter une case a cocher quand on tape Entree ou virgule
+  input.onkeydown = function(e){
+    if(e.key==='Enter'||e.key===','){
+      e.preventDefault();
+      var v = input.value.trim();
+      if(!v) return;
+      // Verifier si existe deja
+      var existing = [...document.querySelectorAll('.'+cls)].find(function(cb){return cb.value===v;});
+      if(existing){ existing.checked=true; input.value=''; return; }
+      var lbl = document.createElement('label');
+      lbl.style.cssText = 'display:flex;align-items:center;gap:5px;font-size:12px;cursor:pointer;padding:3px 8px;background:white;border:1px solid var(--border);border-radius:20px;';
+      var cb = document.createElement('input');
+      cb.type='checkbox'; cb.className=cls; cb.value=v; cb.checked=true;
+      cb.style.accentColor='var(--green)';
+      lbl.appendChild(cb);
+      lbl.appendChild(document.createTextNode(v));
+      input.parentNode.insertBefore(lbl, input);
+      input.value='';
+    }
+  };
+}
+
+function _meditTagInput(input, allTags){
+  // Autocompletion tags : proposer les tags existants apres chaque virgule
+  var dl = document.getElementById('dl-tags-medit');
+  if(!dl){ dl=document.createElement('datalist'); dl.id='dl-tags-medit'; document.body.appendChild(dl); }
+  dl.innerHTML = allTags.map(function(t){return '<option value="'+t+'">';}).join('');
+  input.setAttribute('list','dl-tags-medit');
+  input.addEventListener('input', function(){
+    // Recalculer le datalist avec les tags pas encore saisis
+    var deja = input.value.split(',').map(function(t){return t.trim();}).filter(Boolean);
+    var restants = allTags.filter(function(t){ return !deja.slice(0,-1).includes(t); });
+    // Prefix du dernier tag en cours
+    var last = deja[deja.length-1]||'';
+    var filtered = restants.filter(function(t){ return t.toLowerCase().startsWith(last.toLowerCase()); });
+    // Pour que le datalist fonctionne sur le dernier segment, on propose des valeurs completes
+    var prefix = deja.slice(0,-1).join(', ');
+    dl.innerHTML = filtered.map(function(t){
+      var full = prefix ? prefix+', '+t : t;
+      return '<option value="'+full+'">';
+    }).join('');
+  });
+}
+
 function editMateriel(id){
   var m = id ? _materielData.find(function(x){return x.id===id;}) : null;
   var h = '<div style="padding:20px;max-width:600px;margin:0 auto;display:flex;flex-direction:column;gap:10px;">';
   h += '<div style="font-size:16px;font-weight:600;margin-bottom:4px;">'+(m?'Modifier le matériel':'Nouveau matériel')+'</div>';
   h += '<div class="field"><label>Titre</label><input type="text" id="medit-titre" value="'+(m?(m.titre||'').replace(/"/g,'&quot;'):'')+'"></div>';
-  // Construire les datalists depuis _materielData
+  // Valeurs uniques depuis _materielData
   var _auteurs = [...new Set(_materielData.map(function(x){return x.auteur;}).filter(Boolean))].sort();
   var _editeurs = [...new Set(_materielData.map(function(x){return x.editeur;}).filter(Boolean))].sort();
-  var _categories = [...new Set(_materielData.map(function(x){return x.categorie;}).filter(Boolean))].sort();
-  var _formats = [...new Set(_materielData.map(function(x){return x.format;}).filter(Boolean))].sort();
+  var _categories = [...new Set(_materielData.flatMap(function(x){return (x.categorie||'').split('/').map(function(c){return c.trim();}).filter(Boolean);}))].sort();
+  var _formats = [...new Set(_materielData.flatMap(function(x){return (x.format||'').split(/[,+]/).map(function(f){return f.trim();}).filter(Boolean);}))].sort();
   var _durees = [...new Set(_materielData.map(function(x){return x.duree;}).filter(Boolean))].sort();
   var _niveaux = [...new Set(_materielData.flatMap(function(x){return (x.niveau||'').split(',').map(function(n){return n.trim();}).filter(Boolean);}))].sort();
   var _localisations = [...new Set(_materielData.map(function(x){return x.localisation;}).filter(Boolean))].sort();
-  function _dl(id, vals){ return '<datalist id="'+id+'">'+vals.map(function(v){return '<option value="'+v.replace(/"/g,'&quot;')+'">'; }).join('')+'</datalist>'; }
+  var _allTags = [...new Set(_materielData.flatMap(function(x){return (x.tags||'').split(',').map(function(t){return t.trim();}).filter(Boolean);}))].sort();
+  function _dl(id, vals){ return '<datalist id="'+id+'">'+(vals||[]).map(function(v){return '<option value="'+v.replace(/"/g,'&quot;')+'">';}).join('')+'</datalist>'; }
   h += _dl('dl-auteur', _auteurs);
   h += _dl('dl-editeur', _editeurs);
-  h += _dl('dl-categorie', _categories);
-  h += _dl('dl-format', _formats);
   h += _dl('dl-duree', _durees);
   h += _dl('dl-niveau', _niveaux);
   h += _dl('dl-localisation', _localisations);
-  h += '<div class="field"><label>Auteur</label><input type="text" id="medit-auteur" list="dl-auteur" autocomplete="off" value="'+(m&&m.auteur||'').replace(/"/g,'&quot;')+'"></div>';
-  h += '<div class="field"><label>Éditeur</label><input type="text" id="medit-editeur" list="dl-editeur" autocomplete="off" value="'+(m&&m.editeur||'').replace(/"/g,'&quot;')+'"></div>';
-  h += '<div class="field"><label>Catégorie</label><input type="text" id="medit-categorie" list="dl-categorie" autocomplete="off" value="'+(m&&m.categorie||'')+'"></div>';
-  h += '<div class="field"><label>Format</label><input type="text" id="medit-format" list="dl-format" autocomplete="off" value="'+(m&&m.format||'')+'"></div>';
-  h += '<div class="field"><label>Durée</label><input type="text" id="medit-duree" list="dl-duree" autocomplete="off" value="'+(m&&m.duree||'')+'"></div>';
-  h += '<div class="field"><label>Niveau</label><input type="text" id="medit-niveau" list="dl-niveau" autocomplete="off" value="'+(m&&m.niveau||'')+'"></div>';
-  h += '<div class="field"><label>Rangé</label><input type="text" id="medit-localisation" list="dl-localisation" autocomplete="off" value="'+(m&&m.localisation||'')+'"></div>';
+  // Categorie : cases a cocher
+  var _catVals = (m&&m.categorie||'').split('/').map(function(c){return c.trim();}).filter(Boolean);
+  var _catBoxes = _categories.map(function(cat){var chk=_catVals.includes(cat)?'checked':'';return '<label style="display:flex;align-items:center;gap:5px;font-size:12px;cursor:pointer;padding:3px 8px;background:white;border:1px solid var(--border);border-radius:20px;"><input type="checkbox" class="medit-cat-cb" value="'+cat.replace(/"/g,'&quot;')+'" '+chk+' style="accent-color:var(--green);">'+cat+'</label>';}).join('');
+  h += '<div class="field"><label>Cat&#233;gorie <span style="font-size:10px;font-weight:400;color:var(--text-soft);">(cochez tout ce qui s\'applique)</span></label><div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px;padding:8px;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-sm);">'+_catBoxes+'<input type="text" id="medit-cat-new" placeholder="+ Nouvelle..." style="border:none;background:transparent;font-size:12px;outline:none;min-width:90px;" oninput="_meditAddCb(this,\'medit-cat-cb\')"></div></div>';
+  // Format : cases a cocher
+  var _fmtVals = (m&&m.format||'').split(/[,+]/).map(function(f){return f.trim();}).filter(Boolean);
+  var _fmtBoxes = _formats.map(function(fmt){var chk=_fmtVals.includes(fmt)?'checked':'';return '<label style="display:flex;align-items:center;gap:5px;font-size:12px;cursor:pointer;padding:3px 8px;background:white;border:1px solid var(--border);border-radius:20px;"><input type="checkbox" class="medit-fmt-cb" value="'+fmt.replace(/"/g,'&quot;')+'" '+chk+' style="accent-color:var(--green);">'+fmt+'</label>';}).join('');
+  h += '<div class="field"><label>Format <span style="font-size:10px;font-weight:400;color:var(--text-soft);">(cochez tout ce qui s\'applique)</span></label><div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px;padding:8px;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-sm);">'+_fmtBoxes+'<input type="text" id="medit-fmt-new" placeholder="+ Nouveau..." style="border:none;background:transparent;font-size:12px;outline:none;min-width:90px;" oninput="_meditAddCb(this,\'medit-fmt-cb\')"></div></div>';
+  h += '<div class="field"><label>Auteur</label><input type="text" id="medit-auteur" list="dl-auteur" autocomplete="off" value="'+(m&&m.auteur||'').replace(/"/g,'&quot;')+'">'+'</div>';
+  h += '<div class="field"><label>&#201;diteur</label><input type="text" id="medit-editeur" list="dl-editeur" autocomplete="off" value="'+(m&&m.editeur||'').replace(/"/g,'&quot;')+'">'+'</div>';
+  h += '<div class="field"><label>Dur&#233;e</label><input type="text" id="medit-duree" list="dl-duree" autocomplete="off" value="'+(m&&m.duree||'')+'">'+'</div>';
+  h += '<div class="field"><label>Niveau</label><input type="text" id="medit-niveau" list="dl-niveau" autocomplete="off" value="'+(m&&m.niveau||'')+'">'+'</div>';
+  h += '<div class="field"><label>Rang&#233;</label><input type="text" id="medit-localisation" list="dl-localisation" autocomplete="off" value="'+(m&&m.localisation||'')+'">'+'</div>';
   h += '<div class="field"><label>Prix</label><input type="number" id="medit-prix" value="'+(m&&m.prix_achat||'')+'"></div>';
   h += '</div>';
   h += '<div class="field"><label>Tags (séparés par virgule)</label><input type="text" id="medit-tags" value="'+(m&&m.tags||'').replace(/"/g,'&quot;')+'"></div>';
@@ -7032,6 +7082,8 @@ function editMateriel(id){
   h += '<button class="btn btn-green" onclick="saveMateriel('+(id?"'"+id+"'":'null')+');">Enregistrer</button>';
   h += '</div>';
   document.getElementById('modal-materiel-body').innerHTML = h;
+  var _tagsInput = document.getElementById('medit-tags');
+  if(_tagsInput) _meditTagInput(_tagsInput, _allTags||[]);
   openModal('modal-materiel');
 }
 
@@ -7040,8 +7092,8 @@ async function saveMateriel(id){
     titre: document.getElementById('medit-titre').value.trim(),
     auteur: document.getElementById('medit-auteur').value.trim() || null,
     editeur: document.getElementById('medit-editeur').value.trim() || null,
-    categorie: document.getElementById('medit-categorie').value.trim() || null,
-    format: document.getElementById('medit-format').value.trim() || null,
+    categorie: [...document.querySelectorAll('.medit-cat-cb:checked')].map(function(cb){return cb.value;}).join('/') || null,
+    format: [...document.querySelectorAll('.medit-fmt-cb:checked')].map(function(cb){return cb.value;}).join(', ') || null,
     duree: document.getElementById('medit-duree').value.trim() || null,
     niveau: document.getElementById('medit-niveau').value.trim() || null,
     localisation: document.getElementById('medit-localisation').value.trim() || null,
