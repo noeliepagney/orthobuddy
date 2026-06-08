@@ -4097,6 +4097,12 @@ function renderAttenteList(){
     if(_attenteFilters.collab && !a.collab) return false;
     // Filtre domicile
     if(_attenteFilters.domicile && !a.domicile) return false;
+    // Filtre recherche
+    if(_attenteFilters.search){
+      var q=_attenteFilters.search.toLowerCase();
+      var hay=(a.prenom+' '+a.nom+' '+(a.urgenceCause||'')+' '+(a.observations||'')).toLowerCase();
+      if(!hay.includes(q)) return false;
+    }
     // Filtre nouveaux
     if(_attenteFilters.nouveaux && !a.isNew) return false;
     // Filtre créneaux
@@ -4110,26 +4116,26 @@ function renderAttenteList(){
   // Statistiques liste d'attente (toujours sur la liste complète)
   var statsHtml = '';
   if(DB.attente.length > 0){
-    var list = DB.attente; // pour les stats
+    var listAll = DB.attente; // pour les stats
     var now2 = Date.now();
-    var totalJours = list.reduce(function(acc,a){
+    var totalJours = listAll.reduce(function(acc,a){
       return acc+(a.dateEntree?Math.floor((now2-new Date(a.dateEntree+'T00:00:00'))/(1000*60*60*24)):0);
     },0);
-    var moyJours = Math.round(totalJours/list.length);
+    var moyJours = Math.round(totalJours/listAll.length);
     var moyStr = moyJours>=30?Math.round(moyJours/30)+' mois':moyJours+' j';
-    var nbUrgent = list.filter(function(a){return a.urgence==='urgent';}).length;
+    var nbUrgent = listAll.filter(function(a){return a.urgence==='urgent';}).length;
     var nbPrio = list.filter(function(a){return a.urgence==='prioritaire';}).length;
-    var nbRenouveles = list.filter(function(a){return (a.renouvellements||0)>0;}).length;
-    var tauxRenou = Math.round(nbRenouveles/list.length*100);
+    var nbRenouveles = listAll.filter(function(a){return (a.renouvellements||0)>0;}).length;
+    var tauxRenou = Math.round(nbRenouveles/listAll.length*100);
     var nb3mois = list.filter(function(a){
       return a.dateEntree&&Math.floor((now2-new Date(a.dateEntree+'T00:00:00'))/(1000*60*60*24))>=90;
     }).length;
     var parParcours = {};
-    list.forEach(function(a){(a.parcours||[]).forEach(function(pcid){parParcours[pcid]=(parParcours[pcid]||0)+1;});});
+    listAll.forEach(function(a){(a.parcours||[]).forEach(function(pcid){parParcours[pcid]=(parParcours[pcid]||0)+1;});});
     var parcoursItems = Object.keys(parParcours).sort(function(a,b){return parParcours[b]-parParcours[a];}).slice(0,5).map(function(pcid){
       var pc=DB.parcours.find(function(x){return x.id===pcid;});
       if(!pc) return '';
-      var pct=Math.round(parParcours[pcid]/list.length*100);
+      var pct=Math.round(parParcours[pcid]/listAll.length*100);
       return '<div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;">'
         +'<span style="font-size:13px;">'+pc.emoji+'</span>'
         +'<span style="font-size:11px;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">'+pc.nom+'</span>'
@@ -4152,7 +4158,6 @@ function renderAttenteList(){
       +'<div style="font-size:11px;font-weight:600;color:var(--text-soft);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px;">Parcours demand\u00e9s</div>'
       +(parcoursItems||'<span style="font-size:11px;color:var(--text-soft);">Aucun parcours renseign\u00e9</span>')
       +'</div></div>';
-    list = DB.attente; // restaurer pour stats
   }
 
   // Ré-appliquer la liste filtrée pour l'affichage
@@ -4174,6 +4179,11 @@ function renderAttenteList(){
     if(_attenteFilters.nouveaux && !a.isNew) return false;
     if(_attenteFilters.creneaux && _attenteFilters.creneaux.length > 0){
       if(!_attenteFilters.creneaux.some(function(cr){ return a.creneaux && a.creneaux[cr]; })) return false;
+    }
+    if(_attenteFilters.search){
+      var q2=_attenteFilters.search.toLowerCase();
+      var hay2=(a.prenom+' '+a.nom+' '+(a.urgenceCause||'')+' '+(a.observations||'')).toLowerCase();
+      if(!hay2.includes(q2)) return false;
     }
     return true;
   });
