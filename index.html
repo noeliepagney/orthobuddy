@@ -7306,7 +7306,7 @@ function renderMaterielUI(){
   h += '<div style="display:flex;gap:8px;flex-wrap:wrap;">';
   DOMAINES.forEach(function(d){
     var active = selectedTags.includes(d);
-    h += '<label style="display:flex;align-items:center;gap:6px;padding:6px 12px;border-radius:20px;cursor:pointer;border:1px solid '+(active?'var(--green-mid)':'var(--border)')+';background:'+(active?'var(--green-ll)':'white')+';font-size:12px;">';
+    h += '<label style="display:flex;align-items:center;gap:6px;padding:6px 12px;border-radius:20px;cursor:pointer;border:1px solid '+(active?'#93C5FD':'var(--border)')+';background:'+(active?'#DBEAFE':'var(--surface)')+';color:'+(active?'#1D4ED8':'var(--text)')+';font-size:12px;">';
     h += '<input type="checkbox" data-tag="'+d.replace(/"/g,'&quot;')+'" '+(active?'checked':'')+' onchange="toggleMaterielTag(this.dataset.tag)" style="cursor:pointer;">';
     h += '<span>'+d+'</span>';
     h += '</label>';
@@ -7321,7 +7321,7 @@ function renderMaterielUI(){
     var tagsOfFamille = MATERIEL_FAMILLES[famille];
     var active = selectedTags.some(function(t){ return tagsOfFamille.includes(t); });
     var famActive = _materielFamilles && _materielFamilles.includes(famille);
-    h += '<label style="display:flex;align-items:center;gap:5px;padding:5px 12px;border-radius:20px;cursor:pointer;border:1px solid '+(famActive?'var(--green-d)':'var(--border)')+';background:'+(famActive?'var(--green-l)':'white')+';font-size:12px;white-space:nowrap;">';
+    h += '<label style="display:flex;align-items:center;gap:5px;padding:5px 12px;border-radius:20px;cursor:pointer;border:1px solid '+(famActive?'#C4B5FD':'var(--border)')+';background:'+(famActive?'#EDE9FE':'var(--surface)')+';color:'+(famActive?'#7C3AED':'var(--text)')+';font-size:12px;white-space:nowrap;">';
     h += '<input type="checkbox" '+(famActive?'checked':'')+' onchange="toggleMaterielFamille(\'' + famille.replace(/'/g,"\\'") + '\')" style="cursor:pointer;accent-color:var(--green);">';
     h += famille+'</label>';
   });
@@ -7373,7 +7373,7 @@ function renderMaterielUI(){
       np = np.trim();
       if(!np) return;
       var active = _materielNiveau===np;
-      h += '<span data-niv="'+np+'" onclick="setMaterielNiveau(this.dataset.niv)" style="font-size:11px;padding:3px 10px;border-radius:20px;cursor:pointer;border:1px solid '+(_materielNiveau===np?'var(--green-mid)':'var(--border)')+';background:'+(_materielNiveau===np?'var(--green-ll)':'white')+';color:'+(_materielNiveau===np?'var(--green-mid)':'var(--text)')+';white-space:nowrap;">'+np+'</span>';
+      h += '<span data-niv="'+np+'" onclick="setMaterielNiveau(this.dataset.niv)" style="font-size:11px;padding:3px 10px;border-radius:20px;cursor:pointer;border:1px solid '+(_materielNiveau===np?'var(--green-mid)':'var(--border)')+';background:'+(_materielNiveau===np?'var(--green-ll)':'var(--surface)')+';color:'+(_materielNiveau===np?'var(--green-mid)':'var(--text)')+';white-space:nowrap;">'+np+'</span>';
     });
   });
   h += '</div></div>';
