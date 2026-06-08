@@ -12381,6 +12381,54 @@ function getAllAlertes(){
 function getAlertesGlobales(){
   var all = [];
 
+  // ── Alertes RGPD ────────────────────────────────────────────────────────
+  var aujourdhui = new Date();
+  (DB.patients||[]).filter(function(p){return p.statut!=='termine';}).forEach(function(p){
+    // Dossier inactif : aucune séance depuis +6 mois
+    var seances = (DB.seances||[]).filter(function(s){return s.patientId===p.id;});
+    if(seances.length>0){
+      var derniereSeance = seances.map(function(s){return new Date(s.date+'T00:00:00');}).sort(function(a,b){return b-a;})[0];
+      var moisInactif = (aujourdhui - derniereSeance)/(1000*60*60*24*30);
+      if(moisInactif>=6){
+        all.push({
+          niveau:'info', categorie:'RGPD', icon:'📂',
+          titre:'Dossier inactif',
+          texte:(p.prenom||'')+' '+(p.nom||'')+' — Dernière séance il y a '+Math.floor(moisInactif)+' mois. Pensez à mettre à jour le statut du dossier.',
+          action:"openPatient('"+p.id+"')", actionLabel:'Voir le dossier',
+          patient:p
+        });
+      }
+    }
+  });
+  // Dossiers à supprimer : clos depuis trop longtemps
+  (DB.patients||[]).filter(function(p){return p.statut==='termine'&&p.date_cloture;}).forEach(function(p){
+    var dateCloture = new Date(p.date_cloture+'T00:00:00');
+    var ansClos = (aujourdhui - dateCloture)/(1000*60*60*24*365);
+    var ddn = p.ddn ? new Date(p.ddn+'T00:00:00') : null;
+    var estMineur = ddn && ((dateCloture-ddn)/(1000*60*60*24*365)) < 18;
+    var dateNaissance28 = ddn ? new Date(ddn.getFullYear()+28, ddn.getMonth(), ddn.getDate()) : null;
+    var limite = 20;
+    if(p.date_deces) limite = 10;
+    else if(estMineur && dateNaissance28 && dateNaissance28 > new Date(dateCloture.getFullYear()+20, dateCloture.getMonth(), dateCloture.getDate())) limite = (dateNaissance28.getFullYear()-dateCloture.getFullYear());
+    if(ansClos>=limite){
+      all.push({
+        niveau:'urgent', categorie:'RGPD', icon:'🗑️',
+        titre:'Dossier à supprimer (RGPD)',
+        texte:(p.prenom||'')+' '+(p.nom||'')+' — Dossier clos depuis '+Math.floor(ansClos)+' ans (limite légale : '+limite+' ans). Ce dossier doit être supprimé.',
+        action:"openPatient('"+p.id+"')", actionLabel:'Voir le dossier',
+        patient:p
+      });
+    } else if(ansClos>=(limite-2)){
+      all.push({
+        niveau:'warn', categorie:'RGPD', icon:'⏰',
+        titre:'Dossier bientôt à supprimer (RGPD)',
+        texte:(p.prenom||'')+' '+(p.nom||'')+' — Dossier clos depuis '+Math.floor(ansClos)+' ans. Limite légale dans moins de 2 ans ('+limite+' ans au total).',
+        action:"openPatient('"+p.id+"')", actionLabel:'Voir le dossier',
+        patient:p
+      });
+    }
+  });
+
   // ── Alertes liste d'attente ──────────────────────────────────────────────
   (DB.attente||[]).forEach(function(a){
     var joursAttente = a.dateEntree ? Math.floor((Date.now()-new Date(a.dateEntree+'T00:00:00'))/(1000*60*60*24)) : 0;
