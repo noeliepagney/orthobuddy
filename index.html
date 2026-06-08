@@ -7531,6 +7531,21 @@ function _meditTagInput(input, allTags){
   });
 }
 
+function toggleMeditTag(el){
+  var active = el.dataset.active === '1';
+  if(active){
+    el.dataset.active = '0';
+    el.style.border = '1px solid var(--border)';
+    el.style.background = 'white';
+    el.style.color = 'var(--text)';
+  } else {
+    el.dataset.active = '1';
+    el.style.border = '1px solid var(--green-mid)';
+    el.style.background = 'var(--green-ll)';
+    el.style.color = 'var(--green-mid)';
+  }
+}
+
 function editMateriel(id){
   var m = id ? _materielData.find(function(x){return x.id===id;}) : null;
   var h = '<div style="padding:20px;max-width:600px;margin:0 auto;display:flex;flex-direction:column;gap:10px;">';
@@ -7569,21 +7584,23 @@ function editMateriel(id){
   var _domaineBoxes = _DOMAINES.map(_tagBox).join('');
   h += '<div class="field"><label>Tags &#8212; Domaines principaux</label><div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px;padding:8px;background:#EBF4FF;border:1px solid #93C5FD;border-radius:var(--radius-sm);">'+_domaineBoxes+'</div></div>';
   var _autresTagsVal = _tagVals.filter(function(t){return !_DOMAINES.includes(t);}).join(', ');
-  h += _dl('dl-autres-tags', _autresTags);
-  h += '<div class="field"><label>Tags &#8212; Autres <span style="font-size:10px;font-weight:400;color:var(--text-soft);">(s&#233;par&#233;s par virgule)</span></label><input type="text" id="medit-autres-tags" list="dl-autres-tags" autocomplete="off" value="'+_autresTagsVal.replace(/"/g,'&quot;')+'" placeholder="ex: lecture, phonologie..."></div>';
-  setTimeout(function(){
-    var inp = document.getElementById('medit-autres-tags');
-    if(!inp) return;
-    inp.addEventListener('input', function(){
-      var parts = inp.value.split(',');
-      var last = parts[parts.length-1].trim().toLowerCase();
-      var deja = parts.slice(0,-1).map(function(t){return t.trim();}).filter(Boolean);
-      var filtered = _autresTags.filter(function(t){return t.toLowerCase().startsWith(last) && !deja.includes(t);});
-      var prefix = deja.join(', ');
-      var dl2 = document.getElementById('dl-autres-tags');
-      if(dl2) dl2.innerHTML = filtered.map(function(t){ var full=prefix?prefix+', '+t:t; return '<option value="'+full.replace(/"/g,'&quot;')+'">';}).join('');
+  h += '<div class="field"><label>Tags &#8212; Thématiques</label>';
+  var _activeAutresTags = _autresTagsVal.split(',').map(function(x){return x.trim();}).filter(Boolean);
+  Object.keys(MATERIEL_FAMILLES).forEach(function(famille){
+    var tagsF = MATERIEL_FAMILLES[famille];
+    h += '<div style="margin-top:8px;">';
+    h += '<div style="font-size:10px;font-weight:600;color:var(--text-soft);text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px;">'+famille+'</div>';
+    h += '<div style="display:flex;flex-wrap:wrap;gap:5px;" id="medit-autres-tags-wrap">';
+    tagsF.forEach(function(t){
+      var isActive = _activeAutresTags.includes(t);
+      h += '<span onclick="toggleMeditTag(this)" data-tag="'+t.replace(/"/g,'&quot;')+'" data-active="'+(isActive?'1':'0')+'" style="font-size:11px;cursor:pointer;padding:3px 9px;border-radius:20px;border:1px solid '+(isActive?'var(--green-mid)':'var(--border)')+';background:'+(isActive?'var(--green-ll)':'white')+';color:'+(isActive?'var(--green-mid)':'var(--text)')+';user-select:none;">'+t+'</span>';
     });
-  }, 50);
+    h += '</div></div>';
+  });
+  h += '<div style="margin-top:10px;padding-top:8px;border-top:1px solid var(--border);">';
+  h += '<div style="font-size:10px;font-weight:600;color:var(--text-soft);text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px;">Nouveau tag personnalisé</div>';
+  h += '<input type="text" id="medit-autretag-new" placeholder="+ Taper et appuyer sur Entrée..." style="width:100%;padding:5px 8px;font-size:12px;border:1px solid var(--border);border-radius:var(--radius-sm);" onkeydown="if(event.key===\'Enter\'){event.preventDefault();var v=this.value.trim();if(v){var spans=document.querySelectorAll(\'#medit-autres-tags-wrap span[data-tag=\'+JSON.stringify(v)+\']\');if(!spans.length){var firstWrap=document.querySelector(\'#medit-autres-tags-wrap\');var s=document.createElement(\'span\');s.onclick=function(){toggleMeditTag(this);};s.dataset.tag=v;s.dataset.active=\'1\';s.textContent=v;s.style.cssText=\'font-size:11px;cursor:pointer;padding:3px 9px;border-radius:20px;border:1px solid var(--green-mid);background:var(--green-ll);color:var(--green-mid);user-select:none;\';firstWrap.appendChild(s);}else{spans[0].dataset.active=\'1\';}this.value=\'\';}}"> ';
+  h += '</div></div>';
   // Format
   var _fmtVals = (m&&m.format||'').split(/[,+]/).map(function(f){return f.trim();}).filter(Boolean);
   var _fmtBoxes = _formats.map(function(fmt){var chk=_fmtVals.includes(fmt)?'checked':'';return '<label style="display:flex;align-items:center;gap:5px;font-size:12px;cursor:pointer;padding:3px 8px;background:white;border:1px solid var(--border);border-radius:20px;"><input type="checkbox" class="medit-fmt-cb" value="'+fmt.replace(/"/g,'&quot;')+'" '+chk+' style="accent-color:var(--green);">'+fmt+'</label>';}).join('');
@@ -7623,7 +7640,7 @@ async function saveMateriel(id){
     niveau: document.getElementById('medit-niveau').value.trim() || null,
     localisation: document.getElementById('medit-localisation').value.trim() || null,
     prix_achat: parseFloat(document.getElementById('medit-prix').value) || null,
-    tags: (function(){ var d=[...document.querySelectorAll('.medit-tag-cb:checked')].map(function(cb){return cb.value;}); var a=(document.getElementById('medit-autres-tags')||{}).value||''; var at=a.split(',').map(function(t){return t.trim();}).filter(Boolean); return [...d,...at].join(', ') || null; })(),
+    tags: (function(){ var d=[...document.querySelectorAll('.medit-tag-cb:checked')].map(function(cb){return cb.value;}); var at=[...document.querySelectorAll('#medit-autres-tags-wrap span[data-active="1"]')].map(function(s){return s.dataset.tag;}); return [...d,...at].join(', ') || null; })(),
     lien: document.getElementById('medit-lien').value.trim() || null,
     description: document.getElementById('medit-desc').value.trim() || null,
     _j_ai: document.getElementById('medit-jai').checked,
