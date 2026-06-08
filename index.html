@@ -2255,6 +2255,59 @@ async function sbLoad(){
   }
 }
 
+
+async function loadObjectifsBibliotheque(){
+  try {
+    var r = await fetch(SB_URL+'/rest/v1/objectifs_bibliotheque?order=domaine.asc,sous_domaine.asc,titre.asc&select=*', {
+      headers: {...sbHeaders(), 'Range-Unit':'items', 'Range':'0-999', 'Prefer':'count=none'}
+    });
+    if(!r.ok) return;
+    var rows = await r.json();
+    if(!Array.isArray(rows) || !rows.length) return;
+    // Regrouper par domaine → sous_domaine → objectifs
+    var domainesMap = {};
+    rows.forEach(function(row){
+      if(!domainesMap[row.domaine]) domainesMap[row.domaine] = {domaine: row.domaine, objectifs: [], _sousMap: {}};
+      var d = domainesMap[row.domaine];
+      if(row.type === 'long'){
+        if(!d._sousMap[row.titre]){
+          d._sousMap[row.titre] = {titre: row.titre, sousObjectifs: [], _id: row.id, _userId: row.user_id, _estCommun: row.est_commun};
+          d.objectifs.push(d._sousMap[row.titre]);
+        }
+      } else if(row.type === 'court' && row.sous_domaine){
+        if(!d._sousMap[row.sous_domaine]){
+          d._sousMap[row.sous_domaine] = {titre: row.sous_domaine, sousObjectifs: []};
+          d.objectifs.push(d._sousMap[row.sous_domaine]);
+        }
+        d._sousMap[row.sous_domaine].sousObjectifs.push(row.titre);
+      }
+    });
+    // Mapper couleur et emoji depuis OBJECTIFS_BIBLIOTHEQUE existant
+    var metaMap = {};
+    OBJECTIFS_BIBLIOTHEQUE.forEach(function(d){ metaMap[d.domaine] = {couleur: d.couleur, emoji: d.emoji}; });
+    var metaDefaut = {
+      'Bégaiement':              {couleur:'#185FA5', emoji:'🗣️'},
+      'Cognition mathématique':  {couleur:'#2D4E8A', emoji:'🔢'},
+      'Langage écrit':           {couleur:'#2D6B4A', emoji:'✍️'},
+      'Langage oral':            {couleur:'#5C3D8A', emoji:'💬'},
+    };
+    _objectifsBibliotheque = Object.values(domainesMap).map(function(d){
+      delete d._sousMap;
+      var meta = metaMap[d.domaine] || metaDefaut[d.domaine] || {couleur:'#5C8A6B', emoji:'🎯'};
+      d.couleur = meta.couleur;
+      d.emoji = meta.emoji;
+      return d;
+    });
+    console.log('Objectifs bibliotheque charges: '+rows.length+' entrees');
+  } catch(e) {
+    console.warn('Erreur chargement objectifs:', e);
+  }
+}
+
+function getObjectifsBibliotheque(){
+  return _objectifsBibliotheque || OBJECTIFS_BIBLIOTHEQUE;
+}
+
 async function sbSave(){
   setSyncStatus('syncing');
   try{
@@ -4454,6 +4507,7 @@ function openPatientModalFromAttente(a){
 }
 
 // ─── Bibliothèque de modèles d'objectifs ───
+var _objectifsBibliotheque = null; // null = pas encore chargé depuis Supabase
 var OBJECTIFS_BIBLIOTHEQUE = [
   {
     domaine: 'Bégaiement',
@@ -5151,7 +5205,7 @@ function openBibliothequeModal(pid) {
 
   var B = '<div style="overflow-y:auto;flex:1;padding:12px;">';
 
-  OBJECTIFS_BIBLIOTHEQUE.forEach(function(domaine, di) {
+  getObjectifsBibliotheque().forEach(function(domaine, di) {
     var did = 'bib_dom_'+di;
     var importedCount = domaine.objectifs.filter(function(obj){
       return p.objectifs.some(function(o){return o.titre===obj.titre&&o.type==='long';});
@@ -5264,7 +5318,7 @@ function _biblioToggleLT(ltCheckbox) {
 
 function _biblioSelectAll() {
   // Expand all domains and SO panels first, then check all
-  OBJECTIFS_BIBLIOTHEQUE.forEach(function(d,di){
+  getObjectifsBibliotheque().forEach(function(d,di){
     var domEl = document.getElementById('bib_dom_'+di);
     var domArr = document.getElementById('bib_dom_'+di+'-arrow');
     if(domEl){ domEl.style.display='block'; if(domArr) domArr.style.transform='rotate(180deg)'; }
@@ -5287,7 +5341,7 @@ function _biblioImport(pid) {
   var imported = 0;
 
   // For each domain
-  OBJECTIFS_BIBLIOTHEQUE.forEach(function(domaine, di) {
+  getObjectifsBibliotheque().forEach(function(domaine, di) {
     domaine.objectifs.forEach(function(obj, oi) {
       var ltCb = document.getElementById('bib_lt_'+di+'_'+oi);
       // Check if any SO is checked even if LT isn't explicitly checked
@@ -8415,6 +8469,51 @@ function _doExportPDF(p, seances, age){
 
   doc.save('dossier_'+(p.prenom||'')+'_'+(p.nom||'')+'_'+new Date().toISOString().slice(0,10)+'.pdf');
   showToast('PDF exporté ✅');
+}
+
+
+async function migrateObjectifsToSupabase(){
+  if(!confirm('Migrer tous les objectifs vers Supabase ? Cette action est irreversible.')) return;
+  var rows = [];
+  var userId = getSbUserId();
+  getObjectifsBibliotheque().forEach(function(domaine){
+    (domaine.objectifs||[]).forEach(function(obj){
+      rows.push({
+        user_id: userId,
+        domaine: domaine.domaine,
+        sous_domaine: null,
+        titre: obj.titre,
+        type: 'long',
+        est_commun: true
+      });
+      (obj.sousObjectifs||[]).forEach(function(so){
+        rows.push({
+          user_id: userId,
+          domaine: domaine.domaine,
+          sous_domaine: obj.titre,
+          titre: so,
+          type: 'court',
+          est_commun: true
+        });
+      });
+    });
+  });
+  console.log('Migration de '+rows.length+' objectifs...');
+  // Inserer par batch de 100
+  var batches = [];
+  for(var i=0;i<rows.length;i+=100) batches.push(rows.slice(i,i+100));
+  var ok = 0;
+  for(var b=0;b<batches.length;b++){
+    var r = await fetch(SB_URL+'/rest/v1/objectifs_bibliotheque', {
+      method:'POST',
+      headers:{...sbHeaders(),'Content-Type':'application/json','Prefer':'return=minimal'},
+      body:JSON.stringify(batches[b])
+    });
+    if(r.ok) ok += batches[b].length;
+    else console.error('Erreur batch '+b, await r.text());
+  }
+  showToast(ok+' objectifs migrés ✅');
+  console.log('Migration terminée: '+ok+'/'+rows.length);
 }
 
 function deletePatient(pid){
@@ -15770,7 +15869,7 @@ load().then(function(){
         sbLoad().then(loaded=>{
           setSyncStatus(loaded?'ok':'error');
           if(loaded) setTimeout(()=>setSyncStatus('idle'),3000);
-          renderAll(); checkBackupReminder();
+          loadObjectifsBibliotheque(); renderAll(); checkBackupReminder();
         });
       }); // fin _restoreToken
     }
