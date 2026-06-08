@@ -473,18 +473,18 @@ html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);colo
       <button class="nav-item active" onclick="showPage('patients','actif')" id="nav-patients">
         <span class="nav-icon"><i class="ti ti-users"></i></span><span class="nav-label">Mes patients</span>
         <span id="nav-count-actif" style="margin-left:auto;background:var(--green-l);color:var(--green-mid);border-radius:20px;font-size:10px;padding:1px 7px;font-weight:600;"></span>
-        <span id="bday-nav-badge" style="display:none;background:#e05;color:white;border-radius:20px;font-size:10px;padding:1px 7px;font-weight:700;">🎂</span>
+        <span id="bday-nav-badge" style="display:none;background:#FFF0F3;color:#C2185B;border:1px solid #F8BBD0;border-radius:20px;font-size:10px;padding:1px 7px;font-weight:700;">🎂</span>
       </button>
       <button class="nav-item" onclick="showPage('agenda')" id="nav-agenda">
         <span class="nav-icon"><i class="ti ti-calendar"></i></span><span class="nav-label">Mon agenda</span>
       </button>
       <button class="nav-item" onclick="showPage('creneaux')" id="nav-creneaux">
-        <span class="nav-icon"><i class="ti ti-calendar-event"></i></span><span class="nav-label">Créneaux ouverts</span><span id="creneaux-notif-badge" style="display:none;background:var(--red);color:white;border-radius:10px;font-size:9px;padding:0 5px;margin-left:4px;font-weight:700;"></span>
+        <span class="nav-icon"><i class="ti ti-calendar-event"></i></span><span class="nav-label">Créneaux ouverts</span><span id="creneaux-notif-badge" style="display:none;background:var(--red-l);color:var(--red);border:1px solid var(--red-b);border-radius:10px;font-size:9px;padding:0 5px;margin-left:4px;font-weight:700;"></span>
       </button>
       <button class="nav-item" onclick="showPage('alertes')" id="nav-alertes" style="flex-wrap:nowrap;overflow:hidden;">
         <span class="nav-icon" style="flex-shrink:0;"><i class="ti ti-bell"></i></span>
         <span class="nav-label" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Alertes</span>
-        <span id="nav-alertes-badge" style="display:none;flex-shrink:0;margin-left:auto;background:var(--red);color:white;border-radius:20px;font-size:10px;padding:1px 6px;font-weight:700;"></span>
+        <span id="nav-alertes-badge" style="display:none;flex-shrink:0;margin-left:auto;background:var(--red-l);color:var(--red);border:1px solid var(--red-b);border-radius:20px;font-size:10px;padding:1px 6px;font-weight:700;"></span>
       </button>
       <button class="nav-item" onclick="showPage('resultats')" id="nav-resultats">
         <span class="nav-icon"><i class="ti ti-chart-bar"></i></span><span class="nav-label">Résultats</span>
@@ -495,7 +495,7 @@ html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);colo
       <button class="nav-item nav-item-secondary" onclick="showPage('patients','attente')" id="nav-patients-attente">
         <span class="nav-icon"><i class="ti ti-clock"></i></span><span class="nav-label">Liste d'attente</span>
         <span id="nav-count-attente" style="margin-left:auto;background:#EDE9FE;color:#6D28D9;border-radius:20px;font-size:10px;padding:1px 7px;font-weight:600;"></span>
-        <span id="nav-attente-alert" style="display:none;margin-left:2px;background:var(--red);color:white;border-radius:20px;font-size:10px;padding:1px 6px;font-weight:700;">!</span>
+        <span id="nav-attente-alert" style="display:none;margin-left:2px;background:var(--amber-l);color:var(--amber);border:1px solid var(--amber-b);border-radius:20px;font-size:10px;padding:1px 6px;font-weight:700;">!</span>
       </button>
       <button class="nav-item nav-item-secondary" onclick="showPage('patients','pause')" id="nav-patients-pause">
         <span class="nav-icon"><i class="ti ti-leaf"></i></span><span class="nav-label">En suspens</span>
@@ -11598,8 +11598,8 @@ function updateTachesBadge(){
   var n=(DB.taches||[]).filter(function(t){return !t.done;}).length;
   var eu=document.getElementById('nav-taches-urgent');
   var et=document.getElementById('nav-taches-total');
-  if(eu){eu.textContent='🔴 '+u;eu.style.display=u?'inline':'none';}
-  if(et){et.textContent='('+n+')';et.style.display=n?'inline':'none';}
+  if(eu){eu.textContent='● '+u;eu.style.display=u?'inline':'none';}
+  if(et){et.textContent='('+n+')';et.style.display=(n&&n!==u)?'inline':'none';}
 }
 function renderTacheItem(t,showPat){
   var st=getTacheDateStatus(t.date);
