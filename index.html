@@ -536,7 +536,7 @@ html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);colo
     <div class="sidebar-bottom">
       <div id="sync-indicator" style="text-align:center;padding:4px 8px 6px;min-height:20px;"></div>
       <div id="services-health" style="text-align:center;padding:0 8px 8px;min-height:16px;"></div>
-      <button class="btn btn-sm btn-ghost" onclick="doLogout()" style="width:100%;justify-content:center;margin-top:4px;color:var(--red);border-color:transparent;">
+      <button class="btn btn-sm btn-ghost" onclick="doLogout()" style="width:100%;justify-content:center;margin-top:4px;color:var(--text-soft);border-color:transparent;">
         <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
         <span class="nav-label">Déconnexion</span>
       </button>
@@ -2496,8 +2496,8 @@ async function checkServicesHealth(){
   } catch(e){ sbOk = false; }
 
   var sbHtml = sbOk
-    ? '<span style="font-size:10px;color:var(--green-mid);">🟢 Supabase</span>'
-    : '<span style="font-size:10px;color:var(--red);">🔴 Supabase hors ligne</span>';
+    ? '<span style="font-size:10px;color:var(--text-soft);">● Supabase</span>'
+    : '<span style="font-size:10px;color:#B45A3C;">● Supabase hors ligne</span>';
 
   el.innerHTML = sbHtml;
 
@@ -2514,8 +2514,8 @@ function setSyncStatus(s){
   const states={
     idle:  {icon:'☁️', text:'',        color:'var(--text-soft)'},
     syncing:{icon:'🔄',text:'Sync…',   color:'var(--amber)'},
-    ok:    {icon:'✅', text:'Sauvegardé',color:'var(--green-mid)'},
-    error: {icon:'⚠️', text:'Hors ligne',color:'var(--red)'},
+    ok:    {icon:'☁️', text:'Sauvegardé',color:'var(--text-soft)'},
+    error: {icon:'⚠️', text:'Hors ligne',color:'#B45A3C'},
   };
   const st=states[s]||states.idle;
   el.innerHTML=`<span style="color:${st.color};font-size:11px;">${st.icon} ${st.text}</span>`;
@@ -15416,7 +15416,7 @@ function renderRecapCollab(taux, collabNom){
 
   html += '<div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:20px;">';
   html += '<div class="result-stat-card" style="flex:1;min-width:140px;"><div style="font-size:11px;color:var(--text-soft);">Total brut</div><div style="font-size:18px;font-weight:700;color:var(--text);">'+totalBrut.toFixed(2)+' €</div></div>';
-  html += '<div class="result-stat-card" style="flex:1;min-width:140px;background:#FFF7ED;border-color:#FED7AA;"><div style="font-size:11px;color:#EA580C;">Rétrocession '+taux+'% → '+collabNom+'</div><div style="font-size:18px;font-weight:700;color:#EA580C;">'+totalRetro.toFixed(2)+' €</div></div>';
+  html += '<div class="result-stat-card" style="flex:1;min-width:140px;background:#FEF9F0;border-color:#E8D5B0;"><div style="font-size:11px;color:var(--text-soft);">Rétrocession '+taux+'% → '+collabNom+'</div><div style="font-size:18px;font-weight:700;color:var(--text-mid);">'+totalRetro.toFixed(2)+' €</div></div>';
   html += '<div class="result-stat-card" style="flex:1;min-width:140px;background:var(--green-ll);border-color:#9FE1CB;"><div style="font-size:11px;color:var(--green-mid);">Votre net</div><div style="font-size:18px;font-weight:700;color:var(--green-mid);">'+totalNet.toFixed(2)+' €</div></div>';
   html += '</div>';
 
@@ -15445,7 +15445,7 @@ function renderRecapCollab(taux, collabNom){
     if(p) html += '<div class="avatar" style="width:28px;height:28px;font-size:10px;flex-shrink:0;background:'+patientGradient(p)+';">'+initials+'</div>';
     html += '<span class="result-patient-name">'+(p?p.prenom+' '+p.nom:'—')+'</span>';
     html += '<span style="font-size:11px;color:var(--text-soft);">'+grp.items.length+' acte'+(grp.items.length>1?'s':'')+'</span>';
-    html += '<span style="font-size:13px;color:#EA580C;font-weight:600;margin-left:auto;">-'+patRetro.toFixed(2)+' €</span>';
+    html += '<span style="font-size:13px;color:#B45A3C;font-weight:500;margin-left:auto;">-'+patRetro.toFixed(2)+' €</span>';
     html += '</div>';
     html += '<div class="result-seances-list" style="display:none;">';
     grp.items.forEach(function(i){
@@ -15454,7 +15454,7 @@ function renderRecapCollab(taux, collabNom){
       html += '<span class="result-seance-date">'+d+'</span>';
       html += '<span class="result-seance-amo">'+i.label+'</span>';
       html += '<span style="font-size:11px;color:var(--text-soft);">'+i.brut.toFixed(2)+' €</span>';
-      html += '<span style="font-size:11px;color:#EA580C;">-'+i.retro.toFixed(2)+' €</span>';
+      html += '<span style="font-size:11px;color:#B45A3C;">-'+i.retro.toFixed(2)+' €</span>';
       html += '<span class="result-seance-amount">'+(i.brut-i.retro).toFixed(2)+' €</span>';
       html += '</div>';
     });
@@ -15566,7 +15566,7 @@ function exportCollabDoc(){
         +'<td style="color:#5F5E5A;font-size:11px;">'+nbLabel+'</td>'
         +'<td><span style="font-weight:600;">'+g.label+'</span>'+(datesStr?'<br><span style="font-size:10px;color:#9B9A95;">'+datesStr+'</span>':'')+'</td>'
         +'<td class="r">'+g.brut.toFixed(2)+' €</td>'
-        +'<td class="r" style="color:#EA580C;">−'+g.retro.toFixed(2)+' €</td>'
+        +'<td class="r" style="color:#B45A3C;">−'+g.retro.toFixed(2)+' €</td>'
         +'</tr>';
     });
     lignesPatients += '<tr class="subtotal-row">'
