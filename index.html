@@ -6755,6 +6755,7 @@ function getMaterielFiltres(){
   if(_materielJai==='non') data = data.filter(function(m){ return !m.j_ai; });
   if(_materielCommun==='commun') data = data.filter(function(m){ return m.est_commun===true; });
   if(_materielCommun==='defaut') data = data.filter(function(m){ return m.j_ai_defaut===true; });
+  if(_materielCommun==='both') data = data.filter(function(m){ return m.est_commun===true && m.j_ai_defaut===true; });
   return data;
   return data;
 }
@@ -6912,11 +6913,12 @@ function renderMaterielUI(){
   h += '<option value="non"'+((_materielJai==='non')?' selected':'')+'>❌ Je ne possède pas</option>';
   h += '</select>';
   if(isAdmin()){
-    h += '<select onchange="_materielCommun=this.value;_materielPage=0;renderMaterielUI()" style="'+sel+'">';
-    h += '<option value="">🌐 / 🎁</option>';
-    h += '<option value="commun"'+(_materielCommun==='commun'?' selected':'')+'>🌐 Commun</option>';
-    h += '<option value="defaut"'+(_materielCommun==='defaut'?' selected':'')+'>🎁 J\'ai par défaut</option>';
-    h += '</select>';
+    var _bgC = (_materielCommun==='commun'||_materielCommun==='both')?'var(--green)':'var(--bg)';
+    var _bgD = (_materielCommun==='defaut'||_materielCommun==='both')?'var(--green)':'var(--bg)';
+    var _colC = (_materielCommun==='commun'||_materielCommun==='both')?'white':'var(--text)';
+    var _colD = (_materielCommun==='defaut'||_materielCommun==='both')?'white':'var(--text)';
+    h += '<button onclick="_materielCommun=(_materielCommun===\'commun\'?\'\':(_materielCommun===\'defaut\'?\'both\':\'commun\'));_materielPage=0;renderMaterielUI()" style="padding:4px 8px;border:1px solid var(--border);border-radius:var(--radius-sm);background:'+_bgC+';color:'+_colC+';font-size:12px;cursor:pointer;">🌐 Commun</button>';
+    h += '<button onclick="_materielCommun=(_materielCommun===\'defaut\'?\'\':(_materielCommun===\'commun\'?\'both\':\'defaut\'));_materielPage=0;renderMaterielUI()" style="padding:4px 8px;border:1px solid var(--border);border-radius:var(--radius-sm);background:'+_bgD+';color:'+_colD+';font-size:12px;cursor:pointer;">🎁 Par défaut</button>';
   }
   var hasFiltre = _materielFiltre||(Array.isArray(_materielTags)&&_materielTags.length)||_materielFormat||_materielNiveau||_materielDuree||_materielJai||_materielCommun;
   if(hasFiltre){
