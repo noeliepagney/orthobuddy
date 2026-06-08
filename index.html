@@ -3785,14 +3785,14 @@ function renderFilterChips(){
 
   // ── Filtres fixes ──
   var fixedFilters = [
-    { key:'portail_autonome',   label:'🟣 Autonome',      cls:'active' },
-    { key:'portail_surbooking', label:'🟠 Surbooking',    cls:'active' },
+    { key:'portail_autonome',   label:'🔗 Autonome',      cls:'active' },
+    { key:'portail_surbooking', label:'📲 Surbooking',    cls:'active' },
     { key:'collab',    label:'🤝 Collab',          cls:'active-collab' },
     { key:'domicile',  label:'🏠 Domicile',         cls:'active' },
     { key:'alertes',   label:'🔔 Alertes',          cls:'active-alert' },
     { key:'telesoin',  label:'📱 Télésoin',          cls:'active' },
-    { key:'perdvue',   label:'👻 Perdus de vue',      cls:'active' },
-    { key:'cartevitale', label:'✳️ Carte vitale',        cls:'active' },
+    { key:'perdvue',   label:'👤 Perdus de vue',      cls:'active' },
+    { key:'cartevitale', label:'💳 Carte vitale',        cls:'active' },
     { key:'aujourdhui',label:'📅 Aujourd\'hui',        cls:'active' },
   ];
   fixedFilters.forEach(function(f){
@@ -3978,7 +3978,7 @@ function renderPatients(){
 
             ${p.isNew?'<span title="Importé récemment" style="font-size:10px;background:#EFF6FF;color:#3B82F6;border:1px solid #BFDBFE;border-radius:8px;padding:1px 7px;font-weight:600;letter-spacing:.3px;">NEW</span>':''}
             ${isPerdVue(p)?'<span title="Pas de séance depuis 4 semaines" style="font-size:10px;background:#FEF3EA;color:#C4723A;border:1px solid #F0B88A;border-radius:8px;padding:1px 7px;font-weight:600;">Perdu de vue</span>':''}
-            ${hasAlerteCarteVitale(p)?'<span class="badge-cartevitale" title="3 séances consécutives sans carte vitale" style="font-size:10px;background:#FDF4E3;color:#B87C2A;border:1px solid #E8B96A;border-radius:8px;padding:1px 7px;font-weight:600;">⚠ Carte vitale</span>':''}
+            ${hasAlerteCarteVitale(p)?'<span class="badge-cartevitale" title="3 séances consécutives sans carte vitale" style="font-size:10px;background:var(--bg);color:var(--text-soft);border:1px solid var(--border);border-radius:8px;padding:1px 7px;font-weight:500;">💳 Carte vitale</span>':''}
             ${p.enCollab?'<span title="En collaboration" style="font-size:11px;opacity:.55;">🤝</span>':''}
             ${p.portail==='autonome'?'<span onclick="event.stopPropagation()" title="Portail autonome" style="font-size:10px;background:#EAF2EC;color:#3D6B4F;border:1px solid #8BB89A;border-radius:8px;padding:1px 7px;font-weight:600;">Autonome</span>':p.portail==='surbooking'?'<span onclick="event.stopPropagation()" title="Portail surbooking" style="font-size:10px;background:#FEF3EA;color:#C4723A;border:1px solid #F0B88A;border-radius:8px;padding:1px 7px;font-weight:600;">Surbooking</span>':''}
             ${p.genre==='F'?'<span title="Féminin" style="font-size:10px;color:var(--text-soft);opacity:.6;margin-left:1px;">♀</span>':p.genre==='M'?'<span title="Masculin" style="font-size:10px;color:var(--text-soft);opacity:.6;margin-left:1px;">♂</span>':''}
@@ -8136,8 +8136,8 @@ function renderSeanceItem(s,p){
         </div>
       </div>
       <div class="seance-actions">
-        <button onclick="duplicateSeanceMenu('${s.id}',this);event.stopPropagation()" title="Dupliquer" style="display:inline-flex;align-items:center;gap:4px;padding:3px 9px;background:#F59E0B;color:white;border:none;border-radius:20px;cursor:pointer;font-size:10px;font-weight:700;box-shadow:0 1px 4px rgba(245,158,11,.3);">⧉ Dupliquer</button>
-        <button onclick="toggleAbsenceMenu('${s.id}',this);event.stopPropagation()" title="${s.absence?'Annuler absence':'Marquer absent'}" style="display:inline-flex;align-items:center;gap:4px;padding:3px 9px;background:${s.absence?'#6B7280':'#EF4444'};color:white;border:none;border-radius:20px;cursor:pointer;font-size:10px;font-weight:700;box-shadow:0 1px 4px rgba(239,68,68,.25);">${s.absence?'↩ Présent':'✕ Absent'}</button>
+        <button onclick="duplicateSeanceMenu('${s.id}',this);event.stopPropagation()" title="Dupliquer" style="display:inline-flex;align-items:center;gap:4px;padding:3px 9px;background:var(--bg);color:var(--text-mid);border:1px solid var(--border);border-radius:20px;cursor:pointer;font-size:10px;font-weight:600;">⧉ Dupliquer</button>
+        <button onclick="toggleAbsenceMenu('${s.id}',this);event.stopPropagation()" title="${s.absence?'Annuler absence':'Marquer absent'}" style="display:inline-flex;align-items:center;gap:4px;padding:3px 9px;background:${s.absence?'var(--bg)':'var(--red-l)'};color:${s.absence?'var(--text-soft)':'var(--red)'};border:1px solid ${s.absence?'var(--border)':'var(--red-b)'};border-radius:20px;cursor:pointer;font-size:10px;font-weight:600;">${s.absence?'↩ Présent':'✕ Absent'}</button>
       </div>
       <span style="font-size:11px;color:var(--text-soft);">›</span>
     </div>
@@ -8521,7 +8521,7 @@ function renderAmoTab(p){
   h+='<label style="display:flex;align-items:center;gap:10px;cursor:pointer;">';
   h+='<input type="checkbox" '+(isCollab?'checked':'')+' onchange="togglePatientCollab(\''+pid+'\',this.checked)" style="width:16px;height:16px;accent-color:#EA580C;cursor:pointer;">';
   h+='<div>';
-  h+='<div style="font-size:13px;font-weight:500;color:#EA580C;">🤝 Patient en collaboration</div>';
+  h+='<div style="font-size:13px;font-weight:500;color:var(--text-mid);">🤝 Patient en collaboration</div>';
   h+='<div style="font-size:11px;color:var(--text-soft);margin-top:1px;">Rétrocession '+collabTaux+'% à '+collabNom+' — déduit automatiquement sur les séances</div>';
   h+='</div></label>';
   if(isCollab){
