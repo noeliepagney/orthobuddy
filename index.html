@@ -6708,6 +6708,7 @@ var _materielJai = '';
 var _materielPageSize = 30;
 var _materielDuree = '';
 var _materielJai = '';
+var _materielCommun = '';
 
 async function renderMaterielPage(){
   var el = document.getElementById('materiel-content');
@@ -6752,6 +6753,8 @@ function getMaterielFiltres(){
   if(_materielDuree) data = data.filter(function(m){ return (m.duree||'').toLowerCase().includes(_materielDuree.toLowerCase()); });
   if(_materielJai==='oui') data = data.filter(function(m){ return m.j_ai===true; });
   if(_materielJai==='non') data = data.filter(function(m){ return !m.j_ai; });
+  if(_materielCommun==='commun') data = data.filter(function(m){ return m.est_commun===true; });
+  if(_materielCommun==='defaut') data = data.filter(function(m){ return m.j_ai_defaut===true; });
   return data;
   return data;
 }
@@ -6908,9 +6911,16 @@ function renderMaterielUI(){
   h += '<option value="oui"'+((_materielJai==='oui')?' selected':'')+'>✅ Je possède</option>';
   h += '<option value="non"'+((_materielJai==='non')?' selected':'')+'>❌ Je ne possède pas</option>';
   h += '</select>';
-  var hasFiltre = _materielFiltre||(Array.isArray(_materielTags)&&_materielTags.length)||_materielFormat||_materielNiveau||_materielDuree||_materielJai;
+  if(isAdmin()){
+    h += '<select onchange="_materielCommun=this.value;_materielPage=0;renderMaterielUI()" style="'+sel+'">';
+    h += '<option value="">🌐 / 🎁</option>';
+    h += '<option value="commun"'+(_materielCommun==='commun'?' selected':'')+'>🌐 Commun</option>';
+    h += '<option value="defaut"'+(_materielCommun==='defaut'?' selected':'')+'>🎁 J\'ai par défaut</option>';
+    h += '</select>';
+  }
+  var hasFiltre = _materielFiltre||(Array.isArray(_materielTags)&&_materielTags.length)||_materielFormat||_materielNiveau||_materielDuree||_materielJai||_materielCommun;
   if(hasFiltre){
-    h += '<button class="btn btn-sm" onclick="_materielFiltre=\'\';_materielTags=[];_materielFormat=\'\';_materielNiveau=\'\';_materielDuree=\'\';_materielJai=\'\';_materielPage=0;renderMaterielUI()" style="white-space:nowrap;">✕ Tout effacer</button>';
+    h += '<button class="btn btn-sm" onclick="_materielFiltre=\'\';_materielTags=[];_materielFormat=\'\';_materielNiveau=\'\';_materielDuree=\'\';_materielJai=\'\';_materielCommun=\'\';_materielPage=0;renderMaterielUI()" style="white-space:nowrap;">✕ Tout effacer</button>';
   }
   h += '</div>';
   // Liste
