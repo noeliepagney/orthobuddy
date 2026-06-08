@@ -7006,7 +7006,7 @@ function editMateriel(id){
   var _categories = [...new Set(_materielData.map(function(x){return x.categorie;}).filter(Boolean))].sort();
   var _formats = [...new Set(_materielData.map(function(x){return x.format;}).filter(Boolean))].sort();
   var _durees = [...new Set(_materielData.map(function(x){return x.duree;}).filter(Boolean))].sort();
-  var _niveaux = [...new Set(_materielData.flatMap(function(x){return (x.niveau||'').split(',').map(function(n){return n.trim();}).filter(Boolean);})).sort();
+  var _niveaux = [...new Set(_materielData.flatMap(function(x){return (x.niveau||'').split(',').map(function(n){return n.trim();}).filter(Boolean);}))].sort();
   var _localisations = [...new Set(_materielData.map(function(x){return x.localisation;}).filter(Boolean))].sort();
   function _dl(id, vals){ return '<datalist id="'+id+'">'+vals.map(function(v){return '<option value="'+v.replace(/"/g,'&quot;')+'">'; }).join('')+'</datalist>'; }
   h += _dl('dl-auteur', _auteurs);
