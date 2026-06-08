@@ -7408,28 +7408,14 @@ function renderMaterielUI(){
   } else {
     h += '<div style="border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;background:var(--surface);">';
     page.forEach(function(m){
-      var tags = (m.tags||'').split(',').map(function(t){return t.trim();}).filter(Boolean).slice(0,3);
-      h += '<div data-mid="'+m.id+'" onclick="openMaterielModal(this.dataset.mid)" style="display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid var(--border);cursor:pointer;">';
-      h += '<div style="flex:1;min-width:0;">';
-      h += '<div style="font-size:13px;font-weight:500;color:var(--text);display:flex;align-items:center;gap:6px;flex-wrap:wrap;">';
-      h += (m.titre||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-      if(!m.j_ai) h += '<span style="font-size:10px;background:#FDECEA;color:#C0392B;padding:1px 6px;border-radius:8px;">Non possédé</span>';
-      if(isAdmin() && m.est_commun) h += '<span title="Matériel commun" style="font-size:11px;">🌐</span>';
-      if(isAdmin() && m.j_ai_defaut) h += '<span title="J\'ai par défaut" style="font-size:11px;">🎁</span>';
+      var tags = (m.tags||'').split(',').map(function(t){return t.trim();}).filter(Boolean).slice(0,5);
+      h += '<div data-mid="'+m.id+'" onclick="openMaterielModal(this.dataset.mid)" style="display:flex;align-items:center;gap:10px;padding:9px 14px;border-bottom:1px solid var(--border);cursor:pointer;">';
+      h += '<div style="flex:1;min-width:0;display:flex;align-items:center;gap:6px;flex-wrap:wrap;">';
+      h += '<span style="font-size:13px;font-weight:500;color:var(--text);">'+(m.titre||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')+'</span>';
+      if(!m.j_ai) h += '<span style="font-size:10px;background:#FDECEA;color:#C0392B;padding:1px 6px;border-radius:8px;">Non poss&eacute;d&eacute;</span>';
+      tags.forEach(function(t){ h += '<span style="font-size:10px;background:var(--green-ll);color:var(--green-mid);border:1px solid var(--green-b);padding:1px 7px;border-radius:10px;">'+t+'</span>'; });
       h += '</div>';
-      h += '<div style="font-size:11px;color:var(--text-soft);margin-top:2px;display:flex;gap:6px;flex-wrap:wrap;">';
-      if(m.auteur) h += '<span>'+m.auteur+'</span>';
-      if(m.editeur) h += '<span>· '+m.editeur+'</span>';
-      if(m.format) h += '<span style="background:var(--bg);padding:0 5px;border-radius:6px;border:1px solid var(--border);">'+m.format+'</span>';
-      if(m.duree) h += '<span style="color:var(--text-soft);">⏱ '+m.duree+'</span>';
-      h += '</div>';
-      if(tags.length){
-        h += '<div style="margin-top:4px;display:flex;gap:4px;flex-wrap:wrap;">';
-        tags.forEach(function(t){ h += '<span style="font-size:10px;background:var(--green-ll);color:var(--green-mid);padding:1px 7px;border-radius:10px;">'+t+'</span>'; });
-        h += '</div>';
-      }
-      h += '</div>';
-      if(m.lien) h += '<a href="'+m.lien+'" target="_blank" onclick="event.stopPropagation()" style="font-size:18px;text-decoration:none;flex-shrink:0;" title="Voir en ligne">🔗</a>';
+      if(m.lien) h += '<a href="'+m.lien+'" target="_blank" onclick="event.stopPropagation()" style="font-size:16px;text-decoration:none;flex-shrink:0;opacity:.4;" title="Voir en ligne">&#128279;</a>';
       h += '</div>';
     });
     h += '</div>';
