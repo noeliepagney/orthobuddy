@@ -6714,10 +6714,16 @@ async function renderMaterielPage(){
   if(!el) return;
   el.innerHTML = '<div class="loading" style="padding:40px;text-align:center;color:var(--text-soft);">Chargement...</div>';
   
-  var url = SB_URL+'/rest/v1/materiel?user_id=eq.'+getSbUserId()+'&order=titre.asc&select=*';
+  var url = SB_URL+'/rest/v1/materiel?order=titre.asc&select=*';
   var r = await fetch(url, {headers: {...sbHeaders(), 'Range-Unit':'items', 'Range':'0-2999', 'Prefer':'count=none'}});
   _materielData = await r.json();
   if(!Array.isArray(_materielData)) _materielData = [];
+  // Charger j_ai depuis materiel_praticien
+  var rJai = await fetch(SB_URL+'/rest/v1/materiel_praticien?user_id=eq.'+getSbUserId()+'&select=materiel_id,j_ai', {headers: sbHeaders()});
+  var jaiData = await rJai.json();
+  var jaiMap = {};
+  if(Array.isArray(jaiData)) jaiData.forEach(function(row){ jaiMap[row.materiel_id] = row.j_ai; });
+  _materielData = _materielData.map(function(m){ return Object.assign({}, m, {j_ai: jaiMap[m.id] || false}); });
   
   _materielPage = 0;
   renderMaterielUI();
@@ -7129,17 +7135,29 @@ async function saveMateriel(id){
     tags: (function(){ var d=[...document.querySelectorAll('.medit-tag-cb:checked')].map(function(cb){return cb.value;}); var a=(document.getElementById('medit-autres-tags')||{}).value||''; var at=a.split(',').map(function(t){return t.trim();}).filter(Boolean); return [...d,...at].join(', ') || null; })(),
     lien: document.getElementById('medit-lien').value.trim() || null,
     description: document.getElementById('medit-desc').value.trim() || null,
-    j_ai: document.getElementById('medit-jai').checked,
+    _j_ai: document.getElementById('medit-jai').checked,
   };
+  // Extraire j_ai avant envoi à Supabase
+  var _j_ai = data._j_ai;
+  delete data._j_ai;
+  var materielId = id;
   if(id){
     await fetch(SB_URL+'/rest/v1/materiel?id=eq.'+id, {method:'PATCH', headers:{...sbHeaders(),'Content-Type':'application/json'}, body:JSON.stringify(data)});
     var idx = _materielData.findIndex(function(m){return m.id===id;});
-    if(idx>=0) _materielData[idx] = {..._materielData[idx], ...data};
+    if(idx>=0) _materielData[idx] = {..._materielData[idx], ...data, j_ai: _j_ai};
   } else {
     data.user_id = getSbUserId();
     var r = await fetch(SB_URL+'/rest/v1/materiel', {method:'POST', headers:{...sbHeaders(),'Content-Type':'application/json','Prefer':'return=representation'}, body:JSON.stringify(data)});
     var newM = await r.json();
-    if(newM && newM[0]) _materielData.unshift(newM[0]);
+    if(newM && newM[0]){ materielId = newM[0].id; _materielData.unshift({...newM[0], j_ai: _j_ai}); }
+  }
+  // Sauvegarder j_ai dans materiel_praticien (upsert)
+  if(materielId){
+    await fetch(SB_URL+'/rest/v1/materiel_praticien', {
+      method:'POST',
+      headers:{...sbHeaders(),'Content-Type':'application/json','Prefer':'resolution=merge-duplicates'},
+      body:JSON.stringify({user_id: getSbUserId(), materiel_id: materielId, j_ai: _j_ai})
+    });
   }
   closeModal('modal-materiel');
   renderMaterielUI();
