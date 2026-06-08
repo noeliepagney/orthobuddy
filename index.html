@@ -6925,6 +6925,8 @@ function renderMaterielUI(){
       h += '<div style="font-size:13px;font-weight:500;color:var(--text);display:flex;align-items:center;gap:6px;flex-wrap:wrap;">';
       h += (m.titre||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
       if(!m.j_ai) h += '<span style="font-size:10px;background:#FDECEA;color:#C0392B;padding:1px 6px;border-radius:8px;">Non possédé</span>';
+      if(isAdmin() && m.est_commun) h += '<span title="Matériel commun" style="font-size:11px;">🌐</span>';
+      if(isAdmin() && m.j_ai_defaut) h += '<span title="J\'ai par défaut" style="font-size:11px;">🎁</span>';
       h += '</div>';
       h += '<div style="font-size:11px;color:var(--text-soft);margin-top:2px;display:flex;gap:6px;flex-wrap:wrap;">';
       if(m.auteur) h += '<span>'+m.auteur+'</span>';
