@@ -136,16 +136,16 @@ html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);colo
 .toast.show{opacity:1;}
 
 /* LOGIN */
-#login-screen{position:fixed;inset:0;z-index:9999;background:#F4F6F3;display:flex;align-items:center;justify-content:center;}
+#login-screen{position:fixed;inset:0;z-index:9999;background:#F7F4EF;display:flex;align-items:center;justify-content:center;}
 #login-screen.hidden{display:none;}
-.login-card{background:white;border-radius:16px;padding:40px 48px;box-shadow:0 4px 24px rgba(0,0,0,.10);width:100%;max-width:360px;text-align:center;}
+.login-card{background:#FFFDF9;border-radius:16px;padding:8px 48px 40px;box-shadow:0 4px 24px rgba(0,0,0,.08);width:100%;max-width:360px;text-align:center;border:1px solid #E4E0D8;}
 .login-logo{width:52px;height:52px;margin:0 auto 20px;}
 .login-title{font-size:22px;font-weight:600;margin-bottom:4px;}
 .login-sub{font-size:13px;color:#888780;margin-bottom:28px;}
 .login-input{width:100%;padding:11px 14px;font-size:14px;font-family:'DM Sans',sans-serif;border:1.5px solid #E2E0D8;border-radius:8px;outline:none;background:#F8F9FA;color:#1A1A18;box-sizing:border-box;transition:border-color .15s;}
-.login-input:focus{border-color:var(--green);background:white;}
-.login-btn{width:100%;margin-top:14px;padding:12px;font-size:14px;font-weight:600;font-family:'DM Sans',sans-serif;background:#1A6B55;color:white;border:none;border-radius:8px;cursor:pointer;transition:background .15s;}
-.login-btn:hover{background:#0F4535;}
+.login-input:focus{border-color:#5C8A6B;background:white;}
+.login-btn{width:100%;margin-top:14px;padding:12px;font-size:14px;font-weight:600;font-family:'DM Sans',sans-serif;background:#5C8A6B;color:white;border:none;border-radius:10px;cursor:pointer;transition:background .15s;}
+.login-btn:hover{background:#3D6B4F;}
 .login-error{color:var(--red);font-size:12px;margin-top:8px;min-height:18px;}
 
 /* PARCOURS CHIPS */
@@ -436,13 +436,7 @@ html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);colo
 <!-- LOGIN -->
 <div id="login-screen">
   <div class="login-card">
-    <svg class="login-logo" viewBox="0 0 52 52">
-      <rect width="52" height="52" rx="13" fill="#1A6B55"/>
-      <rect width="44" height="44" x="4" y="4" rx="10" fill="#25A07D" opacity=".4"/>
-      <path d="M10 17 Q10 10 17 10 L35 10 Q42 10 42 17 L42 31 Q42 38 35 38 L28 38 L24 44 L22 38 L17 38 Q10 38 10 31 Z" fill="white" opacity=".95"/>
-      <path d="M15 24 Q17 18 19 24 Q21 30 23 24 Q25 18 27 24 Q29 30 31 24 Q33 18 35 24 Q37 30 39 24" fill="none" stroke="#1A6B55" stroke-width="2.5" stroke-linecap="round"/>
-    </svg>
-    <div class="login-title">OrthoBuddy</div>
+    <img src="logo.png" alt="OrthoBuddy" style="width:240px;height:auto;margin:0 auto 12px;display:block;">
     <div class="login-sub">by Noëlie Lainé</div>
     <input class="login-input" type="email" id="login-email" placeholder="Email" style="margin-bottom:10px;" onkeydown="if(event.key==='Enter')doLogin()">
     <input class="login-input" type="password" id="login-pwd" placeholder="Mot de passe" onkeydown="if(event.key==='Enter')doLogin()">
