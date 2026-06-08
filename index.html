@@ -6863,7 +6863,7 @@ function renderMaterielUI(){
   allTags = domainesTags.concat(autresTags);
   var niveaux = [...new Set(_materielData.flatMap(function(m){ return (m.niveau||'').split(',').map(function(n){return n.trim();}).filter(Boolean); }))].sort();
   var durees = [...new Set(_materielData.map(function(m){return m.duree;}).filter(Boolean))].sort();
-  var formats = [...new Set(_materielData.map(function(m){return m.format;}).filter(Boolean))].sort();
+  var formats = [...new Set(_materielData.flatMap(function(m){ return (m.format||'').split(/[,+]/).map(function(f){return f.trim();}).filter(Boolean); }))].sort();
   var sel = 'padding:7px 10px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:12px;background:white;cursor:pointer;';
 
   h += '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px;">';
@@ -6902,6 +6902,24 @@ function renderMaterielUI(){
   });
   h += '</div>';
   // Tags actifs hors domaines
+  // Tags de la famille selectionnee pour affiner
+  if(Array.isArray(_materielFamilles) && _materielFamilles.length > 0){
+    var tagsDeFamilles = [];
+    _materielFamilles.forEach(function(f){ tagsDeFamilles = tagsDeFamilles.concat(MATERIEL_FAMILLES[f]||[]); });
+    tagsDeFamilles = [...new Set(tagsDeFamilles)].sort();
+    if(tagsDeFamilles.length > 0){
+      h += '<div style="margin-top:8px;padding:8px 10px;background:var(--green-ll);border-radius:var(--radius-sm);border:1px solid var(--green-l);">';
+      h += '<div style="font-size:10px;font-weight:600;color:var(--green-d);margin-bottom:6px;text-transform:uppercase;letter-spacing:.04em;">Affiner par tag</div>';
+      h += '<div style="display:flex;gap:5px;flex-wrap:wrap;">';
+      tagsDeFamilles.forEach(function(t){
+        var active = selectedTags.includes(t);
+        h += '<label style="display:flex;align-items:center;gap:4px;padding:3px 9px;border-radius:20px;cursor:pointer;font-size:11px;border:1px solid '+(active?'var(--green-d)':'var(--green-l)')+';background:'+(active?'var(--green-l)':'white')+';color:'+(active?'var(--green-d)':'var(--text-mid)')+'">';
+        h += '<input type="checkbox" '+(active?'checked':'')+' data-tag="'+t.replace(/"/g,'&quot;')+'" onchange="toggleMaterielTag(this.dataset.tag)" style="cursor:pointer;accent-color:var(--green);">';
+        h += t+'</label>';
+      });
+      h += '</div></div>';
+    }
+  }
   var autresSelected = selectedTags.filter(function(t){ return !DOMAINES.includes(t); });
   if(autresSelected.length>0){
     h += '<div style="display:flex;gap:4px;flex-wrap:wrap;margin-top:6px;">';
