@@ -6723,7 +6723,11 @@ async function renderMaterielPage(){
   var jaiData = await rJai.json();
   var jaiMap = {};
   if(Array.isArray(jaiData)) jaiData.forEach(function(row){ jaiMap[row.materiel_id] = row.j_ai; });
-  _materielData = _materielData.map(function(m){ return Object.assign({}, m, {j_ai: jaiMap[m.id] || false}); });
+  _materielData = _materielData.map(function(m){
+    // j_ai_defaut = true → j_ai toujours true sauf si praticien a explicitement décoché
+    var j_ai = m.j_ai_defaut ? (jaiMap[m.id] !== undefined ? jaiMap[m.id] : true) : (jaiMap[m.id] || false);
+    return Object.assign({}, m, {j_ai: j_ai});
+  });
   
   _materielPage = 0;
   renderMaterielUI();
@@ -7115,6 +7119,14 @@ function editMateriel(id){
   h += '<div class="field"><label>Lien</label><input type="text" id="medit-lien" value="'+(m&&m.lien||'')+'">'+'</div>';
   h += '<div class="field"><label>Description</label><textarea id="medit-desc" style="min-height:80px;">'+(m&&m.description||'')+'</textarea></div>';
   h += '<div style="display:flex;align-items:center;gap:8px;"><input type="checkbox" id="medit-jai" '+((m&&m.j_ai)?'checked':'')+' style="width:16px;height:16px;"><label for="medit-jai" style="font-size:13px;">Je poss&#232;de ce mat&#233;riel</label></div>';
+  if(isAdmin()){
+    h += '<div style="margin-top:8px;padding:10px;background:#FFF8E1;border:1px solid #FFD54F;border-radius:var(--radius-sm);">';
+    h += '<div style="font-size:11px;font-weight:700;color:#F57F17;margin-bottom:6px;">⚙️ Admin uniquement</div>';
+    h += '<div style="display:flex;gap:16px;">';
+    h += '<label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer;"><input type="checkbox" id="medit-commun" '+((m&&m.est_commun)?'checked':'')+' style="accent-color:var(--green);"> Matériel commun (visible par tous)</label>';
+    h += '<label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer;"><input type="checkbox" id="medit-jaidefaut" '+((m&&m.j_ai_defaut)?'checked':'')+' style="accent-color:var(--green);"> J\'ai par défaut (gratuit)</label>';
+    h += '</div></div>';
+  }
   h += '<button class="btn btn-green" onclick="saveMateriel('+(id?"'"+id+"'":'null')+');">Enregistrer</button>';
   h += '</div>';
   document.getElementById('modal-materiel-body').innerHTML = h;
@@ -7140,6 +7152,10 @@ async function saveMateriel(id){
   // Extraire j_ai avant envoi à Supabase
   var _j_ai = data._j_ai;
   delete data._j_ai;
+  if(isAdmin()){
+    data.est_commun = (document.getElementById('medit-commun')||{checked:false}).checked;
+    data.j_ai_defaut = (document.getElementById('medit-jaidefaut')||{checked:false}).checked;
+  }
   var materielId = id;
   if(id){
     await fetch(SB_URL+'/rest/v1/materiel?id=eq.'+id, {method:'PATCH', headers:{...sbHeaders(),'Content-Type':'application/json'}, body:JSON.stringify(data)});
