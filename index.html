@@ -1817,6 +1817,9 @@ html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);colo
     <div class="section-label">Activités <button class="btn btn-sm" onclick="addActiviteInModal()">+ Activité</button></div>
     <div id="modal-activites"></div>
     <hr class="divider">
+    <div class="section-label">Matériel utilisé <button class="btn btn-sm" id="btn-add-materiel-seance" onclick="openMaterielSeanceSelector()" style="font-size:11px;">+ Ajouter</button></div>
+    <div id="modal-materiels-seance" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px;"></div>
+    <hr class="divider">
     <div class="section-label">Fichiers joints</div>
     <div id="modal-files" style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:8px;"></div>
     <label class="add-file-btn">📎 Joindre un fichier<input type="file" style="display:none;" onchange="attachFileInModal(event)"></label>
@@ -9353,6 +9356,152 @@ let _amoSelectedCode='';
 let _amoSelectedLabel='';
 let _amoSelectedTarif=0;
 
+
+var _seanceMateriels = []; // liste des materiels liés à la séance en cours
+
+function renderSeanceMateriels(){
+  var el = document.getElementById('modal-materiels-seance');
+  if(!el) return;
+  if(!_seanceMateriels.length){ el.innerHTML = '<span style="font-size:11px;color:var(--text-soft);">Aucun matériel sélectionné</span>'; return; }
+  el.innerHTML = _seanceMateriels.map(function(m){
+    return '<span style="display:inline-flex;align-items:center;gap:5px;font-size:11px;background:var(--green-ll);color:var(--green-d);border:1px solid var(--green-l);border-radius:20px;padding:3px 10px;">'
+      + m.titre
+      + '<span onclick="removeSeanceMateriel(\'' + m.id + '\')" style="cursor:pointer;font-weight:700;color:var(--text-soft);">×</span>'
+      + '</span>';
+  }).join('');
+}
+
+function removeSeanceMateriel(id){
+  _seanceMateriels = _seanceMateriels.filter(function(m){ return m.id !== id; });
+  renderSeanceMateriels();
+}
+
+function openMaterielSeanceSelector(){
+  // Charger les matériels si pas encore fait
+  var doOpen = function(){
+  var mesMateriels = _materielData.filter(function(m){ return m.j_ai; }).sort(function(a,b){ return (a.titre||'').localeCompare(b.titre||''); });
+  if(!mesMateriels.length){ showToast('Aucun matériel marqué comme possédé','red'); return; }
+
+  var overlay = document.createElement('div');
+  overlay.id = 'materiel-seance-overlay';
+  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:10001;display:flex;align-items:center;justify-content:center;padding:16px;';
+
+  var alreadyIds = _seanceMateriels.map(function(m){ return m.id; });
+  var items = mesMateriels.map(function(m){
+    var checked = alreadyIds.includes(m.id);
+    return '<label style="display:flex;align-items:center;gap:8px;padding:6px 10px;border-bottom:1px solid var(--border);cursor:pointer;font-size:12px;">'
+      + '<input type="checkbox" data-id="'+m.id+'" data-titre="'+m.titre.replace(/"/g,'&quot;')+'" '+(checked?'checked':'')+' style="accent-color:var(--green);cursor:pointer;">'
+      + '<span style="flex:1;">'+m.titre+'</span>'
+      + (m.auteur?'<span style="font-size:10px;color:var(--text-soft);">'+m.auteur+'</span>':'')
+      + '</label>';
+  }).join('');
+
+  overlay.innerHTML = '<div style="background:white;border-radius:14px;width:480px;max-width:100%;max-height:80vh;display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(0,0,0,.25);">'
+    + '<div style="padding:14px 18px;border-bottom:1px solid var(--border);font-size:14px;font-weight:600;">Sélectionner le matériel utilisé</div>'
+    + '<input type="text" placeholder="Rechercher..." oninput="filterMaterielSeance(this.value)" style="margin:10px;padding:7px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:12px;">'
+    + '<div id="materiel-seance-list" style="overflow-y:auto;flex:1;">'+items+'</div>'
+    + '<div style="padding:12px 16px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:8px;">'
+    + '<button onclick="document.getElementById(\'materiel-seance-overlay\').remove()" style="padding:7px 14px;border:1px solid var(--border);background:none;border-radius:8px;cursor:pointer;font-size:12px;">Annuler</button>'
+    + '<button onclick="confirmMaterielSeance()" style="padding:7px 14px;background:var(--green);color:white;border:none;border-radius:8px;cursor:pointer;font-size:12px;font-weight:600;">Valider</button>'
+    + '</div>'
+    + '</div>';
+
+  document.body.appendChild(overlay);
+  overlay.addEventListener('click', function(e){ if(e.target===overlay) overlay.remove(); });
+  }; // fin doOpen
+  if(!_materielData.length){
+    var url = SB_URL+'/rest/v1/materiel?order=titre.asc&select=*';
+    fetch(url, {headers:{...sbHeaders(),'Range':'0-2999','Prefer':'count=none'}}).then(function(r){return r.json();}).then(function(data){
+      if(Array.isArray(data)) _materielData = data;
+      var rJai = fetch(SB_URL+'/rest/v1/materiel_praticien?user_id=eq.'+getSbUserId()+'&select=materiel_id,j_ai',{headers:sbHeaders()}).then(function(r2){return r2.json();}).then(function(jaiData){
+        var jaiMap = {};
+        if(Array.isArray(jaiData)) jaiData.forEach(function(row){ jaiMap[row.materiel_id]=row.j_ai; });
+        _materielData = _materielData.map(function(m){ return Object.assign({},m,{j_ai:jaiMap[m.id]||false}); });
+        doOpen();
+      });
+    });
+  } else { doOpen(); }
+}
+
+function filterMaterielSeance(q){
+  var items = document.querySelectorAll('#materiel-seance-list label');
+  items.forEach(function(item){
+    var txt = item.textContent.toLowerCase();
+    item.style.display = txt.includes(q.toLowerCase()) ? '' : 'none';
+  });
+}
+
+function confirmMaterielSeance(){
+  var checked = document.querySelectorAll('#materiel-seance-list input[type=checkbox]:checked');
+  _seanceMateriels = [];
+  checked.forEach(function(cb){
+    _seanceMateriels.push({id: cb.dataset.id, titre: cb.dataset.titre});
+  });
+  document.getElementById('materiel-seance-overlay').remove();
+  renderSeanceMateriels();
+}
+
+
+function _addMaterielToActivite(idx){
+  var doOpen = function(){
+    var mesMateriels = _materielData.filter(function(m){ return m.j_ai; }).sort(function(a,b){ return (a.titre||'').localeCompare(b.titre||''); });
+    if(!mesMateriels.length){ showToast('Aucun matériel possédé','red'); return; }
+
+    var overlay = document.createElement('div');
+    overlay.id = 'mat-activite-overlay';
+    overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:10002;display:flex;align-items:center;justify-content:center;padding:16px;';
+
+    var items = mesMateriels.map(function(m){
+      return '<label style="display:flex;align-items:center;gap:8px;padding:6px 10px;border-bottom:1px solid var(--border);cursor:pointer;font-size:12px;">'
+        + '<input type="checkbox" data-titre="'+m.titre.replace(/"/g,'&quot;')+'" style="accent-color:var(--green);cursor:pointer;">'
+        + '<span style="flex:1;">'+m.titre+'</span>'
+        + (m.auteur?'<span style="font-size:10px;color:var(--text-soft);">'+m.auteur+'</span>':'')
+        + '</label>';
+    }).join('');
+
+    overlay.innerHTML = '<div style="background:white;border-radius:14px;width:460px;max-width:100%;max-height:75vh;display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(0,0,0,.25);">'
+      + '<div style="padding:12px 16px;border-bottom:1px solid var(--border);font-size:13px;font-weight:600;">Ajouter un matériel au moyen</div>'
+      + '<input type="text" placeholder="Rechercher..." oninput="this.closest(\'.mat-overlay-inner\').querySelectorAll(\'label\').forEach(function(l){l.style.display=l.textContent.toLowerCase().includes(this.value.toLowerCase())?\'\':l.style.display=\'none\'})" style="margin:8px;padding:6px 10px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:12px;">'
+      + '<div class="mat-overlay-inner" style="overflow-y:auto;flex:1;">'+items+'</div>'
+      + '<div style="padding:10px 14px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:8px;">'
+      + '<button onclick="document.getElementById(\'mat-activite-overlay\').remove()" style="padding:6px 12px;border:1px solid var(--border);background:none;border-radius:8px;cursor:pointer;font-size:12px;">Annuler</button>'
+      + '<button onclick="_confirmMaterielActivite('+idx+')" style="padding:6px 12px;background:var(--green);color:white;border:none;border-radius:8px;cursor:pointer;font-size:12px;font-weight:600;">Ajouter</button>'
+      + '</div>'
+      + '</div>';
+
+    document.body.appendChild(overlay);
+    overlay.addEventListener('click', function(e){ if(e.target===overlay) overlay.remove(); });
+  };
+  if(!_materielData.length){
+    fetch(SB_URL+'/rest/v1/materiel?order=titre.asc&select=*',{headers:{...sbHeaders(),'Range':'0-2999','Prefer':'count=none'}})
+      .then(function(r){return r.json();}).then(function(data){
+        if(Array.isArray(data)) _materielData = data;
+        fetch(SB_URL+'/rest/v1/materiel_praticien?user_id=eq.'+getSbUserId()+'&select=materiel_id,j_ai',{headers:sbHeaders()})
+          .then(function(r2){return r2.json();}).then(function(jd){
+            var jm={};
+            if(Array.isArray(jd)) jd.forEach(function(row){jm[row.materiel_id]=row.j_ai;});
+            _materielData=_materielData.map(function(m){return Object.assign({},m,{j_ai:jm[m.id]||false});});
+            doOpen();
+          });
+      });
+  } else { doOpen(); }
+}
+
+function _confirmMaterielActivite(idx){
+  var checked = document.querySelectorAll('#mat-activite-overlay input[type=checkbox]:checked');
+  var titres = [];
+  checked.forEach(function(cb){ titres.push(cb.dataset.titre); });
+  if(!titres.length){ document.getElementById('mat-activite-overlay').remove(); return; }
+  var ta = document.getElementById('activite-moyen-'+idx);
+  if(ta){
+    var existing = ta.value.trim();
+    var add = titres.join(', ');
+    ta.value = existing ? existing + (existing.endsWith(',') ? ' ' : ', ') + add : add;
+    updateActivite(idx, 'moyen', ta.value);
+  }
+  document.getElementById('mat-activite-overlay').remove();
+}
+
 function openSeanceModal(pid,sid){
   const s=sid?DB.seances.find(x=>x.id===sid):null;
   const p=DB.patients.find(x=>x.id===pid);
@@ -9418,8 +9567,10 @@ function openSeanceModal(pid,sid){
 
   _modalActivites=s?JSON.parse(JSON.stringify(s.activites||[])):[];
   _modalFiles=s?JSON.parse(JSON.stringify(s.fichiers||[])):[];
+  _seanceMateriels=s?JSON.parse(JSON.stringify(s.materiels||[])):[];
   document.getElementById('btn-delete-seance').style.display=sid?'inline-flex':'none';
   renderModalActivites();renderModalFiles();
+  setTimeout(function(){renderSeanceMateriels();},50);
   var cw=document.getElementById('seance-conflict-warn');if(cw)cw.style.display='none';
   openModal('modal-seance');
 }
@@ -9604,7 +9755,13 @@ function renderModalActivites(){
             </div>
           ` : `<textarea placeholder="Objectif visé…" oninput="updateActivite(${i},'objectif',this.value)">${a.objectif||''}</textarea>`}
         </div>
-        <div class="activite-field"><label>Moyen</label><textarea placeholder="Support, exercice…" oninput="updateActivite(${i},'moyen',this.value)">${a.moyen||''}</textarea></div>
+        <div class="activite-field">
+          <label style="display:flex;align-items:center;justify-content:space-between;">
+            <span>Moyen</span>
+            <button onclick="_addMaterielToActivite(${i})" style="font-size:9px;padding:2px 7px;border:1px solid var(--border);background:white;color:var(--text-soft);border-radius:10px;cursor:pointer;font-weight:600;">+ Matériel</button>
+          </label>
+          <textarea id="activite-moyen-${i}" placeholder="Support, exercice…" oninput="updateActivite(${i},'moyen',this.value)">${a.moyen||''}</textarea>
+        </div>
         <div class="activite-field"><label>Résultat</label><textarea placeholder="Observation…" oninput="updateActivite(${i},'resultat',this.value)">${a.resultat||''}</textarea></div>
       </div>
     </div>`;
@@ -10035,7 +10192,8 @@ function saveSeance(){
       var ac=Object.assign({},a);
       if(ac.objectifId==='__pending__'){ac.objectifId=null;}
       return ac;
-    }),fichiers:_modalFiles
+    }),fichiers:_modalFiles,
+    materiels:_seanceMateriels||[]
   };
   if(sid){const s=DB.seances.find(x=>x.id===sid);if(s)Object.assign(s,data);}
   else DB.seances.push({id:uid(),...data});
