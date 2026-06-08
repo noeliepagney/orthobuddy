@@ -521,7 +521,7 @@ html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);colo
         <span id="nav-docs-total" style="display:none;flex-shrink:0;margin-left:auto;background:var(--bg);color:var(--text-soft);border:1px solid var(--border);border-radius:20px;font-size:10px;padding:1px 6px;"></span>
       </button>
 
-      <button class="nav-item nav-item-secondary" onclick="showPage('materiel')" id="nav-materiel" style="flex-wrap:nowrap;overflow:hidden;"><span class="nav-icon" style="flex-shrink:0;">🎲</span><span class="nav-label" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Matériel</span></button>
+      <button class="nav-item nav-item-secondary" onclick="showPage('materiel')" id="nav-materiel" style="flex-wrap:nowrap;overflow:hidden;"><span class="nav-icon" style="flex-shrink:0;">🎲</span><span class="nav-label" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Mon matériel</span></button>
 
       <button class="nav-item nav-item-secondary" onclick="showPage('outils')" id="nav-outils" style="flex-wrap:nowrap;overflow:hidden;display:none;"><span class="nav-icon" style="flex-shrink:0;">🌳</span><span class="nav-label" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Outils cliniques</span></button>
 
@@ -3342,7 +3342,7 @@ function showPage(name, statut){
       resultats:['💶 Résultats',           "Chiffre d'affaires & statistiques"],
       taches:   ['✅ Mes tâches',          'Suivi des actions en cours'],
       outils:   ['🌳 Outils cliniques',    'Arbres décisionnels & références'],
-      materiel: ['🎲 Matériel',              'Base de matériel orthophonique']
+      materiel: ['🎲 Mon matériel','Ma base de matériel orthophonique']
     };
     var t = titles[name]||[name,''];
     setTopbar(t[0], t[1]);
@@ -3353,7 +3353,7 @@ function showPage(name, statut){
   if(name==='settings'){renderSettings();setTimeout(function(){var el=document.getElementById('setting-urgence-days');if(el)el.value=(DB.settings&&DB.settings.urgenceDays!=null?DB.settings.urgenceDays:2);initLiensPublics();loadInfosPraticien();loadAdminSection();loadGestionPraticiens();updateNotifStatus();},50);}
   if(name==='taches')renderTachesPage();
   if(name==='outils')renderOutilsPage();
-  if(name==='materiel'){setTopbar('🎲 Matériel','Base de matériel orthophonique');renderMaterielPage();}
+  if(name==='materiel'){setTopbar('🎲 Mon matériel','Ma base de matériel orthophonique');renderMaterielPage();}
   if(name==='resultats'){setResPeriod(_resPeriod);}
   if(name==='docs'){setTopbar('📎 Mes documents','Fichiers & pièces jointes');renderDocsPage();updateDocsNav();}
   if(name==='alertes'){setTopbar('🔔 Alertes & rappels','Notifications et points d\'attention');renderAlertesPage();}
