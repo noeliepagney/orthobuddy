@@ -6706,6 +6706,7 @@ function getArbreSVG(id){
 var _materielData = [];
 var _materielFiltre = '';
 var _materielTags = [];
+var _materielFamilles = [];
 var _materielFormat = '';
 var _materielNiveau = '';
 var _materielCategorie = '';
@@ -6742,6 +6743,14 @@ async function renderMaterielPage(){
   renderMaterielUI();
 }
 
+function toggleMaterielFamille(famille){
+  if(!Array.isArray(_materielFamilles)) _materielFamilles = [];
+  var idx = _materielFamilles.indexOf(famille);
+  if(idx>=0){ _materielFamilles.splice(idx,1); } else { _materielFamilles.push(famille); }
+  _materielPage = 0;
+  renderMaterielUI();
+}
+
 function getMaterielFiltres(){
   var data = _materielData;
   if(_materielFiltre){
@@ -6758,6 +6767,14 @@ function getMaterielFiltres(){
   if(_materielFormat) data = data.filter(function(m){ return (m.format||'').split(',').map(function(f){return f.trim().toLowerCase();}).includes(_materielFormat.toLowerCase()); });
   if(_materielNiveau) data = data.filter(function(m){ return (m.niveau||'').split(',').map(function(n){return n.trim().toLowerCase();}).includes(_materielNiveau.toLowerCase()); });
   if(Array.isArray(_materielTags)&&_materielTags.length){ data = data.filter(function(m){ var mt=(m.tags||'').toLowerCase(); return _materielTags.every(function(t){ return mt.includes(t.toLowerCase()); }); }); }
+  if(Array.isArray(_materielFamilles)&&_materielFamilles.length){
+    data = data.filter(function(m){
+      var mt = (m.tags||'').toLowerCase();
+      return _materielFamilles.some(function(famille){
+        return (MATERIEL_FAMILLES[famille]||[]).some(function(t){ return mt.includes(t.toLowerCase()); });
+      });
+    });
+  }
   if(_materielDuree) data = data.filter(function(m){ return (m.duree||'').toLowerCase().includes(_materielDuree.toLowerCase()); });
   if(_materielJai==='oui') data = data.filter(function(m){ return m.j_ai===true; });
   if(_materielJai==='non') data = data.filter(function(m){ return !m.j_ai; });
@@ -6800,6 +6817,18 @@ function filterTagsList(q){
   });
 }
 
+
+
+var MATERIEL_FAMILLES = {
+  'Phonologie & Articulation': ['articulation','phonème cible','paires minimales','discrimination auditive','structures syllabiques','métaphonologie','manipulation phonémique','coarticulation','fusion','segmentation phonémique','rimes','virelangues','logatomes','son b','son ch','son d','son dr','son f','son g','son j','son k','son l','son m','son n','son p','son r','son s','son t','son tr','son v','son y','son z','désonorisation/assourdissement','processus phonologiques simplificateurs','allophone','CCV CVC','CV VC','CVC','CVCV','CVCVCV','ccv','clusters','clusters consonantiques'],
+  'Lexique & Sémantique': ['dénomination','catégorisation sémantique','association sémantique','antonyme/synonyme','polysémie','réseau sémantique','traits sémantiques','familles de mots','expressions idiomatiques','définitions','lexique','lexique élaboré','accès lexical','base lexicale','banque de mots','banque d\'images','imagier','analogies','intrus sémantique','synonyme','contraires','dénomination verbes','dénomination rapide'],
+  'Morphosyntaxe': ['accords','conjugaison','articles','déterminants','pronoms','prépositions','négation','passives','relatives','subordonnées','genre/nombre','morphologie dérivationnelle','morphosyntaxe','flexibilité','connecteurs','conjonctions','adjectifs','adverbes','compléments','articles','pronoms sujets','pronoms compléments','singulier pluriel','masculin/féminin','variation adjectif','participes passés'],
+  'Compréhension': ['compréhension orale','compréhension écrite','inférences','implicite','consignes','phrases complexes','consignes complexes','causalité','cause','conséquence','dialogue','discours','récit','schéma narratif'],
+  'Lecture & Orthographe': ['lecture mots','lecture texte','orthographe','graphèmes','encodage','décodage','graphies complexes','lecture phrases','lecture syllabes','lecture simple','lecture flash','lecture audio','lecture logatomes','lecture texte court','orthographe grammaticale','orthographe logatomes','orthographe mots/ lexique orthographique/orthographe lexicale','graphies contextuelles','jeux de lecture','jeux de lecture/orthographe'],
+  'Numération & Calcul': ['chaine numérique','calculs','opérations','fractions','décimaux','base 10','numération','addition','soustraction','multiplication','division','sens du nombre','habiletés numériques de base','calculs simples','grands nombres','milliers','millions','dénombrement','subitizing','ordinalité','ordinaux','cardinaux','transcodages','faits arithmétiques','algorithmes','problèmes'],
+  'Mémoire & Attention': ['mémoire auditive','mémoire visuelle','mémoire sémantique','mémoire épisodique','attention','attention auditive','attention visuelle','inhibition','planification','flexibilité','fonctions exécutives','concentration','stroop','balayage visuel','mdt'],
+  'Communication & Pragmatique': ['pragmatique','dialogue','tour de rôle','théorie de l\'esprit','habiletés sociales','humour','ironie','inférences','demande','communication référentielle','discours'],
+};
 
 function renderMaterielUI(){
   var el = document.getElementById('materiel-content');
@@ -6859,24 +6888,21 @@ function renderMaterielUI(){
   });
   h += '</div></div>';
 
-  // Dropdown autres tags
+  // Familles thematiques
   h += '<div style="margin-bottom:10px;">';
-  h += '<div style="font-size:11px;font-weight:600;color:var(--text-soft);margin-bottom:6px;text-transform:uppercase;letter-spacing:.04em;">Autres tags</div>';
-  var autresSelected = selectedTags.filter(function(t){ return !DOMAINES.includes(t); });
-  h += '<div style="position:relative;">';
-  h += '<div onclick="toggleMaterielTagsDropdown()" style="padding:8px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:12px;background:white;cursor:pointer;display:flex;align-items:center;justify-content:space-between;">';
-  h += '<span>'+(autresSelected.length>0 ? autresSelected.length+' tag'+(autresSelected.length>1?'s':'')+' sélectionné'+(autresSelected.length>1?'s':'') : 'Filtrer par tag...')+'</span><span>▾</span></div>';
-  h += '<div id="materiel-tags-dropdown" style="display:none;position:absolute;z-index:100;width:100%;max-height:280px;overflow-y:auto;background:white;border:1px solid var(--border);border-radius:var(--radius-sm);box-shadow:0 4px 12px rgba(0,0,0,.1);padding:8px;">';
-  h += '<input type="text" placeholder="Rechercher..." oninput="filterTagsList(this.value)" style="width:100%;padding:6px 8px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:12px;margin-bottom:6px;">';
-  h += '<div id="materiel-tags-list">';
-  autresTags.forEach(function(t){
-    var checked = selectedTags.includes(t);
-    h += '<label style="display:flex;align-items:center;gap:8px;padding:4px 6px;border-radius:4px;cursor:pointer;font-size:12px;">';
-    h += '<input type="checkbox" '+(checked?'checked':'')+' data-tag="'+t.replace(/"/g,'&quot;')+'" onchange="toggleMaterielTag(this.dataset.tag)" style="cursor:pointer;">';
-    h += '<span>'+t+'</span><span style="color:var(--text-soft);font-size:10px;margin-left:auto;">'+(tagCount[t]||0)+'</span>';
-    h += '</label>';
+  h += '<div style="font-size:11px;font-weight:600;color:var(--text-soft);margin-bottom:6px;text-transform:uppercase;letter-spacing:.04em;">Thématiques</div>';
+  h += '<div style="display:flex;gap:6px;flex-wrap:wrap;">';
+  Object.keys(MATERIEL_FAMILLES).forEach(function(famille){
+    var tagsOfFamille = MATERIEL_FAMILLES[famille];
+    var active = selectedTags.some(function(t){ return tagsOfFamille.includes(t); });
+    var famActive = _materielFamilles && _materielFamilles.includes(famille);
+    h += '<label style="display:flex;align-items:center;gap:5px;padding:5px 12px;border-radius:20px;cursor:pointer;border:1px solid '+(famActive?'var(--green-d)':'var(--border)')+';background:'+(famActive?'var(--green-l)':'white')+';font-size:12px;white-space:nowrap;">';
+    h += '<input type="checkbox" '+(famActive?'checked':'')+' onchange="toggleMaterielFamille(\'' + famille.replace(/'/g,"\\'") + '\')" style="cursor:pointer;accent-color:var(--green);">';
+    h += famille+'</label>';
   });
-  h += '</div></div></div>';
+  h += '</div>';
+  // Tags actifs hors domaines
+  var autresSelected = selectedTags.filter(function(t){ return !DOMAINES.includes(t); });
   if(autresSelected.length>0){
     h += '<div style="display:flex;gap:4px;flex-wrap:wrap;margin-top:6px;">';
     autresSelected.forEach(function(t){
@@ -6928,7 +6954,7 @@ function renderMaterielUI(){
     h += '<button onclick="_materielCommun=(_materielCommun===\'commun\'?\'\':(_materielCommun===\'defaut\'?\'both\':\'commun\'));_materielPage=0;renderMaterielUI()" style="padding:4px 8px;border:1px solid var(--border);border-radius:var(--radius-sm);background:'+_bgC+';color:'+_colC+';font-size:12px;cursor:pointer;">🌐 Commun</button>';
     h += '<button onclick="_materielCommun=(_materielCommun===\'defaut\'?\'\':(_materielCommun===\'commun\'?\'both\':\'defaut\'));_materielPage=0;renderMaterielUI()" style="padding:4px 8px;border:1px solid var(--border);border-radius:var(--radius-sm);background:'+_bgD+';color:'+_colD+';font-size:12px;cursor:pointer;">🎁 Par défaut</button>';
   }
-  var hasFiltre = _materielFiltre||(Array.isArray(_materielTags)&&_materielTags.length)||_materielFormat||_materielNiveau||_materielDuree||_materielJai||_materielCommun;
+  var hasFiltre = _materielFiltre||(Array.isArray(_materielTags)&&_materielTags.length)||_materielFormat||_materielNiveau||_materielDuree||_materielJai||_materielCommun||(Array.isArray(_materielFamilles)&&_materielFamilles.length);
   if(hasFiltre){
     h += '<button class="btn btn-sm" onclick="_materielFiltre=\'\';_materielTags=[];_materielFormat=\'\';_materielNiveau=\'\';_materielDuree=\'\';_materielJai=\'\';_materielCommun=\'\';_materielPage=0;renderMaterielUI()" style="white-space:nowrap;">✕ Tout effacer</button>';
   }
