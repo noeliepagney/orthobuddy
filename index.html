@@ -262,7 +262,7 @@ html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);colo
 .activite-emoji-btn.selected{border-color:var(--green);}
 .activite-fields{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;}
 .activite-field label{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.04em;color:var(--green-mid);display:block;margin-bottom:3px;}
-.activite-field textarea{width:100%;padding:5px 7px;font-size:12px;font-family:'DM Sans',sans-serif;border:1px solid #C0ECD8;border-radius:var(--radius-sm);background:var(--green-ll);color:var(--text);outline:none;resize:vertical;min-height:48px;}
+.activite-field textarea{width:100%;padding:5px 7px;font-size:12px;font-family:'DM Sans',sans-serif;border:1px solid #C0ECD8;border-radius:var(--radius-sm);background:var(--green-ll);color:var(--text);outline:none;resize:vertical;min-height:110px;}
 .activite-field textarea:focus{border-color:var(--green);background:white;}
 .add-activite-btn{display:flex;align-items:center;gap:5px;padding:5px 10px;font-size:12px;font-family:'DM Sans',sans-serif;border:1px dashed var(--border-mid);border-radius:var(--radius-sm);background:transparent;color:var(--text-soft);cursor:pointer;margin-top:6px;transition:all .12s;}
 .add-activite-btn:hover{border-color:var(--green);color:var(--green);background:var(--green-ll);}
@@ -727,7 +727,7 @@ html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);colo
           <p style="font-size:12px;color:var(--text-soft);margin-bottom:14px;">Personnalisez les textes affichés sur votre formulaire de liste d'attente.</p>
           <div class="field" style="margin-bottom:12px;">
             <label>Texte d'introduction</label>
-            <textarea id="setting-texte-intro" style="min-height:80px;margin-top:4px;" placeholder="Bienvenue sur mon formulaire…"></textarea>
+            <textarea id="setting-texte-intro" style="min-height:110px;margin-top:4px;" placeholder="Bienvenue sur mon formulaire…"></textarea>
           </div>
           <div class="field" style="margin-bottom:12px;">
             <label>Message de confirmation</label>
@@ -7414,7 +7414,7 @@ function editMateriel(id){
   h += '<div class="field"><label>Rang&#233;</label><input type="text" id="medit-localisation" list="dl-localisation" autocomplete="off" value="'+(m&&m.localisation||'')+'">'+'</div>';
   h += '<div class="field"><label>Prix</label><input type="number" id="medit-prix" value="'+(m&&m.prix_achat||'')+'">'+'</div>';
   h += '<div class="field"><label>Lien</label><input type="text" id="medit-lien" value="'+(m&&m.lien||'')+'">'+'</div>';
-  h += '<div class="field"><label>Description</label><textarea id="medit-desc" style="min-height:80px;">'+(m&&m.description||'')+'</textarea></div>';
+  h += '<div class="field"><label>Description</label><textarea id="medit-desc" style="min-height:110px;">'+(m&&m.description||'')+'</textarea></div>';
   h += '<div style="display:flex;align-items:center;gap:8px;"><input type="checkbox" id="medit-jai" '+((m&&m.j_ai)?'checked':'')+' style="width:16px;height:16px;"><label for="medit-jai" style="font-size:13px;">Je poss&#232;de ce mat&#233;riel</label></div>';
   if(isAdmin()){
     h += '<div style="margin-top:8px;padding:10px;background:#FFF8E1;border:1px solid #FFD54F;border-radius:var(--radius-sm);">';
@@ -11303,12 +11303,12 @@ function renderSettings(){
         <div style="margin-bottom:12px;">
           <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--amber);margin-bottom:6px;">Actes Bilan</div>
           <p style="font-size:11px;color:var(--text-soft);margin-bottom:6px;">Une ligne par acte, format : <code style="background:#f0ede6;padding:1px 5px;border-radius:3px;">CODE AMO|Libellé court|tarif</code></p>
-          <textarea id="bilan-ta-${i}" style="width:100%;font-size:12px;font-family:monospace;border:1px solid var(--border);border-radius:var(--radius-sm);padding:8px;min-height:80px;outline:none;background:var(--bg);resize:vertical;" oninput="parseParcoursTa(${i},'bilan',this.value)" onfocus="this.style.borderColor='var(--amber)'" onblur="this.style.borderColor='var(--border)'">${bilanStr}</textarea>
+          <textarea id="bilan-ta-${i}" style="width:100%;font-size:12px;font-family:monospace;border:1px solid var(--border);border-radius:var(--radius-sm);padding:8px;min-height:110px;outline:none;background:var(--bg);resize:vertical;" oninput="parseParcoursTa(${i},'bilan',this.value)" onfocus="this.style.borderColor='var(--amber)'" onblur="this.style.borderColor='var(--border)'">${bilanStr}</textarea>
         </div>
         <div>
           <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--green-mid);margin-bottom:6px;">Actes Rééducation</div>
           <p style="font-size:11px;color:var(--text-soft);margin-bottom:6px;">Une ligne par acte, format : <code style="background:#f0ede6;padding:1px 5px;border-radius:3px;">CODE AMO|Libellé court|tarif</code></p>
-          <textarea id="reedu-ta-${i}" style="width:100%;font-size:12px;font-family:monospace;border:1px solid var(--border);border-radius:var(--radius-sm);padding:8px;min-height:80px;outline:none;background:var(--bg);resize:vertical;" oninput="parseParcoursTa(${i},'reedu',this.value)" onfocus="this.style.borderColor='var(--green)'" onblur="this.style.borderColor='var(--border)'">${reeduStr}</textarea>
+          <textarea id="reedu-ta-${i}" style="width:100%;font-size:12px;font-family:monospace;border:1px solid var(--border);border-radius:var(--radius-sm);padding:8px;min-height:110px;outline:none;background:var(--bg);resize:vertical;" oninput="parseParcoursTa(${i},'reedu',this.value)" onfocus="this.style.borderColor='var(--green)'" onblur="this.style.borderColor='var(--border)'">${reeduStr}</textarea>
         </div>
         <div style="margin-top:10px;padding:8px;background:var(--green-ll);border-radius:var(--radius-sm);font-size:11px;color:var(--green-mid);">
           <strong>Actes enregistrés :</strong>
