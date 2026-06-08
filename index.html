@@ -528,7 +528,7 @@ html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);colo
       <!-- RÉGLAGES -->
       <div style="margin:8px 4px 4px;border-top:1px solid var(--border);"></div>
       <button class="nav-item" onclick="showPage('recap')" id="nav-recap">
-        <span class="nav-icon">📑</span><span class="nav-label">Récapitulatif</span>
+        <span class="nav-icon">📑</span><span class="nav-label">Récap collab</span>
       </button>
       <button class="nav-item" onclick="showPage('settings')" id="nav-settings">
         <span class="nav-icon">⚙️</span><span class="nav-label">Paramètres</span>
@@ -3353,7 +3353,7 @@ function showPage(name, statut){
       settings: ['⚙️ Paramètres',         'Configuration'],
       docs:     ['📎 Mes documents',      'Fichiers & pièces jointes'],
       alertes:  ['🔔 Alertes & rappels',  "Notifications et points d'attention"],
-      recap:    ['📑 Récapitulatif',       "Vue d'ensemble de l'activité"],
+      recap:    ['📑 Récap collab',       "Vue d'ensemble de l'activité"],
       resultats:['💶 Résultats',           "Chiffre d'affaires & statistiques"],
       taches:   ['✅ Mes tâches',          'Suivi des actions en cours'],
       outils:   ['🌳 Outils cliniques',    'Arbres décisionnels & références'],
@@ -3372,7 +3372,7 @@ function showPage(name, statut){
   if(name==='resultats'){setResPeriod(_resPeriod);}
   if(name==='docs'){setTopbar('📎 Mes documents','Fichiers & pièces jointes');renderDocsPage();updateDocsNav();}
   if(name==='alertes'){setTopbar('🔔 Alertes & rappels','Notifications et points d\'attention');renderAlertesPage();}
-  if(name==='recap'){setTopbar('📑 Récapitulatif',"Vue d'ensemble de l'activité");renderRecapPage();}
+  if(name==='recap'){setTopbar('📑 Récap collab',"Vue d'ensemble de l'activité");renderRecapPage();}
 }
 
 function openModal(id){document.getElementById(id).classList.add('open');}
@@ -14942,6 +14942,7 @@ function exportCollabDoc(){
 
     +'<div class="toolbar">'
     +'<button class="btn btn-orange" onclick="window.print()">\uD83D\uDDB6\uFE0F Imprimer / PDF</button>'
+    +'<button class="btn" style="background:#7C3AED;color:white;" onclick="_dlPdf()">📥 Télécharger PDF</button>'
     +'</div>'
 
     +'<div class="body">'
@@ -14972,6 +14973,8 @@ function exportCollabDoc(){
     +'</div>'
     +'<div class="pg-footer"><span>'+nomOrtho+' \u00b7 Orthophoniste</span><span>'+_retRef+'</span></div>'
     +'</div>'
+    +'<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"><\/script>'
+    +'<script>function _dlPdf(){var el=document.querySelector(\'.page\');html2pdf().set({margin:0,filename:\'recap_collaboration.pdf\',image:{type:\'jpeg\',quality:0.98},html2canvas:{scale:2,useCORS:true},jsPDF:{unit:\'mm\',format:\'a4\',orientation:\'portrait\'}}).from(el).save();}<\/script>'
     +'</body></html>';
 
   openDocumentWindow(html);
