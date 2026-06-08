@@ -4,7 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>OrthoBuddy</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;1,400&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -462,76 +463,68 @@ html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);colo
 <div class="app" id="app" style="display:none;">
   <aside class="sidebar">
     <div class="sidebar-logo">
-      <svg width="32" height="32" viewBox="0 0 36 36" style="flex-shrink:0;">
-        <rect width="36" height="36" rx="9" fill="#1A6B55"/>
-        <path d="M7 15 Q7 8 14 8 L22 8 Q29 8 29 15 L29 23 Q29 30 22 30 L19 30 L16 34 L14 30 Q7 30 7 23 Z" fill="white" opacity=".9"/>
-        <path d="M11 20 Q13 14 15 20 Q17 26 19 20 Q21 14 23 20 Q25 26 27 20" fill="none" stroke="#1A6B55" stroke-width="2" stroke-linecap="round"/>
-      </svg>
-      <div>
-        <div class="sidebar-logo-name">OrthoBuddy</div>
-        <div class="sidebar-logo-sub">by Noëlie Lainé</div>
-      </div>
+      <img src="logo.png" alt="OrthoBuddy" style="height:110px;width:auto;flex-shrink:0;margin-top:-30px;display:block;margin-left:auto;margin-right:auto;">
     </div>
     <nav class="sidebar-nav">
       <!-- FAVORIS -->
       <button class="nav-item active" onclick="showPage('patients','actif')" id="nav-patients">
-        <span class="nav-icon">👥</span><span class="nav-label">Mes patients</span>
+        <span class="nav-icon"><i class="ti ti-users"></i></span><span class="nav-label">Mes patients</span>
         <span id="nav-count-actif" style="margin-left:auto;background:var(--green-l);color:var(--green-mid);border-radius:20px;font-size:10px;padding:1px 7px;font-weight:600;"></span>
         <span id="bday-nav-badge" style="display:none;background:#e05;color:white;border-radius:20px;font-size:10px;padding:1px 7px;font-weight:700;">🎂</span>
       </button>
       <button class="nav-item" onclick="showPage('agenda')" id="nav-agenda">
-        <span class="nav-icon">📅</span><span class="nav-label">Mon agenda</span>
+        <span class="nav-icon"><i class="ti ti-calendar"></i></span><span class="nav-label">Mon agenda</span>
       </button>
       <button class="nav-item" onclick="showPage('creneaux')" id="nav-creneaux">
-        <span class="nav-icon">🗓️</span><span class="nav-label">Créneaux ouverts</span><span id="creneaux-notif-badge" style="display:none;background:var(--red);color:white;border-radius:10px;font-size:9px;padding:0 5px;margin-left:4px;font-weight:700;"></span>
+        <span class="nav-icon"><i class="ti ti-calendar-event"></i></span><span class="nav-label">Créneaux ouverts</span><span id="creneaux-notif-badge" style="display:none;background:var(--red);color:white;border-radius:10px;font-size:9px;padding:0 5px;margin-left:4px;font-weight:700;"></span>
       </button>
       <button class="nav-item" onclick="showPage('alertes')" id="nav-alertes" style="flex-wrap:nowrap;overflow:hidden;">
-        <span class="nav-icon" style="flex-shrink:0;">🔔</span>
+        <span class="nav-icon" style="flex-shrink:0;"><i class="ti ti-bell"></i></span>
         <span class="nav-label" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Alertes</span>
         <span id="nav-alertes-badge" style="display:none;flex-shrink:0;margin-left:auto;background:var(--red);color:white;border-radius:20px;font-size:10px;padding:1px 6px;font-weight:700;"></span>
       </button>
       <button class="nav-item" onclick="showPage('resultats')" id="nav-resultats">
-        <span class="nav-icon">💶</span><span class="nav-label">Résultats</span>
+        <span class="nav-icon"><i class="ti ti-chart-bar"></i></span><span class="nav-label">Résultats</span>
       </button>
 
       <!-- SÉPARATEUR + ITEMS SECONDAIRES -->
       <div style="margin:8px 4px 4px;border-top:1px solid var(--border);"></div>
       <button class="nav-item nav-item-secondary" onclick="showPage('patients','attente')" id="nav-patients-attente">
-        <span class="nav-icon">⏳</span><span class="nav-label">Liste d'attente</span>
+        <span class="nav-icon"><i class="ti ti-clock"></i></span><span class="nav-label">Liste d'attente</span>
         <span id="nav-count-attente" style="margin-left:auto;background:#EDE9FE;color:#6D28D9;border-radius:20px;font-size:10px;padding:1px 7px;font-weight:600;"></span>
         <span id="nav-attente-alert" style="display:none;margin-left:2px;background:var(--red);color:white;border-radius:20px;font-size:10px;padding:1px 6px;font-weight:700;">!</span>
       </button>
       <button class="nav-item nav-item-secondary" onclick="showPage('patients','pause')" id="nav-patients-pause">
-        <span class="nav-icon">🌿</span><span class="nav-label">En suspens</span>
+        <span class="nav-icon"><i class="ti ti-leaf"></i></span><span class="nav-label">En suspens</span>
         <span id="nav-count-pause" style="margin-left:auto;background:var(--amber-l);color:var(--amber);border-radius:20px;font-size:10px;padding:1px 7px;font-weight:600;"></span>
       </button>
       <button class="nav-item nav-item-secondary" onclick="showPage('patients','termine')" id="nav-patients-termine">
-        <span class="nav-icon">📦</span><span class="nav-label">Dossiers clos</span>
+        <span class="nav-icon"><i class="ti ti-archive"></i></span><span class="nav-label">Dossiers clos</span>
         <span id="nav-count-termine" style="margin-left:auto;background:var(--bg);color:var(--text-soft);border-radius:20px;font-size:10px;padding:1px 7px;font-weight:600;border:1px solid var(--border);"></span>
       </button>
       <button class="nav-item nav-item-secondary" onclick="showPage('taches')" id="nav-taches" style="flex-wrap:nowrap;overflow:hidden;">
-        <span class="nav-icon" style="flex-shrink:0;">✅</span>
+        <span class="nav-icon" style="flex-shrink:0;"><i class="ti ti-check"></i></span>
         <span class="nav-label" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Mes tâches</span>
         <span id="nav-taches-urgent" style="display:none;margin-left:auto;flex-shrink:0;background:var(--red-l);color:var(--red);border:1px solid var(--red-b);border-radius:20px;font-size:10px;padding:1px 6px;font-weight:600;"></span>
         <span id="nav-taches-total" style="display:none;flex-shrink:0;margin-left:3px;background:var(--bg);color:var(--text-soft);border:1px solid var(--border);border-radius:20px;font-size:10px;padding:1px 6px;"></span>
       </button>
       <button class="nav-item nav-item-secondary" onclick="showPage('docs')" id="nav-docs" style="flex-wrap:nowrap;overflow:hidden;">
-        <span class="nav-icon" style="flex-shrink:0;">📎</span>
+        <span class="nav-icon" style="flex-shrink:0;"><i class="ti ti-paperclip"></i></span>
         <span class="nav-label" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Mes documents</span>
         <span id="nav-docs-total" style="display:none;flex-shrink:0;margin-left:auto;background:var(--bg);color:var(--text-soft);border:1px solid var(--border);border-radius:20px;font-size:10px;padding:1px 6px;"></span>
       </button>
 
-      <button class="nav-item nav-item-secondary" onclick="showPage('materiel')" id="nav-materiel" style="flex-wrap:nowrap;overflow:hidden;"><span class="nav-icon" style="flex-shrink:0;">🎲</span><span class="nav-label" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Mon matériel</span></button>
+      <button class="nav-item nav-item-secondary" onclick="showPage('materiel')" id="nav-materiel" style="flex-wrap:nowrap;overflow:hidden;"><span class="nav-icon" style="flex-shrink:0;"><i class="ti ti-puzzle"></i></span><span class="nav-label" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Mon matériel</span></button>
 
-      <button class="nav-item nav-item-secondary" onclick="showPage('outils')" id="nav-outils" style="flex-wrap:nowrap;overflow:hidden;display:none;"><span class="nav-icon" style="flex-shrink:0;">🌳</span><span class="nav-label" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Outils cliniques</span></button>
+      <button class="nav-item nav-item-secondary" onclick="showPage('outils')" id="nav-outils" style="flex-wrap:nowrap;overflow:hidden;display:none;"><span class="nav-icon" style="flex-shrink:0;"><i class="ti ti-binary-tree"></i></span><span class="nav-label" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Outils cliniques</span></button>
 
       <!-- RÉGLAGES -->
       <div style="margin:8px 4px 4px;border-top:1px solid var(--border);"></div>
       <button class="nav-item" onclick="showPage('recap')" id="nav-recap">
-        <span class="nav-icon">📑</span><span class="nav-label">Récap collab</span>
+        <span class="nav-icon"><i class="ti ti-file-analytics"></i></span><span class="nav-label">Récap collab</span>
       </button>
       <button class="nav-item" onclick="showPage('settings')" id="nav-settings">
-        <span class="nav-icon">⚙️</span><span class="nav-label">Paramètres</span>
+        <span class="nav-icon"><i class="ti ti-settings"></i></span><span class="nav-label">Paramètres</span>
       </button>
     </nav>
     <div class="sidebar-bottom">
