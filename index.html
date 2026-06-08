@@ -5274,6 +5274,7 @@ function openBibliothequeModal(pid) {
     + '<button onclick="document.getElementById(\'biblio-overlay\').remove()" style="padding:8px 16px;border:2px solid #E2E0D8;background:none;border-radius:10px;cursor:pointer;font-size:12px;font-weight:600;color:var(--text-soft);">Annuler</button>'
     + '<div style="display:flex;gap:8px;">'
     + '<button onclick="_biblioSelectAll()" style="padding:8px 12px;border:1.5px solid #185FA5;background:none;border-radius:10px;cursor:pointer;font-size:11px;font-weight:600;color:#185FA5;">Tout cocher</button>'
+    + '<button onclick="openAddObjectifBiblio()" style="padding:8px 12px;border:1.5px solid var(--green);background:var(--green-ll);border-radius:10px;cursor:pointer;font-size:11px;font-weight:600;color:var(--green-d);">+ Ajouter à ma bibliothèque</button>'
     + '<button onclick="_biblioImport(\''+pid+'\')" style="padding:8px 18px;background:#1D9E75;color:white;border:none;border-radius:10px;cursor:pointer;font-size:12px;font-weight:700;box-shadow:0 2px 8px rgba(29,158,117,.3);">\u2713 Importer</button>'
     + '</div>'
     + '</div>';
@@ -5331,6 +5332,56 @@ function _biblioSelectAll() {
   document.querySelectorAll('#biblio-overlay input[type=checkbox]:not(:disabled)').forEach(function(cb){
     cb.checked = true;
   });
+}
+
+
+function openAddObjectifBiblio(){
+  var overlay = document.createElement('div');
+  overlay.id='add-obj-overlay';
+  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:10000;display:flex;align-items:center;justify-content:center;padding:16px;';
+  var domaines = getObjectifsBibliotheque().map(function(d){return d.domaine;});
+  var domaineOptions = domaines.map(function(d){return '<option value="'+d+'">'+d+'</option>';}).join('');
+  overlay.innerHTML = '<div style="background:white;border-radius:14px;width:480px;max-width:100%;padding:24px;box-shadow:0 20px 60px rgba(0,0,0,.25);">'
+    + '<div style="font-size:15px;font-weight:700;margin-bottom:16px;">+ Ajouter un objectif à ma bibliothèque</div>'
+    + '<div class="field"><label>Domaine</label><select id="new-obj-domaine" style="width:100%;" onchange="document.getElementById(\'new-obj-domaine-custom-wrap\').style.display=this.value===\'\'?\'block\':\'none\'"><option value="">-- Nouveau domaine --</option>'+domaineOptions+'</select></div>'
+    + '<div id="new-obj-domaine-custom-wrap" style="display:block;margin-top:6px;"><input type="text" id="new-obj-domaine-custom" placeholder="Nom du nouveau domaine (ex: Voix, Déglutition...)" style="width:100%;padding:8px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:13px;"></div>'
+    + '<div class="field"><label>Titre de l&#39;objectif long terme</label><input type="text" id="new-obj-titre" placeholder="ex: Améliorer la fluence verbale"></div>'
+    + '<div class="field"><label>Sous-objectifs <span style="font-size:10px;font-weight:400;color:var(--text-soft);">(un par ligne)</span></label><textarea id="new-obj-sous" style="min-height:100px;" placeholder="ex: Reduire les repetitions..."></textarea></div>'
+    + '<div style="display:flex;justify-content:flex-end;gap:8px;margin-top:16px;">'
+    + '<button onclick="document.getElementById(\'add-obj-overlay\').remove()" style="padding:8px 16px;border:1px solid var(--border);background:none;border-radius:8px;cursor:pointer;">Annuler</button>'
+    + '<button onclick="saveNewObjectifBiblio()" style="padding:8px 16px;background:var(--green);color:white;border:none;border-radius:8px;cursor:pointer;font-weight:600;">Enregistrer</button>'
+    + '</div>'
+    + '</div>';
+  document.body.appendChild(overlay);
+  overlay.addEventListener('click', function(e){ if(e.target===overlay) overlay.remove(); });
+
+}
+
+async function saveNewObjectifBiblio(){
+  var domaineSelect = document.getElementById('new-obj-domaine').value;
+  var domaineCustom = (document.getElementById('new-obj-domaine-custom')||{value:''}).value.trim();
+  var domaine = domaineSelect || domaineCustom;
+  var titre = (document.getElementById('new-obj-titre')||{value:''}).value.trim();
+  var sousRaw = (document.getElementById('new-obj-sous')||{value:''}).value.trim();
+  if(!domaine || !titre){ showToast('Domaine et titre requis','red'); return; }
+  var sousObjectifs = sousRaw ? sousRaw.split('\n').map(function(s){return s.trim();}).filter(Boolean) : [];
+  var userId = getSbUserId();
+  var rows = [{user_id:userId, domaine:domaine, sous_domaine:null, titre:titre, type:'long', est_commun:false}];
+  sousObjectifs.forEach(function(so){
+    rows.push({user_id:userId, domaine:domaine, sous_domaine:titre, titre:so, type:'court', est_commun:false});
+  });
+  var r = await fetch(SB_URL+'/rest/v1/objectifs_bibliotheque', {
+    method:'POST',
+    headers:{...sbHeaders(),'Content-Type':'application/json','Prefer':'return=minimal'},
+    body:JSON.stringify(rows)
+  });
+  if(r.ok){
+    await loadObjectifsBibliotheque();
+    document.querySelector('div[style*="fixed"][style*="10000"]').remove();
+    showToast('Objectif ajouté à votre bibliothèque ✅');
+  } else {
+    showToast('Erreur lors de l\'enregistrement','red');
+  }
 }
 
 function _biblioImport(pid) {
