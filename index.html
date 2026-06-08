@@ -2205,9 +2205,11 @@ function openDocumentWindow(html){
     window.__TAURI__.core.invoke('open_html_in_browser', {html: html, filename: filename})
       .catch(function(e){ console.error('open_html_in_browser error:', e); showToast('Erreur ouverture document', 'red'); });
   } else {
-    var win = window.open('','_blank');
-    if(win){ win.document.write(html); win.document.close(); }
-    else { alert('Veuillez autoriser les popups pour ce site.'); }
+    var blob = new Blob([html], {type: 'text/html'});
+    var url = URL.createObjectURL(blob);
+    var win = window.open(url, '_blank');
+    if(!win) { alert('Veuillez autoriser les popups pour ce site.'); }
+    setTimeout(function(){ URL.revokeObjectURL(url); }, 60000);
   }
 }
 
@@ -7766,6 +7768,7 @@ function renderDossierTab(p){
     +'<div style="display:flex;gap:8px;">'
     +'<button class="btn btn-sm" onclick="openPatientModal(\'' + p.id + '\')">\u270F\uFE0F Modifier</button>'
     +'<button class="btn btn-sm" style="background:var(--green-ll);color:var(--green-d);border:1px solid var(--green);" onclick="gererLienPortail(\'' + p.id + '\')">🔗 Portail patient</button>'
+    +'<button class="btn btn-sm" style="background:#EFF6FF;color:#1D4ED8;border:1px solid #BFDBFE;" onclick="exportPatientPDF(\'' + p.id + '\''+')">📄 Exporter PDF</button>'
     +'<button class="btn btn-sm btn-red" onclick="deletePatient(\'' + p.id + '\')">\uD83D\uDDD1\uFE0F Supprimer</button>'
     +'</div>';
 }
@@ -8284,6 +8287,96 @@ function gererLienPortail(pid){
   };
 }
 
+
+function exportPatientPDF(pid){
+  var p = DB.patients.find(function(x){return x.id===pid;});
+  if(!p) return;
+  var seances = (DB.seances||[]).filter(function(s){return s.patientId===pid;}).sort(function(a,b){return a.date<b.date?1:-1;});
+  var age = p.ddn ? Math.floor((new Date()-new Date(p.ddn+'T00:00:00'))/(1000*60*60*24*365)) : null;
+
+  // Charger jsPDF depuis CDN
+  if(!window.jspdf){
+    var script = document.createElement('script');
+    script.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
+    script.onload = function(){ _doExportPDF(p, seances, age); };
+    document.head.appendChild(script);
+  } else {
+    _doExportPDF(p, seances, age);
+  }
+}
+
+function _doExportPDF(p, seances, age){
+  var doc = new window.jspdf.jsPDF();
+  var y = 15;
+  var left = 14;
+  var pageW = doc.internal.pageSize.getWidth();
+
+  // En-tête
+  doc.setFillColor(29, 158, 117);
+  doc.rect(0, 0, pageW, 22, 'F');
+  doc.setTextColor(255,255,255);
+  doc.setFontSize(14);
+  doc.setFont('helvetica','bold');
+  doc.text('Dossier patient — OrthoBuddy', left, 14);
+  doc.setFontSize(9);
+  doc.setFont('helvetica','normal');
+  doc.text('Export RGPD — '+new Date().toLocaleDateString('fr-FR'), pageW-left, 14, {align:'right'});
+
+  y = 32;
+  doc.setTextColor(0,0,0);
+
+  // Identité
+  doc.setFontSize(13);
+  doc.setFont('helvetica','bold');
+  doc.text((p.prenom||'')+' '+(p.nom||''), left, y);
+  y += 7;
+  doc.setFontSize(9);
+  doc.setFont('helvetica','normal');
+  doc.setTextColor(80,80,80);
+  if(p.ddn) doc.text('Date de naissance : '+p.ddn+(age?' ('+age+' ans)':''), left, y); y+=5;
+  if(p.tel) doc.text('Téléphone : '+p.tel, left, y); y+=5;
+  if(p.email) doc.text('Email : '+p.email, left, y); y+=5;
+  if(p.adresse) doc.text('Adresse : '+p.adresse, left, y); y+=5;
+  if(p.diagnostic) doc.text('Diagnostic : '+p.diagnostic, left, y); y+=5;
+  doc.text('Statut : '+(p.statut==='actif'?'Actif':p.statut==='pause'?'En pause':'Terminé'), left, y); y+=5;
+  if(p.date_cloture) doc.text('Date de clôture : '+p.date_cloture, left, y); y+=5;
+  if(p.date_deces) doc.text('Date de décès : '+p.date_deces, left, y); y+=5;
+
+  // Séances
+  y += 5;
+  doc.setTextColor(0,0,0);
+  doc.setFontSize(11);
+  doc.setFont('helvetica','bold');
+  doc.text('Séances ('+seances.length+')', left, y); y+=6;
+  doc.setFont('helvetica','normal');
+  doc.setFontSize(8);
+  seances.slice(0,50).forEach(function(s){
+    if(y>270){ doc.addPage(); y=15; }
+    var ligne = (s.date||'')+' — '+(s.duree||'?')+' min';
+    if(s.type) ligne += ' — '+s.type;
+    doc.setTextColor(60,60,60);
+    doc.text(ligne, left, y); y+=4;
+    if(s.notes){
+      var notes = doc.splitTextToSize('Notes : '+s.notes, pageW-left*2);
+      doc.setTextColor(120,120,120);
+      doc.text(notes, left+4, y); y+=notes.length*4;
+    }
+    y+=1;
+  });
+  if(seances.length>50){ doc.setTextColor(120,120,120); doc.text('... et '+(seances.length-50)+' séances supplémentaires', left, y); y+=5; }
+
+  // Footer
+  var pageCount = doc.internal.getNumberOfPages();
+  for(var i=1;i<=pageCount;i++){
+    doc.setPage(i);
+    doc.setFontSize(7);
+    doc.setTextColor(150,150,150);
+    doc.text('Document confidentiel — OrthoBuddy — Page '+i+'/'+pageCount, pageW/2, 290, {align:'center'});
+  }
+
+  doc.save('dossier_'+(p.prenom||'')+'_'+(p.nom||'')+'_'+new Date().toISOString().slice(0,10)+'.pdf');
+  showToast('PDF exporté ✅');
+}
 
 function deletePatient(pid){
   // suppression directe
@@ -11626,6 +11719,11 @@ function printDocument(opts){
     + '    +"<w:pgMar w:top=\\"1134\\" w:right=\\"1134\\" w:bottom=\\"1134\\" w:left=\\"1134\\"/></w:sectPr>"\n'
     + '    +"</w:body></w:document>";\n'
     + '}\n'
+function _dlPdf(){
+  var el=document.querySelector('.page');
+  var fname=(_docMeta&&_docMeta.titre?_docMeta.titre.replace(/[^a-z0-9]/gi,'_'):'document')+'_'+new Date().toISOString().slice(0,10)+'.pdf';
+  html2pdf().set({margin:0,filename:fname,image:{type:'jpeg',quality:0.98},html2canvas:{scale:2,useCORS:true},jsPDF:{unit:'mm',format:'a4',orientation:'portrait'}}).from(el).save();
+}
     + 'function exportDocx(){\n'
     + '  if(typeof JSZip==="undefined"){alert("La librairie se charge, r\\u00e9essayez dans 3 secondes.");return;}\n'
     + '  var hex=_docMeta.couleur.replace("#","");\n'
@@ -11699,6 +11797,7 @@ function printDocument(opts){
     +'<span class="toolbar-hint">\u270f\ufe0f Cliquez sur les <span style="background:#FFFBEB;border-bottom:1.5px dashed #F59E0B;color:#92400E;padding:0 4px;border-radius:2px;font-size:11px;">champs en jaune</span> pour les modifier \u00b7 Cases \u00e0 cocher cliquables</span>'
     +'<button class="btn btn-main" onclick="window.print()">\uD83D\uDDB6\uFE0F Imprimer / PDF</button>'
     +'<button class="btn btn-blue" onclick="exportDocx()">\uD83D\uDCC4 Exporter Word</button>'
+    +'<button class="btn" style="background:#7C3AED;color:white;" onclick="_dlPdf()">📥 Télécharger PDF</button>'
     +'</div>'
 
     +'<div class="body" id="doc-body">'
@@ -11715,7 +11814,8 @@ function printDocument(opts){
 
     +'<div class="pg-footer"><span>'+ortho.nom+' \u00b7 Orthophoniste</span><span>'+ref+'</span></div>'
     +'</div>'
-    +'<script>'+exportScript+'<\/script>'
+    +'<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"><\/script>'
+    +'<script>'+exportScript+'\nfunction _dlPdf(){var el=document.querySelector(\'.page\');var fname=typeof _docMeta!=="undefined"&&_docMeta.titre?_docMeta.titre.replace(/[^a-z0-9]/gi,\'_\')+\'.pdf\':\'document.pdf\';html2pdf().set({margin:0,filename:fname,image:{type:\'jpeg\',quality:0.98},html2canvas:{scale:2,useCORS:true},jsPDF:{unit:\'mm\',format:\'a4\',orientation:\'portrait\'}}).from(el).save();}\n'+'<\/script>'
     +'</body></html>';
 
   openDocumentWindow(html);
