@@ -7000,13 +7000,29 @@ function editMateriel(id){
   var h = '<div style="padding:20px;max-width:600px;margin:0 auto;display:flex;flex-direction:column;gap:10px;">';
   h += '<div style="font-size:16px;font-weight:600;margin-bottom:4px;">'+(m?'Modifier le matériel':'Nouveau matériel')+'</div>';
   h += '<div class="field"><label>Titre</label><input type="text" id="medit-titre" value="'+(m?(m.titre||'').replace(/"/g,'&quot;'):'')+'"></div>';
-  h += '<div class="field"><label>Auteur</label><input type="text" id="medit-auteur" value="'+(m&&m.auteur||'').replace(/"/g,'&quot;')+'"></div>';
-  h += '<div class="field"><label>Éditeur</label><input type="text" id="medit-editeur" value="'+(m&&m.editeur||'').replace(/"/g,'&quot;')+'"></div>';
-  h += '<div class="field"><label>Catégorie</label><input type="text" id="medit-categorie" value="'+(m&&m.categorie||'')+'"></div>';
-  h += '<div class="field"><label>Format</label><input type="text" id="medit-format" value="'+(m&&m.format||'')+'"></div>';
-  h += '<div class="field"><label>Durée</label><input type="text" id="medit-duree" value="'+(m&&m.duree||'')+'"></div>';
-  h += '<div class="field"><label>Niveau</label><input type="text" id="medit-niveau" value="'+(m&&m.niveau||'')+'"></div>';
-  h += '<div class="field"><label>Rangé</label><input type="text" id="medit-localisation" value="'+(m&&m.localisation||'')+'"></div>';
+  // Construire les datalists depuis _materielData
+  var _auteurs = [...new Set(_materielData.map(function(x){return x.auteur;}).filter(Boolean))].sort();
+  var _editeurs = [...new Set(_materielData.map(function(x){return x.editeur;}).filter(Boolean))].sort();
+  var _categories = [...new Set(_materielData.map(function(x){return x.categorie;}).filter(Boolean))].sort();
+  var _formats = [...new Set(_materielData.map(function(x){return x.format;}).filter(Boolean))].sort();
+  var _durees = [...new Set(_materielData.map(function(x){return x.duree;}).filter(Boolean))].sort();
+  var _niveaux = [...new Set(_materielData.flatMap(function(x){return (x.niveau||'').split(',').map(function(n){return n.trim();}).filter(Boolean);})).sort();
+  var _localisations = [...new Set(_materielData.map(function(x){return x.localisation;}).filter(Boolean))].sort();
+  function _dl(id, vals){ return '<datalist id="'+id+'">'+vals.map(function(v){return '<option value="'+v.replace(/"/g,'&quot;')+'">'; }).join('')+'</datalist>'; }
+  h += _dl('dl-auteur', _auteurs);
+  h += _dl('dl-editeur', _editeurs);
+  h += _dl('dl-categorie', _categories);
+  h += _dl('dl-format', _formats);
+  h += _dl('dl-duree', _durees);
+  h += _dl('dl-niveau', _niveaux);
+  h += _dl('dl-localisation', _localisations);
+  h += '<div class="field"><label>Auteur</label><input type="text" id="medit-auteur" list="dl-auteur" autocomplete="off" value="'+(m&&m.auteur||'').replace(/"/g,'&quot;')+'"></div>';
+  h += '<div class="field"><label>Éditeur</label><input type="text" id="medit-editeur" list="dl-editeur" autocomplete="off" value="'+(m&&m.editeur||'').replace(/"/g,'&quot;')+'"></div>';
+  h += '<div class="field"><label>Catégorie</label><input type="text" id="medit-categorie" list="dl-categorie" autocomplete="off" value="'+(m&&m.categorie||'')+'"></div>';
+  h += '<div class="field"><label>Format</label><input type="text" id="medit-format" list="dl-format" autocomplete="off" value="'+(m&&m.format||'')+'"></div>';
+  h += '<div class="field"><label>Durée</label><input type="text" id="medit-duree" list="dl-duree" autocomplete="off" value="'+(m&&m.duree||'')+'"></div>';
+  h += '<div class="field"><label>Niveau</label><input type="text" id="medit-niveau" list="dl-niveau" autocomplete="off" value="'+(m&&m.niveau||'')+'"></div>';
+  h += '<div class="field"><label>Rangé</label><input type="text" id="medit-localisation" list="dl-localisation" autocomplete="off" value="'+(m&&m.localisation||'')+'"></div>';
   h += '<div class="field"><label>Prix</label><input type="number" id="medit-prix" value="'+(m&&m.prix_achat||'')+'"></div>';
   h += '</div>';
   h += '<div class="field"><label>Tags (séparés par virgule)</label><input type="text" id="medit-tags" value="'+(m&&m.tags||'').replace(/"/g,'&quot;')+'"></div>';
