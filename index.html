@@ -5703,6 +5703,7 @@ function renderObjectifsTab(pid){
           h += '</div>';
           h += '<div style="display:flex;gap:2px;flex-shrink:0;">';
           if(childSeances.length) h += '<button onclick="showObjectifDetail(\''+pid+'\',\''+child.id+'\')" title="Voir les séances" style="background:none;border:none;cursor:pointer;font-size:12px;padding:2px 3px;opacity:.55;">📊</button>';
+          h += '<button onclick="openMaterielsObjectif(\''+pid+'\',\''+child.id+'\')" title="Matériels associés" style="background:none;border:none;cursor:pointer;font-size:13px;padding:2px 3px;opacity:'+(child.materiels&&child.materiels.length?'1':'.4')+';">⛳</button>';
           h += '<button onclick="editObjectif(\''+pid+'\',\''+child.id+'\')" title="Modifier" style="background:none;border:none;cursor:pointer;font-size:12px;padding:2px 3px;opacity:.4;">✏️</button>';
           h += '<button onclick="deleteObjectif(\''+pid+'\',\''+child.id+'\')" title="Supprimer" style="background:none;border:none;cursor:pointer;font-size:12px;padding:2px 3px;opacity:.4;">🗑</button>';
           h += '</div>';
@@ -5952,6 +5953,80 @@ function addObjectifParent(pid){ _openObjectifModal(pid, null, null, 'long'); }
 function addObjectifChild(pid, parentId){ _openObjectifModal(pid, null, parentId, 'court'); }
 function editObjectif(pid, objId){ _openObjectifModal(pid, objId); }
 
+
+function openMaterielsObjectif(pid, objId){
+  var p = DB.patients.find(function(x){return x.id===pid;});
+  var obj = p ? (p.objectifs||[]).find(function(o){return o.id===objId;}) : null;
+  if(!obj) return;
+  if(!obj.materiels) obj.materiels = [];
+  var doOpen = function(){
+    var mesMateriels = _materielData.filter(function(m){return m.j_ai;}).sort(function(a,b){return (a.titre||'').localeCompare(b.titre||'');});
+    var overlay = document.createElement('div');
+    overlay.id = 'obj-mat-overlay';
+    overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:10002;display:flex;align-items:center;justify-content:center;padding:16px;';
+    var currentIds = obj.materiels.map(function(m){return m.id;});
+    var items = mesMateriels.map(function(m){
+      var checked = currentIds.includes(m.id);
+      var ordre = checked ? (obj.materiels.find(function(x){return x.id===m.id;})||{}).ordre||'' : '';
+      return '<label style="display:flex;align-items:center;gap:8px;padding:6px 10px;border-bottom:1px solid var(--border);cursor:pointer;font-size:12px;">'
+        + '<input type="checkbox" data-id="'+m.id+'" data-titre="'+m.titre.replace(/"/g,'&quot;')+'" '+(checked?'checked':'')+' style="accent-color:var(--green);cursor:pointer;">'
+        + '<span style="flex:1;">'+m.titre+'</span>'
+        + '<input type="number" min="1" max="99" placeholder="Ordre" value="'+ordre+'" data-ord="'+m.id+'" style="width:52px;padding:3px 6px;border:1px solid var(--border);border-radius:4px;font-size:11px;text-align:center;" onclick="event.stopPropagation();">'
+        + '</label>';
+    }).join('');
+    overlay.innerHTML = '<div style="background:white;border-radius:14px;width:480px;max-width:100%;max-height:80vh;display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(0,0,0,.25);">'
+      + '<div style="padding:14px 18px;border-bottom:1px solid var(--border);">'
+      + '<div style="font-size:13px;font-weight:600;">Matériels pour : '+escHtml(obj.titre)+'</div>'
+      + '<div style="font-size:11px;color:var(--text-soft);margin-top:2px;">Sélectionnez et ordonnez les matériels</div>'
+      + '</div>'
+      + '<input type="text" placeholder="Rechercher..." oninput="_filterObjMat(this.value)" style="margin:8px;padding:6px 10px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:12px;">'
+      + '<div id="obj-mat-list" style="overflow-y:auto;flex:1;">'+items+'</div>'
+      + '<div style="padding:10px 14px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:8px;">'
+      + '<button onclick="document.getElementById(\'obj-mat-overlay\').remove()" style="padding:6px 12px;border:1px solid var(--border);background:none;border-radius:8px;cursor:pointer;font-size:12px;">Annuler</button>'
+      + '<button onclick="_saveMaterielsObjectif(\''+pid+'\',\''+objId+'\')" style="padding:6px 12px;background:var(--green);color:white;border:none;border-radius:8px;cursor:pointer;font-size:12px;font-weight:600;">Enregistrer</button>'
+      + '</div>'
+      + '</div>';
+    document.body.appendChild(overlay);
+    overlay.addEventListener('click', function(e){ if(e.target===overlay) overlay.remove(); });
+  };
+  if(!_materielData.length){
+    fetch(SB_URL+'/rest/v1/materiel?order=titre.asc&select=*',{headers:{...sbHeaders(),'Range':'0-2999','Prefer':'count=none'}})
+      .then(function(r){return r.json();}).then(function(data){
+        if(Array.isArray(data)) _materielData = data;
+        fetch(SB_URL+'/rest/v1/materiel_praticien?user_id=eq.'+getSbUserId()+'&select=materiel_id,j_ai',{headers:sbHeaders()})
+          .then(function(r2){return r2.json();}).then(function(jd){
+            var jm={};
+            if(Array.isArray(jd)) jd.forEach(function(row){jm[row.materiel_id]=row.j_ai;});
+            _materielData=_materielData.map(function(m){return Object.assign({},m,{j_ai:jm[m.id]||false});});
+            doOpen();
+          });
+      });
+  } else { doOpen(); }
+}
+
+function _filterObjMat(q){
+  document.querySelectorAll('#obj-mat-list label').forEach(function(l){
+    l.style.display = l.textContent.toLowerCase().includes(q.toLowerCase()) ? '' : 'none';
+  });
+}
+
+function _saveMaterielsObjectif(pid, objId){
+  var p = DB.patients.find(function(x){return x.id===pid;});
+  var obj = p ? (p.objectifs||[]).find(function(o){return o.id===objId;}) : null;
+  if(!obj) return;
+  var checked = document.querySelectorAll('#obj-mat-list input[type=checkbox]:checked');
+  obj.materiels = [];
+  checked.forEach(function(cb){
+    var ordreEl = document.querySelector('#obj-mat-list input[data-ord="'+cb.dataset.id+'"]');
+    var ordre = ordreEl ? parseInt(ordreEl.value)||0 : 0;
+    obj.materiels.push({id:cb.dataset.id, titre:cb.dataset.titre, ordre:ordre});
+  });
+  obj.materiels.sort(function(a,b){return (a.ordre||99)-(b.ordre||99);});
+  save();
+  document.getElementById('obj-mat-overlay').remove();
+  showToast('Matériels enregistrés ✅');
+  renderObjectifsTab(pid);
+}
 function cycleObjectifStatus(pid, objId){
   var p = DB.patients.find(function(x){return x.id===pid;});
   if(!p||!p.objectifs) return;
