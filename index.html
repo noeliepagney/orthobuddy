@@ -658,13 +658,6 @@ html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);colo
           </button>
           <div id="stats-cabinet-content" style="display:none;"></div>
         </div>
-        <div id="stats-praticien-wrap" style="padding:0 16px 0;">
-          <button onclick="toggleStatsPraticien()" style="display:flex;align-items:center;justify-content:space-between;width:100%;margin-bottom:10px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px 14px;cursor:pointer;transition:background .15s;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background='var(--surface)'">
-            <span style="font-size:13px;font-weight:700;color:var(--text);"><i class="ti ti-chart-bar"></i> Mes statistiques</span>
-            <span id="stats-praticien-chevron" style="font-size:12px;color:var(--text-soft);transition:transform .2s;">▼</span>
-          </button>
-          <div id="stats-praticien-content" style="display:none;"></div>
-        </div>
         <hr style="border:none;border-top:1px solid var(--border);margin:0 16px;">
         <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:8px;">
           <div style="font-size:12px;color:var(--text-soft);" id="res-prevision-info"></div>
@@ -14608,358 +14601,59 @@ statusChip = function(s){
   }
   return _origStatusChip(s);
 };
-
-// ─── STATS PRATICIEN ───
-var _statsPraticienOpen = false;
-var _statsPratDateDebut = null;
-var _statsPratDateFin = null;
-
-function toggleStatsPraticien(){
-  _statsPraticienOpen = !_statsPraticienOpen;
-  var el = document.getElementById('stats-praticien-content');
-  var chev = document.getElementById('stats-praticien-chevron');
-  if(!el) return;
-  if(_statsPraticienOpen){
-    el.style.display = 'block';
-    if(chev) chev.style.transform = 'rotate(180deg)';
-    renderStatsPraticien();
-  } else {
-    el.style.display = 'none';
-    if(chev) chev.style.transform = '';
-  }
-}
-
-function renderStatsPraticien(){
-  var el = document.getElementById('stats-praticien-content');
-  if(!el) return;
-
-  // Période par défaut : mois en cours
-  var now = new Date();
-  if(!_statsPratDateDebut){
-    _statsPratDateDebut = new Date(now.getFullYear(), now.getMonth(), 1);
-    _statsPratDateFin = new Date(now.getFullYear(), now.getMonth()+1, 0);
-  }
-
-  var deb = _statsPratDateDebut;
-  var fin = _statsPratDateFin;
-  var debStr = deb.toISOString().slice(0,10);
-  var finStr = fin.toISOString().slice(0,10);
-
-  // Filtrer séances de la période
-  var seances = (DB.seances||[]).filter(function(s){
-    return s.date >= debStr && s.date <= finStr;
-  });
-
-  // ── Compteurs types ──
-  var nbBilan = seances.filter(function(s){ return s.amoCategory==='bilan' && !s.absence; }).length;
-  var nbReedu = seances.filter(function(s){ return s.amoCategory==='reedu' && !s.absence; }).length;
-  var nbReunion = seances.filter(function(s){ return s.amoCategory==='reunion' && !s.absence; }).length;
-  var nbSansActe = seances.filter(function(s){ return (!s.amoCategory||s.amoCategory==='none') && !s.absence; }).length;
-  var nbTotal = nbBilan + nbReedu + nbReunion + nbSansActe;
-
-  // ── Absences ──
-  var nbLapins = seances.filter(function(s){ return s.absence==='lapin'; }).length;
-  var nbExcusees = seances.filter(function(s){ return s.absence==='excusee'; }).length;
-  var nbAbsTotal = nbLapins + nbExcusees;
-  var nbTotalAvecAbs = nbTotal + nbAbsTotal;
-  var tauxPresence = nbTotalAvecAbs > 0 ? Math.round(nbTotal / nbTotalAvecAbs * 100) : 100;
-
-  // ── Retards ──
-  var seancesAvecRetard = seances.filter(function(s){ return s.retard && !s.absence; });
-  var nbRetards = seancesAvecRetard.length;
-  var minRetardTotal = seancesAvecRetard.reduce(function(acc, s){ return acc + (s.retardMinutes||0); }, 0);
-  var minRetardMoy = nbRetards > 0 ? Math.round(minRetardTotal / nbRetards) : 0;
-
-  // ── Domicile ──
-  var nbDomicile = seances.filter(function(s){ return s.domicile && !s.absence; }).length;
-  var nbCabinet = nbTotal - nbDomicile;
-
-  // ── AMO ──
-  var amoCount = {};
-  seances.filter(function(s){ return s.amoCode && !s.absence; }).forEach(function(s){
-    if(!amoCount[s.amoCode]) amoCount[s.amoCode] = {label: s.amoLabel||s.amoCode, nb: 0};
-    amoCount[s.amoCode].nb++;
-  });
-
-  // ── Matériel ──
-  var materielCount = {};
-  seances.filter(function(s){ return !s.absence; }).forEach(function(s){
-    (s.materiels||[]).forEach(function(m){
-      var id = m.id||m.materielId||m;
-      var mat = (DB.materiel||[]).find(function(x){ return x.id===id; });
-      var titre = mat ? mat.titre : id;
-      if(!materielCount[titre]) materielCount[titre] = 0;
-      materielCount[titre]++;
-    });
-  });
-  var materielTop = Object.keys(materielCount).sort(function(a,b){ return materielCount[b]-materielCount[a]; }).slice(0,10);
-
-  // ── Objectifs ──
-  var objectifsMap = {};
-  seances.filter(function(s){ return !s.absence; }).forEach(function(s){
-    (s.activites||[]).forEach(function(a){
-      if(!a.objectifId) return;
-      var obj = (DB.objectifs||[]).find(function(o){ return o.id===a.objectifId; });
-      if(!obj) return;
-      var key = a.objectifId;
-      if(!objectifsMap[key]){
-        objectifsMap[key] = {
-          titre: obj.titre||'Objectif',
-          sousObjectif: a.sousObjectif||'',
-          resultats: [],
-          emojis: []
-        };
-      }
-      if(a.resultat) objectifsMap[key].resultats.push(a.resultat);
-      if(a.emoji) objectifsMap[key].emojis.push(a.emoji);
-    });
-  });
-
-  // ── HTML ──
-  var MOIS = ['janvier','février','mars','avril','mai','juin','juillet','août','septembre','octobre','novembre','décembre'];
-
-  var h = '';
-
-  // Sélecteur de période
-  h += '<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:16px;padding:10px 12px;background:var(--bg);border-radius:var(--radius-sm);border:1px solid var(--border);">';
-  h += '<i class="ti ti-calendar" style="color:var(--text-soft);"></i>';
-  h += '<span style="font-size:12px;color:var(--text-soft);">Du</span>';
-  h += '<input type="date" id="stat-prat-deb" value="'+debStr+'" style="font-size:12px;padding:4px 8px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--surface);">';
-  h += '<span style="font-size:12px;color:var(--text-soft);">au</span>';
-  h += '<input type="date" id="stat-prat-fin" value="'+finStr+'" style="font-size:12px;padding:4px 8px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--surface);">';
-  h += '<button onclick="applyStatsPratPeriod()" class="btn btn-sm btn-green" style="font-size:12px;">Appliquer</button>';
-  // Raccourcis
-  h += '<span style="color:var(--border);">|</span>';
-  var shortcuts = [
-    {label:'Ce mois', fn:'setStatsPratMois(0)'},
-    {label:'Mois dernier', fn:'setStatsPratMois(-1)'},
-    {label:'3 mois', fn:'setStatsPratNMois(3)'},
-    {label:'6 mois', fn:'setStatsPratNMois(6)'},
-    {label:'Cette année', fn:'setStatsPratAnnee()'}
-  ];
-  shortcuts.forEach(function(s){
-    h += '<button onclick="'+s.fn+'" class="btn btn-sm btn-ghost" style="font-size:11px;">'+s.label+'</button>';
-  });
-  h += '</div>';
-
-  // Stat cards
-  h += '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:16px;">';
-
-  function statCard(icon, label, val, color){
-    return '<div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px 14px;">'
-      +'<div style="font-size:11px;color:var(--text-soft);margin-bottom:4px;display:flex;align-items:center;gap:5px;"><i class="ti '+icon+'" style="color:'+color+';"></i>'+label+'</div>'
-      +'<div style="font-size:22px;font-weight:700;color:'+color+';">'+val+'</div>'
-      +'</div>';
-  }
-
-  h += statCard('ti-calendar-check','Séances réalisées', nbTotal, 'var(--green)');
-  h += statCard('ti-user-check','Taux de présence', tauxPresence+'%', tauxPresence>=90?'var(--green)':tauxPresence>=75?'var(--amber)':'var(--red)');
-  h += statCard('ti-home','À domicile', nbDomicile, 'var(--blue)');
-  h += statCard('ti-clock-exclamation','Retards', nbRetards, 'var(--amber)');
-  h += '</div>';
-
-  // Types de séances
-  h += '<div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px;margin-bottom:12px;">';
-  h += '<div style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:10px;display:flex;align-items:center;gap:6px;"><i class="ti ti-stethoscope" style="color:var(--green);"></i>Types de séances</div>';
-  h += '<div style="display:flex;flex-wrap:wrap;gap:8px;">';
-  var types = [
-    {label:'Rééducation', nb:nbReedu, bg:'#DCFCE7', color:'#166534'},
-    {label:'Bilan', nb:nbBilan, bg:'#DBEAFE', color:'#1D4ED8'},
-    {label:'Réunion ESS', nb:nbReunion, bg:'#EDE9FE', color:'#5B21B6'},
-    {label:'Sans acte', nb:nbSansActe, bg:'#F3F4F6', color:'#374151'}
-  ];
-  types.forEach(function(t){
-    if(t.nb===0) return;
-    h += '<span style="padding:4px 12px;border-radius:20px;font-size:12px;font-weight:600;background:'+t.bg+';color:'+t.color+';">'+t.label+' : '+t.nb+'</span>';
-  });
-  h += '</div></div>';
-
-  // Absences
-  if(nbAbsTotal > 0){
-    h += '<div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px;margin-bottom:12px;">';
-    h += '<div style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:10px;display:flex;align-items:center;gap:6px;"><i class="ti ti-user-off" style="color:var(--red);"></i>Absences</div>';
-    h += '<div style="display:flex;gap:10px;flex-wrap:wrap;">';
-    if(nbLapins>0) h += '<span style="padding:4px 12px;border-radius:20px;font-size:12px;font-weight:600;background:#FEE2E2;color:#991B1B;">🐰 Lapins : '+nbLapins+'</span>';
-    if(nbExcusees>0) h += '<span style="padding:4px 12px;border-radius:20px;font-size:12px;font-weight:600;background:#FEF3C7;color:#92400E;">✅ Excusées : '+nbExcusees+'</span>';
-    h += '</div></div>';
-  }
-
-  // Retards détail
-  if(nbRetards > 0){
-    h += '<div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px;margin-bottom:12px;">';
-    h += '<div style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:10px;display:flex;align-items:center;gap:6px;"><i class="ti ti-clock-exclamation" style="color:var(--amber);"></i>Retards</div>';
-    h += '<div style="font-size:13px;color:var(--text-mid);">'+nbRetards+' retard'+(nbRetards>1?'s':'')+' · moyenne '+minRetardMoy+' min · total '+minRetardTotal+' min</div>';
-    h += '</div>';
-  }
-
-  // AMO
-  var amoKeys = Object.keys(amoCount);
-  if(amoKeys.length > 0){
-    h += '<div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px;margin-bottom:12px;">';
-    h += '<div style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:10px;display:flex;align-items:center;gap:6px;"><i class="ti ti-receipt" style="color:var(--blue);"></i>Actes AMO</div>';
-    h += '<div style="display:flex;flex-direction:column;gap:6px;">';
-    amoKeys.sort(function(a,b){ return amoCount[b].nb - amoCount[a].nb; }).forEach(function(k){
-      h += '<div style="display:flex;justify-content:space-between;align-items:center;font-size:12px;padding:4px 0;border-bottom:1px solid var(--bg);">';
-      h += '<span style="color:var(--text-mid);">'+amoCount[k].label+'</span>';
-      h += '<span style="font-weight:700;color:var(--blue);background:#DBEAFE;padding:2px 10px;border-radius:20px;">'+amoCount[k].nb+'</span>';
-      h += '</div>';
-    });
-    h += '</div></div>';
-  }
-
-  // Objectifs
-  var objKeys = Object.keys(objectifsMap);
-  if(objKeys.length > 0){
-    h += '<div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px;margin-bottom:12px;">';
-    h += '<div style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:10px;display:flex;align-items:center;gap:6px;"><i class="ti ti-target" style="color:var(--green);"></i>Objectifs travaillés</div>';
-    objKeys.forEach(function(k){
-      var o = objectifsMap[k];
-      h += '<div style="margin-bottom:10px;padding:8px 10px;background:var(--bg);border-radius:var(--radius-sm);">';
-      h += '<div style="font-size:12px;font-weight:600;color:var(--text);margin-bottom:4px;">'+o.titre+'</div>';
-      if(o.sousObjectif) h += '<div style="font-size:11px;color:var(--text-soft);margin-bottom:4px;">'+o.sousObjectif+'</div>';
-      if(o.resultats.length > 0){
-        h += '<div style="display:flex;flex-wrap:wrap;gap:4px;">';
-        o.resultats.forEach(function(r, i){
-          var em = o.emojis[i]||'';
-          h += '<span style="font-size:11px;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:2px 8px;">'+em+' '+r+'</span>';
-        });
-        h += '</div>';
-      }
-      h += '</div>';
-    });
-    h += '</div>';
-  }
-
-  // Matériel
-  if(materielTop.length > 0){
-    h += '<div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px;margin-bottom:12px;">';
-    h += '<div style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:10px;display:flex;align-items:center;gap:6px;"><i class="ti ti-puzzle" style="color:var(--green);"></i>Matériel utilisé</div>';
-    h += '<div style="display:flex;flex-direction:column;gap:6px;">';
-    materielTop.forEach(function(titre){
-      h += '<div style="display:flex;justify-content:space-between;align-items:center;font-size:12px;padding:4px 0;border-bottom:1px solid var(--bg);">';
-      h += '<span style="color:var(--text-mid);">'+titre+'</span>';
-      h += '<span style="font-weight:700;color:var(--green);background:#DCFCE7;padding:2px 10px;border-radius:20px;">'+materielCount[titre]+'</span>';
-      h += '</div>';
-    });
-    h += '</div></div>';
-  }
-
-  if(nbTotal===0 && nbAbsTotal===0){
-    h += '<div style="text-align:center;padding:30px;color:var(--text-soft);font-size:13px;"><i class="ti ti-mood-empty" style="font-size:24px;display:block;margin-bottom:8px;"></i>Aucune séance sur cette période</div>';
-  }
-
-  el.innerHTML = h;
-}
-
-function applyStatsPratPeriod(){
-  var deb = document.getElementById('stat-prat-deb')?.value;
-  var fin = document.getElementById('stat-prat-fin')?.value;
-  if(deb) _statsPratDateDebut = new Date(deb+'T00:00:00');
-  if(fin) _statsPratDateFin = new Date(fin+'T00:00:00');
-  renderStatsPraticien();
-}
-
-function setStatsPratMois(offset){
-  var now = new Date();
-  var m = now.getMonth() + offset;
-  var y = now.getFullYear();
-  if(m < 0){ m += 12; y--; }
-  if(m > 11){ m -= 12; y++; }
-  _statsPratDateDebut = new Date(y, m, 1);
-  _statsPratDateFin = new Date(y, m+1, 0);
-  renderStatsPraticien();
-}
-
-function setStatsPratNMois(n){
-  var fin = new Date();
-  var deb = new Date();
-  deb.setMonth(deb.getMonth() - n);
-  _statsPratDateDebut = deb;
-  _statsPratDateFin = fin;
-  renderStatsPraticien();
-}
-
-function setStatsPratAnnee(){
-  var now = new Date();
-  _statsPratDateDebut = new Date(now.getFullYear(), 0, 1);
-  _statsPratDateFin = new Date(now.getFullYear(), 11, 31);
-  renderStatsPraticien();
-}
-
 function renderStatsCabinet(annee, moisFiltre){
   var el = document.getElementById('stats-cabinet-content');
   if(!el) return;
 
   var now = new Date();
   if(!annee) annee = now.getFullYear();
+  if(typeof window._statsPat === 'undefined') window._statsPat = '';
 
-  // ── Sélecteur période ──
-  var MOIS_NMS = ['Jan','Fév','Mar','Avr','Mai','Jun','Jul','Aoû','Sep','Oct','Nov','Déc'];
+  var MOIS_NMS = ['Jan','F\u00e9v','Mar','Avr','Mai','Jun','Jul','Ao\u00fb','Sep','Oct','Nov','D\u00e9c'];
+  var barColors = ['#1D9E75','#185FA5','#534AB7','#EA580C','#0D7490','#92400E'];
+
   var annees = [];
   DB.seances.forEach(function(s){ var y=new Date(s.date+'T00:00:00').getFullYear(); if(annees.indexOf(y)<0) annees.push(y); });
   if(annees.indexOf(now.getFullYear())<0) annees.push(now.getFullYear());
   annees.sort(function(a,b){return b-a;});
 
-  var periodHtml = '<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:14px;">'
-    +'<span style="font-size:11px;color:var(--text-soft);">Année :</span>';
-  annees.forEach(function(y){
-    periodHtml += '<button onclick="renderStatsCabinet('+y+',null)" style="padding:3px 10px;font-size:12px;border:1px solid var(--border);border-radius:20px;cursor:pointer;background:'+(y===annee?'var(--green)':'var(--surface)')+';color:'+(y===annee?'white':'var(--text)')+';font-weight:'+(y===annee?'700':'400')+';">'+y+'</button>';
-  });
-  periodHtml += '<span style="color:var(--border);">|</span><span style="font-size:11px;color:var(--text-soft);">Mois :</span>';
-  periodHtml += '<button onclick="renderStatsCabinet('+annee+',null)" style="padding:3px 10px;font-size:12px;border:1px solid var(--border);border-radius:20px;cursor:pointer;background:'+(moisFiltre===null||moisFiltre===undefined?'var(--green-ll)':'var(--surface)')+';color:var(--text);">Tous</button>';
-  for(var m2=0;m2<12;m2++){
-    var hasData = DB.seances.some(function(s){ return new Date(s.date+'T00:00:00').getFullYear()===annee && new Date(s.date+'T00:00:00').getMonth()===m2; });
-    if(!hasData) continue;
-    var isSel = moisFiltre===m2;
-    periodHtml += '<button onclick="renderStatsCabinet('+annee+','+m2+')" style="padding:3px 10px;font-size:12px;border:1px solid var(--border);border-radius:20px;cursor:pointer;background:'+(isSel?'var(--green)':'var(--surface)')+';color:'+(isSel?'white':'var(--text)')+';font-weight:'+(isSel?'700':'400')+';">'+MOIS_NMS[m2]+'</button>';
-  }
-  periodHtml += '</div>';
-
-  // ── Filtrer les séances selon la période ──
-  var seancesAnnee = DB.seances.filter(function(s){
-    if(s.absence) return false;
+  // Filtrer les seances
+  var seancesAll = DB.seances.filter(function(s){
     var d = new Date(s.date+'T00:00:00');
-    if(d.getFullYear()!==annee) return false;
-    if(moisFiltre!==null&&moisFiltre!==undefined&&d.getMonth()!==moisFiltre) return false;
+    if(window._statsDebut && s.date < window._statsDebut) return false;
+    if(window._statsFin && s.date > window._statsFin) return false;
+    if(!window._statsDebut && !window._statsFin){
+      if(d.getFullYear()!==annee) return false;
+      if(moisFiltre!==null&&moisFiltre!==undefined&&d.getMonth()!==moisFiltre) return false;
+    }
+    if(window._statsPat && s.patientId!==window._statsPat) return false;
     return true;
   });
 
-  // ── Taux de remplissage ──
-  // Semaines actives = semaines avec au moins une séance
+  var seancesR = seancesAll.filter(function(s){ return !s.absence; });
+  var seancesA = seancesAll.filter(function(s){ return !!s.absence; });
+
+  var nbTotal = seancesR.length;
+  var nbBilan = seancesR.filter(function(s){ return s.amoCategory==='bilan'; }).length;
+  var nbReedu = seancesR.filter(function(s){ return s.amoCategory==='reedu'; }).length;
+  var nbReunion = seancesR.filter(function(s){ return s.amoCategory==='reunion'; }).length;
+  var nbSansActe = seancesR.filter(function(s){ return !s.amoCategory||s.amoCategory==='none'; }).length;
+  var nbLapins = seancesA.filter(function(s){ return s.absence==='lapin'; }).length;
+  var nbExcusees = seancesA.filter(function(s){ return s.absence==='excusee'; }).length;
+  var nbAbsTotal = nbLapins + nbExcusees;
+  var tauxPresence = (nbTotal+nbAbsTotal)>0 ? Math.round(nbTotal/(nbTotal+nbAbsTotal)*100) : 100;
+  var nbDomicile = seancesR.filter(function(s){ return s.domicile; }).length;
+  var seancesRetard = seancesR.filter(function(s){ return s.retard; });
+  var nbRetards = seancesRetard.length;
+  var minRetardMoy = nbRetards>0 ? Math.round(seancesRetard.reduce(function(a,s){ return a+(s.retardMinutes||0); },0)/nbRetards) : 0;
+
   var weekSet = {};
-  seancesAnnee.forEach(function(s){
-    var d = new Date(s.date+'T00:00:00');
-    var wd = getWeekStart(d);
-    weekSet[fmtDate(wd)] = true;
-  });
-  var semainesActives = Object.keys(weekSet).length;
-  // Semaines écoulées depuis début d'année
-  var debutAnnee = new Date(annee, 0, 1);
-  var semainesEcoulees = Math.max(1, Math.ceil((now - debutAnnee) / (7*24*3600*1000)));
-  var tauxRemplissage = Math.min(100, Math.round(semainesActives / semainesEcoulees * 100));
+  seancesR.forEach(function(s){ var wd=getWeekStart(new Date(s.date+'T00:00:00')); weekSet[fmtDate(wd)]=true; });
+  var tauxRemplissage = Math.min(100,Math.round(Object.keys(weekSet).length/Math.max(1,Math.ceil((now-new Date(annee,0,1))/(7*24*3600*1000)))*100));
 
-  // ── Répartition parcours ──
-  var parcoursCount = {};
-  seancesAnnee.filter(function(s){
-    return s.amoCategory==='reedu';
-  }).forEach(function(s){
-    var p = DB.patients.find(function(x){return x.id===s.patientId;});
-    if(!p||!p.parcours||!p.parcours.length) return;
-    p.parcours.forEach(function(pcId){
-      parcoursCount[pcId] = (parcoursCount[pcId]||0)+1;
-    });
-  });
-  var totalParcours = Object.values(parcoursCount).reduce(function(a,b){return a+b;},0)||1;
-  var parcoursData = Object.entries(parcoursCount).map(function(kv){
-    var pc = DB.parcours.find(function(x){return x.id===kv[0];});
-    return {label:(pc?pc.emoji+' '+pc.nom:kv[0]), count:kv[1], pct:Math.round(kv[1]/totalParcours*100)};
-  }).sort(function(a,b){return b.count-a.count;});
-
-  // ── Patients actifs / nouveaux ──
-  var patientsActifs = DB.patients.filter(function(p){return p.statut!=='clos';}).length;
-  var patientsNouveaux = DB.patients.filter(function(p){
-    var first = DB.seances.filter(function(s){return s.patientId===p.id&&!s.absence;})
-      .map(function(s){return s.date;}).sort()[0];
+  var patientsActifs = (DB.patients||[]).filter(function(p){ return p.statut!=='clos'; }).length;
+  var patientsNouveaux = (DB.patients||[]).filter(function(p){
+    var first = DB.seances.filter(function(s){ return s.patientId===p.id&&!s.absence; }).map(function(s){ return s.date; }).sort()[0];
     if(!first) return false;
     var fd = new Date(first+'T00:00:00');
     if(fd.getFullYear()!==annee) return false;
@@ -14967,70 +14661,241 @@ function renderStatsCabinet(annee, moisFiltre){
     return true;
   }).length;
 
-  // ── Séances par mois ──
-  var MOIS = ['Jan','Fév','Mar','Avr','Mai','Jun','Jul','Aoû','Sep','Oct','Nov','Déc'];
   var parMois = new Array(12).fill(0);
-  seancesAnnee.filter(function(s){return s.amoCategory==='reedu';}).forEach(function(s){
-    parMois[new Date(s.date+'T00:00:00').getMonth()]++;
+  seancesR.forEach(function(s){ parMois[new Date(s.date+'T00:00:00').getMonth()]++; });
+  var maxMois = Math.max.apply(null,parMois)||1;
+  var CHART_H = 80;
+
+  var parcoursCount = {};
+  seancesR.filter(function(s){ return s.amoCategory==='reedu'; }).forEach(function(s){
+    var p=(DB.patients||[]).find(function(x){ return x.id===s.patientId; });
+    if(!p||!p.parcours) return;
+    p.parcours.forEach(function(pcId){ parcoursCount[pcId]=(parcoursCount[pcId]||0)+1; });
   });
-  var maxMois = Math.max.apply(null, parMois) || 1;
-  var moisActuel = now.getMonth();
+  var totalParcours = Object.values(parcoursCount).reduce(function(a,b){return a+b;},0)||1;
+  var parcoursData = Object.keys(parcoursCount).map(function(k){
+    var pc=(DB.parcours||[]).find(function(x){ return x.id===k; });
+    return {label:(pc?pc.emoji+' '+pc.nom:k),count:parcoursCount[k],pct:Math.round(parcoursCount[k]/totalParcours*100)};
+  }).sort(function(a,b){ return b.count-a.count; });
 
-  // ── HTML ──
-  var barColors = ['#1D9E75','#185FA5','#534AB7','#EA580C','#0D7490','#92400E'];
+  var amoCount = {};
+  seancesR.filter(function(s){ return s.amoCode; }).forEach(function(s){
+    if(!amoCount[s.amoCode]) amoCount[s.amoCode]={label:s.amoLabel||s.amoCode,nb:0};
+    amoCount[s.amoCode].nb++;
+  });
 
-  var h = periodHtml + '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:18px;">';
-  // Stat cards
-  [
-    {icon:'📅', val:seancesAnnee.filter(function(s){return s.amoCategory==='reedu';}).length, label:'Séances réédu '+(moisFiltre!==null&&moisFiltre!==undefined?MOIS[moisFiltre]+' ':'')+annee},
-    {icon:'👥', val:patientsActifs, label:'Patients actifs'},
-    {icon:'🆕', val:patientsNouveaux, label:'Nouveaux patients'},
-    {icon:'📊', val:tauxRemplissage+'%', label:'Taux de remplissage'},
-  ].forEach(function(card){
-    h += '<div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:12px 14px;text-align:center;">'
-      +'<div style="font-size:20px;margin-bottom:4px;">'+card.icon+'</div>'
-      +'<div style="font-size:20px;font-weight:700;color:var(--green);margin-bottom:2px;">'+card.val+'</div>'
-      +'<div style="font-size:10px;color:var(--text-soft);">'+card.label+'</div>'
-      +'</div>';
+  var materielCount = {};
+  seancesR.forEach(function(s){
+    (s.materiels||[]).forEach(function(m){
+      var id=m.id||m.materielId||m;
+      var mat=(DB.materiel||[]).find(function(x){ return x.id===id; });
+      var titre=mat?mat.titre:String(id);
+      materielCount[titre]=(materielCount[titre]||0)+1;
+    });
+  });
+  var materielTop=Object.keys(materielCount).sort(function(a,b){ return materielCount[b]-materielCount[a]; }).slice(0,10);
+
+  var objectifsMap = {};
+  seancesR.forEach(function(s){
+    (s.activites||[]).forEach(function(a){
+      if(!a.objectifId) return;
+      var obj=(DB.objectifs||[]).find(function(o){ return o.id===a.objectifId; });
+      if(!obj) return;
+      if(!objectifsMap[a.objectifId]) objectifsMap[a.objectifId]={titre:obj.titre||'Objectif',resultats:[],emojis:[]};
+      if(a.resultat) objectifsMap[a.objectifId].resultats.push(a.resultat);
+      if(a.emoji) objectifsMap[a.objectifId].emojis.push(a.emoji);
+    });
+  });
+
+  // HTML
+  var h = '';
+
+  // Filtres annee/mois
+  h += '<div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px 14px;margin-bottom:12px;">';
+  h += '<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px;">';
+  h += '<span style="font-size:11px;color:var(--text-soft);font-weight:600;">Ann\u00e9e :</span>';
+  annees.forEach(function(y){
+    var sel = y===annee&&(moisFiltre===null||moisFiltre===undefined);
+    h += '<button onclick="window._statsDebut=null;window._statsFin=null;renderStatsCabinet('+y+',null)" style="padding:3px 10px;font-size:12px;border:1px solid var(--border);border-radius:20px;cursor:pointer;background:'+(sel?'var(--green)':'var(--surface)')+';color:'+(sel?'white':'var(--text)')+';font-weight:'+(sel?'700':'400')+';">'+y+'</button>';
   });
   h += '</div>';
+  h += '<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px;">';
+  h += '<span style="font-size:11px;color:var(--text-soft);font-weight:600;">Mois :</span>';
+  h += '<button onclick="window._statsDebut=null;window._statsFin=null;renderStatsCabinet('+annee+',null)" style="padding:3px 10px;font-size:12px;border:1px solid var(--border);border-radius:20px;cursor:pointer;background:'+(moisFiltre===null||moisFiltre===undefined?'var(--green-ll)':'var(--surface)')+';color:var(--text);">Tous</button>';
+  for(var m2=0;m2<12;m2++){
+    var hasData=DB.seances.some(function(s){ return new Date(s.date+'T00:00:00').getFullYear()===annee&&new Date(s.date+'T00:00:00').getMonth()===m2; });
+    if(!hasData) continue;
+    var isSel=moisFiltre===m2;
+    h += '<button onclick="window._statsDebut=null;window._statsFin=null;renderStatsCabinet('+annee+','+m2+')" style="padding:3px 10px;font-size:12px;border:1px solid var(--border);border-radius:20px;cursor:pointer;background:'+(isSel?'var(--green)':'var(--surface)')+';color:'+(isSel?'white':'var(--text)')+';font-weight:'+(isSel?'700':'400')+';">'+MOIS_NMS[m2]+'</button>';
+  }
+  h += '</div>';
 
-  // Séances par mois (bar chart — pixel heights, not %)
-  var CHART_H = 100; // px
-  h += '<div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px;margin-bottom:14px;">';
-  h += '<div style="font-size:12px;font-weight:600;color:var(--text);margin-bottom:10px;">📈 Séances par mois '+annee+(moisFiltre!==null&&moisFiltre!==undefined?' — '+MOIS[moisFiltre]:'')+'</div>';
+  // Periode custom
+  h += '<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px;">';
+  h += '<span style="font-size:11px;color:var(--text-soft);font-weight:600;"><i class="ti ti-calendar"></i> P\u00e9riode :</span>';
+  h += '<div class="date-picker-wrap" id="dp-stats-deb-wrap" style="display:inline-block;"></div>';
+  h += '<span style="font-size:11px;color:var(--text-soft);">\u2192</span>';
+  h += '<div class="date-picker-wrap" id="dp-stats-fin-wrap" style="display:inline-block;"></div>';
+  h += '<button onclick="applyStatsCabinetPeriod()" class="btn btn-sm btn-green" style="font-size:11px;">Appliquer</button>';
+  h += '</div>';
+
+  // Filtre patient
+  h += '<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">';
+  h += '<span style="font-size:11px;color:var(--text-soft);font-weight:600;"><i class="ti ti-user"></i> Patient :</span>';
+  h += '<select id="stats-patient-select" onchange="window._statsPat=this.value;renderStatsCabinet('+annee+','+(moisFiltre!==null&&moisFiltre!==undefined?moisFiltre:'null')+')" style="font-size:12px;padding:4px 8px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--surface);max-width:220px;">';
+  h += '<option value="">Tous les patients</option>';
+  (DB.patients||[]).filter(function(p){ return p.statut!=='clos'; }).sort(function(a,b){ return (a.nom||'').localeCompare(b.nom||''); }).forEach(function(p){
+    h += '<option value="'+p.id+'"'+(window._statsPat===p.id?' selected':'')+'>'+p.prenom+' '+p.nom+'</option>';
+  });
+  h += '</select>';
+  if(window._statsPat) h += '<button onclick="window._statsPat=\'\';renderStatsCabinet('+annee+','+(moisFiltre!==null&&moisFiltre!==undefined?moisFiltre:'null')+')" class="btn btn-sm btn-ghost" style="font-size:11px;"><i class="ti ti-x"></i> Tous</button>';
+  h += '</div>';
+  h += '</div>';
+
+  // Stat cards
+  h += '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:14px;">';
+  function sc(icon,label,val,color){
+    return '<div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px 14px;text-align:center;">'
+      +'<i class="ti '+icon+'" style="font-size:20px;color:'+color+';display:block;margin-bottom:4px;"></i>'
+      +'<div style="font-size:22px;font-weight:700;color:'+color+';margin-bottom:2px;">'+val+'</div>'
+      +'<div style="font-size:10px;color:var(--text-soft);">'+label+'</div>'
+      +'</div>';
+  }
+  h += sc('ti-calendar-check','S\u00e9ances',nbTotal,'var(--green)');
+  h += sc('ti-users','Patients actifs',patientsActifs,'var(--blue)');
+  h += sc('ti-user-plus','Nouveaux',patientsNouveaux,'#534AB7');
+  h += sc('ti-chart-bar','Remplissage',tauxRemplissage+'%','var(--green)');
+  h += sc('ti-user-check','Pr\u00e9sence',tauxPresence+'%',tauxPresence>=90?'var(--green)':tauxPresence>=75?'var(--amber)':'var(--red)');
+  h += sc('ti-home','Domicile',nbDomicile,'var(--blue)');
+  h += sc('ti-clock-exclamation','Retards moy.',nbRetards>0?minRetardMoy+' min':'0','var(--amber)');
+  h += '</div>';
+
+  // Types de seances
+  h += '<div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px;margin-bottom:10px;">';
+  h += '<div style="font-size:12px;font-weight:700;margin-bottom:8px;display:flex;align-items:center;gap:6px;"><i class="ti ti-stethoscope" style="color:var(--green);"></i>Types de s\u00e9ances</div>';
+  h += '<div style="display:flex;flex-wrap:wrap;gap:8px;">';
+  [{label:'R\u00e9\u00e9ducation',nb:nbReedu,bg:'#DCFCE7',col:'#166534'},{label:'Bilan',nb:nbBilan,bg:'#DBEAFE',col:'#1D4ED8'},{label:'R\u00e9union ESS',nb:nbReunion,bg:'#EDE9FE',col:'#5B21B6'},{label:'Sans acte',nb:nbSansActe,bg:'#F3F4F6',col:'#374151'}].forEach(function(t){
+    if(t.nb===0) return;
+    h += '<span style="padding:4px 12px;border-radius:20px;font-size:12px;font-weight:600;background:'+t.bg+';color:'+t.col+';">'+t.label+' : '+t.nb+'</span>';
+  });
+  h += '</div></div>';
+
+  // Absences
+  if(nbAbsTotal>0){
+    h += '<div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px;margin-bottom:10px;">';
+    h += '<div style="font-size:12px;font-weight:700;margin-bottom:8px;display:flex;align-items:center;gap:6px;"><i class="ti ti-user-off" style="color:var(--red);"></i>Absences</div>';
+    h += '<div style="display:flex;gap:10px;flex-wrap:wrap;">';
+    if(nbLapins>0) h += '<span style="padding:4px 12px;border-radius:20px;font-size:12px;font-weight:600;background:#FEE2E2;color:#991B1B;">\uD83D\uDC30 Lapins : '+nbLapins+'</span>';
+    if(nbExcusees>0) h += '<span style="padding:4px 12px;border-radius:20px;font-size:12px;font-weight:600;background:#FEF3C7;color:#92400E;">\u2705 Excus\u00e9es : '+nbExcusees+'</span>';
+    h += '</div></div>';
+  }
+
+  // Retards
+  if(nbRetards>0){
+    h += '<div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px;margin-bottom:10px;">';
+    h += '<div style="font-size:12px;font-weight:700;margin-bottom:8px;display:flex;align-items:center;gap:6px;"><i class="ti ti-clock-exclamation" style="color:var(--amber);"></i>Retards</div>';
+    h += '<div style="font-size:13px;color:var(--text-mid);">'+nbRetards+' retard'+(nbRetards>1?'s':'')+' &middot; moyenne '+minRetardMoy+' min</div>';
+    h += '</div>';
+  }
+
+  // Bar chart
+  h += '<div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px;margin-bottom:10px;">';
+  h += '<div style="font-size:12px;font-weight:700;margin-bottom:10px;display:flex;align-items:center;gap:6px;"><i class="ti ti-chart-bar" style="color:var(--green);"></i>S\u00e9ances par mois '+annee+'</div>';
   h += '<div style="display:flex;align-items:flex-end;gap:4px;height:'+(CHART_H+24)+'px;padding-bottom:18px;position:relative;">';
-  parMois.forEach(function(n, i){
-    var px = maxMois>0 ? Math.round(n/maxMois*CHART_H) : 0;
-    var isNow = i===moisActuel;
-    var isSel = moisFiltre===i;
-    var bg = isSel?'var(--green)': isNow?'#9FE1CB':'#C8EEE3';
+  parMois.forEach(function(n,i){
+    var px=Math.round(n/maxMois*CHART_H);
+    var isSel=moisFiltre===i;
+    var isNow=i===now.getMonth()&&annee===now.getFullYear();
+    var bg=isSel?'var(--green)':isNow?'#9FE1CB':'#C8EEE3';
     h += '<div style="flex:1;display:flex;flex-direction:column;align-items:center;position:relative;">'
       +'<div style="font-size:9px;color:var(--text-soft);position:absolute;top:'+(CHART_H-px-14)+'px;width:100%;text-align:center;">'+(n>0?n:'')+'</div>'
-      +'<div style="width:calc(100% - 2px);background:'+bg+';border-radius:3px 3px 0 0;height:'+px+'px;min-height:'+(n?2:0)+'px;position:absolute;bottom:0;transition:height .3s;"></div>'
-      +'<div style="font-size:9px;color:'+(isNow||isSel?'var(--green)':'var(--text-soft)')+';font-weight:'+(isNow||isSel?'700':'400')+';position:absolute;bottom:-16px;width:100%;text-align:center;">'+MOIS[i]+'</div>'
+      +'<div style="width:calc(100% - 2px);background:'+bg+';border-radius:3px 3px 0 0;height:'+px+'px;min-height:'+(n?2:0)+'px;position:absolute;bottom:0;"></div>'
+      +'<div style="font-size:9px;color:'+(isNow||isSel?'var(--green)':'var(--text-soft)')+';font-weight:'+(isNow||isSel?'700':'400')+';position:absolute;bottom:-16px;width:100%;text-align:center;">'+MOIS_NMS[i]+'</div>'
       +'</div>';
   });
   h += '</div></div>';
 
-  // Répartition parcours
+  // Parcours
   if(parcoursData.length){
-    h += '<div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px;">';
-    h += '<div style="font-size:12px;font-weight:600;color:var(--text);margin-bottom:10px;">🗂️ Répartition par parcours — '+(moisFiltre!==null&&moisFiltre!==undefined?MOIS[moisFiltre]+' ':'')+annee+'</div>';
-    parcoursData.forEach(function(item, i){
+    h += '<div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px;margin-bottom:10px;">';
+    h += '<div style="font-size:12px;font-weight:700;margin-bottom:10px;display:flex;align-items:center;gap:6px;"><i class="ti ti-folders" style="color:var(--green);"></i>R\u00e9partition par parcours</div>';
+    parcoursData.forEach(function(item,i){
       h += '<div style="margin-bottom:7px;">';
-      h += '<div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:2px;">'
-        +'<span>'+item.label+'</span>'
-        +'<span style="color:var(--text-soft);">'+item.count+' séances ('+item.pct+'%)</span>'
-        +'</div>';
-      h += '<div style="background:#F0EDE6;border-radius:4px;height:8px;overflow:hidden;">'
-        +'<div style="background:'+barColors[i%barColors.length]+';height:100%;width:'+item.pct+'%;border-radius:4px;transition:width .4s;"></div>'
-        +'</div></div>';
+      h += '<div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:2px;"><span>'+item.label+'</span><span style="color:var(--text-soft);">'+item.count+' ('+item.pct+'%)</span></div>';
+      h += '<div style="background:#F0EDE6;border-radius:4px;height:8px;overflow:hidden;"><div style="background:'+barColors[i%barColors.length]+';height:100%;width:'+item.pct+'%;border-radius:4px;"></div></div>';
+      h += '</div>';
     });
     h += '</div>';
   }
 
+  // AMO
+  var amoKeys=Object.keys(amoCount);
+  if(amoKeys.length>0){
+    h += '<div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px;margin-bottom:10px;">';
+    h += '<div style="font-size:12px;font-weight:700;margin-bottom:8px;display:flex;align-items:center;gap:6px;"><i class="ti ti-receipt" style="color:var(--blue);"></i>Actes AMO</div>';
+    amoKeys.sort(function(a,b){ return amoCount[b].nb-amoCount[a].nb; }).forEach(function(k){
+      h += '<div style="display:flex;justify-content:space-between;align-items:center;font-size:12px;padding:4px 0;border-bottom:1px solid var(--bg);">';
+      h += '<span style="color:var(--text-mid);">'+amoCount[k].label+'</span>';
+      h += '<span style="font-weight:700;color:var(--blue);background:#DBEAFE;padding:2px 10px;border-radius:20px;">'+amoCount[k].nb+'</span>';
+      h += '</div>';
+    });
+    h += '</div>';
+  }
+
+  // Objectifs
+  var objKeys=Object.keys(objectifsMap);
+  if(objKeys.length>0){
+    h += '<div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px;margin-bottom:10px;">';
+    h += '<div style="font-size:12px;font-weight:700;margin-bottom:8px;display:flex;align-items:center;gap:6px;"><i class="ti ti-target" style="color:var(--green);"></i>Objectifs travaill\u00e9s</div>';
+    objKeys.forEach(function(k){
+      var o=objectifsMap[k];
+      h += '<div style="margin-bottom:10px;padding:8px 10px;background:var(--bg);border-radius:var(--radius-sm);">';
+      h += '<div style="font-size:12px;font-weight:600;margin-bottom:4px;">'+o.titre+'</div>';
+      if(o.resultats.length>0){
+        h += '<div style="display:flex;flex-wrap:wrap;gap:4px;">';
+        o.resultats.forEach(function(r,i){ h += '<span style="font-size:11px;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:2px 8px;">'+(o.emojis[i]||'')+' '+r+'</span>'; });
+        h += '</div>';
+      }
+      h += '</div>';
+    });
+    h += '</div>';
+  }
+
+  // Materiel
+  if(materielTop.length>0){
+    h += '<div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px;margin-bottom:10px;">';
+    h += '<div style="font-size:12px;font-weight:700;margin-bottom:8px;display:flex;align-items:center;gap:6px;"><i class="ti ti-puzzle" style="color:var(--green);"></i>Mat\u00e9riel utilis\u00e9</div>';
+    materielTop.forEach(function(titre){
+      h += '<div style="display:flex;justify-content:space-between;align-items:center;font-size:12px;padding:4px 0;border-bottom:1px solid var(--bg);">';
+      h += '<span style="color:var(--text-mid);">'+titre+'</span>';
+      h += '<span style="font-weight:700;color:var(--green);background:#DCFCE7;padding:2px 10px;border-radius:20px;">'+materielCount[titre]+'</span>';
+      h += '</div>';
+    });
+    h += '</div>';
+  }
+
+  if(nbTotal===0&&nbAbsTotal===0){
+    h += '<div style="text-align:center;padding:30px;color:var(--text-soft);font-size:13px;"><i class="ti ti-mood-empty" style="font-size:24px;display:block;margin-bottom:8px;"></i>Aucune s\u00e9ance sur cette p\u00e9riode</div>';
+  }
+
   el.innerHTML = h;
+
+  setTimeout(function(){
+    var debVal=new Date(annee,moisFiltre!==null&&moisFiltre!==undefined?moisFiltre:0,1).toISOString().slice(0,10);
+    var finVal=moisFiltre!==null&&moisFiltre!==undefined?new Date(annee,moisFiltre+1,0).toISOString().slice(0,10):new Date(annee,11,31).toISOString().slice(0,10);
+    if(!window._statsDebut) createDatePicker('dp-stats-deb-wrap',debVal);
+    if(!window._statsFin) createDatePicker('dp-stats-fin-wrap',finVal);
+    else { createDatePicker('dp-stats-deb-wrap',window._statsDebut); createDatePicker('dp-stats-fin-wrap',window._statsFin); }
+  },50);
+}
+
+function applyStatsCabinetPeriod(){
+  var deb=dpGet('dp-stats-deb-wrap');
+  var fin=dpGet('dp-stats-fin-wrap');
+  if(!deb||!fin){ showToast('S\u00e9lectionnez les deux dates','red'); return; }
+  window._statsDebut=deb;
+  window._statsFin=fin;
+  renderStatsCabinet(new Date(deb+'T00:00:00').getFullYear(),null);
 }
 
 function toggleStatsCabinet(){
