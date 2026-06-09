@@ -1882,6 +1882,20 @@ html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);colo
     </div>
     <div class="field" style="margin-bottom:14px;"><label>Note de séance</label><textarea id="s-note" placeholder="Observations générales…" style="min-height:56px;"></textarea></div>
 
+    <div style="margin-bottom:14px;padding:10px 12px;background:#FEF9E7;border:1px solid #F9CA74;border-radius:var(--radius-sm);">
+      <label style="display:flex;align-items:center;gap:10px;cursor:pointer;">
+        <input type="checkbox" id="retard-checkbox" style="width:16px;height:16px;accent-color:var(--amber);cursor:pointer;" onchange="toggleRetardField(this.checked)">
+        <div>
+          <div style="font-size:13px;font-weight:500;color:#92400E;"><i class="ti ti-clock-exclamation"></i> Patient en retard</div>
+          <div style="font-size:11px;color:var(--text-soft);margin-top:1px;">Cocher si le patient est arrivé en retard</div>
+        </div>
+      </label>
+      <div id="retard-minutes-zone" style="display:none;margin-top:10px;margin-left:26px;">
+        <label style="font-size:12px;color:#92400E;font-weight:500;">Nombre de minutes de retard</label>
+        <input type="number" id="retard-minutes" min="1" max="60" placeholder="ex: 10" style="width:100px;margin-top:4px;padding:5px 8px;border:1px solid #F9CA74;border-radius:var(--radius-sm);font-size:13px;background:#FFFBEB;outline:none;">
+      </div>
+    </div>
+
     <hr class="divider">
     <div class="section-label">Activités <button class="btn btn-sm" onclick="addActiviteInModal()">+ Activité</button></div>
     <div id="modal-activites"></div>
@@ -9710,6 +9724,10 @@ function openSeanceModal(pid,sid){
   document.getElementById('s-note').value=s?.note||'';
   var cvCb=document.getElementById('carte-vitale-checkbox');
   if(cvCb) cvCb.checked = !s || s.carteVitale !== false;
+  var retardCb = document.getElementById('retard-checkbox');
+  var retardMin = document.getElementById('retard-minutes');
+  if(retardCb){ retardCb.checked = !!(s&&s.retard); toggleRetardField(!!(s&&s.retard)); }
+  if(retardMin){ retardMin.value = (s&&s.retardMinutes)||''; }
 
   // Date
   createDatePicker('dp-seance-date-wrap',s?.date||today());
@@ -10341,6 +10359,12 @@ function checkSeanceConflict(sid, date, heureStr, duree){
   });
 }
 
+function toggleRetardField(checked){
+  var z = document.getElementById('retard-minutes-zone');
+  if(z) z.style.display = checked ? 'block' : 'none';
+  if(!checked){ var m=document.getElementById('retard-minutes'); if(m) m.value=''; }
+}
+
 function saveSeance(){
   const sid=document.getElementById('edit-seance-id').value;
   const pid=document.getElementById('edit-seance-patient-id').value;
@@ -10392,7 +10416,9 @@ function saveSeance(){
       if(ac.objectifId==='__pending__'){ac.objectifId=null;}
       return ac;
     }),fichiers:_modalFiles,
-    materiels:_seanceMateriels||[]
+    materiels:_seanceMateriels||[],
+    retard:!!(document.getElementById('retard-checkbox')?.checked),
+    retardMinutes:document.getElementById('retard-checkbox')?.checked ? (parseInt(document.getElementById('retard-minutes')?.value)||0) : 0
   };
   if(sid){const s=DB.seances.find(x=>x.id===sid);if(s)Object.assign(s,data);}
   else DB.seances.push({id:uid(),...data});
