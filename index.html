@@ -8755,7 +8755,7 @@ function gererLienPortail(pid){
     + '<div style="display:flex;gap:8px;">'
     + '<button class="btn btn-green" id="btn-copier-portail">📋 Copier le lien</button>'
     + '<div style="font-size:12px;color:var(--text-soft);margin-bottom:8px;"><i class="ti ti-mail" style="color:#185FA5;"></i> Envoi vers : <strong>'+(p.email||'Aucun email renseigné')+'</strong></div>'
-    + '<button class="btn" style="background:#185FA5;color:white;"'+(p.email?'':' disabled title="Aucun email renseigné"')+' id="btn-email-portail"><i class="ti ti-mail"></i> Envoyer par email</button>'
+    + '<button class="btn" style="background:#185FA5;color:white;"'+(p.email?'':' disabled')+' id="btn-email-portail"><i class="ti ti-mail"></i> Envoyer par email</button>'
     + '<button class="btn btn-ghost" id="btn-regenerer-portail">↩️ Regénérer</button>'
     + '</div>'
     + '</div>'
@@ -12150,16 +12150,61 @@ function renderDocsPatientTab(p){
   if(!container) return;
   getDocsByPatient(p.id, function(docs){
     docs.sort(function(a,b){return (b.createdAt||'')>(a.createdAt||'')?1:-1;});
-    var h = '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">' +
-      '<span style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--text-soft);">'+docs.length+' document'+(docs.length!==1?'s':'')+'</span>' +
-      '<button class="btn btn-sm btn-green" onclick="openUploadModal(null,\''+p.id+'\');event.stopPropagation()">+ Document</button>' +
-    '</div>';
+    var pid = p.id;
+    var h = '';
+
+    // PORTAIL
+    h += '<div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);margin-bottom:12px;overflow:hidden;">';
+    h += '<div style="background:#EEF4F1;padding:9px 14px;font-size:12px;font-weight:700;color:#5C8B6E;display:flex;align-items:center;gap:6px;border-bottom:1px solid var(--border);"><i class="ti ti-world"></i> Portail patient</div>';
+    h += '<div style="padding:12px 14px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;">';
+    if(p.portailToken){
+      var lienPortail = 'https://orthobuddy.fr/portail.html?token='+p.portailToken;
+      h += '<div style="font-size:11px;color:var(--text-soft);flex:1;min-width:180px;word-break:break-all;font-family:monospace;">'+lienPortail+'</div>';
+      h += '<button class="btn btn-sm btn-green" id="btn-copy-portail-'+pid+'"><i class="ti ti-copy"></i> Copier</button>';
+      h += '<button class="btn btn-sm" style="background:#185FA5;color:white;" id="btn-manage-portail-'+pid+'"><i class="ti ti-settings"></i> G\u00e9rer</button>';
+    } else {
+      h += '<span style="font-size:12px;color:var(--text-soft);">Portail non activ\u00e9</span>';
+      h += '<button class="btn btn-sm btn-green" id="btn-activate-portail-'+pid+'"><i class="ti ti-world"></i> Activer le portail</button>';
+    }
+    h += '</div></div>';
+
+    // MODELES EMAILS
+    h += '<div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);margin-bottom:12px;overflow:hidden;">';
+    h += '<div style="background:#EEF4F1;padding:9px 14px;font-size:12px;font-weight:700;color:#5C8B6E;display:flex;align-items:center;gap:6px;border-bottom:1px solid var(--border);"><i class="ti ti-mail"></i> Mod\u00e8les d\u2019emails</div>';
+    h += '<div style="padding:12px 14px;">';
+    h += '<button class="btn btn-sm" style="background:#EEF4F1;color:#5C8B6E;border:1px solid #5C8B6E;" id="btn-modeles-'+pid+'"><i class="ti ti-copy"></i> Ouvrir les mod\u00e8les</button>';
+    h += '</div></div>';
+
+    // DOCUMENTS
+    h += '<div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);overflow:hidden;">';
+    h += '<div style="background:#EEF4F1;padding:9px 14px;font-size:12px;font-weight:700;color:#5C8B6E;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);">';
+    h += '<span style="display:flex;align-items:center;gap:6px;"><i class="ti ti-paperclip"></i> Documents ('+docs.length+')</span>';
+    h += '<button class="btn btn-sm btn-green" id="btn-upload-'+pid+'">+ Ajouter</button>';
+    h += '</div>';
+    h += '<div style="padding:12px 14px;">';
     if(!docs.length){
-      h += '<div class="empty-state" style="padding:16px;"><div class="empty-state-icon">📎</div><p>Aucun document.</p></div>';
+      h += '<div class="empty-state" style="padding:16px;"><div class="empty-state-icon"><i class="ti ti-paperclip" style="font-size:24px;"></i></div><p>Aucun document.</p></div>';
     } else {
       h += '<div style="border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;background:var(--surface);">'+docs.map(function(d){return renderDocCard(d,false);}).join('')+'</div>';
     }
+    h += '</div></div>';
+
     container.innerHTML = h;
+
+    // Attacher les events apres rendu
+    var btnCopy = document.getElementById('btn-copy-portail-'+pid);
+    if(btnCopy){
+      var lien2 = 'https://orthobuddy.fr/portail.html?token='+p.portailToken;
+      btnCopy.onclick = function(){ navigator.clipboard.writeText(lien2).then(function(){ showToast('Lien copie'); }); };
+    }
+    var btnManage = document.getElementById('btn-manage-portail-'+pid);
+    if(btnManage) btnManage.onclick = function(){ gererLienPortail(pid); };
+    var btnActivate = document.getElementById('btn-activate-portail-'+pid);
+    if(btnActivate) btnActivate.onclick = function(){ gererLienPortail(pid); };
+    var btnModeles = document.getElementById('btn-modeles-'+pid);
+    if(btnModeles) btnModeles.onclick = function(){ ouvrirModelesEmail(pid); };
+    var btnUpload = document.getElementById('btn-upload-'+pid);
+    if(btnUpload) btnUpload.onclick = function(){ openUploadModal(null, pid); };
   });
 }
 
