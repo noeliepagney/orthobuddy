@@ -11612,6 +11612,9 @@ function renderSettings(){
     var elTel=document.getElementById('setting-tel-cabinet');if(elTel)elTel.value=(DB.settings&&DB.settings.telCabinet)||'';
     var elEmail=document.getElementById('setting-email-cabinet');if(elEmail)elEmail.value=(DB.settings&&DB.settings.emailCabinet)||'';
     var elCert=document.getElementById('setting-certifications');if(elCert)elCert.value=(DB.settings&&DB.settings.certifications)||'';
+    var elTel=document.getElementById('setting-tel-cabinet');if(elTel)elTel.value=(DB.settings&&DB.settings.telCabinet)||'';
+    var elEmail=document.getElementById('setting-email-cabinet');if(elEmail)elEmail.value=(DB.settings&&DB.settings.emailCabinet)||'';
+    var elCert=document.getElementById('setting-certifications');if(elCert)elCert.value=(DB.settings&&DB.settings.certifications)||'';
     var elIP=document.getElementById('setting-ik-plaine');if(elIP)elIP.value=(DB.settings&&DB.settings.ikPlaine!=null?DB.settings.ikPlaine:0.38);
     var elIM=document.getElementById('setting-ik-montagne');if(elIM)elIM.value=(DB.settings&&DB.settings.ikMontagne!=null?DB.settings.ikMontagne:0.61);
   },50);
@@ -15824,6 +15827,9 @@ function ouvrirTrameOdoratGout(pid, trameId){
   sAdmin += tField('Date du bilan','date_bilan','text',null,'');
   sAdmin += tField('Destinataire(s) (ex: Dr Martin)','destinataires','text',null,'');
   sAdmin += tField('Copies (ex: Dr Dupont, Dr Lefebvre)','copies','text',null,'');
+  sAdmin += tField('Date du bilan','date_bilan','text',null,'');
+  sAdmin += tField('Destinataire(s) (ex: Dr Martin)','destinataires','text',null,'');
+  sAdmin += tField('Copies (ex: Dr Dupont, Dr Lefebvre)','copies','text',null,'');
   sAdmin += '<div>'+tField('Nom - Pr\u00e9nom','admin_nom_prenom','text',null,p.prenom+' '+p.nom)+'</div>';
   sAdmin += '<div>'+tField('Date de naissance (age)','admin_ddn','text',null,ddn+(age?' ('+age+' ans)':''))+'</div>';
   sAdmin += '<div>'+tField('N\u00b0 s\u00e9curit\u00e9 sociale','admin_nss','text',null,p.nss||'')+'</div>';
@@ -15885,7 +15891,7 @@ function ouvrirTrameOdoratGout(pid, trameId){
   sProfil += '<div>'+tField('Animaux','profil_animaux','text')+'</div>';
   sProfil += '</div>';
   sProfil += tField('Lieu de vie actuel','profil_lieu_vie','text');
-  sProfil += tField('Odeurs de la maison (produits d\'entretien, cheminée, fleurs...)','profil_odeurs_maison','textarea');
+  sProfil += tField('Odeurs de la maison (produits d\'entretien, chiminée, fleurs...)','profil_odeurs_maison','textarea',null,null,'Produits d\'entretien (marques et parfums), chiminée en fonction ou décorative ?, fleurs coupées/séchées...');
   sProfil += tField('Produits d\'hygi\u00e8ne (marques et parfums)','profil_hygiene','textarea');
   sProfil += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">';
   sProfil += '<div>'+tField('Parfum du patient','profil_parfum','text')+'</div>';
@@ -15896,7 +15902,7 @@ function ouvrirTrameOdoratGout(pid, trameId){
 
   // 7. SOUVENIR OLFACTIF
   var sSouvenir = '';
-  sSouvenir += tField('Souvenir olfactif (positif et/ou n\u00e9gatif)','souvenir_olfactif','textarea');
+  sSouvenir += tField('Souvenir olfactif (positif et/ou négatif)','souvenir_olfactif','textarea',null,null,'Consigne : Pouvez-vous me raconter un souvenir lié à une odeur ? Hédonique positif et/ou négatif. Noter si l\'exercice est aisé ou difficile.');
   sSouvenir += tField('Facilit\u00e9 de l\'exercice pour le patient','souvenir_facilite','radios',['Ais\u00e9','Difficile','Impossible']);
   sSouvenir += tField('Synth\u00e8se','synthese_souvenir','textarea');
   h += tSection('Souvenir olfactif','ti-bulb',sSouvenir);
@@ -15904,7 +15910,7 @@ function ouvrirTrameOdoratGout(pid, trameId){
   // 8. OLFACTION
   var sOlf = '';
   sOlf += '<div style="font-size:12px;font-weight:700;color:#5C8B6E;margin-bottom:8px;">Discrimination pure</div>';
-  sOlf += tField('Test triangulaire — r\u00e9sultat','test_triangulaire','radios',['R\u00e9ussi','Non r\u00e9ussi']);
+  sOlf += tField('Test triangulaire — résultat','test_triangulaire','radios',['Réussi','Non réussi'],null,'3 touches dont 1 leurre (touche dans eau). Guider : fort/faible ? familier ? hédonique ? 1er mot qui vient ? Si le patient sent une odeur sur le leurre → perturbation importante.');
   sOlf += tField('Comportement sur touche','comportement_touche','checks',['Adh\u00e9sif','Persistant','Perturbation du syst\u00e8me olfactif','Respectueux du cycle nasal']);
   sOlf += tField('Test pareil/pas pareil — niveau','test_pareil','radios',['Non propos\u00e9','R\u00e9ussi niveau 1','R\u00e9ussi niveau 2','R\u00e9ussi niveau 3','Non r\u00e9ussi']);
   sOlf += '<div style="font-size:12px;font-weight:700;color:#5C8B6E;margin:12px 0 8px;">Identification</div>';
@@ -15916,7 +15922,7 @@ function ouvrirTrameOdoratGout(pid, trameId){
 
   // 9. GUSTATION
   var sGust = '';
-  sGust += tField('Test 6 verres — r\u00e9sultats','test_6_verres','textarea');
+  sGust += tField('Test 6 verres — résultats','test_6_verres','textarea',null,null,'Protocole V. LE LAN. 6 verres incolores numérotés. Décrire les sensations sans nommer les saveurs. Le leurre et l\'Umami informent sur le trouble (agueúsie ou dysguéusie).');
   sGust += tField('Classification Markley (type de dysgueusie)','markley','radios',['Type I','Type II','Type III','Type IV','Non d\u00e9termin\u00e9']);
   sGust += tField('Sensations trigg\u00e9minales','trigeminales','radios',['Pr\u00e9serv\u00e9es','Alt\u00e9r\u00e9es']);
   sGust += tField('Hypo ou hypersensibilit\u00e9 (laquelle ?)','trigeminales_detail','text');
@@ -16001,6 +16007,10 @@ function genererDocumentTrame(pid, trameId){
   if(!p) return;
   var trame = (p.trames||[]).find(function(t){ return t.id===trameId; });
   if(!trame) return;
+  var adresse = (DB.settings&&DB.settings.adresseOrtho)||'';
+  var tel = (DB.settings&&DB.settings.telCabinet)||'';
+  var email = (DB.settings&&DB.settings.emailCabinet)||'';
+  var certif = (DB.settings&&DB.settings.certifications)||'';
   var d = trame.data;
   var a = p.anamnese||{};
 
@@ -16272,7 +16282,14 @@ function genererDocumentTrame(pid, trameId){
   w.document.write('.score-table tr:last-child td{border-bottom:none;}');
   w.document.write('.footer{background:#F7F6F2;border-top:1px solid #E2E0D8;padding:10px 28px;display:flex;justify-content:space-between;font-size:10px;color:#9B9A95;}');
   w.document.write('@media print{body{background:white;}.page{margin:0;box-shadow:none;border-radius:0;}.toolbar{display:none;}}');
-  w.document.write('</style></head><body>');
+  w.document.write('<div class="hdr-meta">');
+  if(val('destinataires')) w.document.write('Destinataire(s) : '+esc(val('destinataires'))+'<br>');
+  if(val('copies')) w.document.write('Copies : '+esc(val('copies'))+'<br>');
+  w.document.write('<br><strong>'+esc(prenomNom)+'</strong><br>');
+  if(ddn) w.document.write('Né'+(p.sexe==='F'?'e':'')+' le '+ddn+(age?' ('+age+' ans)':'')+' &middot; ');
+  if(p.nss) w.document.write('N° SS : '+esc(p.nss)+'<br>');
+  if(val('date_bilan')) w.document.write('Date du bilan : '+esc(val('date_bilan'))+'<br>');
+  w.document.write('</div>');
   w.document.write('<div class="page">');
   w.document.write('<div class="hdr">');
   w.document.write('<div class="hdr-left">');
