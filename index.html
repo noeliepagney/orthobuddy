@@ -14905,328 +14905,380 @@ function renderAnamneseTab(pid){
   if(!el) return;
   var p = DB.patients.find(function(x){ return x.id===pid; });
   if(!p) return;
-
-  // Charger les données anamnèse existantes
   if(!p.anamnese) p.anamnese = {};
   var a = p.anamnese;
+  if(!a._sections) a._sections = {};
+  var sec = a._sections;
 
-  // Sections cochées par le praticien
-  if(!p.anamnese) p.anamnese = {};
-  var sec = p.anamnese._sections || {};
   var isEnfant = !!sec.base_enfant;
-  var hasLO = !!sec.lo;
-  var hasLE = !!sec.le;
-  var hasMath = !!sec.cm;
+  var hasLO    = !!sec.lo;
+  var hasLE    = !!sec.le;
+  var hasMath  = !!sec.cm;
   var hasOralite = !!sec.oralite;
-  var hasAnos = !!sec.anosmie;
+  var hasAnos  = !!sec.anosmie;
   var hasNeuro = !!sec.base_adulte;
+  var hasAny   = isEnfant||hasLO||hasLE||hasMath||hasOralite||hasAnos||hasNeuro;
+  var hasEnfantSection = isEnfant;
 
-  function saveAnamnese(){
-    var fields = el.querySelectorAll('[data-ana]');
-    fields.forEach(function(f){
-      var key = f.dataset.ana;
-      if(f.type==='checkbox'){
-        if(!a[key]) a[key]=[];
-        if(f.checked){ if(a[key].indexOf(f.value)<0) a[key].push(f.value); }
-        else { a[key] = a[key].filter(function(v){ return v!==f.value; }); }
-      } else if(f.type==='radio'){
-        if(f.checked) a[key] = f.value;
-      } else {
-        a[key] = f.value;
-      }
-    });
-    p.anamnese = a;
-    save();
-    showToast('Anamnèse sauvegardée');
-  }
-
+  function esc(s){ return (s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;'); }
   function val(key){ return a[key]||''; }
-  function checked(key, v){ return (a[key]||[]).indexOf(v)>=0; }
-  function radio(key, v){ return a[key]===v; }
+  function checked(key,v){ return (a[key]||[]).indexOf(v)>=0; }
+  function radio(key,v){ return a[key]===v; }
 
-  function sectionHTML(titre, icon, content, forceShow){
-    if(!forceShow && !content.trim()) return '';
-    return '<div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);margin-bottom:12px;overflow:hidden;">'
-      +'<div style="background:var(--accent-light,#EEF4F1);padding:10px 14px;font-size:12px;font-weight:700;color:var(--green);display:flex;align-items:center;gap:6px;border-bottom:1px solid var(--border);">'
-      +'<i class="ti '+icon+'"></i>'+titre+'</div>'
-      +'<div style="padding:14px;">'+content+'</div>'
-      +'</div>';
-  }
-
-  function field(label, key, type, opts){
-    var h = '<div style="margin-bottom:12px;">';
-    h += '<label style="font-size:11px;font-weight:600;color:var(--text-soft);text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:4px;">'+label+'</label>';
+  function inlineField(label,key,type,opts,extra){
+    extra=extra||{};
+    var h='<div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;flex-wrap:wrap;">';
+    h+='<span style="font-size:12px;color:var(--text-soft);white-space:nowrap;min-width:160px;">'+label+'</span>';
     if(type==='text'||type==='number'){
-      h += '<input type="'+type+'" data-ana="'+key+'" value="'+val(key).replace(/"/g,'&quot;')+'" oninput="anamneseLive(this)" style="width:100%;padding:6px 10px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:13px;background:var(--bg);font-family:inherit;">';
-    } else if(type==='textarea'){
-      h += '<textarea data-ana="'+key+'" oninput="anamneseLive(this)" style="width:100%;padding:6px 10px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:13px;background:var(--bg);min-height:60px;font-family:inherit;resize:vertical;">'+val(key)+'</textarea>';
-    } else if(type==='select'){
-      h += '<select data-ana="'+key+'" onchange="anamneseLive(this)" style="padding:6px 10px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:13px;background:var(--bg);max-width:300px;">';
-      h += '<option value="">—</option>';
-      opts.forEach(function(o){ h += '<option value="'+o+'"'+(val(key)===o?' selected':'')+'>'+o+'</option>'; });
-      h += '</select>';
+      var w=extra.width||'160px';
+      h+='<input type="'+type+'" data-ana="'+key+'" value="'+esc(val(key))+'" oninput="anamneseLive(this)" style="padding:4px 8px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:12px;background:var(--bg);width:'+w+';font-family:inherit;">';
+    } else if(type==='select1'){
+      var hasVal = !!val(key);
+      if(!hasVal){
+        h+='<select data-ana="'+key+'" onchange="anamneseLive(this)" style="padding:4px 8px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:12px;background:var(--bg);max-width:200px;">';
+        h+='<option value="">—</option>';
+        opts.forEach(function(o){ h+='<option value="'+esc(o)+'">'+o+'</option>'; });
+        h+='</select>';
+      } else {
+        h+='<span style="padding:3px 10px;border-radius:20px;font-size:11px;font-weight:500;background:#EEF4F1;color:#5C8B6E;border:1px solid #C8DDD4;cursor:pointer;" onclick="anaSelectReset(\'' + pid + '\',\'' + key + '\')">'+esc(val(key))+' ×</span>';
+      }
     } else if(type==='radio'){
-      h += '<div style="display:flex;flex-wrap:wrap;gap:8px;">';
+      h+='<div style="display:flex;gap:8px;flex-wrap:wrap;">';
       opts.forEach(function(o){
-        h += '<label style="display:flex;align-items:center;gap:5px;font-size:12px;cursor:pointer;">'
-          +'<input type="radio" data-ana="'+key+'" name="ana-'+pid+'-'+key+'" value="'+o+'"'+(radio(key,o)?' checked':'')+' onchange="anamneseLive(this)"> '+o+'</label>';
+        h+='<label style="display:flex;align-items:center;gap:4px;font-size:12px;cursor:pointer;"><input type="radio" data-ana="'+key+'" name="ana-'+pid+'-'+key+'" value="'+esc(o)+'"'+(radio(key,o)?' checked':'')+' onchange="anamneseLive(this)"> '+o+'</label>';
       });
-      h += '</div>';
-    } else if(type==='checks'){
-      h += '<div style="display:flex;flex-wrap:wrap;gap:8px;">';
-      opts.forEach(function(o){
-        h += '<label style="display:flex;align-items:center;gap:5px;font-size:12px;cursor:pointer;background:var(--bg);border:1px solid var(--border);border-radius:20px;padding:3px 10px;">'
-          +'<input type="checkbox" data-ana="'+key+'" value="'+o+'"'+(checked(key,o)?' checked':'')+' onchange="anamneseLive(this)"> '+o+'</label>';
-      });
-      h += '</div>';
+      h+='</div>';
+      // tag select1 supprime (valeur deja visible dans le dropdown)
     }
-    h += '</div>';
+    h+='</div>';
     return h;
   }
 
-  // ── SECTIONS ──
-  var html = '';
+  function multiSelect(label,key,opts,color){
+    color=color||'#5C8B6E';
+    var raw=a[key]; var selected=Array.isArray(raw)?raw:(raw?[raw]:[]);
+    var h='<div style="margin-bottom:10px;">';
+    h+='<div style="font-size:11px;font-weight:600;color:var(--text-soft);text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px;">'+label+'</div>';
+    h+='<select onchange="anaMultiAdd(this,\''+pid+'\',\''+key+'\')" style="padding:4px 8px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:12px;background:var(--surface);color:var(--text-soft);max-width:280px;font-family:inherit;">';
+    h+='<option value="">+ Ajouter...</option>';
+    opts.forEach(function(o){ if(selected.indexOf(o)<0) h+='<option value="'+esc(o)+'">'+o+'</option>'; });
+    h+='</select>';
+    if(selected.length>0){
+      h+='<div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:6px;">';
+      selected.forEach(function(v){
+        h+='<span style="display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:500;background:#EEF4F1;color:#5C8B6E;border:1px solid #C8DDD4;">'+esc(v)+'<button onclick="anaMultiRemove(\''+pid+'\',\''+key+'\',\''+esc(v.replace(/'/g,"\\'"))+'\')" style="background:none;border:none;cursor:pointer;font-size:12px;color:#5C8B6E;padding:0 0 0 4px;line-height:1;opacity:.7;">&times;</button></span>';
+      });
+      h+='</div>';
+    }
+    h+='</div>';
+    return h;
+  }
 
-  // Sélecteur de sections
-  html += '<div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px 14px;margin-bottom:14px;">';
-  html += '<div style="font-size:11px;font-weight:700;color:var(--text-soft);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px;">Sections à afficher</div>';
-  html += '<div style="display:flex;flex-wrap:wrap;gap:8px;">';
-  var sectionsDisp = [
-    {key:'base_enfant', label:'Anamnèse base enfant', icon:'ti-baby'},
-    {key:'lo', label:'Langage oral', icon:'ti-message-circle'},
-    {key:'le', label:'Langage écrit', icon:'ti-pencil'},
-    {key:'cm', label:'Cognition mathématique', icon:'ti-calculator'},
-    {key:'oralite', label:'Oralité', icon:'ti-droplet'},
-    {key:'anosmie', label:'Anosmie', icon:'ti-wind'},
-    {key:'base_adulte', label:'Anamnèse base adulte / Neuro', icon:'ti-brain'}
-  ];
-  sectionsDisp.forEach(function(s){
-    var isCh = sec[s.key] ? ' checked' : '';
-    html += '<label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer;background:var(--bg);border:1px solid var(--border);border-radius:20px;padding:4px 12px;">'
-      +'<input type="checkbox" data-section="'+s.key+'" onchange="toggleAnamneseSection(this,\''+pid+'\')"'+isCh+'>'
-      +'<i class="ti '+s.icon+'"></i> '+s.label+'</label>';
+  function textArea(label,key){
+    return '<div style="margin-bottom:10px;"><div style="font-size:11px;font-weight:600;color:var(--text-soft);text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px;">'+label+'</div><textarea data-ana="'+key+'" oninput="anamneseLive(this)" style="width:100%;padding:6px 10px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:12px;background:var(--bg);min-height:50px;font-family:inherit;resize:vertical;">'+esc(val(key))+'</textarea></div>';
+  }
+
+  function sCard(titre,icon,content){
+    if(!content.trim()) return '';
+    return '<div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);margin-bottom:12px;overflow:hidden;">'
+      +'<div style="background:#EEF4F1;padding:9px 14px;font-size:12px;font-weight:700;color:#5C8B6E;display:flex;align-items:center;gap:6px;border-bottom:1px solid var(--border);cursor:pointer;user-select:none;" onclick="scToggle(this)">'
+      +'<i class="ti '+icon+'"></i>'+titre
+      +'<span class="sc-chev" style="margin-left:auto;font-size:11px;transition:transform .2s;">&#9660;</span>'
+      +'</div>'
+      +'<div style="padding:14px 16px;display:none;">'+content+'</div>'
+      +'</div>';
+  }
+
+  var html='';
+
+  // Selecteur sections
+  html+='<div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px 14px;margin-bottom:14px;">';
+  html+='<div style="font-size:11px;font-weight:700;color:var(--text-soft);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px;">Sections \u00e0 afficher</div>';
+  html+='<div style="display:flex;flex-wrap:wrap;gap:8px;">';
+  [{key:'base_enfant',label:'Anamn\u00e8se base enfant',icon:'ti-baby'},{key:'lo',label:'Langage oral',icon:'ti-message-circle'},{key:'le',label:'Langage \u00e9crit',icon:'ti-pencil'},{key:'cm',label:'Cognition math\u00e9matique',icon:'ti-calculator'},{key:'oralite',label:'Oralit\u00e9',icon:'ti-droplet'},{key:'anosmie',label:'Anosmie',icon:'ti-wind'},{key:'base_adulte',label:'Anamn\u00e8se base adulte / Neuro',icon:'ti-brain'}].forEach(function(s){
+    var isCh=sec[s.key]?' checked':'';
+    html+='<label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer;background:var(--bg);border:1px solid var(--border);border-radius:20px;padding:4px 12px;"><input type="checkbox" data-section="'+s.key+'" onchange="toggleAnamneseSection(this,\''+pid+'\')"'+(sec[s.key]?' checked':'')+'>  <i class="ti '+s.icon+'"></i> '+s.label+'</label>';
   });
-  html += '</div></div>';
+  html+='</div></div>';
 
-  // Boutons haut
-  html += '<div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;">';
-  html += '<button class="btn btn-green btn-sm" onclick="saveAnamneseTab(\''+pid+'\')"><i class="ti ti-device-floppy"></i> Sauvegarder</button>';
-  html += '<button class="btn btn-sm" style="background:#7C3AED;color:white;" onclick="genererAnamnese(\''+pid+'\',\'formel\')"><i class="ti ti-file-text"></i> Générer anamnèse formelle</button>';
-  html += '<button class="btn btn-sm btn-ghost" onclick="genererAnamnese(\''+pid+'\',\'synthese\')"><i class="ti ti-list-details"></i> Synthèse rapide</button>';
-  html += '</div>';
+  html+='<div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;">';
+  html+='<button class="btn btn-green btn-sm" onclick="saveAnamneseTab(\''+pid+'\')"><i class="ti ti-device-floppy"></i> Sauvegarder</button>';
+  html+='<button class="btn btn-sm" style="background:#7C3AED;color:white;" onclick="genererAnamnese(\''+pid+'\',\'formel\')"><i class="ti ti-file-text"></i> G\u00e9n\u00e9rer anamn\u00e8se</button>';
+  html+='<button class="btn btn-sm btn-ghost" onclick="genererAnamnese(\''+pid+'\',\'synthese\')"><i class="ti ti-list-details"></i> Synth\u00e8se</button>';
+  html+='</div>';
 
-  // FAMILLE
-  var secFamille = '';
-  if(isEnfant){
-    secFamille += field('Lieu de vie','lieu_vie','radio',['Avec ses deux parents','Garde alternée','Vit chez son père','Vit chez sa mère','Foyer']);
-    secFamille += field('Profession du père','prof_pere','select',['Cadres et assimilés, chefs d\'entreprise, professeurs','Professions intermédiaires','Employés, agriculteurs, artisans, commerçants','Ouvriers, employés de service, inactifs']);
-    secFamille += field('Profession de la mère','prof_mere','select',['Cadres et assimilés, chefs d\'entreprise, professeurs','Professions intermédiaires','Employés, agriculteurs, artisans, commerçants','Ouvriers, employés de service, inactifs']);
-    secFamille += field('Fratrie','fratrie','radio',['Enfant unique','Aîné(e)','Cadet(te)','Benjamin/Benjamine']);
-    secFamille += field('Prénom(s) et âge(s) des frères/sœurs','fratrie_detail','text');
-  }
-  secFamille += field('Rythme familial / disponibilité','rythme_famille','textarea');
-  secFamille += field('Antécédents familiaux (difficultés scolaires)','antecedents_familiaux','checks',['Mère – Lecture','Mère – Orthographe','Mère – Mathématiques','Mère – Concentration','Père – Lecture','Père – Orthographe','Père – Mathématiques','Père – Concentration','Fratrie – Lecture','Fratrie – Orthographe','Fratrie – Mathématiques','Fratrie – Concentration']);
-  secFamille += field('Troubles du langage dans l\'entourage','antecedents_langage','radio',['Oui','Non']);
-  secFamille += field('Bilinguisme','bilinguisme','radio',['Oui','Non']);
-  if(val('bilinguisme')==='Oui'){
-    secFamille += field('Langue parlée à la maison','langue_maison','text');
-    secFamille += field('Langue majoritaire','langue_majoritaire','text');
-  }
-  secFamille += field('Commentaires','commentaires_famille','textarea');
-  if(isEnfant||hasLO||hasLE||hasMath||hasOralite||hasAnos) html += sectionHTML('Famille','ti-home',secFamille,true);
-
-  // ANTÉCÉDENTS MÉDICAUX
-  var secMed = '';
-  if(isEnfant){
-    secMed += field('Grossesse','grossesse','checks',['Sans particularité','Diabète gestationnel','Infection maternelle','MAP','Anomalie fœtale','Souffrance fœtale','Exposition toxiques','Autre']);
-    secMed += field('Naissance','naissance','checks',['Voie basse','Césarienne programmée','Césarienne en urgence','Forceps/ventouse','Prématurité extrême (22-26 SA)','Grande prématurité (27-31 SA)','Prématurité modérée (32-34 SA)','Prématurité tardive (35-36 SA)','À terme','Souffrance péri-natale','Réanimation','Soins intensifs/Néonatologie']);
-    secMed += field('Poids de naissance','poids_naissance','radio',['>2500g','<2500g','<1500g','<1000g']);
-  }
-  secMed += field('ORL','orl','checks',['Angines fréquentes','Otites fréquentes','Drains/diabolos','Ablation végétations','Ablation amygdales','Surdité','Audiogramme réalisé','Audiogramme prévu']);
-  secMed += field('Résultats audiogramme','audiogramme_resultats','text');
-  secMed += field('Vision','vision','checks',['Port de lunettes','Myopie','Astigmatisme','Strabisme']);
-  secMed += field('Traumatismes / accidents','traumatismes','text');
-  secMed += field('Opérations chirurgicales','operations','text');
-  secMed += field('Traitements médicamenteux','traitements','text');
-  secMed += field('Bilans déjà réalisés','bilans','checks',['Psychologique','Psychométrique','Neuropsychologique','Orthophonique','Ergothérapique','Psychomoteur','Ophtalmologique','Neurologique','Orthoptique']);
-  secMed += field('Suivis en cours','suivis','checks',['Orthophonie','Psychologie','Ergothérapie','Neuropsychologie','Psychomotricité','Orthoptie']);
-  secMed += field('Diagnostics posés','diagnostics','textarea');
-  secMed += field('Commentaires','commentaires_med','textarea');
-  if(isEnfant||hasLO||hasLE||hasMath||hasOralite||hasAnos) html += sectionHTML('Antécédents médicaux','ti-stethoscope',secMed,true);
-
-  // DÉVELOPPEMENT (enfant seulement)
-  if(isEnfant){
-    var secDev = '';
-    secDev += field('Marche à 4 pattes','marche_4_pattes','radio',['Oui','Non']);
-    secDev += field('Âge acquisition marche','age_marche','text');
-    secDev += field('Âge apprentissage vélo','age_velo','text');
-    secDev += field('Âge babillage canonique','age_babillage','text');
-    secDev += field('Âge premiers mots','age_premiers_mots','text');
-    secDev += field('Âge premières phrases','age_phrases','text');
-    secDev += field('Régression du langage','regression_langage','radio',['Oui','Non']);
-    secDev += field('Si oui, à quel âge','age_regression','text');
-    secDev += field('Aime parler','aime_parler','radio',['Oui','Non','Selon les personnes']);
-    secDev += field('Latéralité','lateralite','radio',['Droitier(e)','Gaucher(e)','Ambidextre']);
-    secDev += field('Propreté diurne (âge)','proprete_diurne','text');
-    secDev += field('Propreté nocturne (âge)','proprete_nocturne','text');
-    secDev += field('Commentaires','commentaires_dev','textarea');
-    html += sectionHTML('Développement sensori-moteur','ti-baby',secDev,true);
+  if(!hasAny){
+    html+='<div style="text-align:center;padding:30px;color:var(--text-soft);font-size:13px;"><i class="ti ti-checkbox" style="font-size:24px;display:block;margin-bottom:8px;"></i>Cochez les sections \u00e0 afficher ci-dessus</div>';
+    el.innerHTML=html; return;
   }
 
-  // VIE QUOTIDIENNE
-  var secVie = '';
-  if(isEnfant){
-    secVie += field('Lieu de sommeil','lieu_sommeil','radio',['Chambre seul(e)','Chambre partagée','Lit des parents','Chambre des parents']);
-    secVie += field('Heures de sommeil/nuit','heures_sommeil','select',['Moins de 6h','7h','8h','9h','10h','11h','12h','Plus de 12h']);
-    secVie += field('Troubles du sommeil','troubles_sommeil','checks',['Terreurs nocturnes','Réveils nocturnes','Difficulté à s\'endormir','Besoin de lumière','Cauchemars','Ronflements','Apnées','Grince des dents','Bon sommeil']);
-    secVie += field('Alimentation bébé','alim_bebe','checks',['Allaitement exclusif','Allaitement mixte','Biberon']);
-    secVie += field('Alimentation actuelle','alimentation','checks',['Mange de tout','Sélectif(ve)','Gros appétit','Petit appétit','Difficultés à mastiquer','Tousse pendant les repas']);
-    secVie += field('Succion','succion','checks',['Pouce/doigt','Tétine','Doudou/vêtement']);
-    secVie += field('Autonomie','autonomie','checks',['Se lave seul(e)','Se déshabille seul(e)','S\'habille seul(e)','Fait ses lacets','S\'essuie aux toilettes','Mange avec couverts']);
-    secVie += field('Particularités sensorielles','sensorialite','checks',['Bruit','Textiles/étiquettes','Lumière','Odeurs','Température','Mains sales','Pieds nus']);
-    secVie += field('Éléments attentionnels','attention','checks',['Oublie ses affaires','Se déconcentre','Brouillon/désorganisé(e)','Bouge beaucoup','Mal à attendre','Mal à se faire des ami(e)s']);
-    secVie += field('Temps d\'écran semaine','ecrans_semaine','select',['0h','1h','2h','3h','4h','5h','6h','7h','8h','Plus de 8h']);
-    secVie += field('Temps d\'écran weekend','ecrans_weekend','select',['0h','1h','2h','3h','4h','5h','6h','7h','8h','Plus de 8h']);
-  }
-  secVie += field('Commentaires','commentaires_vie','textarea');
-  if(isEnfant||hasLO||hasLE||hasMath||hasOralite||hasAnos) html += sectionHTML('Vie quotidienne','ti-sun',secVie,true);
+  if(hasEnfantSection){
+    // FAMILLE
+    var sFam='';
+    sFam+=inlineField('Lieu de vie','lieu_vie','select1',['Avec ses deux parents','Garde altern\u00e9e','Vit chez son p\u00e8re','Vit chez sa m\u00e8re','Foyer']);
+    sFam+=inlineField('Profession du p\u00e8re','prof_pere','select1',['Cadres et assimil\u00e9s / chefs d\'entreprise / professeurs','Professions interm\u00e9diaires','Employ\u00e9s / agriculteurs / artisans / commer\u00e7ants','Ouvriers / employ\u00e9s de service / inactifs']);
+    sFam+=inlineField('Profession de la m\u00e8re','prof_mere','select1',['Cadres et assimil\u00e9s / chefs d\'entreprise / professeurs','Professions interm\u00e9diaires','Employ\u00e9s / agriculteurs / artisans / commer\u00e7ants','Ouvriers / employ\u00e9s de service / inactifs']);
+    sFam+=inlineField('Fratrie','fratrie','radio',['Enfant unique','A\u00een\u00e9(e)','Cadet(te)','Benjamin/Benjamine']);
+    if(val('fratrie')==='A\u00een\u00e9(e)'||val('fratrie')==='Cadet(te)'||val('fratrie')==='Benjamin/Benjamine'){
+      sFam+=inlineField('Pr\u00e9nom(s) et \u00e2ge(s) fratrie','fratrie_detail','text',null,{width:'250px'});
+    }
+    sFam+=inlineField('Bilinguisme','bilinguisme','radio',['Oui','Non']);
+    if(val('bilinguisme')==='Oui') sFam+=inlineField('Langue parl\u00e9e \u00e0 la maison','langue_maison','text',null,{width:'200px'});
+    sFam+='<div style="margin-bottom:10px;"><div style="font-size:11px;font-weight:600;color:var(--text-soft);text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px;">Ant\u00e9c\u00e9dents familiaux (difficult\u00e9s scolaires)</div>';
+    sFam+=multiSelect('M\u00e8re','atcd_fam_mere',['Lecture','Orthographe','Math\u00e9matiques','Concentration','Langage']);
+    sFam+=multiSelect('P\u00e8re','atcd_fam_pere',['Lecture','Orthographe','Math\u00e9matiques','Concentration','Langage']);
+    sFam+=multiSelect('Fratrie','atcd_fam_fratrie',['Lecture','Orthographe','Math\u00e9matiques','Concentration','Langage']);
+    sFam+='</div>';
+    sFam+=inlineField('Troubles du langage dans l\'entourage','antecedents_langage','radio',['Oui','Non']);
+    sFam+=inlineField('De qui vient la plainte','origine_plainte','select1',['Parent','École','Médecin','Autre']);
+    sFam+=inlineField('Conscience de ses difficultés','conscience_difficultes','radio',['Oui','Non','Partiellement']);
+    sFam+=textArea('Rythme familial / disponibilit\u00e9','rythme_famille');
+    sFam+=textArea('Commentaires','commentaires_famille');
+    html+=sCard('Famille','ti-home',sFam);
 
-  // SCOLARITÉ (enfant) ou SITUATION PROFESSIONNELLE (adulte)
-  if(isEnfant){
-    var secScol = '';
-    secScol += field('Mode de garde avant école','mode_garde','checks',['Crèche','Assistante maternelle','Nounou','Grands-parents','À la maison','Jardin d\'enfants']);
-    secScol += field('Âge d\'entrée à l\'école','age_entree_ecole','radio',['2 ans','2 ans 1/2','3 ans','3 ans 1/2']);
-    secScol += field('Dernière classe','classe','select',['TPS','PS','MS','GS','CP','CE1','CE2','CM1','CM2','6ème','5ème','4ème','3ème','Seconde','Première','Terminale']);
-    secScol += field('Difficultés scolaires','difficultes_scolaires','radio',['Oui','Non']);
-    secScol += field('Préciser les difficultés','difficultes_detail','textarea');
-    secScol += field('Aime l\'école','aime_ecole','radio',['Oui','Non','Selon les jours']);
-    secScol += field('Redoublement','redoublement','radio',['Oui','Non']);
-    secScol += field('Classe(s) redoublée(s)','redoublement_classe','text');
-    secScol += field('Aménagements scolaires','amenagements','checks',['AESH','Ordinateur','Réduction devoirs','Adaptation police','PAP','PPS','PPRE','PAI']);
-    secScol += field('Lieu des devoirs','lieu_devoirs','checks',['Bureau chambre','Cuisine','Salon']);
-    secScol += field('Temps de devoirs','temps_devoirs','select',['5min','10min','15min','30min','45min','1h','Plus d\'1h']);
-    secScol += field('Observations de l\'enseignant','obs_enseignant','textarea');
-    secScol += field('Commentaires','commentaires_scol','textarea');
-    html += sectionHTML('Scolarité','ti-school',secScol,true);
-  } else {
-    var secPro = '';
-    secPro += field('Profession','profession','text');
-    secPro += field('Commentaires','commentaires_pro','textarea');
-    if(hasNeuro) html += sectionHTML('Situation professionnelle','ti-briefcase',secPro,true);
-  }
+    // PÉRINATAILITÉ
+    var sPeri='';
+    sPeri+=multiSelect('Grossesse','grossesse',['Sans particularit\u00e9','Diab\u00e8te gestationnel','Infection maternelle','MAP','Anomalie f\u0153tale','Souffrance f\u0153tale','Exposition toxiques','Autre']);
+    sPeri+=inlineField('Mode d\'accouchement','naissance_mode','select1',['Voie basse','C\u00e9sarienne programm\u00e9e','C\u00e9sarienne d\'urgence']);
+    sPeri+=inlineField('Terme / pr\u00e9maturit\u00e9','naissance_terme','select1',['\u00c0 terme','Pr\u00e9maturit\u00e9 tardive (35-36 SA)','Pr\u00e9maturit\u00e9 mod\u00e9r\u00e9e (32-34 SA)','Grande pr\u00e9maturit\u00e9 (27-31 SA)','Pr\u00e9maturit\u00e9 extr\u00eame (22-26 SA)']);
+    sPeri+=multiSelect('Particularit\u00e9s naissance','naissance_detail',['Forceps/ventouse/cuill\u00e8re','Souffrance p\u00e9ri-natale','R\u00e9animation','Soins intensifs/N\u00e9onatologie']);
+    sPeri+=multiSelect('Poids de naissance','poids_naissance',['>2500g','<2500g','<1500g','<1000g']);
+    sPeri+=textArea('Commentaires','commentaires_peri');
+    html+=sCard('P\u00e9rinatalit\u00e9','ti-heart',sPeri);
 
-  // PSYCHODYNAMIQUE
-  var secPsy = '';
-  secPsy += field('Comment décririez-vous '+(isEnfant?'votre enfant':'vous-même'),'description_patient','textarea');
-  secPsy += field('Spécificités culturelles','specificites_culturelles','textarea');
-  secPsy += field('Centres d\'intérêt / activités extra-scolaires','centres_interet','textarea');
-  if(isEnfant){
-    secPsy += field('Comportements stéréotypés','stereotypies','radio',['Oui','Non']);
-    secPsy += field('Si oui, lesquels','stereotypies_detail','text');
-    secPsy += field('Bien-être familial / interactions','bien_etre','textarea');
-  }
-  if(isEnfant||hasLO||hasLE||hasMath||hasOralite||hasAnos) html += sectionHTML('Informations psychodynamiques','ti-heart',secPsy,true);
+    // ANTÉCÉDENTS
+    var sMed='';
+    sMed+=multiSelect('ORL','orl',['Angines fr\u00e9quentes','Otites fr\u00e9quentes','Drains/diabolos','Ablation v\u00e9g\u00e9tations','Ablation amygdales','Surdit\u00e9','Audiogramme r\u00e9alis\u00e9','Audiogramme pr\u00e9vu']);
+    if((a.orl||[]).indexOf('Audiogramme r\u00e9alis\u00e9')>=0) sMed+=inlineField('R\u00e9sultats audiogramme','audiogramme_resultats','text',null,{width:'300px'});
+    sMed+=multiSelect('Vision','vision',['Port de lunettes','Myopie','Astigmatisme','Strabisme']);
+    sMed+=inlineField('Traumatismes / accidents','traumatismes','text',null,{width:'280px'});
+    sMed+=inlineField('Op\u00e9rations chirurgicales','operations','text',null,{width:'280px'});
+    sMed+=inlineField('Traitements m\u00e9dicamenteux','traitements','text',null,{width:'280px'});
+    sMed+=multiSelect('Bilans d\u00e9j\u00e0 r\u00e9alis\u00e9s','bilans',['Psychologique','Psychom\u00e9trique','Neuropsychologique','Orthophonique','Ergoth\u00e9rapique','Psychomoteur','Ophtalmologique','Neurologique','Orthoptique']);
+    sMed+=multiSelect('Suivis en cours','suivis',['Orthophonie','Psychologie','Ergoth\u00e9rapie','Neuropsychologie','Psychomotricit\u00e9','Orthoptie']);
+    sMed+=textArea('Diagnostics pos\u00e9s','diagnostics');
+    sMed+=textArea('Commentaires','commentaires_med');
+    html+=sCard('Ant\u00e9c\u00e9dents m\u00e9dicaux','ti-stethoscope',sMed);
 
-  // SECTIONS SPÉCIFIQUES
-  if(hasMath){
-    var secMath = '';
-    secMath += field('Appétence aux mathématiques (0-10)','appetence_maths','select',['0','1','2','3','4','5','6','7','8','9','10']);
-    secMath += field('Appétence à la lecture (0-10)','appetence_lecture','select',['0','1','2','3','4','5','6','7','8','9','10']);
-    secMath += field('Types de difficultés','difficultes_maths','checks',['Résolution de problèmes','Erreurs de calcul','Poser des opérations','Calcul mental','Compter','Lecture de nombres','Transcription de graphies','Erreurs en copie']);
-    secMath += field('Tables de multiplication faciles','tables_multi','radio',['Oui','Non']);
-    secMath += field('Temps consacré à la lecture/jour','temps_lecture','select',['5min','10min','15min','30min','45min','1h','Plus d\'1h']);
-    secMath += field('Observations enseignant','obs_enseignant_maths','textarea');
-    secMath += field('Autres difficultés','autres_difficultes_maths','textarea');
-    html += sectionHTML('Spécifique — Cognition mathématique','ti-calculator',secMath,true);
+    // DÉVELOPPEMENT
+    var sDev='';
+    sDev+=inlineField('Marche \u00e0 4 pattes','marche_4_pattes','radio',['Oui','Non']);
+    sDev+=inlineField('\u00c2ge acquisition marche','age_marche','text',null,{width:'100px'});
+    sDev+=inlineField('\u00c2ge apprentissage v\u00e9lo','age_velo','text',null,{width:'100px'});
+    sDev+=inlineField('\u00c2ge babillage canonique','age_babillage','text',null,{width:'100px'});
+    sDev+=inlineField('\u00c2ge premiers mots','age_premiers_mots','text',null,{width:'100px'});
+    sDev+=inlineField('\u00c2ge premi\u00e8res phrases','age_phrases','text',null,{width:'100px'});
+    sDev+=inlineField('M\u00e9morisation des comptines','memo_comptines','radio',['Oui','Non','Difficult\u00e9s']);
+    sDev+=inlineField('R\u00e9gression du langage','regression_langage','radio',['Oui','Non']);
+    if(val('regression_langage')==='Oui') sDev+=inlineField('\u00c2ge de la r\u00e9gression','age_regression','text',null,{width:'100px'});
+    sDev+=inlineField('Lat\u00e9ralit\u00e9','lateralite','radio',['Droitier(e)','Gaucher(e)','Ambidextre']);
+    sDev+=inlineField('Propret\u00e9 diurne (\u00e2ge)','proprete_diurne','text',null,{width:'100px'});
+    sDev+=inlineField('Propret\u00e9 nocturne (\u00e2ge)','proprete_nocturne','text',null,{width:'100px'});
+    sDev+=textArea('Commentaires','commentaires_dev');
+    html+=sCard('D\u00e9veloppement sensori-moteur','ti-baby',sDev);
+
+    // VIE QUOTIDIENNE
+    var sVie='';
+    sVie+=inlineField('Lieu de sommeil','lieu_sommeil','select1',['Chambre seul(e)','Chambre partag\u00e9e','Lit des parents','Chambre des parents']);
+    sVie+=multiSelect('Troubles du sommeil','troubles_sommeil',['Terreurs nocturnes','R\u00e9veils nocturnes','Difficult\u00e9 \u00e0 s\'endormir','Besoin de lumi\u00e8re','Cauchemars','Ronflements','Apn\u00e9es','Grince des dents','Bon sommeil']);
+    sVie+=inlineField('Alimentation b\u00e9b\u00e9','alim_bebe','select1',['Allaitement exclusif','Allaitement mixte','Biberon']);
+    sVie+=multiSelect('Alimentation actuelle','alimentation',['Mange de tout','S\u00e9lectif(ve)','Gros app\u00e9tit','Petit app\u00e9tit','Difficult\u00e9s \u00e0 mastiquer','Tousse pendant les repas']);
+    sVie+=multiSelect('Succion','succion',['Pouce/doigt','T\u00e9tine','Doudou/v\u00eatement']);
+    sVie+=multiSelect('Autonomie','autonomie',['Se lave seul(e)','Se d\u00e9shabille seul(e)','S\'habille seul(e)','Fait ses lacets','Mange proprement','Coupe sa viande','Mange avec couverts','S\'essuie aux toilettes']);
+    sVie+=multiSelect('Particularit\u00e9s sensorielles','sensorialite',['Bruit','Textiles/\u00e9tiquettes','Lumi\u00e8re','Odeurs','Temp\u00e9rature','Mains sales','Pieds nus']);
+    sVie+=multiSelect('Éléments attentionnels','attention',['Oublie ses affaires','Se déconcentre','Brouillon/désordonné(e)','Bouge beaucoup','Mal à attendre','Mal à se faire des ami(e)s','Pas conscience du danger plus jeune','Résultats en dents de scie','Impulsif(ve)']);
+    sVie+=multiSelect('Jeux / activit\u00e9s','jeux_activites',['Jeux de construction','Bricolage','Dessin','Activit\u00e9s physiques','Lecture']);
+    sVie+=inlineField('Temps d\'\u00e9cran semaine','ecrans_semaine','select1',['0h','1h','2h','3h','4h','5h','6h','Plus de 6h']);
+    sVie+=inlineField('Temps d\'\u00e9cran weekend','ecrans_weekend','select1',['0h','1h','2h','3h','4h','5h','6h','Plus de 6h']);
+    sVie+=textArea('Commentaires','commentaires_vie');
+    html+=sCard('Vie quotidienne','ti-sun',sVie);
+
+    // SCOLARITÉ
+    var sScol='';
+    sScol+=multiSelect('Mode de garde avant \u00e9cole','mode_garde',['Cr\u00e8che','Assistante maternelle','Nounou','Grands-parents','\u00c0 la maison','Jardin d\'enfants']);
+    sScol+=inlineField('\u00c2ge d\'entr\u00e9e \u00e0 l\'\u00e9cole','age_entree_ecole','select1',['2 ans','2 ans 1/2','3 ans','3 ans 1/2']);
+    sScol+=inlineField('Derni\u00e8re classe','classe','select1',['TPS','PS','MS','GS','CP','CE1','CE2','CM1','CM2','6\u00e8me','5\u00e8me','4\u00e8me','3\u00e8me','Seconde','Premi\u00e8re','Terminale']);
+    sScol+=inlineField('Difficult\u00e9s scolaires','difficultes_scolaires','radio',['Oui','Non']);
+    if(val('difficultes_scolaires')==='Oui') sScol+=textArea('Pr\u00e9ciser les difficult\u00e9s','difficultes_detail');
+    sScol+=inlineField('Aime l\'\u00e9cole','aime_ecole','select1',['Oui','Non','Selon les jours']);
+    sScol+=inlineField('Redoublement','redoublement','radio',['Oui','Non']);
+    if(val('redoublement')==='Oui') sScol+=inlineField('Classe(s) redoubl\u00e9e(s)','redoublement_classe','text',null,{width:'200px'});
+    sScol+=multiSelect('Am\u00e9nagements scolaires','amenagements',['AESH','Ordinateur','Aide technologique','Cours sur cl\u00e9 USB','R\u00e9duction devoirs','Adaptation police','PAP','PPS','PPRE','PAI']);
+    sScol+=multiSelect('Lieu des devoirs','lieu_devoirs',['Bureau chambre','Cuisine','Salon']);
+    sScol+=inlineField('Temps de devoirs','temps_devoirs','select1',['5min','10min','15min','30min','45min','1h','Plus d\'1h']);
+    sScol+=textArea('Observations de l\'enseignant','obs_enseignant');
+    sScol+=textArea('Commentaires','commentaires_scol');
+    html+=sCard('Scolarit\u00e9','ti-school',sScol);
+
+    // PSYCHODYNAMIQUE
+    var sPsy='';
+    sPsy+=textArea('Comment d\u00e9cririez-vous votre enfant ?','description_patient');
+    sPsy+=textArea('Centres d\'int\u00e9r\u00eat / activit\u00e9s extra-scolaires','centres_interet');
+    sPsy+=inlineField('Comportements st\u00e9r\u00e9otyp\u00e9s','stereotypies','radio',['Oui','Non']);
+    if(val('stereotypies')==='Oui') sPsy+=inlineField('Lesquels','stereotypies_detail','text',null,{width:'280px'});
+    sPsy+=multiSelect('Haut potentiel (indicateurs)','haut_potentiel',['Empathique','Anxieux(se)','Sens de l\'humour','Envie de tout faire par soi-même','Beaucoup de questions existentielles','Vocabulaire riche et précis','Langage précoce ou tardif directement développé','Lecture précoce ou appétence pour la lecture']);
+    sPsy+=textArea('Bien-être familial / interactions','bien_etre');
+    sPsy+=textArea('Sp\u00e9cificit\u00e9s culturelles','specificites_culturelles');
+    html+=sCard('Informations psychodynamiques','ti-heart',sPsy);
   }
 
   if(hasLO){
-    var secLO = '';
-    secLO += field('Articulation','articulation_lo','checks',['Déformation des mots','Difficulté à se faire comprendre','Sons mal prononcés']);
-    secLO += field('Sons mal prononcés (préciser)','sons_detail','text');
-    secLO += field('Éléments langagiers','elements_langagiers','checks',['Mauvaise intelligibilité','Compréhension difficile','Cherche ses mots','Difficultés à exprimer ses idées','S\'énerve quand incompris(e)']);
-    secLO += field('Temps consacré à la lecture/jour','temps_lecture_lo','select',['5min','10min','15min','30min','45min','1h','Plus d\'1h']);
-    secLO += field('Aménagements scolaires spécifiques','amenagements_lo','checks',['AESH','Aide technologique','Cours sur clé USB','Ordinateur','Réduction devoirs','PAP','PPS','PPRE','PAI']);
-    secLO += field('Commentaires','commentaires_lo','textarea');
-    html += sectionHTML('Spécifique — Langage oral','ti-message-circle',secLO,true);
+    var sLO='';
+    sLO+=multiSelect('Articulation','articulation_lo',['D\u00e9formation des mots','Difficult\u00e9 \u00e0 se faire comprendre','Sons mal prononc\u00e9s']);
+    if((a.articulation_lo||[]).indexOf('Sons mal prononc\u00e9s')>=0) sLO+=inlineField('Sons concern\u00e9s','sons_detail','text',null,{width:'280px'});
+    sLO+=multiSelect('\u00c9l\u00e9ments langagiers','elements_langagiers',['Mauvaise intelligibilit\u00e9','Compr\u00e9hension difficile','Cherche ses mots','Difficult\u00e9s \u00e0 exprimer ses id\u00e9es','S\'\u00e9nerve quand incompris(e)','Utilisation de la gestuelle / mimiques','Utilisation du "moi, je"','Erreurs sur le genre des noms','Omission de mots grammaticaux','Discours souvent avorte','M\u00e9morisation des comptines difficile']);
+    sLO+=multiSelect('Intelligibilité selon interlocuteur','intelligibilite_interlocuteur',['Parents','Maître/maîtresse','Camarades de classe','Grands-parents','Au téléphone']);
+    sLO+=multiSelect('Trouble phono','trouble_phono',['RL/RP plus jeune','Difficultés à dire les mots longs petits et encore maintenant','Difficutlé à retenir les poésies/comptines','Difficulté à apprendre une langue étrangère','Confusion de sons','Difficulté à dire les mots longs']);
+    sLO+=multiSelect('Trouble VA/neurovisuel','trouble_va_lo',['Tendance à sauter des lignes en lecture','Copie difficile (repérage dans le texte)','Maux de tête après la lecture','Tendance à se cogner / mal apprécier les distances','Difficultés en géométrie']);
+    sLO+=inlineField('Aime parler','aime_parler','radio',['Oui','Non','Selon les personnes']);
+    sLO+=inlineField('\u00c9volution du LO avec apprentissage LE','lo_avec_le','radio',['Am\u00e9lioration','Stable','D\u00e9t\u00e9rioration','Sans objet']);
+    sLO+=multiSelect('Difficult\u00e9s \u00e0 retenir','difficultes_retention_lo',['Comptines','Po\u00e9sies','Informations verbales','Listes']);
+    sLO+=inlineField('Temps de lecture/jour','temps_lecture_lo','select1',['5min','10min','15min','30min','45min','1h','Plus d\'1h']);
+    sLO+=textArea('Commentaires','commentaires_lo');
+    html+=sCard('Sp\u00e9cifique \u2014 Langage oral','ti-message-circle',sLO);
   }
 
   if(hasLE){
-    var secLE = '';
-    secLE += field('Articulation','articulation_le','checks',['Déformation des mots','Difficulté à se faire comprendre','Sons mal prononcés']);
-    secLE += field('Appétence à la lecture (0-10)','appetence_lecture_le','select',['0','1','2','3','4','5','6','7','8','9','10']);
-    secLE += field('Types de difficultés écrites','difficultes_le','checks',['Lenteur de lecture','Erreurs fréquentes en lecture','Difficultés de compréhension','Difficultés en orthographe','Fatigue lors des tâches écrites','Confusions de lettres/sons','Sauts de ligne','Oubli de lettres','Inversions','Mauvaise transcription de graphies','Erreurs en copie']);
-    secLE += field('Début des difficultés','debut_difficultes','text');
-    secLE += field('Temps consacré à la lecture/jour','temps_lecture_le','select',['5min','10min','15min','30min','45min','1h','Plus d\'1h']);
-    secLE += field('Aménagements scolaires','amenagements_le','checks',['AESH','Aide technologique','Ordinateur','Réduction devoirs','Adaptation police','PAP','PPS','PPRE','PAI']);
-    secLE += field('Observations enseignant','obs_enseignant_le','textarea');
-    secLE += field('Commentaires','commentaires_le','textarea');
-    html += sectionHTML('Spécifique — Langage écrit','ti-pencil',secLE,true);
+    var sLE='';
+    sLE+=multiSelect('Articulation','articulation_le',['D\u00e9formation des mots','Difficult\u00e9 \u00e0 se faire comprendre','Sons mal prononc\u00e9s']);
+    if((a.articulation_le||[]).indexOf('Sons mal prononc\u00e9s')>=0) sLE+=inlineField('Sons concern\u00e9s','sons_detail_le','text',null,{width:'280px'});
+    sLE+=inlineField('Retard de langage ou de parole plus jeune','retard_langage_le','radio',['Oui','Non','Ne sait pas']);
+    sLE+=multiSelect('Confusions auditives','confusions_auditives_le',['Confusions de mots auditivement proches','Confusions de sons']);
+    sLE+=multiSelect('Trouble phono','trouble_phono_le',['Difficultés à dire les mots longs petits et encore maintenant','Difficulté à apprendre une langue étrangère','Confusion de sons']);
+    sLE+=multiSelect('Visuo-attentionnel','visuo_attentionnel_le',['Tendance à sauter des lignes en lecture','Copie difficile (repérage dans le texte)','Maux de tête après la lecture','Tendance à se cogner / mal apprécier les distances','Difficultés en géométrie']);
+    sLE+=inlineField('Appétence à la lecture (0-10)','appetence_lecture_le','select1',['0','1','2','3','4','5','6','7','8','9','10']);
+    sLE+=multiSelect('Types de difficultés écrites','difficultes_le',['Lenteur de lecture / non fluide','Écriture phonétique','Confusions de sons','Erreurs de découpage (segmentation) de mots','Erreurs fréquentes en lecture','Difficultés de compréhension','Difficultés en orthographe','Fatigue lors des tâches écrites','Confusions de lettres/sons','Sauts de ligne','Oubli de lettres','Inversions','Mauvaise transcription de graphies','Erreurs en copie','Écriture sur les lignes difficile','Espace feuille mal géré','Différence dictée préparée/non préparée','Travail important pour les dictées','Un mot écrit de 5 façons différentes']);
+    sLE+=inlineField('\u00c9volution du LO avec apprentissage LE','le_avec_lo','radio',['Am\u00e9lioration','Stable','D\u00e9t\u00e9rioration','Sans objet']);
+    sLE+=multiSelect('Difficult\u00e9s \u00e0 retenir','difficultes_retention_le',['Comptines','Po\u00e9sies','Informations verbales','Listes']);
+    sLE+=inlineField('Temps de lecture/jour','temps_lecture_le','select1',['5min','10min','15min','30min','45min','1h','Plus d\'1h']);
+    sLE+=inlineField('D\u00e9but des difficult\u00e9s','debut_difficultes','text',null,{width:'200px'});
+    sLE+=textArea('Observations enseignant','obs_enseignant_le');
+    sLE+=textArea('Commentaires','commentaires_le');
+    html+=sCard('Sp\u00e9cifique \u2014 Langage \u00e9crit','ti-pencil',sLE);
+  }
+
+  if(hasMath){
+    var sMath='';
+    sMath+=inlineField('Retard de langage ou de parole plus jeune','retard_langage_cm','radio',['Oui','Non','Ne sait pas']);
+    sMath+=multiSelect('Confusions auditives','confusions_auditives_cm',['Confusions de mots auditivement proches','Difficulté à apprendre une langue étrangère']);
+    sMath+=multiSelect('Trouble phono','trouble_phono_cm',['Difficultés à dire les mots longs petits et encore maintenant','Confusion de sons']);
+    sMath+=multiSelect('Visuo-attentionnel','visuo_attentionnel_cm',['Tendance à sauter des lignes en lecture','Copie difficile (repérage dans le texte)','Maux de tête après la lecture','Tendance à se cogner / mal apprécier les distances','Difficultés en géométrie']);
+    sMath+=inlineField('Appétence aux maths (0-10)','appetence_maths','select1',['0','1','2','3','4','5','6','7','8','9','10']);
+    sMath+=inlineField('App\u00e9tence \u00e0 la lecture (0-10)','appetence_lecture','select1',['0','1','2','3','4','5','6','7','8','9','10']);
+    sMath+=multiSelect('Types de difficult\u00e9s','difficultes_maths',['R\u00e9solution de probl\u00e8mes','Erreurs de calcul','Poser des op\u00e9rations','Calcul mental','Compter','Lecture de nombres','Transcription de graphies','Erreurs en copie','\u00c9criture sur les lignes difficile','Espace feuille mal g\u00e9r\u00e9','Sauter de 1 \u00e0 6 en comptant','Points sur d\u00e9 non reconnus','Comptage digital persistant','Strat\u00e9gies de r\u00e9solution immatures']);
+    sMath+=multiSelect('Difficult\u00e9s \u00e0 retenir','difficultes_retention_cm',['Tables de multiplication','Termes irr\u00e9guliers','Comptines num\u00e9riques']);
+    sMath+=inlineField('Tables de multiplication','tables_multi','radio',['Ma\u00eetris\u00e9es','En cours','Non ma\u00eetris\u00e9es']);
+    sMath+=inlineField('Temps de lecture/jour','temps_lecture_cm','select1',['5min','10min','15min','30min','45min','1h','Plus d\'1h']);
+    sMath+=textArea('Observations enseignant','obs_enseignant_maths');
+    sMath+=textArea('Autres difficult\u00e9s','autres_difficultes_maths');
+    html+=sCard('Sp\u00e9cifique \u2014 Cognition math\u00e9matique','ti-calculator',sMath);
   }
 
   if(hasOralite){
-    var secOr = '';
-    secOr += field('Respiration en journée','respiration_jour','radio',['Par le nez','Par la bouche','Mixte']);
-    secOr += field('Respiration la nuit','respiration_nuit','radio',['Par le nez','Par la bouche','Mixte']);
-    secOr += field('Porte objets/doigts en bouche','porte_en_bouche','radio',['Oui','Non']);
-    secOr += field('Alimentation','alimentation_oralite','checks',['Mange de tout','Sélectif(ve)','Difficultés à mastiquer','Tousse pendant les repas','Garde nourriture dans les joues']);
-    secOr += field('Journée alimentaire type','journee_alim','textarea');
-    secOr += field('Comportements d\'évitement au repas','evitement_repas','radio',['Oui','Non']);
-    secOr += field('Mange la même chose que la famille','meme_repas','radio',['Oui','Non – repas spécial']);
-    secOr += field('Difficultés selon les lieux','difficultes_lieux','radio',['Partout pareil','Mieux avec certaines personnes']);
-    secOr += field('Antécédents familiaux alimentation','antecedents_alim','checks',['Mère – allaitement','Mère – biberon','Mère – diversification','Père – allaitement','Père – biberon','Père – diversification']);
-    secOr += field('Antécédents orthodontiques','antecedents_ortho','radio',['Oui','Non']);
-    secOr += field('Commentaires','commentaires_oralite','textarea');
-    html += sectionHTML('Spécifique — Oralité','ti-droplet',secOr,true);
+    var sOr='';
+    sOr+=inlineField('Respiration en journ\u00e9e','respiration_jour','radio',['Par le nez','Par la bouche','Mixte']);
+    sOr+=inlineField('Respiration la nuit','respiration_nuit','radio',['Par le nez','Par la bouche','Mixte']);
+    sOr+=inlineField('Porte objets/doigts en bouche','porte_en_bouche','radio',['Oui','Non']);
+    sOr+=multiSelect('Alimentation','alimentation_oralite',['Mange de tout','S\u00e9lectif(ve)','Difficult\u00e9s \u00e0 mastiquer','Tousse pendant les repas','Garde nourriture dans les joues']);
+    sOr+=textArea('Journ\u00e9e alimentaire type','journee_alim');
+    sOr+=inlineField('Comportements d\'\u00e9vitement au repas','evitement_repas','radio',['Oui','Non']);
+    sOr+=inlineField('Mange la m\u00eame chose que la famille','meme_repas','radio',['Oui','Non \u2013 repas sp\u00e9cial']);
+    sOr+=inlineField('Difficult\u00e9s selon les lieux','difficultes_lieux','radio',['Partout pareil','Mieux avec certaines personnes']);
+    sOr+='<div style="margin-bottom:10px;"><div style="font-size:11px;font-weight:600;color:var(--text-soft);text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px;">Ant\u00e9c\u00e9dents familiaux alimentation</div>';
+    sOr+=multiSelect('M\u00e8re','atcd_alim_mere',['Difficult\u00e9s allaitement','Difficult\u00e9s biberon','Difficult\u00e9s diversification']);
+    sOr+=multiSelect('P\u00e8re','atcd_alim_pere',['Difficult\u00e9s allaitement','Difficult\u00e9s biberon','Difficult\u00e9s diversification']);
+    sOr+=multiSelect('Fratrie','atcd_alim_fratrie',['Difficult\u00e9s allaitement','Difficult\u00e9s biberon','Difficult\u00e9s diversification']);
+    sOr+='</div>';
+    sOr+=inlineField('Ant\u00e9c\u00e9dents orthodontiques','antecedents_ortho','radio',['Oui','Non']);
+    sOr+=textArea('Commentaires','commentaires_oralite');
+    html+=sCard('Sp\u00e9cifique \u2014 Oralit\u00e9','ti-droplet',sOr);
+  }
+
+  if(hasAnos){
+    var sAnos='';
+    sAnos+=multiSelect('\u00c9tiologie','etiologie_anos',['Post-rhinite virale','Traumatisme cr\u00e2nien','Cause idiopathique','Polypes naso-sinusiens','Cause neuro-d\u00e9g\u00e9n\u00e9rative','Cause m\u00e9dicamenteuse','Post-COVID']);
+    sAnos+=multiSelect('Type d\'anosmie','type_anos',['Anosmie (ne sent plus rien)','Hyposmie (sent moins bien)','Hyperosmie (sent trop fort)','Cacosmie (mauvaises odeurs persistantes)','Parosmie (confond des odeurs)','Fantosmie (hallucinations olfactives)']);
+    sAnos+=inlineField('Odeurs aim\u00e9es actuellement','odeurs_aimees_apres','text',null,{width:'280px'});
+    sAnos+=inlineField('Odeurs aim\u00e9es avant l\'anosmie','odeurs_aimees_avant','text',null,{width:'280px'});
+    sAnos+=inlineField('Odeurs non aim\u00e9es actuellement','odeurs_non_aimees_apres','text',null,{width:'280px'});
+    sAnos+=multiSelect('Retentissement alimentaire','retentissement_alim',['Mange moins','Mange plus','Mange diff\u00e9remment','Pas de retentissement']);
+    sAnos+=inlineField('Tabagisme','tabagisme','radio',['Oui','Non']);
+    sAnos+=inlineField('R\u00e9gime alimentaire particulier','regime','text',null,{width:'280px'});
+    sAnos+=inlineField('Allergies','allergies','text',null,{width:'280px'});
+    sAnos+=textArea('Commentaires','commentaires_anos');
+    html+=sCard('Sp\u00e9cifique \u2014 Anosmie','ti-wind',sAnos);
   }
 
   if(hasNeuro){
-    var secNeuro = '';
-    secNeuro += field('Niveau scolaire atteint','niveau_scolaire','select',['Certificat d\'études','CAP/BEP','Bac','Bac+2','Bac+3','Bac+5 et plus']);
-    secNeuro += field('Parcours scolaire (bon/mauvais élève)','niveau_eleve','radio',['Bon(ne) élève','Élève moyen(ne)','En difficulté']);
-    secNeuro += field('Latéralité','lateralite_neuro','radio',['Droitier(e)','Gaucher(e)','Ambidextre']);
-    secNeuro += field('Vie professionnelle (dernier poste)','vie_pro_neuro','textarea');
-    secNeuro += field('Date de retraite','date_retraite','text');
-    secNeuro += field('Situation familiale','situation_familiale','radio',['Marié(e)','En couple','Veuf/Veuve','Divorcé(e)','Célibataire']);
-    secNeuro += field('Lieu de vie actuel','lieu_vie_neuro','radio',['Domicile seul(e)','Domicile avec conjoint','Domicile avec famille','EHPAD','Résidence senior','Autre']);
-    secNeuro += field('Aidant principal','aidant','text');
-    secNeuro += field('Occupations quotidiennes','occupations','textarea');
-    secNeuro += field('Conduit un véhicule','conduite','radio',['Oui','Non','A arrêté récemment']);
-    secNeuro += field('Gère ses finances','gestion_finances','radio',['Oui','Non','Avec aide']);
-    secNeuro += field('Lecture / loisirs','loisirs_neuro','textarea');
-    secNeuro += field('Vie sociale (clubs, associations)','vie_sociale','textarea');
-    secNeuro += field('Date d\'apparition des premiers symptômes','date_premiers_symptomes','text');
-    secNeuro += field('Mode d\'installation','mode_installation','radio',['Progressif (insidieux)','Brutal (AVC/AIT)','Par paliers']);
-    secNeuro += field('Nature de la plainte cognitive','plainte_cognitive','checks',['Mémoire (oubli noms, RDV, événements récents)','Langage (manque du mot, articulation)','Compréhension','Praxies (s\'habiller, tenir un crayon)','Fonctions exécutives (organisation, planification)','Orientation spatiale','Reconnaissance des visages/lieux','Calcul']);
-    secNeuro += field('Caractère évolutif','caractere_evolutif','radio',['Stable','Progressif','Par paliers','Fluctuant']);
-    secNeuro += field('Conscience des troubles (anosognosie)','anosognosie','radio',['Conscient(e) de ses troubles','Partiellement conscient(e)','Pas conscient(e) de ses troubles']);
-    secNeuro += field('Demandeur de la consultation','demandeur_neuro','radio',['Le patient lui-même','L\'entourage','Le médecin traitant','Un médecin spécialiste']);
-    secNeuro += field('Modifications comportementales','modif_comportement','checks',['Apathie / désintérêt','Ralentissement','Abandon d\'activités','Hypersomnie','Désinhibition','Colères / agressivité','Anxiété','Dépression','Troubles du sommeil']);
-    secNeuro += field('Antécédents médicaux spécifiques','antecedents_neuro','checks',['Diabète','Hypertension','Hypercholestérolémie','Hallucinations visuelles','Chutes fréquentes','Incontinence','État dépressif','AVC / AIT','Traumatisme crânien','Parkinson']);
-    secNeuro += field('Réaction particulière aux antidépresseurs','reaction_antidep','radio',['Oui','Non','Ne sait pas']);
-    secNeuro += field('Traitements médicamenteux actuels','traitements_neuro','textarea');
-    secNeuro += field('Vision','vision_neuro','checks',['Cataracte','Glaucome','DMLA','Port de lunettes']);
-    secNeuro += field('Audition','audition_neuro','checks',['Presbyacousie','Appareillé(e)','Surdité','Ne porte pas ses appareils']);
-    secNeuro += field('Goût et odorat','gout_odorat','radio',['Conservés','Altérés','Très altérés']);
-    secNeuro += field('Examens réalisés','examens_neuro','checks',['IRM','Scanner','Scintigraphie cérébrale','Analyses de sang','Évaluation neuropsychologique','Évaluation gériatrique']);
-    secNeuro += field('Résultats / conclusions','resultats_examens','textarea');
-    secNeuro += field('Antécédents familiaux neuro-dégénératifs','atcd_fam_neuro','textarea');
-    secNeuro += field('Événements de vie marquants','evenements_vie','textarea');
-    secNeuro += field('Informations langagières (langues parlées, usages)','info_langagiere','textarea');
-    secNeuro += field('Commentaires','commentaires_neuro','textarea');
-    html += sectionHTML('Spécifique — Neurologie','ti-brain',secNeuro,true);
+    var sNeuro='';
+    sNeuro+=inlineField('Demandeur de la consultation','demandeur_neuro','radio',['Le patient lui-m\u00eame','L\'entourage','Le m\u00e9decin traitant','Un m\u00e9decin sp\u00e9cialiste']);
+    sNeuro+=inlineField('Niveau scolaire atteint','niveau_scolaire','select1',['Certificat d\'\u00e9tudes','CAP/BEP','Bac','Bac+2','Bac+3','Bac+5 et plus']);
+    sNeuro+=inlineField('Parcours scolaire','niveau_eleve','radio',['Bon(ne) \u00e9l\u00e8ve','\u00c9l\u00e8ve moyen(ne)','En difficult\u00e9']);
+    sNeuro+=inlineField('Lat\u00e9ralit\u00e9','lateralite_neuro','radio',['Droitier(e)','Gaucher(e)','Ambidextre']);
+    sNeuro+=textArea('Vie professionnelle (dernier poste)','vie_pro_neuro');
+    sNeuro+=inlineField('Date de retraite','date_retraite','text',null,{width:'150px'});
+    sNeuro+=inlineField('Situation familiale','situation_familiale','radio',['Mari\u00e9(e)','En couple','Veuf/Veuve','Divorc\u00e9(e)','C\u00e9libataire']);
+    sNeuro+=multiSelect('Lieu de vie actuel','lieu_vie_neuro',['Domicile seul(e)','Domicile avec conjoint','Domicile avec famille','EHPAD','R\u00e9sidence senior','Autre']);
+    sNeuro+=inlineField('Aidant principal','aidant','text',null,{width:'200px'});
+    sNeuro+=textArea('Occupations quotidiennes','occupations');
+    sNeuro+=inlineField('Conduit un v\u00e9hicule','conduite','radio',['Oui','Non','A arr\u00eat\u00e9 r\u00e9cemment']);
+    sNeuro+=inlineField('G\u00e8re ses finances','gestion_finances','radio',['Oui','Non','Avec aide']);
+    sNeuro+=textArea('Lecture / loisirs','loisirs_neuro');
+    sNeuro+=textArea('Vie sociale','vie_sociale');
+    sNeuro+=inlineField('Date apparition premiers sympt\u00f4mes','date_premiers_symptomes','text',null,{width:'150px'});
+    sNeuro+=inlineField('Mode d\'installation','mode_installation','radio',['Progressif (insidieux)','Brutal (AVC/AIT)','Par paliers']);
+    sNeuro+=multiSelect('Nature de la plainte cognitive','plainte_cognitive',['M\u00e9moire (RDV, \u00e9v\u00e9nements r\u00e9cents)','Langage (manque du mot)','Compr\u00e9hension','Praxies (s\'habiller, tenir un crayon)','Fonctions ex\u00e9cutives','Orientation spatiale','Reconnaissance visages/lieux','Calcul']);
+    sNeuro+=inlineField('Caract\u00e8re \u00e9volutif','caractere_evolutif','radio',['Stable','Progressif','Par paliers','Fluctuant']);
+    sNeuro+=inlineField('Conscience des troubles','anosognosie','radio',['Conscient(e)','Partiellement conscient(e)','Pas conscient(e)']);
+    sNeuro+=multiSelect('Modifications comportementales','modif_comportement',['Apathie','Ralentissement','Abandon d\'activit\u00e9s','Hypersomnie','D\u00e9sinhibition','Col\u00e8res / agressivit\u00e9','Anxi\u00e9t\u00e9','D\u00e9pression','Troubles du sommeil']);
+    sNeuro+=multiSelect('Ant\u00e9c\u00e9dents m\u00e9dicaux sp\u00e9cifiques','antecedents_neuro',['Diab\u00e8te','Hypertension','Hypercholest\u00e9rol\u00e9mie','Hallucinations visuelles','Chutes fr\u00e9quentes','Incontinence','\u00c9tat d\u00e9pressif','AVC / AIT','Traumatisme cr\u00e2nien','Parkinson']);
+    sNeuro+=textArea('Traitements m\u00e9dicamenteux actuels','traitements_neuro');
+    sNeuro+=inlineField('R\u00e9action aux antid\u00e9presseurs','reaction_antidep','radio',['Oui','Non','Ne sait pas']);
+    sNeuro+=multiSelect('Vision','vision_neuro',['Cataracte','Glaucome','DMLA','Port de lunettes']);
+    sNeuro+=multiSelect('Audition','audition_neuro',['Presbyacousie','Appareill\u00e9(e)','Surdit\u00e9','Ne porte pas ses appareils']);
+    sNeuro+=inlineField('Go\u00fbt et odorat','gout_odorat','radio',['Conserv\u00e9s','Alt\u00e9r\u00e9s','Tr\u00e8s alt\u00e9r\u00e9s']);
+    sNeuro+=multiSelect('Examens r\u00e9alis\u00e9s','examens_neuro',['IRM','Scanner','Scintigraphie c\u00e9r\u00e9brale','Analyses de sang','\u00c9valuation neuropsychologique','\u00c9valuation g\u00e9riatrique']);
+    if((a.examens_neuro||[]).length>0) sNeuro+=textArea('R\u00e9sultats / conclusions','resultats_examens');
+    sNeuro+=textArea('Ant\u00e9c\u00e9dents familiaux neuro-d\u00e9g\u00e9n\u00e9ratifs','atcd_fam_neuro');
+    sNeuro+=textArea('\u00c9v\u00e9nements de vie marquants','evenements_vie');
+    sNeuro+=textArea('Informations langagi\u00e8res','info_langagiere');
+    sNeuro+=textArea('Commentaires','commentaires_neuro');
+    html+=sCard('Sp\u00e9cifique \u2014 Neurologie','ti-brain',sNeuro);
   }
 
-  // Bouton bas
-  html += '<div style="margin-top:8px;">';
-  html += '<button class="btn btn-green" onclick="saveAnamneseTab(\''+pid+'\')"><i class="ti ti-device-floppy"></i> Sauvegarder l\'anamnèse</button>';
-  html += '</div>';
-
-  el.innerHTML = html;
-
-  // Restaurer les valeurs des checkboxes (déjà fait via checked())
+  html+='<div style="margin-top:8px;"><button class="btn btn-green" onclick="saveAnamneseTab(\''+pid+'\')"><i class="ti ti-device-floppy"></i> Sauvegarder l\'anamn\u00e8se</button></div>';
+  el.innerHTML=html;
 }
 
+function scToggle(hdr){
+  var b = hdr.nextElementSibling;
+  var ch = hdr.querySelector('.sc-chev');
+  if(!b) return;
+  if(b.style.display==='none'){ b.style.display='block'; if(ch) ch.style.transform=''; }
+  else { b.style.display='none'; if(ch) ch.style.transform='rotate(-90deg)'; }
+}
+function anaSelectReset(pid, key){
+  var p = DB.patients.find(function(x){ return x.id===pid; });
+  if(!p||!p.anamnese) return;
+  p.anamnese[key] = '';
+  save();
+  renderAnamneseTab(pid);
+}
+function anaMultiAdd(sel,pid,key){
+  var v=sel.value; if(!v) return;
+  var p=DB.patients.find(function(x){return x.id===pid;});
+  if(!p) return;
+  if(!p.anamnese) p.anamnese={};
+  if(!p.anamnese[key]) p.anamnese[key]=[];
+  if(p.anamnese[key].indexOf(v)<0) p.anamnese[key].push(v);
+  sel.value=''; save(); renderAnamneseTab(pid);
+}
+function anaMultiRemove(pid,key,v){
+  var p=DB.patients.find(function(x){return x.id===pid;});
+  if(!p||!p.anamnese) return;
+  p.anamnese[key]=(p.anamnese[key]||[]).filter(function(x){return x!==v;});
+  save(); renderAnamneseTab(pid);
+}
 function toggleAnamneseSection(cb, pid){
   var p = DB.patients.find(function(x){ return x.id===pid; });
   if(!p) return;
@@ -15238,15 +15290,16 @@ function toggleAnamneseSection(cb, pid){
 }
 
 function anamneseLive(field){
-  // Sauvegarde différée (debounce)
-  if(window._anaTimer) clearTimeout(window._anaTimer);
-  window._anaTimer = setTimeout(function(){
-    // Trouver le pid depuis le DOM
-    var tab = field.closest('[id^="ptab-"][id$="-anamnese"]');
-    if(!tab) return;
-    var pid = tab.id.replace('ptab-','').replace('-anamnese','');
-    saveAnamneseTab(pid, true);
-  }, 1500);
+  var tab = field.closest('[id^="ptab-"][id$="-anamnese"]');
+  if(!tab) return;
+  var pid = tab.id.replace('ptab-','').replace('-anamnese','');
+  // Sauvegarder immédiatement
+  saveAnamneseTab(pid, true);
+  // Re-render seulement pour select1 et radio (pas textarea/text pour éviter de perdre le focus)
+  var t = field.type;
+  if(t==='select-one'||t==='radio'){
+    renderAnamneseTab(pid);
+  }
 }
 
 function saveAnamneseTab(pid, silent){
