@@ -14914,7 +14914,7 @@ function renderAnamneseTab(pid){
   if(!p.anamnese) p.anamnese = {};
   var sec = p.anamnese._sections || {};
   var isEnfant = !!sec.base_enfant;
-  var hasLO = !!sec.base_enfant;
+  var hasLO = !!sec.lo;
   var hasLE = !!sec.le;
   var hasMath = !!sec.cm;
   var hasOralite = !!sec.oralite;
@@ -14993,6 +14993,7 @@ function renderAnamneseTab(pid){
   html += '<div style="display:flex;flex-wrap:wrap;gap:8px;">';
   var sectionsDisp = [
     {key:'base_enfant', label:'Anamnèse base enfant', icon:'ti-baby'},
+    {key:'lo', label:'Langage oral', icon:'ti-message-circle'},
     {key:'le', label:'Langage écrit', icon:'ti-pencil'},
     {key:'cm', label:'Cognition mathématique', icon:'ti-calculator'},
     {key:'oralite', label:'Oralité', icon:'ti-droplet'},
@@ -15032,7 +15033,7 @@ function renderAnamneseTab(pid){
     secFamille += field('Langue majoritaire','langue_majoritaire','text');
   }
   secFamille += field('Commentaires','commentaires_famille','textarea');
-  if(isEnfant||hasNeuro||hasLE||hasMath||hasOralite||hasAnos) html += sectionHTML('Famille','ti-home',secFamille,true);
+  if(isEnfant||hasLO||hasLE||hasMath||hasOralite||hasAnos) html += sectionHTML('Famille','ti-home',secFamille,true);
 
   // ANTÉCÉDENTS MÉDICAUX
   var secMed = '';
@@ -15051,7 +15052,7 @@ function renderAnamneseTab(pid){
   secMed += field('Suivis en cours','suivis','checks',['Orthophonie','Psychologie','Ergothérapie','Neuropsychologie','Psychomotricité','Orthoptie']);
   secMed += field('Diagnostics posés','diagnostics','textarea');
   secMed += field('Commentaires','commentaires_med','textarea');
-  if(isEnfant||hasNeuro||hasLE||hasMath||hasOralite||hasAnos) html += sectionHTML('Antécédents médicaux','ti-stethoscope',secMed,true);
+  if(isEnfant||hasLO||hasLE||hasMath||hasOralite||hasAnos) html += sectionHTML('Antécédents médicaux','ti-stethoscope',secMed,true);
 
   // DÉVELOPPEMENT (enfant seulement)
   if(isEnfant){
@@ -15088,7 +15089,7 @@ function renderAnamneseTab(pid){
     secVie += field('Temps d\'écran weekend','ecrans_weekend','select',['0h','1h','2h','3h','4h','5h','6h','7h','8h','Plus de 8h']);
   }
   secVie += field('Commentaires','commentaires_vie','textarea');
-  if(isEnfant||hasNeuro||hasLE||hasMath||hasOralite||hasAnos) html += sectionHTML('Vie quotidienne','ti-sun',secVie,true);
+  if(isEnfant||hasLO||hasLE||hasMath||hasOralite||hasAnos) html += sectionHTML('Vie quotidienne','ti-sun',secVie,true);
 
   // SCOLARITÉ (enfant) ou SITUATION PROFESSIONNELLE (adulte)
   if(isEnfant){
@@ -15124,7 +15125,7 @@ function renderAnamneseTab(pid){
     secPsy += field('Si oui, lesquels','stereotypies_detail','text');
     secPsy += field('Bien-être familial / interactions','bien_etre','textarea');
   }
-  if(isEnfant||hasNeuro||hasLE||hasMath||hasOralite||hasAnos) html += sectionHTML('Informations psychodynamiques','ti-heart',secPsy,true);
+  if(isEnfant||hasLO||hasLE||hasMath||hasOralite||hasAnos) html += sectionHTML('Informations psychodynamiques','ti-heart',secPsy,true);
 
   // SECTIONS SPÉCIFIQUES
   if(hasMath){
