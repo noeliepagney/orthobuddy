@@ -658,6 +658,13 @@ html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);colo
           </button>
           <div id="stats-cabinet-content" style="display:none;"></div>
         </div>
+        <div id="stats-praticien-wrap" style="padding:0 16px 0;">
+          <button onclick="toggleStatsPraticien()" style="display:flex;align-items:center;justify-content:space-between;width:100%;margin-bottom:10px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px 14px;cursor:pointer;transition:background .15s;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background='var(--surface)'">
+            <span style="font-size:13px;font-weight:700;color:var(--text);"><i class="ti ti-chart-bar"></i> Mes statistiques</span>
+            <span id="stats-praticien-chevron" style="font-size:12px;color:var(--text-soft);transition:transform .2s;">▼</span>
+          </button>
+          <div id="stats-praticien-content" style="display:none;"></div>
+        </div>
         <hr style="border:none;border-top:1px solid var(--border);margin:0 16px;">
         <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:8px;">
           <div style="font-size:12px;color:var(--text-soft);" id="res-prevision-info"></div>
@@ -14601,6 +14608,284 @@ statusChip = function(s){
   }
   return _origStatusChip(s);
 };
+
+// ─── STATS PRATICIEN ───
+var _statsPraticienOpen = false;
+var _statsPratDateDebut = null;
+var _statsPratDateFin = null;
+
+function toggleStatsPraticien(){
+  _statsPraticienOpen = !_statsPraticienOpen;
+  var el = document.getElementById('stats-praticien-content');
+  var chev = document.getElementById('stats-praticien-chevron');
+  if(!el) return;
+  if(_statsPraticienOpen){
+    el.style.display = 'block';
+    if(chev) chev.style.transform = 'rotate(180deg)';
+    renderStatsPraticien();
+  } else {
+    el.style.display = 'none';
+    if(chev) chev.style.transform = '';
+  }
+}
+
+function renderStatsPraticien(){
+  var el = document.getElementById('stats-praticien-content');
+  if(!el) return;
+
+  // Période par défaut : mois en cours
+  var now = new Date();
+  if(!_statsPratDateDebut){
+    _statsPratDateDebut = new Date(now.getFullYear(), now.getMonth(), 1);
+    _statsPratDateFin = new Date(now.getFullYear(), now.getMonth()+1, 0);
+  }
+
+  var deb = _statsPratDateDebut;
+  var fin = _statsPratDateFin;
+  var debStr = deb.toISOString().slice(0,10);
+  var finStr = fin.toISOString().slice(0,10);
+
+  // Filtrer séances de la période
+  var seances = (DB.seances||[]).filter(function(s){
+    return s.date >= debStr && s.date <= finStr;
+  });
+
+  // ── Compteurs types ──
+  var nbBilan = seances.filter(function(s){ return s.amoCategory==='bilan' && !s.absence; }).length;
+  var nbReedu = seances.filter(function(s){ return s.amoCategory==='reedu' && !s.absence; }).length;
+  var nbReunion = seances.filter(function(s){ return s.amoCategory==='reunion' && !s.absence; }).length;
+  var nbSansActe = seances.filter(function(s){ return (!s.amoCategory||s.amoCategory==='none') && !s.absence; }).length;
+  var nbTotal = nbBilan + nbReedu + nbReunion + nbSansActe;
+
+  // ── Absences ──
+  var nbLapins = seances.filter(function(s){ return s.absence==='lapin'; }).length;
+  var nbExcusees = seances.filter(function(s){ return s.absence==='excusee'; }).length;
+  var nbAbsTotal = nbLapins + nbExcusees;
+  var nbTotalAvecAbs = nbTotal + nbAbsTotal;
+  var tauxPresence = nbTotalAvecAbs > 0 ? Math.round(nbTotal / nbTotalAvecAbs * 100) : 100;
+
+  // ── Retards ──
+  var seancesAvecRetard = seances.filter(function(s){ return s.retard && !s.absence; });
+  var nbRetards = seancesAvecRetard.length;
+  var minRetardTotal = seancesAvecRetard.reduce(function(acc, s){ return acc + (s.retardMinutes||0); }, 0);
+  var minRetardMoy = nbRetards > 0 ? Math.round(minRetardTotal / nbRetards) : 0;
+
+  // ── Domicile ──
+  var nbDomicile = seances.filter(function(s){ return s.domicile && !s.absence; }).length;
+  var nbCabinet = nbTotal - nbDomicile;
+
+  // ── AMO ──
+  var amoCount = {};
+  seances.filter(function(s){ return s.amoCode && !s.absence; }).forEach(function(s){
+    if(!amoCount[s.amoCode]) amoCount[s.amoCode] = {label: s.amoLabel||s.amoCode, nb: 0};
+    amoCount[s.amoCode].nb++;
+  });
+
+  // ── Matériel ──
+  var materielCount = {};
+  seances.filter(function(s){ return !s.absence; }).forEach(function(s){
+    (s.materiels||[]).forEach(function(m){
+      var id = m.id||m.materielId||m;
+      var mat = (DB.materiel||[]).find(function(x){ return x.id===id; });
+      var titre = mat ? mat.titre : id;
+      if(!materielCount[titre]) materielCount[titre] = 0;
+      materielCount[titre]++;
+    });
+  });
+  var materielTop = Object.keys(materielCount).sort(function(a,b){ return materielCount[b]-materielCount[a]; }).slice(0,10);
+
+  // ── Objectifs ──
+  var objectifsMap = {};
+  seances.filter(function(s){ return !s.absence; }).forEach(function(s){
+    (s.activites||[]).forEach(function(a){
+      if(!a.objectifId) return;
+      var obj = (DB.objectifs||[]).find(function(o){ return o.id===a.objectifId; });
+      if(!obj) return;
+      var key = a.objectifId;
+      if(!objectifsMap[key]){
+        objectifsMap[key] = {
+          titre: obj.titre||'Objectif',
+          sousObjectif: a.sousObjectif||'',
+          resultats: [],
+          emojis: []
+        };
+      }
+      if(a.resultat) objectifsMap[key].resultats.push(a.resultat);
+      if(a.emoji) objectifsMap[key].emojis.push(a.emoji);
+    });
+  });
+
+  // ── HTML ──
+  var MOIS = ['janvier','février','mars','avril','mai','juin','juillet','août','septembre','octobre','novembre','décembre'];
+
+  var h = '';
+
+  // Sélecteur de période
+  h += '<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:16px;padding:10px 12px;background:var(--bg);border-radius:var(--radius-sm);border:1px solid var(--border);">';
+  h += '<i class="ti ti-calendar" style="color:var(--text-soft);"></i>';
+  h += '<span style="font-size:12px;color:var(--text-soft);">Du</span>';
+  h += '<input type="date" id="stat-prat-deb" value="'+debStr+'" style="font-size:12px;padding:4px 8px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--surface);">';
+  h += '<span style="font-size:12px;color:var(--text-soft);">au</span>';
+  h += '<input type="date" id="stat-prat-fin" value="'+finStr+'" style="font-size:12px;padding:4px 8px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--surface);">';
+  h += '<button onclick="applyStatsPratPeriod()" class="btn btn-sm btn-green" style="font-size:12px;">Appliquer</button>';
+  // Raccourcis
+  h += '<span style="color:var(--border);">|</span>';
+  var shortcuts = [
+    {label:'Ce mois', fn:'setStatsPratMois(0)'},
+    {label:'Mois dernier', fn:'setStatsPratMois(-1)'},
+    {label:'3 mois', fn:'setStatsPratNMois(3)'},
+    {label:'6 mois', fn:'setStatsPratNMois(6)'},
+    {label:'Cette année', fn:'setStatsPratAnnee()'}
+  ];
+  shortcuts.forEach(function(s){
+    h += '<button onclick="'+s.fn+'" class="btn btn-sm btn-ghost" style="font-size:11px;">'+s.label+'</button>';
+  });
+  h += '</div>';
+
+  // Stat cards
+  h += '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:16px;">';
+
+  function statCard(icon, label, val, color){
+    return '<div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px 14px;">'
+      +'<div style="font-size:11px;color:var(--text-soft);margin-bottom:4px;display:flex;align-items:center;gap:5px;"><i class="ti '+icon+'" style="color:'+color+';"></i>'+label+'</div>'
+      +'<div style="font-size:22px;font-weight:700;color:'+color+';">'+val+'</div>'
+      +'</div>';
+  }
+
+  h += statCard('ti-calendar-check','Séances réalisées', nbTotal, 'var(--green)');
+  h += statCard('ti-user-check','Taux de présence', tauxPresence+'%', tauxPresence>=90?'var(--green)':tauxPresence>=75?'var(--amber)':'var(--red)');
+  h += statCard('ti-home','À domicile', nbDomicile, 'var(--blue)');
+  h += statCard('ti-clock-exclamation','Retards', nbRetards, 'var(--amber)');
+  h += '</div>';
+
+  // Types de séances
+  h += '<div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px;margin-bottom:12px;">';
+  h += '<div style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:10px;display:flex;align-items:center;gap:6px;"><i class="ti ti-stethoscope" style="color:var(--green);"></i>Types de séances</div>';
+  h += '<div style="display:flex;flex-wrap:wrap;gap:8px;">';
+  var types = [
+    {label:'Rééducation', nb:nbReedu, bg:'#DCFCE7', color:'#166534'},
+    {label:'Bilan', nb:nbBilan, bg:'#DBEAFE', color:'#1D4ED8'},
+    {label:'Réunion ESS', nb:nbReunion, bg:'#EDE9FE', color:'#5B21B6'},
+    {label:'Sans acte', nb:nbSansActe, bg:'#F3F4F6', color:'#374151'}
+  ];
+  types.forEach(function(t){
+    if(t.nb===0) return;
+    h += '<span style="padding:4px 12px;border-radius:20px;font-size:12px;font-weight:600;background:'+t.bg+';color:'+t.color+';">'+t.label+' : '+t.nb+'</span>';
+  });
+  h += '</div></div>';
+
+  // Absences
+  if(nbAbsTotal > 0){
+    h += '<div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px;margin-bottom:12px;">';
+    h += '<div style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:10px;display:flex;align-items:center;gap:6px;"><i class="ti ti-user-off" style="color:var(--red);"></i>Absences</div>';
+    h += '<div style="display:flex;gap:10px;flex-wrap:wrap;">';
+    if(nbLapins>0) h += '<span style="padding:4px 12px;border-radius:20px;font-size:12px;font-weight:600;background:#FEE2E2;color:#991B1B;">🐰 Lapins : '+nbLapins+'</span>';
+    if(nbExcusees>0) h += '<span style="padding:4px 12px;border-radius:20px;font-size:12px;font-weight:600;background:#FEF3C7;color:#92400E;">✅ Excusées : '+nbExcusees+'</span>';
+    h += '</div></div>';
+  }
+
+  // Retards détail
+  if(nbRetards > 0){
+    h += '<div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px;margin-bottom:12px;">';
+    h += '<div style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:10px;display:flex;align-items:center;gap:6px;"><i class="ti ti-clock-exclamation" style="color:var(--amber);"></i>Retards</div>';
+    h += '<div style="font-size:13px;color:var(--text-mid);">'+nbRetards+' retard'+(nbRetards>1?'s':'')+' · moyenne '+minRetardMoy+' min · total '+minRetardTotal+' min</div>';
+    h += '</div>';
+  }
+
+  // AMO
+  var amoKeys = Object.keys(amoCount);
+  if(amoKeys.length > 0){
+    h += '<div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px;margin-bottom:12px;">';
+    h += '<div style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:10px;display:flex;align-items:center;gap:6px;"><i class="ti ti-receipt" style="color:var(--blue);"></i>Actes AMO</div>';
+    h += '<div style="display:flex;flex-direction:column;gap:6px;">';
+    amoKeys.sort(function(a,b){ return amoCount[b].nb - amoCount[a].nb; }).forEach(function(k){
+      h += '<div style="display:flex;justify-content:space-between;align-items:center;font-size:12px;padding:4px 0;border-bottom:1px solid var(--bg);">';
+      h += '<span style="color:var(--text-mid);">'+amoCount[k].label+'</span>';
+      h += '<span style="font-weight:700;color:var(--blue);background:#DBEAFE;padding:2px 10px;border-radius:20px;">'+amoCount[k].nb+'</span>';
+      h += '</div>';
+    });
+    h += '</div></div>';
+  }
+
+  // Objectifs
+  var objKeys = Object.keys(objectifsMap);
+  if(objKeys.length > 0){
+    h += '<div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px;margin-bottom:12px;">';
+    h += '<div style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:10px;display:flex;align-items:center;gap:6px;"><i class="ti ti-target" style="color:var(--green);"></i>Objectifs travaillés</div>';
+    objKeys.forEach(function(k){
+      var o = objectifsMap[k];
+      h += '<div style="margin-bottom:10px;padding:8px 10px;background:var(--bg);border-radius:var(--radius-sm);">';
+      h += '<div style="font-size:12px;font-weight:600;color:var(--text);margin-bottom:4px;">'+o.titre+'</div>';
+      if(o.sousObjectif) h += '<div style="font-size:11px;color:var(--text-soft);margin-bottom:4px;">'+o.sousObjectif+'</div>';
+      if(o.resultats.length > 0){
+        h += '<div style="display:flex;flex-wrap:wrap;gap:4px;">';
+        o.resultats.forEach(function(r, i){
+          var em = o.emojis[i]||'';
+          h += '<span style="font-size:11px;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:2px 8px;">'+em+' '+r+'</span>';
+        });
+        h += '</div>';
+      }
+      h += '</div>';
+    });
+    h += '</div>';
+  }
+
+  // Matériel
+  if(materielTop.length > 0){
+    h += '<div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px;margin-bottom:12px;">';
+    h += '<div style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:10px;display:flex;align-items:center;gap:6px;"><i class="ti ti-puzzle" style="color:var(--green);"></i>Matériel utilisé</div>';
+    h += '<div style="display:flex;flex-direction:column;gap:6px;">';
+    materielTop.forEach(function(titre){
+      h += '<div style="display:flex;justify-content:space-between;align-items:center;font-size:12px;padding:4px 0;border-bottom:1px solid var(--bg);">';
+      h += '<span style="color:var(--text-mid);">'+titre+'</span>';
+      h += '<span style="font-weight:700;color:var(--green);background:#DCFCE7;padding:2px 10px;border-radius:20px;">'+materielCount[titre]+'</span>';
+      h += '</div>';
+    });
+    h += '</div></div>';
+  }
+
+  if(nbTotal===0 && nbAbsTotal===0){
+    h += '<div style="text-align:center;padding:30px;color:var(--text-soft);font-size:13px;"><i class="ti ti-mood-empty" style="font-size:24px;display:block;margin-bottom:8px;"></i>Aucune séance sur cette période</div>';
+  }
+
+  el.innerHTML = h;
+}
+
+function applyStatsPratPeriod(){
+  var deb = document.getElementById('stat-prat-deb')?.value;
+  var fin = document.getElementById('stat-prat-fin')?.value;
+  if(deb) _statsPratDateDebut = new Date(deb+'T00:00:00');
+  if(fin) _statsPratDateFin = new Date(fin+'T00:00:00');
+  renderStatsPraticien();
+}
+
+function setStatsPratMois(offset){
+  var now = new Date();
+  var m = now.getMonth() + offset;
+  var y = now.getFullYear();
+  if(m < 0){ m += 12; y--; }
+  if(m > 11){ m -= 12; y++; }
+  _statsPratDateDebut = new Date(y, m, 1);
+  _statsPratDateFin = new Date(y, m+1, 0);
+  renderStatsPraticien();
+}
+
+function setStatsPratNMois(n){
+  var fin = new Date();
+  var deb = new Date();
+  deb.setMonth(deb.getMonth() - n);
+  _statsPratDateDebut = deb;
+  _statsPratDateFin = fin;
+  renderStatsPraticien();
+}
+
+function setStatsPratAnnee(){
+  var now = new Date();
+  _statsPratDateDebut = new Date(now.getFullYear(), 0, 1);
+  _statsPratDateFin = new Date(now.getFullYear(), 11, 31);
+  renderStatsPraticien();
+}
+
 function renderStatsCabinet(annee, moisFiltre){
   var el = document.getElementById('stats-cabinet-content');
   if(!el) return;
