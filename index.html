@@ -4014,17 +4014,17 @@ function renderPatients(){
       </div>
       <div class="patient-body" id="pbody-${p.id}">
         <div class="patient-tabs">
-          <button class="patient-tab active" onclick="switchPTab('${p.id}','seances',this)"><i class="ti ti-clipboard-list"></i> Séances</button>
-          <button class="patient-tab" onclick="switchPTab('${p.id}','dossier',this)"><i class="ti ti-folder"></i> Dossier</button>
-          <button class="patient-tab" onclick="switchPTab('${p.id}','amo',this)"><i class="ti ti-stethoscope"></i> AMO</button>
-          <button class="patient-tab" onclick="switchPTab('${p.id}','taches',this)"><i class="ti ti-checklist"></i> Tâches${renderTachesPatientBadge(p.id)}</button>
-          <button class="patient-tab" onclick="switchPTab('${p.id}','docs',this);renderDocsPatientTabById('${p.id}')"><i class="ti ti-paperclip"></i> Documents<span id="docs-badge-${p.id}" style="background:var(--bg);color:var(--text-soft);border:1px solid var(--border);border-radius:10px;font-size:9px;padding:0 5px;margin-left:4px;display:none;"></span></button>
-          <button class="patient-tab" onclick="switchPTab('${p.id}','gir',this);renderGirTab('${p.id}')"><i class="ti ti-chart-bar"></i> Grille FNO</button>
-          <button class="patient-tab" onclick="switchPTab('${p.id}','objectifs',this);renderObjectifsTab('${p.id}')"><i class="ti ti-target"></i> Objectifs</button>
+          <button class="patient-tab active" onclick="switchPTab('${p.id}','dossier',this)"><i class="ti ti-folder"></i> Dossier</button>
           <button class="patient-tab" onclick="switchPTab('${p.id}','anamnese',this);renderAnamneseTab('${p.id}')"><i class="ti ti-notes"></i> Anamnèse</button>
+          <button class="patient-tab" onclick="switchPTab('${p.id}','amo',this)"><i class="ti ti-stethoscope"></i> AMO</button>
+          <button class="patient-tab" onclick="switchPTab('${p.id}','seances',this)"><i class="ti ti-clipboard-list"></i> Séances</button>
+          <button class="patient-tab" onclick="switchPTab('${p.id}','objectifs',this);renderObjectifsTab('${p.id}')"><i class="ti ti-target"></i> Objectifs</button>
+          <button class="patient-tab" onclick="switchPTab('${p.id}','docs',this);renderDocsPatientTabById('${p.id}')"><i class="ti ti-briefcase"></i> Administratif<span id="docs-badge-${p.id}" style="background:var(--bg);color:var(--text-soft);border:1px solid var(--border);border-radius:10px;font-size:9px;padding:0 5px;margin-left:4px;display:none;"></span></button>
+          <button class="patient-tab" onclick="switchPTab('${p.id}','gir',this);renderGirTab('${p.id}')"><i class="ti ti-chart-bar"></i> Grille FNO</button>
+          <button class="patient-tab" onclick="switchPTab('${p.id}','taches',this)"><i class="ti ti-checklist"></i> Tâches${renderTachesPatientBadge(p.id)}</button>
         </div>
-        <div class="patient-tab-content active" id="ptab-${p.id}-seances"></div>
-        <div class="patient-tab-content" id="ptab-${p.id}-dossier"></div>
+        <div class="patient-tab-content active" id="ptab-${p.id}-dossier"></div>
+        <div class="patient-tab-content" id="ptab-${p.id}-seances"></div>
         <div class="patient-tab-content" id="ptab-${p.id}-amo"></div>
         <div class="patient-tab-content" id="ptab-${p.id}-taches"></div>
         <div class="patient-tab-content" id="ptab-${p.id}-docs"><div class="empty-state" style="padding:16px;"><div class="empty-state-icon">📎</div><p>Cliquez pour charger les documents.</p></div></div>
@@ -8253,6 +8253,7 @@ function renderDossierTab(p){
     +'<div style="display:flex;gap:8px;">'
     +'<button class="btn btn-sm" onclick="openPatientModal(\'' + p.id + '\')">\u270F\uFE0F Modifier</button>'
     +'<button class="btn btn-sm" style="background:var(--green-ll);color:var(--green-d);border:1px solid var(--green);" onclick="gererLienPortail(\'' + p.id + '\')">🔗 Portail patient</button>'
+    +'<button class="btn btn-sm" style="background:#EEF4F1;color:#5C8B6E;border:1px solid #5C8B6E;" onclick="ouvrirModelesEmail(\'' + p.id + '\')"><i class="ti ti-mail"></i> Modèles emails</button>'
     +'<button class="btn btn-sm" style="background:#EFF6FF;color:#1D4ED8;border:1px solid #BFDBFE;" onclick="exportPatientPDF(\'' + p.id + '\''+')">📄 Exporter PDF</button>'
     +'<button class="btn btn-sm btn-red" onclick="deletePatient(\'' + p.id + '\')">\uD83D\uDDD1\uFE0F Supprimer</button>'
     +'</div>';
@@ -8775,6 +8776,75 @@ function gererLienPortail(pid){
   document.getElementById('btn-email-portail').onclick = function(){
     envoyerEmailPortail(pid, lien);
   };
+}
+
+async function ouvrirModelesEmail(pid){
+  var p = DB.patients.find(function(x){ return x.id===pid; });
+  if(!p) return;
+
+  var prenom = p.prenom||'';
+  var nom = p.nom||'';
+  var prenomNom = prenom+' '+nom;
+  var ddn = p.dateNaissance ? (function(d){ var x=d.split('-'); return x[2]+'/'+x[1]+'/'+x[0]; })(p.dateNaissance) : '';
+  var age = p.dateNaissance ? Math.floor((new Date()-new Date(p.dateNaissance+'T00:00:00'))/(365.25*24*3600*1000))+' ans' : '';
+
+  var modeles = [
+    {
+      titre: 'CR bilan \u2014 au m\u00e9decin',
+      objet: 'Compte-rendu de bilan orthophonique - confidentiel',
+      corps: 'Bonjour docteur,\n\nJ\'ai re\u00e7u '+prenomNom+(ddn?' ('+ddn+(age?', '+age:'')+')'  :'')+' en bilan orthophonique.\nVeuillez trouver ci-joint le compte-rendu de bilan.\n\n\u2026\n\nJe reste \u00e0 votre disposition pour tout renseignement compl\u00e9mentaire.\n\nBien cordialement,\nNo\u00eblie Lain\u00e9, orthophoniste'
+    },
+    {
+      titre: 'CR bilan \u2014 \u00e0 la famille',
+      objet: 'Compte-rendu de bilan orthophonique - confidentiel',
+      corps: 'Bonjour,\n\nVeuillez trouver ci-joint le compte-rendu de bilan orthophonique de '+prenomNom+'.\nNous l\'avons d\u00e9j\u00e0 lu ensemble. Si vous avez des questions compl\u00e9mentaires, je vous propose d\'en parler lors de notre prochain rendez-vous.\nJe vous rappelle que ce compte-rendu est strictement confidentiel. Il a \u00e9t\u00e9 envoy\u00e9 \u00e0 votre m\u00e9decin prescripteur.\nVous \u00eates totalement libre de le communiquer \u00e0 qui vous souhaitez dans l\'int\u00e9r\u00eat de la prise en soins.\n\nBien cordialement,\nNo\u00eblie Lain\u00e9, orthophoniste'
+    },
+    {
+      titre: 'Questionnaire pr\u00e9-bilan',
+      objet: 'En amont de notre bilan - questionnaire \u00e0 remplir',
+      corps: 'Bonjour,\n\nNous allons bient\u00f4t nous rencontrer en bilan orthophonique.\nEn amont de notre rendez-vous, j\'ai besoin que vous m\'aidiez \u00e0 faire connaissance avec votre enfant et \u00e0 comprendre l\'origine de ses difficult\u00e9s en renseignant le questionnaire associ\u00e9.\n\nCliquez sur le bouton "Acc\u00e8s au questionnaire" et compl\u00e9tez avec les r\u00e9ponses les plus d\u00e9taill\u00e9es et sinc\u00e8res possibles. Vous pouvez vous aider du carnet de sant\u00e9 pour retrouver certains \u00e9l\u00e9ments.\n\n[Lien questionnaire \u00e0 venir]\n\nEnregistrez, revenez compl\u00e9ter plus tard si n\u00e9cessaire. Une fois compl\u00e9t\u00e9, n\'oubliez pas de m\'envoyer le questionnaire avec le bouton "Envoyer \u00e0 l\'orthophoniste".\nSi vous avez des difficult\u00e9s \u00e0 lire ce questionnaire, n\'h\u00e9sitez pas \u00e0 demander de l\'aide ou \u00e0 m\'en faire part lors de notre entretien.\n\nJe vous remercie par avance.\nBien \u00e0 vous,\nNo\u00eblie Lain\u00e9\nOrthophoniste'
+    }
+  ];
+
+  // Créer modal
+  var existing = document.getElementById('modal-modeles-email');
+  if(existing) existing.remove();
+
+  var m = document.createElement('div');
+  m.className = 'overlay';
+  m.id = 'modal-modeles-email';
+  m.style.zIndex = '1000';
+
+  var h = '<div class="modal" style="max-width:600px;width:95%;">';
+  h += '<div class="modal-head"><div class="modal-title"><i class="ti ti-mail"></i> Mod\u00e8les d\'emails \u2014 '+escHtml(prenomNom)+'</div>';
+  h += '<button class="modal-close" onclick="document.getElementById(\'modal-modeles-email\').remove()"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>';
+  h += '<div style="padding:16px;display:flex;flex-direction:column;gap:12px;">';
+
+  modeles.forEach(function(mod, idx){
+    h += '<div style="background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px;">';
+    h += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">';
+    h += '<span style="font-size:12px;font-weight:700;color:#5C8B6E;">'+mod.titre+'</span>';
+    h += '<button class="btn btn-sm btn-green" onclick="copierModeleEmail('+idx+')"><i class="ti ti-copy"></i> Copier</button>';
+    h += '</div>';
+    h += '<div style="font-size:11px;color:var(--text-soft);margin-bottom:4px;">Objet : '+escHtml(mod.objet)+'</div>';
+    h += '<textarea id="modele-corps-'+idx+'" style="width:100%;font-size:12px;font-family:inherit;border:1px solid var(--border);border-radius:var(--radius-sm);padding:8px;background:var(--surface);min-height:80px;resize:vertical;">'+escHtml(mod.corps)+'</textarea>';
+    h += '</div>';
+  });
+
+  h += '</div></div>';
+  m.innerHTML = h;
+  document.body.appendChild(m);
+  m.classList.add('open');
+
+  window._modelesEmailData = modeles;
+}
+
+function copierModeleEmail(idx){
+  var ta = document.getElementById('modele-corps-'+idx);
+  if(!ta) return;
+  navigator.clipboard.writeText(ta.value).then(function(){
+    showToast('\u2705 Email copi\u00e9 !');
+  });
 }
 
 async function envoyerEmailPortail(pid, lien){
