@@ -723,7 +723,7 @@ html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);colo
             <div class="field"><label>Nom</label><input type="text" id="setting-nom-ortho" placeholder="Lainé" style="margin-top:4px;" oninput="DB.settings.nomOrtho=this.value;save();"></div>
             <div class="field"><label>N° RPPS</label><input type="text" id="setting-rpps" placeholder="10XXXXXXXXX" style="margin-top:4px;" oninput="DB.settings.rpps=this.value;save();"></div>
             <div class="field"><label>Ville / Cabinet</label><input type="text" id="setting-ville" placeholder="Lyon" style="margin-top:4px;" oninput="DB.settings.ville=this.value;save();"></div>
-            <div class="field field-full" style="margin-top:8px;"><label>Adresse du cabinet</label><input type="text" id="setting-adresse" placeholder="12 rue de la Paix, 54000 Lyon" style="margin-top:4px;" oninput="DB.settings.adresseOrtho=this.value;save();"></div><div class="field" style="margin-top:8px;"><label>Téléphone</label><input type="text" id="setting-tel-cabinet" placeholder="03 XX XX XX XX" style="margin-top:4px;" oninput="DB.settings.telCabinet=this.value;save();"></div><div class="field field-full" style="margin-top:8px;"><label>Email de contact</label><input type="text" id="setting-email-cabinet" placeholder="contact@monorthophonie.fr" style="margin-top:4px;" oninput="DB.settings.emailCabinet=this.value;save();"></div><div class="field field-full" style="margin-top:8px;"><label>Certifications / Titres (ex: Praticien certifié LSVT®)</label><input type="text" id="setting-certifications" placeholder="Praticien certifié LSVT®" style="margin-top:4px;" oninput="DB.settings.certifications=this.value;save();"></div></div>
+            <div class="field field-full" style="margin-top:8px;"><label>Adresse du cabinet</label><input type="text" id="setting-adresse" placeholder="12 rue de la Paix, 54000 Lyon" style="margin-top:4px;" oninput="DB.settings.adresseOrtho=this.value;save();"></div></div>
           </div>
         </div>
 
@@ -11609,12 +11609,6 @@ function renderSettings(){
     var elRP=document.getElementById('setting-rpps');if(elRP)elRP.value=(DB.settings&&DB.settings.rpps)||'';
     var elVL=document.getElementById('setting-ville');if(elVL)elVL.value=(DB.settings&&DB.settings.ville)||'';
     var elAD=document.getElementById('setting-adresse');if(elAD)elAD.value=(DB.settings&&DB.settings.adresseOrtho)||'';
-    var elTel=document.getElementById('setting-tel-cabinet');if(elTel)elTel.value=(DB.settings&&DB.settings.telCabinet)||'';
-    var elEmail=document.getElementById('setting-email-cabinet');if(elEmail)elEmail.value=(DB.settings&&DB.settings.emailCabinet)||'';
-    var elCert=document.getElementById('setting-certifications');if(elCert)elCert.value=(DB.settings&&DB.settings.certifications)||'';
-    var elTel=document.getElementById('setting-tel-cabinet');if(elTel)elTel.value=(DB.settings&&DB.settings.telCabinet)||'';
-    var elEmail=document.getElementById('setting-email-cabinet');if(elEmail)elEmail.value=(DB.settings&&DB.settings.emailCabinet)||'';
-    var elCert=document.getElementById('setting-certifications');if(elCert)elCert.value=(DB.settings&&DB.settings.certifications)||'';
     var elIP=document.getElementById('setting-ik-plaine');if(elIP)elIP.value=(DB.settings&&DB.settings.ikPlaine!=null?DB.settings.ikPlaine:0.38);
     var elIM=document.getElementById('setting-ik-montagne');if(elIM)elIM.value=(DB.settings&&DB.settings.ikMontagne!=null?DB.settings.ikMontagne:0.61);
   },50);
@@ -15757,6 +15751,7 @@ function ouvrirTrameOdoratGout(pid, trameId){
   var d = trame.data;
   var a = p.anamnese||{};
 
+  // Infos patient auto-remplies
   var age = p.dateNaissance ? Math.floor((new Date()-new Date(p.dateNaissance+'T00:00:00'))/(365.25*24*3600*1000)) : '';
   var ddn = p.dateNaissance ? (function(x){ var s=x.split('-'); return s[2]+'/'+s[1]+'/'+s[0]; })(p.dateNaissance) : '';
 
@@ -15764,10 +15759,9 @@ function ouvrirTrameOdoratGout(pid, trameId){
   function tc(key, v){ return (d[key]||[]).indexOf(v)>=0; }
   function tr(key, v){ return d[key]===v; }
 
-  function tField(label, key, type, opts, placeholder, help){
+  function tField(label, key, type, opts, placeholder){
     var h = '<div style="margin-bottom:10px;">';
     if(label) h += '<label style="font-size:11px;font-weight:600;color:var(--text-soft);text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:3px;">'+label+'</label>';
-    if(help) h += '<div style="font-size:11px;color:#9B9A95;font-style:italic;background:#FAFAF8;border-left:3px solid #C8DDD4;padding:4px 8px;margin-bottom:5px;border-radius:0 4px 4px 0;">'+help+'</div>';
     if(type==='textarea'){
       h += '<textarea data-trame="'+key+'" oninput="trameLive(this,\''+pid+'\',\''+trameId+'\')" style="width:100%;padding:6px 10px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:12px;background:var(--bg);min-height:60px;font-family:inherit;resize:vertical;">'+escHtml(tv(key))+'</textarea>';
     } else if(type==='text'){
@@ -15801,10 +15795,6 @@ function ouvrirTrameOdoratGout(pid, trameId){
       +'</div>';
   }
 
-  function note(txt){
-    return '<div style="font-size:11px;color:#9B9A95;font-style:italic;background:#FAFAF8;border-left:3px solid #C8DDD4;padding:6px 10px;margin-bottom:10px;border-radius:0 4px 4px 0;line-height:1.6;">'+txt+'</div>';
-  }
-
   var existing = document.getElementById('modal-trame-'+trameId);
   if(existing) existing.remove();
 
@@ -15819,16 +15809,14 @@ function ouvrirTrameOdoratGout(pid, trameId){
   h += '<div style="display:flex;align-items:center;gap:8px;">';
   h += '<button class="btn btn-green btn-sm" onclick="sauvegarderTrame(\''+pid+'\',\''+trameId+'\')"><i class="ti ti-device-floppy"></i> Sauvegarder</button>';
   h += '<button class="btn btn-sm" style="background:#7C3AED;color:white;" onclick="genererDocumentTrame(\''+pid+'\',\''+trameId+'\')"><i class="ti ti-printer"></i> G\u00e9n\u00e9rer</button>';
+  h += '<button class="btn btn-sm" style="background:#185FA5;color:white;" onclick="exportWordTrame(\''+pid+'\',\''+trameId+'\')"><i class="ti ti-file-word"></i> Export Word</button>';
   h += '<button class="modal-close" onclick="document.getElementById(\'modal-trame-'+trameId+'\').remove()"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>';
   h += '</div></div>';
 
   h += '<div style="padding:16px;" id="trame-container-'+trameId+'">';
 
-  // 1. ELEMENTS ADMINISTRATIFS
+  // 1. ÉLÉMENTS ADMINISTRATIFS
   var sAdmin = '';
-  sAdmin += tField('Date du bilan','date_bilan','text');
-  sAdmin += tField('Destinataire(s)','destinataires','text',null,'Dr Martin');
-  sAdmin += tField('Copies','copies','text',null,'Dr Dupont, Dr Lefebvre');
   sAdmin += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">';
   sAdmin += '<div>'+tField('Nom - Pr\u00e9nom','admin_nom_prenom','text',null,p.prenom+' '+p.nom)+'</div>';
   sAdmin += '<div>'+tField('Date de naissance (age)','admin_ddn','text',null,ddn+(age?' ('+age+' ans)':''))+'</div>';
@@ -15845,14 +15833,14 @@ function ouvrirTrameOdoratGout(pid, trameId){
   sPlainte += tField('Demande','demande','textarea');
   h += tSection('Demande / Plainte','ti-message-question',sPlainte);
 
-  // 3. ANAMNESE
+  // 3. ANAMNÈSE
   var sAnam = '';
-  sAnam += tField('Ant\u00e9c\u00e9dents m\u00e9dicaux r\u00e9cents/anciens','antecedents_med','textarea');
-  if(a.antecedents_neuro && a.antecedents_neuro.length) sAnam += '<div style="font-size:11px;color:#5C8B6E;margin:-6px 0 8px;"><i class="ti ti-link"></i> Depuis l\'anamn\u00e8se : '+a.antecedents_neuro.join(', ')+'</div>';
-  sAnam += tField('Ant\u00e9c\u00e9dents ORL r\u00e9cents/anciens','antecedents_orl','textarea');
-  if(a.orl && a.orl.length) sAnam += '<div style="font-size:11px;color:#5C8B6E;margin:-6px 0 8px;"><i class="ti ti-link"></i> Depuis l\'anamn\u00e8se : '+a.orl.join(', ')+'</div>';
+  sAnam += tField('Ant\u00e9c\u00e9dents m\u00e9dicaux r\u00e9cents/anciens','antecedents_med','textarea', null);
+  if(a.antecedents_neuro && a.antecedents_neuro.length) sAnam += '<div style="font-size:11px;color:#5C8B6E;margin:-6px 0 8px;">Depuis l\'anamn\u00e8se : '+a.antecedents_neuro.join(', ')+'</div>';
+  sAnam += tField('Ant\u00e9c\u00e9dents ORL','antecedents_orl','textarea');
+  if(a.orl && a.orl.length) sAnam += '<div style="font-size:11px;color:#5C8B6E;margin:-6px 0 8px;">Depuis l\'anamn\u00e8se : '+a.orl.join(', ')+'</div>';
   sAnam += tField('Traitement m\u00e9dical actuel et iatrog\u00e9nie','traitement_actuel','textarea');
-  if(a.traitements_neuro) sAnam += '<div style="font-size:11px;color:#5C8B6E;margin:-6px 0 8px;"><i class="ti ti-link"></i> Depuis l\'anamn\u00e8se : '+a.traitements_neuro+'</div>';
+  if(a.traitements_neuro) sAnam += '<div style="font-size:11px;color:#5C8B6E;margin:-6px 0 8px;">Depuis l\'anamn\u00e8se : '+a.traitements_neuro+'</div>';
   sAnam += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">';
   sAnam += '<div>'+tField('Poids (kg)','poids','text')+'</div>';
   sAnam += '<div>'+tField('Taille (m)','taille','text')+'</div>';
@@ -15864,21 +15852,19 @@ function ouvrirTrameOdoratGout(pid, trameId){
 
   // 4. BILAN
   var sBilan = '';
-  sBilan += note('L\'orthophoniste n\'est pas ORL. L\'\u00e9valuation vise l\'olfaction et non pas l\'odorat, la gustation et non pas le go\u00fbt. C\'est le bilan qui peut \u00eatre le plus biais\u00e9 de tous nos bilans ! Travailler avec des flacons incolores ou non visibles. Noter pour chaque \u00e9preuve : marque, pr\u00e9sentation (liquide, solide, spray), nombre de pulv\u00e9risations.');
   sBilan += tField('Type de bilan','type_bilan','checks',['Bilan d\'investigation','Bilan classique','Bilan de renouvellement']);
   sBilan += tField('Domaine(s) explor\u00e9(s)','domaines_explores','checks',['Olfaction','Gustation','Sensations trigg\u00e9minales']);
   sBilan += tField('Nom des tests utilis\u00e9s','tests_utilises','textarea');
-  sBilan += tField('Mat\u00e9riel utilis\u00e9 (marque, pr\u00e9sentation, nb pulv\u00e9risations)','materiel_utilise','textarea');
+  sBilan += tField('Mat\u00e9riel utilis\u00e9 (marque, pr\u00e9sentation)','materiel_utilise','textarea');
   h += tSection('Bilan','ti-clipboard-list',sBilan);
 
-  // 5. ECHELLES AUTO-EVALUATION
+  // 5. ÉCHELLES D'AUTO-ÉVALUATION
   var sEchelles = '';
-  sEchelles += note('Inspir\u00e9es des \u00e9chelles d\'auto-\u00e9valuation de la douleur : de 1 \u00e0 10, 1 = peu de retentissement, 10 = fort retentissement.');
   sEchelles += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">';
   sEchelles += '<div>'+tField('Importance odeur dans la vie d\'avant (1-10)','echelle_odeur_avant','text')+'</div>';
-  sEchelles += '<div>'+tField('V\u00e9cu du handicap olfactif aujourd\'hui (1-10)','echelle_handicap_odorat','text')+'</div>';
+  sEchelles += '<div>'+tField('V\u00e9cu du handicap aujourd\'hui (1-10)','echelle_handicap_odorat','text')+'</div>';
   sEchelles += '<div>'+tField('Importance go\u00fbt dans la vie d\'avant (1-10)','echelle_gout_avant','text')+'</div>';
-  sEchelles += '<div>'+tField('V\u00e9cu du handicap gustatif aujourd\'hui (1-10)','echelle_handicap_gout','text')+'</div>';
+  sEchelles += '<div>'+tField('V\u00e9cu du handicap go\u00fbt (1-10)','echelle_handicap_gout','text')+'</div>';
   sEchelles += '</div>';
   h += tSection('\u00c9chelles d\'auto-\u00e9valuation','ti-chart-bar',sEchelles);
 
@@ -15889,23 +15875,22 @@ function ouvrirTrameOdoratGout(pid, trameId){
   sProfil += '<div>'+tField('Plat pr\u00e9f\u00e9r\u00e9','profil_plat_pref','text')+'</div>';
   sProfil += '<div>'+tField('Boisson pr\u00e9f\u00e9r\u00e9e','profil_boisson_pref','text')+'</div>';
   sProfil += '<div>'+tField('Plat/boisson d\u00e9test\u00e9(s)','profil_deteste','text')+'</div>';
-  sProfil += '<div>'+tField('Tabagisme','profil_tabac','text',null,'Actif / Passif / Non')+'</div>';
+  sProfil += '<div>'+tField('Tabagisme','profil_tabac','text')+'</div>';
   sProfil += '<div>'+tField('Animaux','profil_animaux','text')+'</div>';
   sProfil += '</div>';
   sProfil += tField('Lieu de vie actuel','profil_lieu_vie','text');
-  sProfil += tField('Odeurs de la maison','profil_odeurs_maison','textarea',null,null,'Produits d\'entretien (marques et parfums) ? Chemin\u00e9e en fonction ou d\u00e9corative ? Fleurs coup\u00e9es ? Fleurs s\u00e9ch\u00e9es ?');
+  sProfil += tField('Odeurs de la maison (produits d\'entretien, cheminée, fleurs...)','profil_odeurs_maison','textarea');
   sProfil += tField('Produits d\'hygi\u00e8ne (marques et parfums)','profil_hygiene','textarea');
   sProfil += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">';
-  sProfil += '<div>'+tField('Parfum du/de la patient(e)','profil_parfum','text')+'</div>';
-  sProfil += '<div>'+tField('Parfum du/de la conjoint(e)','profil_parfum_conjoint','text',null,null,'Chercher les pyramides olfactives : notes de c\u0153ur et de fond.')+'</div>';
+  sProfil += '<div>'+tField('Parfum du patient','profil_parfum','text')+'</div>';
+  sProfil += '<div>'+tField('Parfum du/de la conjoint(e)','profil_parfum_conjoint','text')+'</div>';
   sProfil += '</div>';
   sProfil += tField('Synth\u00e8se profil olfactif','synthese_profil','textarea');
   h += tSection('Profil olfactif','ti-wind',sProfil);
 
   // 7. SOUVENIR OLFACTIF
   var sSouvenir = '';
-  sSouvenir += note('Consigne : Pouvez-vous me raconter un souvenir li\u00e9 directement \u00e0 une odeur ? Ce peut \u00eatre une odeur h\u00e9donique positive et/ou h\u00e9donique n\u00e9gative. Noter si cet exercice est ais\u00e9 pour le patient ou difficile.');
-  sSouvenir += tField('Souvenir olfactif','souvenir_olfactif','textarea');
+  sSouvenir += tField('Souvenir olfactif (positif et/ou n\u00e9gatif)','souvenir_olfactif','textarea');
   sSouvenir += tField('Facilit\u00e9 de l\'exercice pour le patient','souvenir_facilite','radios',['Ais\u00e9','Difficile','Impossible']);
   sSouvenir += tField('Synth\u00e8se','synthese_souvenir','textarea');
   h += tSection('Souvenir olfactif','ti-bulb',sSouvenir);
@@ -15913,15 +15898,10 @@ function ouvrirTrameOdoratGout(pid, trameId){
   // 8. OLFACTION
   var sOlf = '';
   sOlf += '<div style="font-size:12px;font-weight:700;color:#5C8B6E;margin-bottom:8px;">Discrimination pure</div>';
-  sOlf += tField('Test triangulaire \u2014 r\u00e9sultat','test_triangulaire','radios',['R\u00e9ussi','Non r\u00e9ussi'],null,
-    'Proposer 3 touches dont 1 leurre (touche tremp\u00e9e dans eau). Consigne : sentez chaque touche, concentrez-vous sur votre ressenti. Guider : fort/faible ? (d\u00e9tection) familier ? qui pla\u00eet ? (h\u00e9donique) fugace ou stable ? 1er mot qui vient ? '
-    +'Exemple : T1 COCO "je d\u00e9tecte, fleuri puis sucr\u00e9, odeur stable, h\u00e9donique positif" | T2 LEURRE "odeur qui s\'\u00e9vanouit, sensation que la touche n\'a pas de parfum" | T3 CLOU DE GIROFLE "ah si \u00e7a me fait penser au clou de girofle !"'
-    +' Si le patient sent une odeur sur le leurre \u2192 perturbation importante du syst\u00e8me olfactif.');
+  sOlf += tField('Test triangulaire — r\u00e9sultat','test_triangulaire','radios',['R\u00e9ussi','Non r\u00e9ussi']);
   sOlf += tField('Comportement sur touche','comportement_touche','checks',['Adh\u00e9sif','Persistant','Perturbation du syst\u00e8me olfactif','Respectueux du cycle nasal']);
-  sOlf += tField('Test pareil/pas pareil \u2014 niveau','test_pareil','radios',['Non propos\u00e9','R\u00e9ussi niveau 1','R\u00e9ussi niveau 2','R\u00e9ussi niveau 3','Non r\u00e9ussi'],null,
-    'Niv.1 : 2 odeurs oppos\u00e9es (familles diff\u00e9rentes). Niv.2 : 2 odeurs diff\u00e9rentes m\u00eame famille. Niv.3 : 2 odeurs identiques. Consigne : identiques ou diff\u00e9rentes ?');
+  sOlf += tField('Test pareil/pas pareil — niveau','test_pareil','radios',['Non propos\u00e9','R\u00e9ussi niveau 1','R\u00e9ussi niveau 2','R\u00e9ussi niveau 3','Non r\u00e9ussi']);
   sOlf += '<div style="font-size:12px;font-weight:700;color:#5C8B6E;margin:12px 0 8px;">Identification</div>';
-  sOlf += note('1 odorant + images (2 \u00e0 6 selon le trouble). Consigne : sentez la touche et posez-la sur l\'image correspondante. Attention aux repr\u00e9sentations mentales : pr\u00e9voir plusieurs dessins pour une m\u00eame odeur !');
   sOlf += tField('Nombre d\'images propos\u00e9es','identification_images','radios',['2','3','4','5','6']);
   sOlf += tField('R\u00e9sultat identification','identification_resultat','radios',['R\u00e9ussi','Non r\u00e9ussi']);
   sOlf += tField('Cat\u00e9gorie du stimulus olfactif','identification_categorie','text');
@@ -15930,14 +15910,11 @@ function ouvrirTrameOdoratGout(pid, trameId){
 
   // 9. GUSTATION
   var sGust = '';
-  sGust += tField('Test 6 verres \u2014 r\u00e9sultats','test_6_verres','textarea',null,null,
-    'Protocole V. LE LAN. 6 verres d\'eau incolores num\u00e9rot\u00e9s 1\u00e06. Consigne : gorg\u00e9e de chaque verre dans l\'ordre, d\u00e9crivez vos sensations. En aucun cas parler de saveurs ! Le leurre et l\'Umami informent sur le trouble (ague\u00fasie ou dysgu\u00e9usie). Noter les r\u00e9ponses exactes du patient.');
-  sGust += tField('Classification Markley (type de dysgu\u00e9usie)','markley','radios',['Type I','Type II','Type III','Type IV','Non d\u00e9termin\u00e9'],null,
-    'Interroger sur 6 cat\u00e9gories d\'aliments pour obtenir le type (I \u00e0 IV). Un patient peut r\u00e9ussir le test 6 verres et pr\u00e9senter une dysgu\u00e9usie de type IV !');
-  sGust += tField('Sensations trigg\u00e9minales','trigeminales','radios',['Pr\u00e9serv\u00e9es','Alt\u00e9r\u00e9es'],null,
-    'Hypo ou hypersensibilit\u00e9 \u00e0 l\'une des cinq sensations trigg\u00e9minales ?');
-  sGust += tField('Pr\u00e9ciser laquelle/lesquelles','trigeminales_detail','text');
-  sGust += tField('R\u00e9flexe naus\u00e9eux','reflexe_nauseeux','radios',['Normal','Ant\u00e9rioris\u00e9'],null,'Ant\u00e9riorisation ?');
+  sGust += tField('Test 6 verres — r\u00e9sultats','test_6_verres','textarea');
+  sGust += tField('Classification Markley (type de dysgueusie)','markley','radios',['Type I','Type II','Type III','Type IV','Non d\u00e9termin\u00e9']);
+  sGust += tField('Sensations trigg\u00e9minales','trigeminales','radios',['Pr\u00e9serv\u00e9es','Alt\u00e9r\u00e9es']);
+  sGust += tField('Hypo ou hypersensibilit\u00e9 (laquelle ?)','trigeminales_detail','text');
+  sGust += tField('R\u00e9flexe naus\u00e9eux','reflexe_nauseeux','radios',['Normal','Ant\u00e9rioris\u00e9']);
   sGust += tField('\u00c9tat bucco-dentaire / iatrog\u00e9nie / salive','bucco_dentaire','textarea');
   sGust += tField('Synth\u00e8se gustation','synthese_gustation','textarea');
   h += tSection('Gustation','ti-droplet',sGust);
@@ -15945,16 +15922,14 @@ function ouvrirTrameOdoratGout(pid, trameId){
   // 10. COMPORTEMENT
   var sComp = '';
   sComp += tField('Fatigabilit\u00e9','fatigabilite','radios',['Absente','L\u00e9g\u00e8re','Importante']);
-  sComp += tField('Ph\u00e9nom\u00e8ne de saturation','saturation','radios',['Absent','Pr\u00e9sent']);
+  sComp += tField('Ph\u00e9nom\u00e8ne de saturation','saturation','radios',['Absent','Present']);
   sComp += tField('Interf\u00e9rences','interferences','radios',['Absentes','Pr\u00e9sentes']);
   sComp += tField('D\u00e9lai et lenteur d\'id\u00e9ation','lenteur','radios',['Absent','Pr\u00e9sent']);
-  sComp += tField('Comportement pendant le testing','comportement','checks',
-    ['Adapt\u00e9','Attentif','Autonome','Assidu','Discret','Efficace','M\u00e9ticuleux','Motiv\u00e9','Organis\u00e9','Patient','Pers\u00e9v\u00e9rant','Rigoureux','Sensible','Vigilant','Volontaire','Opposant']);
-  sComp += tField('R\u00e9action au testing','reaction_testing','checks',
-    ['Calme','Confiance','S\u00e9r\u00e9nit\u00e9','Anxi\u00e9t\u00e9 de performance','Appr\u00e9hension','\u00c9nervement','Inqui\u00e9tude','Indiff\u00e9rence','Agitation','Anxi\u00e9t\u00e9 associ\u00e9e au testing']);
+  sComp += tField('Comportement pendant le testing','comportement','checks',['Adapt\u00e9','Attentif','Autonome','Assidu','Efficace','M\u00e9ticuleux','Motiv\u00e9','Organis\u00e9','Patient','Pers\u00e9v\u00e9rant','Rigoureux','Sensible','Vigilant','Volontaire','Opposant']);
+  sComp += tField('R\u00e9action au testing','reaction_testing','checks',['Calme','Confiance','S\u00e9r\u00e9nit\u00e9','Anxi\u00e9t\u00e9 de performance','Appréhension','\u00c9nervement','Inqui\u00e9tude','Indiff\u00e9rence','Agitation']);
   h += tSection('Comportement du patient','ti-mood-smile',sComp);
 
-  // 11. RESULTATS
+  // 11. RÉSULTATS
   var sRes = '';
   sRes += tField('Quel trouble ? (quantitatif et/ou qualitatif)','trouble','textarea');
   sRes += tField('Distorsions','distorsions','radios',['Absentes','Pr\u00e9sentes']);
@@ -15966,28 +15941,24 @@ function ouvrirTrameOdoratGout(pid, trameId){
 
   // 12. DIAGNOSTIC ORTHOPHONIQUE
   var sDiag = '';
-  sDiag += note('Diagnostic relatif au trouble : Perte ou perturbation du syst\u00e8me olfacto-gustatif (quantitatif et/ou qualitatif). Correspondance NGAP : R\u00e9\u00e9ducation et/ou maintien et/ou adaptation des fonctions de communication, du langage, des troubles cognitivo-linguistiques et des fonctions oro-myo-faciales chez les patients atteints de pathologies neurologiques.');
   sDiag += tField('Trouble olfactif','diag_olfactif','checks',['Anosmie','Hyposmie','Dysosmie']);
-  sDiag += tField('Trouble gustatif','diag_gustatif','checks',['Agu\u00e9usie','Hypogueusie','Hypergueusie','Dysgu\u00e9usie']);
+  sDiag += tField('Trouble gustatif','diag_gustatif','checks',['Agu\u00e9usie','Hypogueusie','Hypergueusie','Dysgueusie']);
   sDiag += tField('\u00c9l\u00e9ments de conclusion','conclusion','textarea');
   h += tSection('Diagnostic orthophonique','ti-stethoscope',sDiag);
 
-  // 13. PROJET THERAPEUTIQUE
+  // 13. PROJET THÉRAPEUTIQUE
   var sProjet = '';
-  sProjet += note('La r\u00e9\u00e9ducation ne sera pas men\u00e9e de la m\u00eame fa\u00e7on s\'il s\'agit d\'un trouble quantitatif ou qualitatif. Si distorsions gustatives \u2192 protocole de neutralisation inspir\u00e9 des torquegu\u00e9usies post-radiques.');
   sProjet += tField('Objectifs de la r\u00e9\u00e9ducation','objectifs_reedu','textarea');
   sProjet += '<div style="font-size:12px;font-weight:700;color:#5C8B6E;margin-bottom:8px;">Olfaction</div>';
-  sProjet += tField('','projet_olfaction','checks',
-    ['Travail sur les familles olfactives (2 niveaux)','Lexique olfactif pour chaque famille','\u00c9criture olfactive (3 niveaux)','Imagerie mentale (ne pas confondre avec visualisation mentale)','M\u00e9moire sensorielle']);
+  sProjet += tField('','projet_olfaction','checks',['Travail sur les familles olfactives','Lexique olfactif','Écriture olfactive','Imagerie mentale','M\u00e9moire sensorielle']);
   sProjet += '<div style="font-size:12px;font-weight:700;color:#5C8B6E;margin:10px 0 8px;">Gustation</div>';
-  sProjet += tField('','projet_gustation','checks',
-    ['Neutralisation de la dysgu\u00e9usie','Leurrer le cerveau (influenceurs du go\u00fbt)','Jeu gourmet sans d\u00e9gustation','Supervision de d\u00e9gustations en pleine conscience aux solides et aux liquides','Aide au remplissage des fiches de d\u00e9gustation']);
+  sProjet += tField('','projet_gustation','checks',['Neutralisation de la dysgueusie','Leurrer le cerveau (influenceurs du go\u00fbt)','Jeu gourmet sans d\u00e9gustation','Supervision de d\u00e9gustations en pleine conscience','Aide au remplissage des fiches de d\u00e9gustation']);
   h += tSection('Projet th\u00e9rapeutique','ti-target',sProjet);
 
-  // 14. PRECONISATIONS
+  // 14. PRÉCONISATIONS
   var sPreco = '';
   sPreco += tField('Examens compl\u00e9mentaires propos\u00e9s','examens_complementaires','checks',['Avis ORL','IRM c\u00e9r\u00e9brale','Autre']);
-  sPreco += tField('Pr\u00e9conisations au m\u00e9decin prescripteur','preconisations_medecin','textarea');
+  sPreco += tField('Pr\u00e9conisations au m\u00e9decin','preconisations_medecin','textarea');
   sPreco += tField('Pr\u00e9conisations \u00e0 l\'entourage / \u00e0 la maison','preconisations_entourage','textarea');
   sPreco += tField('Pr\u00e9conisations aux partenaires / lieux de vie','preconisations_partenaires','textarea');
   h += tSection('Pr\u00e9conisations','ti-notes',sPreco);
@@ -15997,320 +15968,159 @@ function ouvrirTrameOdoratGout(pid, trameId){
   document.body.appendChild(modal);
   modal.classList.add('open');
 }
+
+function exportWordFromPopup(html){
+  var pre = '<html><head><meta charset="utf-8"><style>'
+    + 'body{font-family:Arial,sans-serif;font-size:11pt;color:#1A1A18;line-height:1.5;}'
+    + 'h2{font-size:9pt;font-weight:700;color:#3D6B4F;text-transform:uppercase;border-bottom:1pt solid #C8DDD4;padding-bottom:3pt;margin:14pt 0 5pt;}'
+    + 'table{border-collapse:collapse;width:100%;margin-bottom:8pt;}'
+    + 'td{border-bottom:1pt solid #F0EDE6;padding:4pt 6pt;font-size:10pt;vertical-align:top;}'
+    + 'td:first-child{color:#555;font-weight:600;width:35%;}'
+    + 'p{font-size:11pt;line-height:1.6;margin:4pt 0;}'
+    + '</style></head><body>';
+  var doc = pre + html + '</body></html>';
+  var blob = new Blob([doc], {type: 'application/msword'});
+  var a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'bilan.doc';
+  a.click();
+  showToast('Export Word téléchargé !');
+}
+function exportWordTrame(pid, trameId){
+  genererDocumentTrame(pid, trameId);
+}
 function genererDocumentTrame(pid, trameId){
   sauvegarderTrame(pid, trameId);
   var p = DB.patients.find(function(x){ return x.id===pid; });
   if(!p) return;
   var trame = (p.trames||[]).find(function(t){ return t.id===trameId; });
   if(!trame) return;
-  var adresse = (DB.settings&&DB.settings.adresseOrtho)||'';
-  var tel = (DB.settings&&DB.settings.telCabinet)||'';
-  var email = (DB.settings&&DB.settings.emailCabinet)||'';
-  var certif = (DB.settings&&DB.settings.certifications)||'';
   var d = trame.data;
   var a = p.anamnese||{};
 
-  var praticien = (DB.praticiens&&DB.praticiens[0]) ? (DB.praticiens[0].prenom+' '+DB.praticiens[0].nom) : 'No\u00eblie Lain\u00e9';
-  var cabinet = (DB.praticiens&&DB.praticiens[0]) ? (DB.praticiens[0].cabinet||'Cabinet d\'orthophonie') : 'Cabinet d\'orthophonie';
-  var today = new Date().toLocaleDateString('fr-FR',{day:'2-digit',month:'long',year:'numeric'});
-  var adresse = (DB.settings&&DB.settings.adresseOrtho)||'';
-  var tel = (DB.settings&&DB.settings.telCabinet)||'';
-  var email = (DB.settings&&DB.settings.emailCabinet)||'';
-  var certif = (DB.settings&&DB.settings.certifications)||'';
+  function row(label, val){
+    if(!val) return '';
+    return '<tr><td style="width:35%;font-size:11px;font-weight:600;color:#5F5E5A;padding:5px 8px;border-bottom:1px solid #F0EDE6;vertical-align:top;">'+label+'</td>'
+      +'<td style="font-size:12px;padding:5px 8px;border-bottom:1px solid #F0EDE6;vertical-align:top;">'+val+'</td></tr>';
+  }
+  function sec(titre){
+    return '<div style="font-size:10px;font-weight:700;color:#5C8B6E;text-transform:uppercase;letter-spacing:.08em;margin:16px 0 5px;padding-bottom:4px;border-bottom:1.5px solid #C8DDD4;">'+titre+'</div>';
+  }
+  function tbl(rows){ return '<table style="width:100%;border-collapse:collapse;">'+rows+'</table>'; }
+  function arr(val){ return Array.isArray(val) ? val.join(', ') : (val||''); }
+
   var age = p.dateNaissance ? Math.floor((new Date()-new Date(p.dateNaissance+'T00:00:00'))/(365.25*24*3600*1000)) : '';
   var ddn = p.dateNaissance ? (function(x){ var s=x.split('-'); return s[2]+'/'+s[1]+'/'+s[0]; })(p.dateNaissance) : '';
-  var civile = p.sexe==='F' ? 'Mme' : 'M.';
-  var prenom = p.prenom||'';
-  var nom = (p.nom||'').toUpperCase();
-  var prenomNom = civile+' '+prenom+' '+nom;
+  var today = new Date().toLocaleDateString('fr-FR',{day:'2-digit',month:'long',year:'numeric'});
 
-  function esc(s){ return escHtml(s||''); }
-  function val(k){ return d[k]||''; }
-  function arr(k){ return Array.isArray(d[k]) ? d[k] : (d[k]?[d[k]]:[]);}
-  function has(k){ return !!(d[k]&&(Array.isArray(d[k])?d[k].length:d[k])); }
+  var praticien = (DB.praticiens&&DB.praticiens[0]) ? (DB.praticiens[0].prenom+' '+DB.praticiens[0].nom) : 'No\u00eblie Lain\u00e9';
+  var cabinet = (DB.praticiens&&DB.praticiens[0]) ? (DB.praticiens[0].cabinet||'Cabinet d\'orthophonie') : 'Cabinet d\'orthophonie';
 
-  // ── HELPERS HTML ──
-  function para(txt){ return txt ? '<p>'+txt+'</p>' : ''; }
-  function titre(txt){ return '<h2>'+txt+'</h2>'; }
-  function sousTitre(txt){ return '<h3>'+txt+'</h3>'; }
-  function liste(items){ return items.length ? '<ul>'+items.map(function(i){ return '<li>'+i+'</li>'; }).join('')+'</ul>' : ''; }
-
-  function tableau(headers, rows){
-    var h = '<table><thead><tr>'+headers.map(function(h){ return '<th>'+h+'</th>'; }).join('')+'</tr></thead><tbody>';
-    rows.forEach(function(r){
-      h += '<tr>'+r.map(function(c){ return '<td>'+esc(c)+'</td>'; }).join('')+'</tr>';
-    });
-    return h + '</tbody></table>';
-  }
-
-  function tableauScores(titreTab, lignes){
-    if(!lignes.length) return '';
-    var h = '<div class="score-table-wrap"><div class="score-table-title">'+titreTab+'</div>';
-    h += '<table class="score-table"><thead><tr><th>Test</th><th>Score</th><th>Percentile / Interpr\u00e9tation</th></tr></thead><tbody>';
-    lignes.forEach(function(l){
-      h += '<tr><td>'+esc(l[0])+'</td><td style="text-align:center;">'+esc(l[1])+'</td><td>'+esc(l[2])+'</td></tr>';
-    });
-    return h + '</tbody></table></div>';
-  }
-
-  // ── CONSTRUCTION DU CORPS ──
   var body = '';
+  body += sec('\u00c9l\u00e9ments administratifs');
+  body += tbl(row('Nom - Pr\u00e9nom', d.admin_nom_prenom||p.prenom+' '+p.nom)
+    +row('Date de naissance', (d.admin_ddn||(ddn+(age?' ('+age+' ans)':''))))
+    +row('N\u00b0 SS', d.admin_nss||p.nss||'')
+    +row('Profession', d.admin_profession||a.profession||'')
+    +row('Situation familiale', d.admin_situation||a.situation_familiale||'')
+    +row('Dur\u00e9e et horaire', d.admin_duree||''));
 
-  // LETTRE D'INTRODUCTION
-  var intro = '';
-  if(val('demande') || val('plainte_actuelle')){
-    intro += '<p>Nous vous remercions de nous avoir adress\u00e9 '+prenomNom;
-    if(age) intro += ', \u00e2g\u00e9'+(p.sexe==='F'?'e':'')+' de '+age+' ans';
-    intro += ', pour un bilan orthophonique des troubles de l\'odorat et du go\u00fbt.</p>';
-    if(val('plainte_actuelle')) intro += para(val('plainte_actuelle'));
-  }
-  body += intro;
-
-  // ANAMNÈSE
-  body += titre('Anamn\u00e8se');
-
-  // Infos générales
-  var infosGen = [];
-  if(val('admin_situation')||a.situation_familiale) infosGen.push('<strong>Situation familiale</strong> : '+(val('admin_situation')||a.situation_familiale||''));
-  if(val('admin_profession')||a.profession||a.vie_pro_neuro) infosGen.push('<strong>Profession</strong> : '+(val('admin_profession')||a.profession||a.vie_pro_neuro||''));
-  if(val('admin_ddn')||ddn) infosGen.push('<strong>Date de naissance</strong> : '+(val('admin_ddn')||(ddn+(age?' ('+age+' ans)':'')))||'');
-  if(infosGen.length) body += sousTitre('Informations g\u00e9n\u00e9rales') + liste(infosGen);
-
-  // Antécédents médicaux
-  var antMed = val('antecedents_med') || (a.antecedents_neuro && a.antecedents_neuro.length ? a.antecedents_neuro.join(', ') : '');
-  if(antMed){
-    body += sousTitre('Contexte m\u00e9dical');
-    body += para(antMed);
-  }
-  if(val('traitement_actuel')||(a.traitements_neuro)){
-    body += para('<strong>Traitements en cours</strong> : '+(val('traitement_actuel')||a.traitements_neuro||''));
-  }
-  if(val('histoire_maladie')) body += para(val('histoire_maladie'));
-
-  // Antécédents ORL
-  var orl = val('antecedents_orl') || (a.orl && a.orl.length ? a.orl.join(', ') : '');
-  if(orl) body += para('<strong>Ant\u00e9c\u00e9dents ORL</strong> : '+orl);
-
-  // Alimentation
-  if(val('regime_alimentaire')||val('modif_alimentation')){
-    body += sousTitre('Alimentation');
-    if(val('regime_alimentaire')) body += para('<strong>R\u00e9gime alimentaire</strong> : '+val('regime_alimentaire'));
-    if(val('modif_alimentation')) body += para('<strong>Modifications</strong> : '+val('modif_alimentation'));
+  if(d.plainte_actuelle||d.demande){
+    body += sec('Demande / Plainte');
+    if(d.plainte_actuelle) body += '<p style="font-size:12px;line-height:1.7;margin:4px 0;"><strong>Plainte :</strong> '+d.plainte_actuelle+'</p>';
+    if(d.demande) body += '<p style="font-size:12px;line-height:1.7;margin:4px 0;"><strong>Demande :</strong> '+d.demande+'</p>';
   }
 
-  // PROFIL OLFACTIF
-  if(has('profil_enfance')||has('profil_plat_pref')||has('profil_odeurs_maison')||val('synthese_profil')){
-    body += titre('Profil olfactif');
-    var profilItems = [];
-    if(val('profil_enfance')) profilItems.push('<strong>Enfance (lieu)</strong> : '+val('profil_enfance'));
-    if(val('profil_plat_pref')) profilItems.push('<strong>Plat pr\u00e9f\u00e9r\u00e9</strong> : '+val('profil_plat_pref'));
-    if(val('profil_boisson_pref')) profilItems.push('<strong>Boisson pr\u00e9f\u00e9r\u00e9e</strong> : '+val('profil_boisson_pref'));
-    if(val('profil_deteste')) profilItems.push('<strong>D\u00e9test\u00e9(s)</strong> : '+val('profil_deteste'));
-    if(val('profil_tabac')) profilItems.push('<strong>Tabagisme</strong> : '+val('profil_tabac'));
-    if(val('profil_lieu_vie')) profilItems.push('<strong>Lieu de vie</strong> : '+val('profil_lieu_vie'));
-    if(val('profil_parfum')) profilItems.push('<strong>Parfum</strong> : '+val('profil_parfum'));
-    if(profilItems.length) body += liste(profilItems);
-    if(val('profil_odeurs_maison')) body += para('<strong>Odeurs de la maison</strong> : '+val('profil_odeurs_maison'));
-    if(val('synthese_profil')) body += para(val('synthese_profil'));
+  if(d.antecedents_med||d.antecedents_orl||d.histoire_maladie){
+    body += sec('Anamn\u00e8se');
+    body += tbl(row('Ant\u00e9c\u00e9dents m\u00e9dicaux', d.antecedents_med)
+      +row('Ant\u00e9c\u00e9dents ORL', d.antecedents_orl)
+      +row('Traitement actuel', d.traitement_actuel)
+      +row('Poids / Taille', (d.poids?d.poids+' kg':'')+(d.taille?' - '+d.taille+' m':''))
+      +row('Histoire de la maladie', d.histoire_maladie));
   }
 
-  // SOUVENIR OLFACTIF
-  if(val('souvenir_olfactif')){
-    body += titre('Souvenir olfactif');
-    body += para(val('souvenir_olfactif'));
-    if(val('souvenir_facilite')) body += para('<em>Facilit\u00e9 de l\'exercice : '+val('souvenir_facilite')+'</em>');
-    if(val('synthese_souvenir')) body += para(val('synthese_souvenir'));
+  if(d.type_bilan||d.tests_utilises){
+    body += sec('Bilan');
+    body += tbl(row('Type de bilan', arr(d.type_bilan))
+      +row('Domaines explor\u00e9s', arr(d.domaines_explores))
+      +row('Tests utilis\u00e9s', d.tests_utilises)
+      +row('Mat\u00e9riel', d.materiel_utilise));
   }
 
-  // BILAN
-  body += titre('Bilan');
-  if(arr('type_bilan').length) body += para('<strong>Type de bilan</strong> : '+arr('type_bilan').join(', '));
-  if(arr('domaines_explores').length) body += para('<strong>Domaines explor\u00e9s</strong> : '+arr('domaines_explores').join(', '));
-  if(val('tests_utilises')) body += para('<strong>Tests utilis\u00e9s</strong> : '+val('tests_utilises'));
-  if(val('materiel_utilise')) body += para('<strong>Mat\u00e9riel</strong> : '+val('materiel_utilise'));
-
-  // ÉCHELLES AUTO-ÉVALUATION
-  if(has('echelle_odeur_avant')||has('echelle_handicap_odorat')){
-    body += titre('\u00c9chelles d\'auto-\u00e9valuation');
-    var echelleRows = [];
-    if(val('echelle_odeur_avant')) echelleRows.push(['Importance odeur dans la vie d\'avant', val('echelle_odeur_avant')+'/10', '']);
-    if(val('echelle_handicap_odorat')) echelleRows.push(['V\u00e9cu du handicap olfactif', val('echelle_handicap_odorat')+'/10', '']);
-    if(val('echelle_gout_avant')) echelleRows.push(['Importance go\u00fbt dans la vie d\'avant', val('echelle_gout_avant')+'/10', '']);
-    if(val('echelle_handicap_gout')) echelleRows.push(['V\u00e9cu du handicap gustatif', val('echelle_handicap_gout')+'/10', '']);
-    body += tableauScores('Auto-\u00e9valuation', echelleRows);
+  if(d.synthese_olfaction||d.synthese_gustation){
+    body += sec('Analyse');
+    if(d.synthese_profil) body += '<p style="font-size:12px;line-height:1.7;"><strong>Profil olfactif :</strong> '+d.synthese_profil+'</p>';
+    if(d.souvenir_olfactif) body += '<p style="font-size:12px;line-height:1.7;"><strong>Souvenir olfactif :</strong> '+d.souvenir_olfactif+'</p>';
+    if(d.synthese_olfaction) body += '<p style="font-size:12px;line-height:1.7;"><strong>Olfaction :</strong> '+d.synthese_olfaction+'</p>';
+    if(d.synthese_gustation) body += '<p style="font-size:12px;line-height:1.7;"><strong>Gustation :</strong> '+d.synthese_gustation+'</p>';
   }
 
-  // OLFACTION
-  if(has('test_triangulaire')||has('synthese_olfaction')){
-    body += titre('Olfaction');
-    body += sousTitre('Discrimination pure');
-
-    // Phrase rédigée
-    if(val('test_triangulaire')){
-      var phraseTriang = 'Le test triangulaire a \u00e9t\u00e9 ';
-      phraseTriang += val('test_triangulaire')==='R\u00e9ussi' ? 'r\u00e9ussi' : 'non r\u00e9ussi';
-      phraseTriang += '.';
-      if(arr('comportement_touche').length) phraseTriang += ' On observe : '+arr('comportement_touche').join(', ')+'.';
-      body += para(phraseTriang);
-    }
-    if(val('test_pareil')&&val('test_pareil')!=='Non propos\u00e9'){
-      body += para('Test pareil/pas pareil : '+val('test_pareil')+'.');
-    }
-
-    body += sousTitre('Identification');
-    if(val('identification_resultat')){
-      var phraseIdent = 'L\'identification a \u00e9t\u00e9 '+val('identification_resultat').toLowerCase();
-      if(val('identification_images')) phraseIdent += ' avec '+val('identification_images')+' images propos\u00e9es';
-      if(val('identification_categorie')) phraseIdent += ' ('+val('identification_categorie')+')';
-      phraseIdent += '.';
-      body += para(phraseIdent);
-    }
-
-    if(val('synthese_olfaction')) body += para(val('synthese_olfaction'));
+  if(d.trouble){
+    body += sec('R\u00e9sultats');
+    body += '<p style="font-size:12px;line-height:1.7;">'+d.trouble+'</p>';
+    body += tbl(row('Distorsions', d.distorsions)
+      +row('Phantosmies / pseudogueusies', d.phantosmies)
+      +row('Fatigabilit\u00e9', d.res_fatigabilite));
   }
 
-  // GUSTATION
-  if(has('test_6_verres')||has('markley')||has('synthese_gustation')){
-    body += titre('Gustation');
-
-    if(val('test_6_verres')) body += para('<strong>Test des 6 verres</strong> : '+val('test_6_verres'));
-
-    if(val('markley')&&val('markley')!=='Non d\u00e9termin\u00e9'){
-      body += para('<strong>Classification Markley</strong> : '+val('markley')+'.');
-    }
-
-    if(val('trigeminales')){
-      body += para('<strong>Sensations trigg\u00e9minales</strong> : '+val('trigeminales').toLowerCase()
-        +(val('trigeminales_detail')?' ('+val('trigeminales_detail')+')':'')+'.');
-    }
-
-    if(val('reflexe_nauseeux')) body += para('<strong>R\u00e9flexe naus\u00e9eux</strong> : '+val('reflexe_nauseeux').toLowerCase()+'.');
-    if(val('bucco_dentaire')) body += para('<strong>\u00c9tat bucco-dentaire</strong> : '+val('bucco_dentaire'));
-    if(val('synthese_gustation')) body += para(val('synthese_gustation'));
+  if(d.diag_olfactif||d.diag_gustatif||d.conclusion){
+    body += sec('Diagnostic orthophonique');
+    body += tbl(row('Trouble olfactif', arr(d.diag_olfactif))
+      +row('Trouble gustatif', arr(d.diag_gustatif)));
+    if(d.conclusion) body += '<p style="font-size:12px;line-height:1.7;margin-top:6px;">'+d.conclusion+'</p>';
   }
 
-  // COMPORTEMENT
-  if(has('comportement')||has('fatigabilite')){
-    body += titre('Comportement du patient');
-    var compItems = [];
-    if(arr('comportement').length) compItems.push('<strong>Comportement</strong> : '+arr('comportement').join(', '));
-    if(arr('reaction_testing').length) compItems.push('<strong>R\u00e9action au testing</strong> : '+arr('reaction_testing').join(', '));
-    if(val('fatigabilite')&&val('fatigabilite')!=='Absente') compItems.push('<strong>Fatigabilit\u00e9</strong> : '+val('fatigabilite').toLowerCase());
-    if(val('saturation')&&val('saturation')!=='Absent') compItems.push('<strong>Ph\u00e9nom\u00e8ne de saturation</strong> : pr\u00e9sent');
-    if(compItems.length) body += liste(compItems);
+  if(d.objectifs_reedu){
+    body += sec('Projet th\u00e9rapeutique');
+    body += '<p style="font-size:12px;line-height:1.7;">'+d.objectifs_reedu+'</p>';
+    if(arr(d.projet_olfaction)) body += '<p style="font-size:12px;"><strong>Olfaction :</strong> '+arr(d.projet_olfaction)+'</p>';
+    if(arr(d.projet_gustation)) body += '<p style="font-size:12px;"><strong>Gustation :</strong> '+arr(d.projet_gustation)+'</p>';
   }
 
-  // RÉSULTATS
-  if(val('trouble')){
-    body += titre('R\u00e9sultats');
-    body += para(val('trouble'));
-    var resItems = [];
-    if(val('distorsions')&&val('distorsions')!=='Absentes') resItems.push('Distorsions : '+val('distorsions').toLowerCase());
-    if(val('phantosmies')&&val('phantosmies')!=='Absentes') resItems.push('Phantosmies / pseudogueusies : pr\u00e9sentes');
-    if(val('autocensure')&&val('autocensure')!=='Absent') resItems.push('Manque d\'assurance / autocensure : pr\u00e9sent');
-    if(resItems.length) body += liste(resItems);
+  if(d.preconisations_medecin||d.examens_complementaires){
+    body += sec('Pr\u00e9conisations');
+    body += tbl(row('Examens compl\u00e9mentaires', arr(d.examens_complementaires))
+      +row('Au m\u00e9decin', d.preconisations_medecin)
+      +row('\u00c0 l\'entourage', d.preconisations_entourage)
+      +row('Aux partenaires', d.preconisations_partenaires));
   }
 
-  // DIAGNOSTIC
-  if(has('diag_olfactif')||has('diag_gustatif')||val('conclusion')){
-    body += titre('Diagnostic orthophonique');
-    var diagItems = [];
-    if(arr('diag_olfactif').length) diagItems.push('<strong>Trouble olfactif</strong> : '+arr('diag_olfactif').join(', '));
-    if(arr('diag_gustatif').length) diagItems.push('<strong>Trouble gustatif</strong> : '+arr('diag_gustatif').join(', '));
-    if(diagItems.length) body += liste(diagItems);
-    if(val('conclusion')) body += para(val('conclusion'));
-  }
-
-  // PROJET THÉRAPEUTIQUE
-  if(val('objectifs_reedu')||has('projet_olfaction')||has('projet_gustation')){
-    body += titre('Projet th\u00e9rapeutique');
-    if(val('objectifs_reedu')) body += para(val('objectifs_reedu'));
-    if(arr('projet_olfaction').length) body += sousTitre('Olfaction') + liste(arr('projet_olfaction'));
-    if(arr('projet_gustation').length) body += sousTitre('Gustation') + liste(arr('projet_gustation'));
-  }
-
-  // PRÉCONISATIONS
-  if(has('examens_complementaires')||val('preconisations_medecin')){
-    body += titre('Pr\u00e9conisations');
-    if(arr('examens_complementaires').length) body += para('<strong>Examens compl\u00e9mentaires</strong> : '+arr('examens_complementaires').join(', ')+'.');
-    if(val('preconisations_medecin')) body += para(val('preconisations_medecin'));
-    if(val('preconisations_entourage')) body += para(val('preconisations_entourage'));
-    if(val('preconisations_partenaires')) body += para(val('preconisations_partenaires'));
-  }
-
-  // FORMULE DE POLITESSE
-  body += '<p style="margin-top:24px;">Je reste \u00e0 votre disposition pour tout renseignement compl\u00e9mentaire.</p>';
-  body += '<p>Bien cordialement,</p>';
-  body += '<p><strong>'+esc(praticien)+'</strong><br>Orthophoniste</p>';
-
-  // ── FENETRE ──
   var w = window.open('','_blank','width=820,height=1000');
   if(!w){ showToast('Autorisez les popups','red'); return; }
   w.document.open();
-  w.document.write('<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8"><title>'+esc(trame.nom)+'</title>');
+  w.document.write('<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8"><title>'+trame.nom+'</title>');
   w.document.write('<style>');
   w.document.write('@import url(\'https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&family=Lora:wght@500;600&display=swap\');');
   w.document.write('*{box-sizing:border-box;margin:0;padding:0;}');
-  w.document.write('body{font-family:\'DM Sans\',Arial,sans-serif;background:#F7F6F2;color:#1A1A18;font-size:12px;line-height:1.7;}');
+  w.document.write('body{font-family:\'DM Sans\',Arial,sans-serif;background:#F7F6F2;color:#1A1A18;font-size:12px;line-height:1.6;}');
   w.document.write('.page{max-width:760px;margin:24px auto;background:white;border-radius:12px;box-shadow:0 2px 20px rgba(0,0,0,.1);overflow:hidden;}');
-  w.document.write('.hdr{background:linear-gradient(135deg,#5C8B6E,#3D6B4F);color:white;padding:20px 28px;display:flex;justify-content:space-between;}');
-  w.document.write('.hdr-left{font-family:\'Lora\',serif;}');
-  w.document.write('.hdr-title{font-size:16px;font-weight:600;margin-bottom:3px;}');
+  w.document.write('.hdr{background:linear-gradient(135deg,#5C8B6E,#3D6B4F);color:white;padding:20px 28px;}');
+  w.document.write('.hdr-title{font-family:\'Lora\',serif;font-size:18px;font-weight:600;margin-bottom:4px;}');
   w.document.write('.hdr-sub{font-size:11px;opacity:.85;}');
-  w.document.write('.hdr-meta{text-align:right;font-size:11px;opacity:.85;line-height:1.8;}');
-  w.document.write('.subhdr{background:#EEF4F1;border-bottom:2px solid #C8DDD4;padding:12px 28px;}');
-  w.document.write('.subhdr h2{font-family:\'Lora\',serif;font-size:14px;color:#3D6B4F;margin-bottom:2px;}');
-  w.document.write('.subhdr-meta{font-size:11px;color:#5F5E5A;}');
-  w.document.write('.toolbar{padding:10px 28px;border-bottom:1px solid #E2E0D8;display:flex;gap:8px;background:white;}');
+  w.document.write('.hdr-meta{text-align:right;font-size:11px;opacity:.85;}');
+  w.document.write('.title-bar{background:#EEF4F1;border-bottom:2px solid #C8DDD4;padding:12px 28px;}');
+  w.document.write('.title-bar h2{font-family:\'Lora\',serif;font-size:16px;color:#3D6B4F;}');
+  w.document.write('.toolbar{padding:10px 28px;border-bottom:1px solid #E2E0D8;display:flex;gap:8px;}');
   w.document.write('.btn{padding:6px 16px;border:none;border-radius:8px;cursor:pointer;font-size:12px;font-weight:600;font-family:\'DM Sans\',sans-serif;}');
-  w.document.write('.btn-green{background:#5C8B6E;color:white;}.btn-blue{background:#185FA5;color:white;}');
-  w.document.write('.body{padding:24px 32px 40px;}');
-  w.document.write('.body p{margin-bottom:8px;line-height:1.7;}');
-  w.document.write('.body h2{font-family:\'Lora\',serif;font-size:14px;color:#3D6B4F;margin:20px 0 6px;padding-bottom:4px;border-bottom:1.5px solid #C8DDD4;}');
-  w.document.write('.body h3{font-size:12px;font-weight:700;color:#5C8B6E;margin:12px 0 4px;}');
-  w.document.write('.body ul{margin:6px 0 8px 20px;}');
-  w.document.write('.body ul li{margin-bottom:3px;line-height:1.6;}');
-  w.document.write('.score-table-wrap{margin:10px 0 14px;border:1px solid #E2E0D8;border-radius:8px;overflow:hidden;}');
-  w.document.write('.score-table-title{background:#EEF4F1;padding:6px 12px;font-size:11px;font-weight:700;color:#5C8B6E;border-bottom:1px solid #E2E0D8;}');
-  w.document.write('.score-table{width:100%;border-collapse:collapse;}');
-  w.document.write('.score-table th{background:#F7F6F2;padding:5px 10px;font-size:10px;font-weight:700;color:#5F5E5A;text-align:left;border-bottom:1px solid #E2E0D8;}');
-  w.document.write('.score-table td{padding:5px 10px;font-size:11px;border-bottom:1px solid #F0EDE6;}');
-  w.document.write('.score-table tr:last-child td{border-bottom:none;}');
+  w.document.write('.btn-green{background:#5C8B6E;color:white;}.btn-purple{background:#7C3AED;color:white;}');
+  w.document.write('.body{padding:20px 28px 32px;}');
   w.document.write('.footer{background:#F7F6F2;border-top:1px solid #E2E0D8;padding:10px 28px;display:flex;justify-content:space-between;font-size:10px;color:#9B9A95;}');
   w.document.write('@media print{body{background:white;}.page{margin:0;box-shadow:none;border-radius:0;}.toolbar{display:none;}}');
-  w.document.write('<div class="hdr-meta">');
-  if(val('destinataires')) w.document.write('Destinataire(s) : '+esc(val('destinataires'))+'<br>');
-  if(val('copies')) w.document.write('Copies : '+esc(val('copies'))+'<br>');
-  w.document.write('<br><strong>'+esc(prenomNom)+'</strong><br>');
-  if(ddn) w.document.write('Né'+(p.sexe==='F'?'e':'')+' le '+ddn+(age?' ('+age+' ans)':'')+' &middot; ');
-  if(p.nss) w.document.write('N° SS : '+esc(p.nss)+'<br>');
-  if(val('date_bilan')) w.document.write('Date du bilan : '+esc(val('date_bilan'))+'<br>');
-  w.document.write('</div>');
+  w.document.write('</style></head><body>');
   w.document.write('<div class="page">');
-  w.document.write('<div class="hdr">');
-  w.document.write('<div class="hdr-left">');
-  w.document.write('<div class="hdr-title">'+esc(cabinet)+'</div>');
-  if(adresse) w.document.write('<div class="hdr-sub">'+esc(adresse)+'</div>');
-  if(tel) w.document.write('<div class="hdr-sub">'+esc(tel)+'</div>');
-  if(email) w.document.write('<div class="hdr-sub">'+esc(email)+'</div>');
-  if(certif) w.document.write('<div class="hdr-sub" style="font-style:italic;margin-top:4px;">'+esc(certif)+'</div>');
+  w.document.write('<div class="hdr" style="display:flex;justify-content:space-between;align-items:flex-start;">');
+  w.document.write('<div><div class="hdr-title">TROUBLE DE L\'ODORAT ET DU GO\u00dbT</div><div class="hdr-sub">Bilan orthophonique</div></div>');
+  w.document.write('<div class="hdr-meta">'+today+'<br>'+cabinet+'</div>');
   w.document.write('</div>');
-  w.document.write('<div class="hdr-meta">');
-  if(val('destinataires')) w.document.write('Destinataire(s) : '+esc(val('destinataires'))+'<br>');
-  if(val('copies')) w.document.write('Copies : '+esc(val('copies'))+'<br>');
-  w.document.write('<br><strong>'+esc(prenomNom)+'</strong><br>');
-  if(ddn) w.document.write('Né'+(p.sexe==='F'?'e':'')+' le '+ddn+(age?' ('+age+' ans)':'')+' &middot; ');
-  if(p.nss) w.document.write('N° SS : '+esc(p.nss)+'<br>');
-  if(val('date_bilan')) w.document.write('Date du bilan : '+esc(val('date_bilan'))+'<br>');
-  w.document.write('</div>');
-  w.document.write('</div>');
-  w.document.write('<div class="subhdr"><h2>'+esc(trame.nom)+'</h2><div class="subhdr-meta">'+prenomNom+(ddn?' \u00b7 n\u00e9'+(p.sexe==='F'?'e':'')+' le '+ddn+' ('+age+' ans)':'')+'</div></div>');
-  w.document.write('<div class="toolbar"><button class="btn btn-green" onclick="window.print()">Imprimer</button><button class="btn btn-blue" onclick="if(window.opener)window.opener.exportWordFromPopup(document.querySelector(\'.body\').innerHTML)">Export Word</button></div>');
+  w.document.write('<div class="title-bar"><h2>'+escHtml(trame.nom)+'</h2></div>');
+  w.document.write('<div class="toolbar"><button class="btn btn-green" onclick="window.print()">Imprimer</button><button class="btn btn-purple" onclick="window.print()">Enregistrer PDF</button><button class="btn" style="background:#185FA5;color:white;" onclick="if(window.opener)window.opener.exportWordFromPopup(document.querySelector(\'.body\').innerHTML)">Export Word</button></div>');
   w.document.write('<div class="body">'+body+'</div>');
-  w.document.write('<div class="footer"><span>'+esc(praticien)+' \u00b7 Orthophoniste</span><span>'+esc(trame.nom)+' \u00b7 Confidentiel</span></div>');
+  w.document.write('<div class="footer"><span>'+praticien+' \u00b7 Orthophoniste</span><span>'+trame.nom+'</span></div>');
   w.document.write('</div></body></html>');
   w.document.close();
 }
+
 function toggleStatsCabinet(){
   var el = document.getElementById('stats-cabinet-content');
   var ch = document.getElementById('stats-chevron');
