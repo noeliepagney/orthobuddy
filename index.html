@@ -591,8 +591,8 @@ html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);colo
             <div class="agenda-period" id="agenda-period"></div>
             <button onclick="agendaNav(1)">›</button>
             <button onclick="agendaGoToday()" style="font-size:12px;padding:5px 10px;">Aujourd'hui</button>
-            <button onclick="duplicateWeek()" style="font-size:12px;padding:5px 10px;">📋 Dupliquer sem.</button>
-            <button onclick="openIcalModal()" style="font-size:12px;padding:5px 10px;">📅 Export iCal</button>
+            <button onclick="duplicateWeek()" style="font-size:12px;padding:5px 10px;"><i class="ti ti-copy"></i> Dupliquer sem.</button>
+            <button onclick="openIcalModal()" style="font-size:12px;padding:5px 10px;"><i class="ti ti-calendar-export"></i> Export iCal</button>
           </div>
           <div style="flex:1;"></div>
           <div class="view-toggle">
@@ -618,9 +618,9 @@ html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);colo
         <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:14px;">
           <div class="todo-filter-bar" style="margin-bottom:0;">
             <button class="todo-filter-btn active" id="tf-tous" onclick="setTacheFilter('tous')">Toutes</button>
-            <button class="todo-filter-btn" id="tf-patient" onclick="setTacheFilter('patient')">👥 Patients</button>
-            <button class="todo-filter-btn" id="tf-pro" onclick="setTacheFilter('pro')">💼 Pro</button>
-            <button class="todo-filter-btn" id="tf-perso" onclick="setTacheFilter('perso')">🏠 Perso</button>
+            <button class="todo-filter-btn" id="tf-patient" onclick="setTacheFilter('patient')"><i class="ti ti-users"></i> Patients</button>
+            <button class="todo-filter-btn" id="tf-pro" onclick="setTacheFilter('pro')"><i class="ti ti-briefcase"></i> Pro</button>
+            <button class="todo-filter-btn" id="tf-perso" onclick="setTacheFilter('perso')"><i class="ti ti-home"></i> Perso</button>
           </div>
           <button class="btn btn-sm btn-ghost" onclick="openActiverModele(null)">📋 Activer un modèle</button>
         </div>
@@ -4000,13 +4000,13 @@ function renderPatients(){
       </div>
       <div class="patient-body" id="pbody-${p.id}">
         <div class="patient-tabs">
-          <button class="patient-tab active" onclick="switchPTab('${p.id}','seances',this)">📋 Séances</button>
-          <button class="patient-tab" onclick="switchPTab('${p.id}','dossier',this)">📁 Dossier</button>
-          <button class="patient-tab" onclick="switchPTab('${p.id}','amo',this)">🏥 AMO</button>
-          <button class="patient-tab" onclick="switchPTab('${p.id}','taches',this)">✅ Tâches${renderTachesPatientBadge(p.id)}</button>
-          <button class="patient-tab" onclick="switchPTab('${p.id}','docs',this);renderDocsPatientTabById('${p.id}')">📎 Documents<span id="docs-badge-${p.id}" style="background:var(--bg);color:var(--text-soft);border:1px solid var(--border);border-radius:10px;font-size:9px;padding:0 5px;margin-left:4px;display:none;"></span></button>
-          <button class="patient-tab" onclick="switchPTab('${p.id}','gir',this);renderGirTab('${p.id}')">📊 Grille FNO</button>
-          <button class="patient-tab" onclick="switchPTab('${p.id}','objectifs',this);renderObjectifsTab('${p.id}')">🎯 Objectifs</button>
+          <button class="patient-tab active" onclick="switchPTab('${p.id}','seances',this)"><i class="ti ti-clipboard-list"></i> Séances</button>
+          <button class="patient-tab" onclick="switchPTab('${p.id}','dossier',this)"><i class="ti ti-folder"></i> Dossier</button>
+          <button class="patient-tab" onclick="switchPTab('${p.id}','amo',this)"><i class="ti ti-stethoscope"></i> AMO</button>
+          <button class="patient-tab" onclick="switchPTab('${p.id}','taches',this)"><i class="ti ti-checklist"></i> Tâches${renderTachesPatientBadge(p.id)}</button>
+          <button class="patient-tab" onclick="switchPTab('${p.id}','docs',this);renderDocsPatientTabById('${p.id}')"><i class="ti ti-paperclip"></i> Documents<span id="docs-badge-${p.id}" style="background:var(--bg);color:var(--text-soft);border:1px solid var(--border);border-radius:10px;font-size:9px;padding:0 5px;margin-left:4px;display:none;"></span></button>
+          <button class="patient-tab" onclick="switchPTab('${p.id}','gir',this);renderGirTab('${p.id}')"><i class="ti ti-chart-bar"></i> Grille FNO</button>
+          <button class="patient-tab" onclick="switchPTab('${p.id}','objectifs',this);renderObjectifsTab('${p.id}')"><i class="ti ti-target"></i> Objectifs</button>
         </div>
         <div class="patient-tab-content active" id="ptab-${p.id}-seances"></div>
         <div class="patient-tab-content" id="ptab-${p.id}-dossier"></div>
@@ -7298,7 +7298,7 @@ function renderMaterielUI(){
 
   // Tags dropdown avec recherche
   var selectedTags = Array.isArray(_materielTags) ? _materielTags : (_materielTags ? [_materielTags] : []);
-  var DOMAINES = ['\u270d LE LANGAGE ECRIT','\ud83d\udcac LO LANGAGE ORAL','\ud83d\udd22 COGNITION MATH','\ud83e\udde0 NEURO'];
+  var DOMAINES = ['LE LANGAGE ECRIT','LO LANGAGE ORAL','COGNITION MATH','NEURO'];
   var autresTags = allTags.filter(function(t){ return !DOMAINES.includes(t); });
 
   // 4 bullets domaines
@@ -7578,7 +7578,7 @@ function editMateriel(id){
   setTimeout(function(){_meditUpdateLabel('medit-cat-cb','medit-cat-label');document.querySelectorAll('.medit-cat-cb').forEach(function(cb){cb.onchange=function(){_meditUpdateLabel('medit-cat-cb','medit-cat-label');};});},50);
   // Tags : cases a cocher
   var _tagVals = (m&&m.tags||'').split(',').map(function(t){return t.trim();}).filter(Boolean);
-  var _DOMAINES = ["✍ LE LANGAGE ECRIT","📚 LO LANGAGE ORAL","🔢 COGNITION MATH","🧠 NEURO"];
+  var _DOMAINES = ["LE LANGAGE ECRIT","LO LANGAGE ORAL","COGNITION MATH","NEURO"];
   var _autresTags = _allTags.filter(function(t){return !_DOMAINES.includes(t);});
   function _tagBox(t){ var chk=_tagVals.includes(t)?'checked':''; return '<label style="display:flex;align-items:center;gap:5px;font-size:12px;cursor:pointer;padding:3px 8px;background:white;border:1px solid var(--border);border-radius:20px;"><input type="checkbox" class="medit-tag-cb" value="'+t.replace(/"/g,'&quot;')+'" '+chk+' style="accent-color:var(--green);">'+t+'</label>'; }
   var _domaineBoxes = _DOMAINES.map(_tagBox).join('');
