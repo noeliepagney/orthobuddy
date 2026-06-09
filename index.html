@@ -716,8 +716,8 @@ html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);colo
       </div>
 
       <div class="page" id="page-settings">
-        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text-soft);padding:0 2px 8px;margin-bottom:4px;">👤 Mon compte</div>
-        <div class="settings-section"><div class="settings-section-title" onclick="toggleSettingsSection('sec_votreprofil')"><span>👤 Votre profil</span><span class="settings-section-chevron">▼</span></div><div class="settings-section-body" id="sec_votreprofil">
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text-soft);padding:0 2px 8px;margin-bottom:4px;"><i class="ti ti-user"></i> Mon compte</div>
+        <div class="settings-section"><div class="settings-section-title" onclick="toggleSettingsSection('sec_votreprofil')"><span><i class="ti ti-user-circle"></i> Votre profil</span><span class="settings-section-chevron">▼</span></div><div class="settings-section-body" id="sec_votreprofil">
           <div class="field-grid field-grid-2" style="max-width:480px;gap:12px;">
             <div class="field"><label>Prénom</label><input type="text" id="setting-prenom-ortho" placeholder="Noëlie" style="margin-top:4px;" oninput="DB.settings.prenomOrtho=this.value;save();"></div>
             <div class="field"><label>Nom</label><input type="text" id="setting-nom-ortho" placeholder="Lainé" style="margin-top:4px;" oninput="DB.settings.nomOrtho=this.value;save();"></div>
@@ -727,9 +727,9 @@ html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);colo
           </div>
         </div>
 
-        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text-soft);padding:16px 2px 8px;margin-bottom:4px;">🌐 Mon cabinet public</div>
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text-soft);padding:16px 2px 8px;margin-bottom:4px;"><i class="ti ti-world"></i> Mon cabinet public</div>
         <!-- FORMULAIRE PUBLIC -->
-        <div class="settings-section"><div class="settings-section-title" onclick="toggleSettingsSection('sec_formulaire')"><span>📋 Mon formulaire public</span><span class="settings-section-chevron">▼</span></div><div class="settings-section-body" id="sec_formulaire">
+        <div class="settings-section"><div class="settings-section-title" onclick="toggleSettingsSection('sec_formulaire')"><span><i class="ti ti-forms"></i> Mon formulaire public</span><span class="settings-section-chevron">▼</span></div><div class="settings-section-body" id="sec_formulaire">
           <p style="font-size:12px;color:var(--text-soft);margin-bottom:14px;">Personnalisez les textes affichés sur votre formulaire de liste d'attente.</p>
           <div class="field" style="margin-bottom:12px;">
             <label>Texte d'introduction</label>
@@ -744,14 +744,14 @@ html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);colo
         </div></div>
 
         <!-- 2. NOTIFICATIONS -->
-        <div class="settings-section"><div class="settings-section-title" onclick="toggleSettingsSection('sec_notifs')"><span>🔔 Notifications</span><span class="settings-section-chevron">▼</span></div><div class="settings-section-body" id="sec_notifs">
+        <div class="settings-section"><div class="settings-section-title" onclick="toggleSettingsSection('sec_notifs')"><span><i class="ti ti-bell"></i> Notifications</span><span class="settings-section-chevron">▼</span></div><div class="settings-section-body" id="sec_notifs">
           <p style="font-size:12px;color:var(--text-soft);margin-bottom:14px;">Recevez une notification dans le navigateur quand un patient réserve ou annule un créneau.</p>
           <div id="notif-status" style="font-size:12px;margin-bottom:10px;"></div>
           <button class="btn btn-green btn-sm" onclick="activerNotifications()">🔔 Activer les notifications</button>
         </div></div>
 
         <!-- 2. SÉCURITÉ -->
-        <div class="settings-section"><div class="settings-section-title" onclick="toggleSettingsSection('sec_securite')"><span>🔐 Sécurité</span><span class="settings-section-chevron">▼</span></div><div class="settings-section-body" id="sec_securite">
+        <div class="settings-section"><div class="settings-section-title" onclick="toggleSettingsSection('sec_securite')"><span><i class="ti ti-lock"></i> Sécurité</span><span class="settings-section-chevron">▼</span></div><div class="settings-section-body" id="sec_securite">
           <div class="field-grid field-grid-2" style="max-width:400px;">
             <div class="field"><label>Nouveau mot de passe</label><input type="password" id="new-pwd" placeholder="••••••"></div>
             <div class="field"><label>Confirmer</label><input type="password" id="new-pwd2" placeholder="••••••"></div>
@@ -760,7 +760,7 @@ html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);colo
         </div></div>
 
         <!-- LIENS PUBLICS -->
-        <div class="settings-section"><div class="settings-section-title" onclick="toggleSettingsSection('sec_liens')"><span>🔗 Mes liens publics</span><span class="settings-section-chevron">▼</span></div><div class="settings-section-body" id="sec_liens">
+        <div class="settings-section"><div class="settings-section-title" onclick="toggleSettingsSection('sec_liens')"><span><i class="ti ti-link"></i> Mes liens publics</span><span class="settings-section-chevron">▼</span></div><div class="settings-section-body" id="sec_liens">
           <p style="font-size:12px;color:var(--text-soft);margin-bottom:14px;">Partagez ces liens à vos patients. Chaque lien est unique à votre compte.</p>
           <div style="margin-bottom:12px;">
             <div style="font-size:12px;font-weight:600;margin-bottom:6px;">📋 Formulaire liste d'attente</div>
@@ -771,16 +771,16 @@ html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);colo
           </div>
         </div></div>
 
-        <div id="sec-admin-label" style="display:none;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text-soft);padding:16px 2px 8px;margin-bottom:4px;">⚙️ Administration</div>
+        <div id="sec-admin-label" style="display:none;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text-soft);padding:16px 2px 8px;margin-bottom:4px;"><i class="ti ti-settings"></i> Administration</div>
         <!-- ADMIN -->
         <div id="sec-admin" style="display:none;">
-          <div class="settings-section"><div class="settings-section-title" onclick="toggleSettingsSection('sec_gestion_prat')"><span>⚙️ Gérer les praticiens</span><span class="settings-section-chevron">▼</span></div><div class="settings-section-body" id="sec_gestion_prat">
+          <div class="settings-section"><div class="settings-section-title" onclick="toggleSettingsSection('sec_gestion_prat')"><span><i class="ti ti-users-group"></i> Gérer les praticiens</span><span class="settings-section-chevron">▼</span></div><div class="settings-section-body" id="sec_gestion_prat">
             <p style="font-size:12px;color:var(--text-soft);margin-bottom:14px;">Gérez les permissions des praticiens invités.</p>
             <div id="praticiens-list-admin" style="display:flex;flex-direction:column;gap:8px;">
               <div style="font-size:12px;color:var(--text-soft);">Chargement…</div>
             </div>
           </div></div>
-          <div class="settings-section"><div class="settings-section-title" onclick="toggleSettingsSection('sec_invitation')"><span>👥 Inviter un praticien</span><span class="settings-section-chevron">▼</span></div><div class="settings-section-body" id="sec_invitation">
+          <div class="settings-section"><div class="settings-section-title" onclick="toggleSettingsSection('sec_invitation')"><span><i class="ti ti-user-plus"></i> Inviter un praticien</span><span class="settings-section-chevron">▼</span></div><div class="settings-section-body" id="sec_invitation">
             <p style="font-size:12px;color:var(--text-soft);margin-bottom:14px;">Invitez un autre orthophoniste à rejoindre OrthoBuddy. Il recevra un email avec un lien pour créer son compte.</p>
             <div class="field-grid field-grid-2" style="max-width:480px;gap:12px;">
               <div class="field"><label>Prénom</label><input type="text" id="invite-prenom" placeholder="Marie"></div>
@@ -793,14 +793,14 @@ html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);colo
         </div>
 
         <!-- DÉCONNEXION -->
-        <div class="settings-section"><div class="settings-section-title" onclick="toggleSettingsSection('sec_deconnexion')"><span>🚪 Déconnexion</span><span class="settings-section-chevron">▼</span></div><div class="settings-section-body" id="sec_deconnexion">
+        <div class="settings-section"><div class="settings-section-title" onclick="toggleSettingsSection('sec_deconnexion')"><span><i class="ti ti-logout"></i> Déconnexion</span><span class="settings-section-chevron">▼</span></div><div class="settings-section-body" id="sec_deconnexion">
           <p style="font-size:12px;color:var(--text-soft);margin-bottom:14px;">Déconnectez-vous de votre session OrthoBuddy.</p>
-          <button class="btn btn-red btn-sm" onclick="doLogout()">🚪 Se déconnecter</button>
+          <button class="btn btn-red btn-sm" onclick="doLogout()"><i class="ti ti-logout"></i> Se déconnecter</button>
         </div></div>
 
-        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text-soft);padding:16px 2px 8px;margin-bottom:4px;">💶 Facturation & tarifs</div>
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text-soft);padding:16px 2px 8px;margin-bottom:4px;"><i class="ti ti-coin-euro"></i> Facturation & tarifs</div>
         <!-- 3. CLÉS & TARIFS AMO -->
-        <div class="settings-section"><div class="settings-section-title" onclick="toggleSettingsSection('sec_clesdecotationta')"><span>💶 Clés de cotation & tarifs AMO</span><span class="settings-section-chevron">▼</span></div><div class="settings-section-body" id="sec_clesdecotationta">
+        <div class="settings-section"><div class="settings-section-title" onclick="toggleSettingsSection('sec_clesdecotationta')"><span><i class="ti ti-coin-euro"></i> Clés de cotation & tarifs AMO</span><span class="settings-section-chevron">▼</span></div><div class="settings-section-body" id="sec_clesdecotationta">
           <p style="font-size:12px;color:var(--text-soft);margin-bottom:14px;">Ces clés sont fixées par la NGAP. Modifiez-les uniquement en cas de revalorisation conventionnelle, et renseignez la date d'effet pour que les résultats soient calculés correctement.</p>
           <div class="field-grid field-grid-2" style="max-width:560px;gap:12px;">
             <div class="field">
@@ -823,7 +823,7 @@ html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);colo
         </div>
 
         <!-- 4. DÉPLACEMENTS -->
-        <div class="settings-section"><div class="settings-section-title" onclick="toggleSettingsSection('sec_indemnitesdedepl')"><span>🚗 Indemnités de déplacement</span><span class="settings-section-chevron">▼</span></div><div class="settings-section-body" id="sec_indemnitesdedepl">
+        <div class="settings-section"><div class="settings-section-title" onclick="toggleSettingsSection('sec_indemnitesdedepl')"><span><i class="ti ti-car"></i> Indemnités de déplacement</span><span class="settings-section-chevron">▼</span></div><div class="settings-section-body" id="sec_indemnitesdedepl">
           <div class="field-grid field-grid-2" style="max-width:480px;gap:12px;">
             <div class="field">
               <label>Zone géographique</label>
@@ -843,7 +843,7 @@ html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);colo
         </div>
 
         <!-- 5. FORFAITS & MONTANTS -->
-        <div class="settings-section"><div class="settings-section-title" onclick="toggleSettingsSection('sec_forfaitsmontants')"><span>💶 Forfaits & montants</span><span class="settings-section-chevron">▼</span></div><div class="settings-section-body" id="sec_forfaitsmontants">
+        <div class="settings-section"><div class="settings-section-title" onclick="toggleSettingsSection('sec_forfaitsmontants')"><span><i class="ti ti-receipt"></i> Forfaits & montants</span><span class="settings-section-chevron">▼</span></div><div class="settings-section-body" id="sec_forfaitsmontants">
           <p style="font-size:12px;color:var(--text-soft);margin-bottom:6px;">Montants réglementaires modifiables. Renseignez une date d'effet pour tout changement tarifaire.</p>
           <div class="field" style="max-width:300px;margin-bottom:12px;">
             <label style="font-size:11px;">📅 Date d'effet des modifications de forfaits</label>
@@ -854,7 +854,7 @@ html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);colo
         </div></div>
 
         <!-- 6. FAMI -->
-        <div class="settings-section"><div class="settings-section-title" onclick="toggleSettingsSection('sec_fami')"><span>💻 FAMI — Forfait informatisation cabinet</span><span class="settings-section-chevron">▼</span></div><div class="settings-section-body" id="sec_fami">
+        <div class="settings-section"><div class="settings-section-title" onclick="toggleSettingsSection('sec_fami')"><span><i class="ti ti-device-laptop"></i> FAMI — Forfait informatisation cabinet</span><span class="settings-section-chevron">▼</span></div><div class="settings-section-body" id="sec_fami">
           <p style="font-size:12px;color:var(--text-soft);margin-bottom:14px;">Aide annuelle déclarable sur <strong>amelipro.fr</strong> entre mi-janvier et début mars.</p>
           <div id="fami-settings-content"></div>
           <div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;">
@@ -864,7 +864,7 @@ html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);colo
         </div></div>
 
         <!-- 7. COLLABORATION -->
-        <div class="settings-section"><div class="settings-section-title" onclick="toggleSettingsSection('sec_collaborationret')"><span>🤝 Collaboration / Rétrocession</span><span class="settings-section-chevron">▼</span></div><div class="settings-section-body" id="sec_collaborationret">
+        <div class="settings-section"><div class="settings-section-title" onclick="toggleSettingsSection('sec_collaborationret')"><span><i class="ti ti-handshake"></i> Collaboration / Rétrocession</span><span class="settings-section-chevron">▼</span></div><div class="settings-section-body" id="sec_collaborationret">
           <p style="font-size:12px;color:var(--text-soft);margin-bottom:14px;">Les séances et forfaits marqués "Collaboration" seront déduits du taux configuré dans les résultats.</p>
           <div class="field-grid field-grid-2" style="gap:12px;max-width:480px;">
             <div class="field">
@@ -882,9 +882,9 @@ html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);colo
           </div>
         </div></div>
 
-        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text-soft);padding:16px 2px 8px;margin-bottom:4px;">🗂️ Organisation clinique</div>
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text-soft);padding:16px 2px 8px;margin-bottom:4px;"><i class="ti ti-folders"></i> Organisation clinique</div>
         <!-- 8. PARCOURS DE SOINS -->
-        <div class="settings-section"><div class="settings-section-title" onclick="toggleSettingsSection('sec_parcoursdesoins')"><span>🗂️ Parcours de soins</span><span class="settings-section-chevron">▼</span></div><div class="settings-section-body" id="sec_parcoursdesoins">
+        <div class="settings-section"><div class="settings-section-title" onclick="toggleSettingsSection('sec_parcoursdesoins')"><span><i class="ti ti-folders"></i> Parcours de soins</span><span class="settings-section-chevron">▼</span></div><div class="settings-section-body" id="sec_parcoursdesoins">
           <p style="font-size:12px;color:var(--text-soft);margin-bottom:12px;">Modifiez les parcours (nom, emoji, actes AMO bilan et rééducation).</p>
           <div id="parcours-settings-list"></div>
           <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;">
@@ -894,7 +894,7 @@ html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);colo
         </div>
 
         <!-- 9. TÂCHES & RAPPELS -->
-        <div class="settings-section"><div class="settings-section-title" onclick="toggleSettingsSection('sec_tachesrappels')"><span>✅ Tâches &amp; rappels</span><span class="settings-section-chevron">▼</span></div><div class="settings-section-body" id="sec_tachesrappels">
+        <div class="settings-section"><div class="settings-section-title" onclick="toggleSettingsSection('sec_tachesrappels')"><span><i class="ti ti-checklist"></i> Tâches &amp; rappels</span><span class="settings-section-chevron">▼</span></div><div class="settings-section-body" id="sec_tachesrappels">
           <div class="field" style="max-width:280px;margin-bottom:14px;">
             <label>Délai d'urgence (jours avant échéance)</label>
             <input type="number" id="setting-urgence-days" min="0" max="30" value="2" style="width:70px;margin-top:4px;" oninput="DB.settings.urgenceDays=parseInt(this.value)||2;save();updateTachesBadge();">
@@ -916,9 +916,9 @@ html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);colo
           <button class="btn btn-sm" style="margin-top:10px;" onclick="openModeleModal()">+ Nouveau modèle</button>
         </div></div>
 
-        <div id="sec-admin-env" style="display:none;"><div class="settings-section"><div class="settings-section-title" onclick="toggleSettingsSection('sec_environnement')"><span>🧪 Environnement (test / production)</span><span class="settings-section-chevron">▼</span></div><div class="settings-section-body" id="sec_environnement"><div style="margin-bottom:12px;font-size:13px;color:var(--text-soft);">Bascule entre la base de données de test et la base de production. En mode test, aucune donnée réelle n'est affectée.</div><div style="display:flex;align-items:center;gap:12px;"><button id="btn-env-prod" class="btn btn-sm" onclick="switchEnv('prod')" style="min-width:120px;">🟢 Production</button><button id="btn-env-test" class="btn btn-sm" onclick="switchEnv('test')" style="min-width:120px;">🧪 Test</button><span id="env-current-label" style="font-size:13px;font-weight:600;"></span></div></div></div></div>
-        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text-soft);padding:16px 2px 8px;margin-bottom:4px;">💾 Données</div>
-        <div class="settings-section"><div class="settings-section-title" onclick="toggleSettingsSection('sec_donnees')"><span>💾 Données</span><span class="settings-section-chevron">▼</span></div><div class="settings-section-body" id="sec_donnees">
+        <div id="sec-admin-env" style="display:none;"><div class="settings-section"><div class="settings-section-title" onclick="toggleSettingsSection('sec_environnement')"><span><i class="ti ti-flask"></i> Environnement (test / production)</span><span class="settings-section-chevron">▼</span></div><div class="settings-section-body" id="sec_environnement"><div style="margin-bottom:12px;font-size:13px;color:var(--text-soft);">Bascule entre la base de données de test et la base de production. En mode test, aucune donnée réelle n'est affectée.</div><div style="display:flex;align-items:center;gap:12px;"><button id="btn-env-prod" class="btn btn-sm" onclick="switchEnv('prod')" style="min-width:120px;">🟢 Production</button><button id="btn-env-test" class="btn btn-sm" onclick="switchEnv('test')" style="min-width:120px;">🧪 Test</button><span id="env-current-label" style="font-size:13px;font-weight:600;"></span></div></div></div></div>
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text-soft);padding:16px 2px 8px;margin-bottom:4px;"><i class="ti ti-database"></i> Données</div>
+        <div class="settings-section"><div class="settings-section-title" onclick="toggleSettingsSection('sec_donnees')"><span><i class="ti ti-database"></i> Données</span><span class="settings-section-chevron">▼</span></div><div class="settings-section-body" id="sec_donnees">
           <div style="display:flex;gap:8px;flex-wrap:wrap;">
             <button class="btn btn-sm" onclick="exportData()">📥 Exporter (JSON)</button>
             <label class="btn btn-sm" style="cursor:pointer;">📤 Importer<input type="file" accept=".json" style="display:none;" onchange="importData(event)"></label>
