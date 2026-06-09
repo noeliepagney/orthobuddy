@@ -8753,6 +8753,8 @@ function gererLienPortail(pid){
     + '<div id="portail-lien-display" style="background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px 12px;font-size:12px;font-family:monospace;word-break:break-all;margin-bottom:12px;">'+escHtml(lien)+'</div>'
     + '<div style="display:flex;gap:8px;">'
     + '<button class="btn btn-green" id="btn-copier-portail">📋 Copier le lien</button>'
+    + '<div style="font-size:12px;color:var(--text-soft);margin-bottom:8px;"><i class="ti ti-mail" style="color:#185FA5;"></i> Envoi vers : <strong>'+(p.email||'Aucun email renseigné')+'</strong></div>'
+    + '<button class="btn" style="background:#185FA5;color:white;"'+(p.email?'':' disabled title="Aucun email renseigné"')+' id="btn-email-portail"><i class="ti ti-mail"></i> Envoyer par email</button>'
     + '<button class="btn btn-ghost" id="btn-regenerer-portail">↩️ Regénérer</button>'
     + '</div>'
     + '</div>'
@@ -8770,6 +8772,35 @@ function gererLienPortail(pid){
       gererLienPortail(pid);
     }
   };
+  document.getElementById('btn-email-portail').onclick = function(){
+    envoyerEmailPortail(pid, lien);
+  };
+}
+
+async function envoyerEmailPortail(pid, lien){
+  var p = DB.patients.find(function(x){ return x.id===pid; });
+  if(!p) return;
+  var email = p.email||p.mail||'';
+  if(!email){ showToast('Pas d\'email renseigné pour ce patient','red'); return; }
+  var praticien = DB.praticiens&&DB.praticiens[0] ? (DB.praticiens[0].prenom+' '+DB.praticiens[0].nom+', orthophoniste') : 'Votre orthophoniste';
+  var sujet = 'Votre espace patient OrthoBuddy';
+  var corps = 'Bonjour '+p.prenom+',' + '\n\n' + 'Je vous invite \u00e0 acc\u00e9der \u00e0 votre espace patient OrthoBuddy via le lien suivant :' + '\n\n' + lien + '\n\n' + 'Vous y retrouverez vos rendez-vous et pourrez me contacter.' + '\n\n' + 'Cordialement,' + '\n' + praticien;
+  var btn = document.getElementById('btn-email-portail');
+  if(btn){ btn.disabled=true; btn.textContent='Envoi...'; }
+  try {
+    var token = getSbToken();
+    var r = await fetch('https://'+SB_URL.split('//')[1]+'/functions/v1/smooth-action', {
+      method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},
+      body: JSON.stringify({action:'send_email', to:email, subject:sujet, text:corps})
+    });
+    var d = await r.json();
+    if(d.ok||d.id||r.ok){ showToast('✅ Email envoyé à '+email); }
+    else { showToast('Erreur envoi : '+(d.error||'inconnue'),'red'); }
+  } catch(e) {
+    showToast('Erreur : '+e.message,'red');
+  }
+  if(btn){ btn.disabled=false; btn.innerHTML='<i class="ti ti-mail"></i> Envoyer par email'; }
 }
 
 
