@@ -16019,7 +16019,7 @@ function genererDocumentTrame(pid, trameId){
   var certif = (DB.settings&&DB.settings.certifications)||'';
   var age = p.dateNaissance ? Math.floor((new Date()-new Date(p.dateNaissance+'T00:00:00'))/(365.25*24*3600*1000)) : '';
   var ddn = p.dateNaissance ? (function(x){ var s=x.split('-'); return s[2]+'/'+s[1]+'/'+s[0]; })(p.dateNaissance) : '';
-  var civile = p.sexe==='F' ? 'Mme' : 'M.';
+  var civile = p.sexe==='F' ? 'Mme' : (p.sexe==='M' ? 'M.' : '');
   var prenom = p.prenom||'';
   var nom = (p.nom||'').toUpperCase();
   var prenomNom = civile+' '+prenom+' '+nom;
@@ -16304,7 +16304,11 @@ function genererDocumentTrame(pid, trameId){
   if(val('date_bilan')) w.document.write('Date du bilan : '+esc(val('date_bilan'))+'<br>');
   w.document.write('</div>');
   w.document.write('</div>');
-  w.document.write('<div class="subhdr"><h2>'+esc(trame.nom)+'</h2><div class="subhdr-meta">'+prenomNom+(ddn?' \u00b7 n\u00e9'+(p.sexe==='F'?'e':'')+' le '+ddn+' ('+age+' ans)':'')+'</div></div>');
+  w.document.write('<div class="subhdr">');
+  w.document.write('<div style="font-size:10px;font-weight:700;color:#5C8B6E;text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px;">BILAN ORTHOPHONIQUE — TROUBLE DE L\'ODORAT ET DU GOÛT</div>');
+  w.document.write('<h2>'+escHtml(trame.nom)+'</h2>');
+  w.document.write('<div class="subhdr-meta">'+prenomNom+(ddn?' · né'+(p.sexe==='F'?'e':'')+' le '+ddn+(age?' ('+age+' ans)':''):'')+'</div>');
+  w.document.write('</div>');
   w.document.write('<div class="toolbar"><button class="btn btn-green" onclick="window.print()">Imprimer</button><button class="btn btn-blue" onclick="if(window.opener)window.opener.exportWordFromPopup(document.querySelector(\'.body\').innerHTML)">Export Word</button></div>');
   w.document.write('<div class="body">'+body+'</div>');
   w.document.write('<div class="footer"><span>'+esc(praticien)+' \u00b7 Orthophoniste</span><span>'+esc(trame.nom)+' \u00b7 Confidentiel</span></div>');
