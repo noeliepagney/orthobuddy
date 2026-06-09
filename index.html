@@ -15757,7 +15757,6 @@ function ouvrirTrameOdoratGout(pid, trameId){
   var d = trame.data;
   var a = p.anamnese||{};
 
-  // Infos patient auto-remplies
   var age = p.dateNaissance ? Math.floor((new Date()-new Date(p.dateNaissance+'T00:00:00'))/(365.25*24*3600*1000)) : '';
   var ddn = p.dateNaissance ? (function(x){ var s=x.split('-'); return s[2]+'/'+s[1]+'/'+s[0]; })(p.dateNaissance) : '';
 
@@ -15802,6 +15801,10 @@ function ouvrirTrameOdoratGout(pid, trameId){
       +'</div>';
   }
 
+  function note(txt){
+    return '<div style="font-size:11px;color:#9B9A95;font-style:italic;background:#FAFAF8;border-left:3px solid #C8DDD4;padding:6px 10px;margin-bottom:10px;border-radius:0 4px 4px 0;line-height:1.6;">'+txt+'</div>';
+  }
+
   var existing = document.getElementById('modal-trame-'+trameId);
   if(existing) existing.remove();
 
@@ -15816,21 +15819,17 @@ function ouvrirTrameOdoratGout(pid, trameId){
   h += '<div style="display:flex;align-items:center;gap:8px;">';
   h += '<button class="btn btn-green btn-sm" onclick="sauvegarderTrame(\''+pid+'\',\''+trameId+'\')"><i class="ti ti-device-floppy"></i> Sauvegarder</button>';
   h += '<button class="btn btn-sm" style="background:#7C3AED;color:white;" onclick="genererDocumentTrame(\''+pid+'\',\''+trameId+'\')"><i class="ti ti-printer"></i> G\u00e9n\u00e9rer</button>';
-  h += '<button class="btn btn-sm" style="background:#185FA5;color:white;" onclick="exportWordTrame(\''+pid+'\',\''+trameId+'\')"><i class="ti ti-file-word"></i> Export Word</button>';
   h += '<button class="modal-close" onclick="document.getElementById(\'modal-trame-'+trameId+'\').remove()"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>';
   h += '</div></div>';
 
   h += '<div style="padding:16px;" id="trame-container-'+trameId+'">';
 
-  // 1. ÉLÉMENTS ADMINISTRATIFS
+  // 1. ELEMENTS ADMINISTRATIFS
   var sAdmin = '';
+  sAdmin += tField('Date du bilan','date_bilan','text');
+  sAdmin += tField('Destinataire(s)','destinataires','text',null,'Dr Martin');
+  sAdmin += tField('Copies','copies','text',null,'Dr Dupont, Dr Lefebvre');
   sAdmin += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">';
-  sAdmin += tField('Date du bilan','date_bilan','text',null,'');
-  sAdmin += tField('Destinataire(s) (ex: Dr Martin)','destinataires','text',null,'');
-  sAdmin += tField('Copies (ex: Dr Dupont, Dr Lefebvre)','copies','text',null,'');
-  sAdmin += tField('Date du bilan','date_bilan','text',null,'');
-  sAdmin += tField('Destinataire(s) (ex: Dr Martin)','destinataires','text',null,'');
-  sAdmin += tField('Copies (ex: Dr Dupont, Dr Lefebvre)','copies','text',null,'');
   sAdmin += '<div>'+tField('Nom - Pr\u00e9nom','admin_nom_prenom','text',null,p.prenom+' '+p.nom)+'</div>';
   sAdmin += '<div>'+tField('Date de naissance (age)','admin_ddn','text',null,ddn+(age?' ('+age+' ans)':''))+'</div>';
   sAdmin += '<div>'+tField('N\u00b0 s\u00e9curit\u00e9 sociale','admin_nss','text',null,p.nss||'')+'</div>';
@@ -15846,14 +15845,14 @@ function ouvrirTrameOdoratGout(pid, trameId){
   sPlainte += tField('Demande','demande','textarea');
   h += tSection('Demande / Plainte','ti-message-question',sPlainte);
 
-  // 3. ANAMNÈSE
+  // 3. ANAMNESE
   var sAnam = '';
-  sAnam += tField('Ant\u00e9c\u00e9dents m\u00e9dicaux r\u00e9cents/anciens','antecedents_med','textarea', null);
-  if(a.antecedents_neuro && a.antecedents_neuro.length) sAnam += '<div style="font-size:11px;color:#5C8B6E;margin:-6px 0 8px;">Depuis l\'anamn\u00e8se : '+a.antecedents_neuro.join(', ')+'</div>';
-  sAnam += tField('Ant\u00e9c\u00e9dents ORL','antecedents_orl','textarea');
-  if(a.orl && a.orl.length) sAnam += '<div style="font-size:11px;color:#5C8B6E;margin:-6px 0 8px;">Depuis l\'anamn\u00e8se : '+a.orl.join(', ')+'</div>';
+  sAnam += tField('Ant\u00e9c\u00e9dents m\u00e9dicaux r\u00e9cents/anciens','antecedents_med','textarea');
+  if(a.antecedents_neuro && a.antecedents_neuro.length) sAnam += '<div style="font-size:11px;color:#5C8B6E;margin:-6px 0 8px;"><i class="ti ti-link"></i> Depuis l\'anamn\u00e8se : '+a.antecedents_neuro.join(', ')+'</div>';
+  sAnam += tField('Ant\u00e9c\u00e9dents ORL r\u00e9cents/anciens','antecedents_orl','textarea');
+  if(a.orl && a.orl.length) sAnam += '<div style="font-size:11px;color:#5C8B6E;margin:-6px 0 8px;"><i class="ti ti-link"></i> Depuis l\'anamn\u00e8se : '+a.orl.join(', ')+'</div>';
   sAnam += tField('Traitement m\u00e9dical actuel et iatrog\u00e9nie','traitement_actuel','textarea');
-  if(a.traitements_neuro) sAnam += '<div style="font-size:11px;color:#5C8B6E;margin:-6px 0 8px;">Depuis l\'anamn\u00e8se : '+a.traitements_neuro+'</div>';
+  if(a.traitements_neuro) sAnam += '<div style="font-size:11px;color:#5C8B6E;margin:-6px 0 8px;"><i class="ti ti-link"></i> Depuis l\'anamn\u00e8se : '+a.traitements_neuro+'</div>';
   sAnam += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">';
   sAnam += '<div>'+tField('Poids (kg)','poids','text')+'</div>';
   sAnam += '<div>'+tField('Taille (m)','taille','text')+'</div>';
@@ -15865,19 +15864,21 @@ function ouvrirTrameOdoratGout(pid, trameId){
 
   // 4. BILAN
   var sBilan = '';
+  sBilan += note('L\'orthophoniste n\'est pas ORL. L\'\u00e9valuation vise l\'olfaction et non pas l\'odorat, la gustation et non pas le go\u00fbt. C\'est le bilan qui peut \u00eatre le plus biais\u00e9 de tous nos bilans ! Travailler avec des flacons incolores ou non visibles. Noter pour chaque \u00e9preuve : marque, pr\u00e9sentation (liquide, solide, spray), nombre de pulv\u00e9risations.');
   sBilan += tField('Type de bilan','type_bilan','checks',['Bilan d\'investigation','Bilan classique','Bilan de renouvellement']);
   sBilan += tField('Domaine(s) explor\u00e9(s)','domaines_explores','checks',['Olfaction','Gustation','Sensations trigg\u00e9minales']);
   sBilan += tField('Nom des tests utilis\u00e9s','tests_utilises','textarea');
-  sBilan += tField('Mat\u00e9riel utilis\u00e9 (marque, pr\u00e9sentation)','materiel_utilise','textarea');
+  sBilan += tField('Mat\u00e9riel utilis\u00e9 (marque, pr\u00e9sentation, nb pulv\u00e9risations)','materiel_utilise','textarea');
   h += tSection('Bilan','ti-clipboard-list',sBilan);
 
-  // 5. ÉCHELLES D'AUTO-ÉVALUATION
+  // 5. ECHELLES AUTO-EVALUATION
   var sEchelles = '';
+  sEchelles += note('Inspir\u00e9es des \u00e9chelles d\'auto-\u00e9valuation de la douleur : de 1 \u00e0 10, 1 = peu de retentissement, 10 = fort retentissement.');
   sEchelles += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">';
   sEchelles += '<div>'+tField('Importance odeur dans la vie d\'avant (1-10)','echelle_odeur_avant','text')+'</div>';
-  sEchelles += '<div>'+tField('V\u00e9cu du handicap aujourd\'hui (1-10)','echelle_handicap_odorat','text')+'</div>';
+  sEchelles += '<div>'+tField('V\u00e9cu du handicap olfactif aujourd\'hui (1-10)','echelle_handicap_odorat','text')+'</div>';
   sEchelles += '<div>'+tField('Importance go\u00fbt dans la vie d\'avant (1-10)','echelle_gout_avant','text')+'</div>';
-  sEchelles += '<div>'+tField('V\u00e9cu du handicap go\u00fbt (1-10)','echelle_handicap_gout','text')+'</div>';
+  sEchelles += '<div>'+tField('V\u00e9cu du handicap gustatif aujourd\'hui (1-10)','echelle_handicap_gout','text')+'</div>';
   sEchelles += '</div>';
   h += tSection('\u00c9chelles d\'auto-\u00e9valuation','ti-chart-bar',sEchelles);
 
@@ -15888,22 +15889,23 @@ function ouvrirTrameOdoratGout(pid, trameId){
   sProfil += '<div>'+tField('Plat pr\u00e9f\u00e9r\u00e9','profil_plat_pref','text')+'</div>';
   sProfil += '<div>'+tField('Boisson pr\u00e9f\u00e9r\u00e9e','profil_boisson_pref','text')+'</div>';
   sProfil += '<div>'+tField('Plat/boisson d\u00e9test\u00e9(s)','profil_deteste','text')+'</div>';
-  sProfil += '<div>'+tField('Tabagisme','profil_tabac','text')+'</div>';
+  sProfil += '<div>'+tField('Tabagisme','profil_tabac','text',null,'Actif / Passif / Non')+'</div>';
   sProfil += '<div>'+tField('Animaux','profil_animaux','text')+'</div>';
   sProfil += '</div>';
   sProfil += tField('Lieu de vie actuel','profil_lieu_vie','text');
-  sProfil += tField('Odeurs de la maison (produits d\'entretien, chiminée, fleurs...)','profil_odeurs_maison','textarea',null,null,'Produits d\'entretien (marques et parfums), chiminée en fonction ou décorative ?, fleurs coupées/séchées...');
+  sProfil += tField('Odeurs de la maison','profil_odeurs_maison','textarea',null,null,'Produits d\'entretien (marques et parfums) ? Chemin\u00e9e en fonction ou d\u00e9corative ? Fleurs coup\u00e9es ? Fleurs s\u00e9ch\u00e9es ?');
   sProfil += tField('Produits d\'hygi\u00e8ne (marques et parfums)','profil_hygiene','textarea');
   sProfil += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">';
-  sProfil += '<div>'+tField('Parfum du patient','profil_parfum','text')+'</div>';
-  sProfil += '<div>'+tField('Parfum du/de la conjoint(e)','profil_parfum_conjoint','text')+'</div>';
+  sProfil += '<div>'+tField('Parfum du/de la patient(e)','profil_parfum','text')+'</div>';
+  sProfil += '<div>'+tField('Parfum du/de la conjoint(e)','profil_parfum_conjoint','text',null,null,'Chercher les pyramides olfactives : notes de c\u0153ur et de fond.')+'</div>';
   sProfil += '</div>';
   sProfil += tField('Synth\u00e8se profil olfactif','synthese_profil','textarea');
   h += tSection('Profil olfactif','ti-wind',sProfil);
 
   // 7. SOUVENIR OLFACTIF
   var sSouvenir = '';
-  sSouvenir += tField('Souvenir olfactif (positif et/ou négatif)','souvenir_olfactif','textarea',null,null,'Consigne : Pouvez-vous me raconter un souvenir lié à une odeur ? Hédonique positif et/ou négatif. Noter si l\'exercice est aisé ou difficile.');
+  sSouvenir += note('Consigne : Pouvez-vous me raconter un souvenir li\u00e9 directement \u00e0 une odeur ? Ce peut \u00eatre une odeur h\u00e9donique positive et/ou h\u00e9donique n\u00e9gative. Noter si cet exercice est ais\u00e9 pour le patient ou difficile.');
+  sSouvenir += tField('Souvenir olfactif','souvenir_olfactif','textarea');
   sSouvenir += tField('Facilit\u00e9 de l\'exercice pour le patient','souvenir_facilite','radios',['Ais\u00e9','Difficile','Impossible']);
   sSouvenir += tField('Synth\u00e8se','synthese_souvenir','textarea');
   h += tSection('Souvenir olfactif','ti-bulb',sSouvenir);
@@ -15911,10 +15913,15 @@ function ouvrirTrameOdoratGout(pid, trameId){
   // 8. OLFACTION
   var sOlf = '';
   sOlf += '<div style="font-size:12px;font-weight:700;color:#5C8B6E;margin-bottom:8px;">Discrimination pure</div>';
-  sOlf += tField('Test triangulaire — résultat','test_triangulaire','radios',['Réussi','Non réussi'],null,'3 touches dont 1 leurre (touche dans eau). Guider : fort/faible ? familier ? hédonique ? 1er mot qui vient ? Si le patient sent une odeur sur le leurre → perturbation importante.');
+  sOlf += tField('Test triangulaire \u2014 r\u00e9sultat','test_triangulaire','radios',['R\u00e9ussi','Non r\u00e9ussi'],null,
+    'Proposer 3 touches dont 1 leurre (touche tremp\u00e9e dans eau). Consigne : sentez chaque touche, concentrez-vous sur votre ressenti. Guider : fort/faible ? (d\u00e9tection) familier ? qui pla\u00eet ? (h\u00e9donique) fugace ou stable ? 1er mot qui vient ? '
+    +'Exemple : T1 COCO "je d\u00e9tecte, fleuri puis sucr\u00e9, odeur stable, h\u00e9donique positif" | T2 LEURRE "odeur qui s\'\u00e9vanouit, sensation que la touche n\'a pas de parfum" | T3 CLOU DE GIROFLE "ah si \u00e7a me fait penser au clou de girofle !"'
+    +' Si le patient sent une odeur sur le leurre \u2192 perturbation importante du syst\u00e8me olfactif.');
   sOlf += tField('Comportement sur touche','comportement_touche','checks',['Adh\u00e9sif','Persistant','Perturbation du syst\u00e8me olfactif','Respectueux du cycle nasal']);
-  sOlf += tField('Test pareil/pas pareil — niveau','test_pareil','radios',['Non propos\u00e9','R\u00e9ussi niveau 1','R\u00e9ussi niveau 2','R\u00e9ussi niveau 3','Non r\u00e9ussi']);
+  sOlf += tField('Test pareil/pas pareil \u2014 niveau','test_pareil','radios',['Non propos\u00e9','R\u00e9ussi niveau 1','R\u00e9ussi niveau 2','R\u00e9ussi niveau 3','Non r\u00e9ussi'],null,
+    'Niv.1 : 2 odeurs oppos\u00e9es (familles diff\u00e9rentes). Niv.2 : 2 odeurs diff\u00e9rentes m\u00eame famille. Niv.3 : 2 odeurs identiques. Consigne : identiques ou diff\u00e9rentes ?');
   sOlf += '<div style="font-size:12px;font-weight:700;color:#5C8B6E;margin:12px 0 8px;">Identification</div>';
+  sOlf += note('1 odorant + images (2 \u00e0 6 selon le trouble). Consigne : sentez la touche et posez-la sur l\'image correspondante. Attention aux repr\u00e9sentations mentales : pr\u00e9voir plusieurs dessins pour une m\u00eame odeur !');
   sOlf += tField('Nombre d\'images propos\u00e9es','identification_images','radios',['2','3','4','5','6']);
   sOlf += tField('R\u00e9sultat identification','identification_resultat','radios',['R\u00e9ussi','Non r\u00e9ussi']);
   sOlf += tField('Cat\u00e9gorie du stimulus olfactif','identification_categorie','text');
@@ -15923,11 +15930,14 @@ function ouvrirTrameOdoratGout(pid, trameId){
 
   // 9. GUSTATION
   var sGust = '';
-  sGust += tField('Test 6 verres — résultats','test_6_verres','textarea',null,null,'Protocole V. LE LAN. 6 verres incolores numérotés. Décrire les sensations sans nommer les saveurs. Le leurre et l\'Umami informent sur le trouble (agueúsie ou dysguéusie).');
-  sGust += tField('Classification Markley (type de dysgueusie)','markley','radios',['Type I','Type II','Type III','Type IV','Non d\u00e9termin\u00e9']);
-  sGust += tField('Sensations trigg\u00e9minales','trigeminales','radios',['Pr\u00e9serv\u00e9es','Alt\u00e9r\u00e9es']);
-  sGust += tField('Hypo ou hypersensibilit\u00e9 (laquelle ?)','trigeminales_detail','text');
-  sGust += tField('R\u00e9flexe naus\u00e9eux','reflexe_nauseeux','radios',['Normal','Ant\u00e9rioris\u00e9']);
+  sGust += tField('Test 6 verres \u2014 r\u00e9sultats','test_6_verres','textarea',null,null,
+    'Protocole V. LE LAN. 6 verres d\'eau incolores num\u00e9rot\u00e9s 1\u00e06. Consigne : gorg\u00e9e de chaque verre dans l\'ordre, d\u00e9crivez vos sensations. En aucun cas parler de saveurs ! Le leurre et l\'Umami informent sur le trouble (ague\u00fasie ou dysgu\u00e9usie). Noter les r\u00e9ponses exactes du patient.');
+  sGust += tField('Classification Markley (type de dysgu\u00e9usie)','markley','radios',['Type I','Type II','Type III','Type IV','Non d\u00e9termin\u00e9'],null,
+    'Interroger sur 6 cat\u00e9gories d\'aliments pour obtenir le type (I \u00e0 IV). Un patient peut r\u00e9ussir le test 6 verres et pr\u00e9senter une dysgu\u00e9usie de type IV !');
+  sGust += tField('Sensations trigg\u00e9minales','trigeminales','radios',['Pr\u00e9serv\u00e9es','Alt\u00e9r\u00e9es'],null,
+    'Hypo ou hypersensibilit\u00e9 \u00e0 l\'une des cinq sensations trigg\u00e9minales ?');
+  sGust += tField('Pr\u00e9ciser laquelle/lesquelles','trigeminales_detail','text');
+  sGust += tField('R\u00e9flexe naus\u00e9eux','reflexe_nauseeux','radios',['Normal','Ant\u00e9rioris\u00e9'],null,'Ant\u00e9riorisation ?');
   sGust += tField('\u00c9tat bucco-dentaire / iatrog\u00e9nie / salive','bucco_dentaire','textarea');
   sGust += tField('Synth\u00e8se gustation','synthese_gustation','textarea');
   h += tSection('Gustation','ti-droplet',sGust);
@@ -15935,14 +15945,16 @@ function ouvrirTrameOdoratGout(pid, trameId){
   // 10. COMPORTEMENT
   var sComp = '';
   sComp += tField('Fatigabilit\u00e9','fatigabilite','radios',['Absente','L\u00e9g\u00e8re','Importante']);
-  sComp += tField('Ph\u00e9nom\u00e8ne de saturation','saturation','radios',['Absent','Present']);
+  sComp += tField('Ph\u00e9nom\u00e8ne de saturation','saturation','radios',['Absent','Pr\u00e9sent']);
   sComp += tField('Interf\u00e9rences','interferences','radios',['Absentes','Pr\u00e9sentes']);
   sComp += tField('D\u00e9lai et lenteur d\'id\u00e9ation','lenteur','radios',['Absent','Pr\u00e9sent']);
-  sComp += tField('Comportement pendant le testing','comportement','checks',['Adapt\u00e9','Attentif','Autonome','Assidu','Efficace','M\u00e9ticuleux','Motiv\u00e9','Organis\u00e9','Patient','Pers\u00e9v\u00e9rant','Rigoureux','Sensible','Vigilant','Volontaire','Opposant']);
-  sComp += tField('R\u00e9action au testing','reaction_testing','checks',['Calme','Confiance','S\u00e9r\u00e9nit\u00e9','Anxi\u00e9t\u00e9 de performance','Appréhension','\u00c9nervement','Inqui\u00e9tude','Indiff\u00e9rence','Agitation']);
+  sComp += tField('Comportement pendant le testing','comportement','checks',
+    ['Adapt\u00e9','Attentif','Autonome','Assidu','Discret','Efficace','M\u00e9ticuleux','Motiv\u00e9','Organis\u00e9','Patient','Pers\u00e9v\u00e9rant','Rigoureux','Sensible','Vigilant','Volontaire','Opposant']);
+  sComp += tField('R\u00e9action au testing','reaction_testing','checks',
+    ['Calme','Confiance','S\u00e9r\u00e9nit\u00e9','Anxi\u00e9t\u00e9 de performance','Appr\u00e9hension','\u00c9nervement','Inqui\u00e9tude','Indiff\u00e9rence','Agitation','Anxi\u00e9t\u00e9 associ\u00e9e au testing']);
   h += tSection('Comportement du patient','ti-mood-smile',sComp);
 
-  // 11. RÉSULTATS
+  // 11. RESULTATS
   var sRes = '';
   sRes += tField('Quel trouble ? (quantitatif et/ou qualitatif)','trouble','textarea');
   sRes += tField('Distorsions','distorsions','radios',['Absentes','Pr\u00e9sentes']);
@@ -15954,24 +15966,28 @@ function ouvrirTrameOdoratGout(pid, trameId){
 
   // 12. DIAGNOSTIC ORTHOPHONIQUE
   var sDiag = '';
+  sDiag += note('Diagnostic relatif au trouble : Perte ou perturbation du syst\u00e8me olfacto-gustatif (quantitatif et/ou qualitatif). Correspondance NGAP : R\u00e9\u00e9ducation et/ou maintien et/ou adaptation des fonctions de communication, du langage, des troubles cognitivo-linguistiques et des fonctions oro-myo-faciales chez les patients atteints de pathologies neurologiques.');
   sDiag += tField('Trouble olfactif','diag_olfactif','checks',['Anosmie','Hyposmie','Dysosmie']);
-  sDiag += tField('Trouble gustatif','diag_gustatif','checks',['Agu\u00e9usie','Hypogueusie','Hypergueusie','Dysgueusie']);
+  sDiag += tField('Trouble gustatif','diag_gustatif','checks',['Agu\u00e9usie','Hypogueusie','Hypergueusie','Dysgu\u00e9usie']);
   sDiag += tField('\u00c9l\u00e9ments de conclusion','conclusion','textarea');
   h += tSection('Diagnostic orthophonique','ti-stethoscope',sDiag);
 
-  // 13. PROJET THÉRAPEUTIQUE
+  // 13. PROJET THERAPEUTIQUE
   var sProjet = '';
+  sProjet += note('La r\u00e9\u00e9ducation ne sera pas men\u00e9e de la m\u00eame fa\u00e7on s\'il s\'agit d\'un trouble quantitatif ou qualitatif. Si distorsions gustatives \u2192 protocole de neutralisation inspir\u00e9 des torquegu\u00e9usies post-radiques.');
   sProjet += tField('Objectifs de la r\u00e9\u00e9ducation','objectifs_reedu','textarea');
   sProjet += '<div style="font-size:12px;font-weight:700;color:#5C8B6E;margin-bottom:8px;">Olfaction</div>';
-  sProjet += tField('','projet_olfaction','checks',['Travail sur les familles olfactives','Lexique olfactif','Écriture olfactive','Imagerie mentale','M\u00e9moire sensorielle']);
+  sProjet += tField('','projet_olfaction','checks',
+    ['Travail sur les familles olfactives (2 niveaux)','Lexique olfactif pour chaque famille','\u00c9criture olfactive (3 niveaux)','Imagerie mentale (ne pas confondre avec visualisation mentale)','M\u00e9moire sensorielle']);
   sProjet += '<div style="font-size:12px;font-weight:700;color:#5C8B6E;margin:10px 0 8px;">Gustation</div>';
-  sProjet += tField('','projet_gustation','checks',['Neutralisation de la dysgueusie','Leurrer le cerveau (influenceurs du go\u00fbt)','Jeu gourmet sans d\u00e9gustation','Supervision de d\u00e9gustations en pleine conscience','Aide au remplissage des fiches de d\u00e9gustation']);
+  sProjet += tField('','projet_gustation','checks',
+    ['Neutralisation de la dysgu\u00e9usie','Leurrer le cerveau (influenceurs du go\u00fbt)','Jeu gourmet sans d\u00e9gustation','Supervision de d\u00e9gustations en pleine conscience aux solides et aux liquides','Aide au remplissage des fiches de d\u00e9gustation']);
   h += tSection('Projet th\u00e9rapeutique','ti-target',sProjet);
 
-  // 14. PRÉCONISATIONS
+  // 14. PRECONISATIONS
   var sPreco = '';
   sPreco += tField('Examens compl\u00e9mentaires propos\u00e9s','examens_complementaires','checks',['Avis ORL','IRM c\u00e9r\u00e9brale','Autre']);
-  sPreco += tField('Pr\u00e9conisations au m\u00e9decin','preconisations_medecin','textarea');
+  sPreco += tField('Pr\u00e9conisations au m\u00e9decin prescripteur','preconisations_medecin','textarea');
   sPreco += tField('Pr\u00e9conisations \u00e0 l\'entourage / \u00e0 la maison','preconisations_entourage','textarea');
   sPreco += tField('Pr\u00e9conisations aux partenaires / lieux de vie','preconisations_partenaires','textarea');
   h += tSection('Pr\u00e9conisations','ti-notes',sPreco);
@@ -15980,27 +15996,6 @@ function ouvrirTrameOdoratGout(pid, trameId){
   modal.innerHTML = h;
   document.body.appendChild(modal);
   modal.classList.add('open');
-}
-
-function exportWordFromPopup(html){
-  var pre = '<html><head><meta charset="utf-8"><style>'
-    + 'body{font-family:Arial,sans-serif;font-size:11pt;color:#1A1A18;line-height:1.5;}'
-    + 'h2{font-size:9pt;font-weight:700;color:#3D6B4F;text-transform:uppercase;border-bottom:1pt solid #C8DDD4;padding-bottom:3pt;margin:14pt 0 5pt;}'
-    + 'table{border-collapse:collapse;width:100%;margin-bottom:8pt;}'
-    + 'td{border-bottom:1pt solid #F0EDE6;padding:4pt 6pt;font-size:10pt;vertical-align:top;}'
-    + 'td:first-child{color:#555;font-weight:600;width:35%;}'
-    + 'p{font-size:11pt;line-height:1.6;margin:4pt 0;}'
-    + '</style></head><body>';
-  var doc = pre + html + '</body></html>';
-  var blob = new Blob([doc], {type: 'application/msword'});
-  var a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = 'bilan.doc';
-  a.click();
-  showToast('Export Word téléchargé !');
-}
-function exportWordTrame(pid, trameId){
-  genererDocumentTrame(pid, trameId);
 }
 function genererDocumentTrame(pid, trameId){
   sauvegarderTrame(pid, trameId);
