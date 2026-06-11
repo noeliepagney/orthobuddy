@@ -15443,8 +15443,15 @@ function anamneseLive(field){
   saveAnamneseTab(pid, true);
   // Re-render seulement pour select1 et radio (pas textarea/text pour éviter de perdre le focus)
   var t = field.type;
-  if(t==='select-one'||t==='radio'){
-    renderAnamneseTab(pid);
+  if(t==='select-one'){
+    var key = field.dataset.ana;
+    var val = field.value;
+    if(val){
+      var badge = '<span style="padding:3px 10px;border-radius:20px;font-size:11px;font-weight:500;background:#EEF4F1;color:#5C8B6E;border:1px solid #C8DDD4;cursor:pointer;" onclick="anaSelectReset(\''+pid+'\',\''+key+'\')">'+val+' ×</span>';
+      field.outerHTML = badge;
+    }
+  } else if(t==='radio'){
+    // rien, la valeur est déjà cochée visuellement
   }
 }
 
