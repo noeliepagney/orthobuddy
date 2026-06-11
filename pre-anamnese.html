@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Questionnaire pré-bilan orthophonique</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --sage:#6F8C6A; --sage-deep:#56714F; --sage-soft:#EEF4EB;
+    --creme:#F7F3EC; --surface:#FFFFFF;
+    --ink:#3C3A33; --ink-soft:#6E695C;
+    --border:#E7E0D3; --radius:14px; --radius-sm:8px;
+    --shadow:0 2px 12px rgba(60,58,51,.08);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Nunito',sans-serif;background:var(--creme);color:var(--ink);min-height:100vh;padding-bottom:60px}
+  .header{background:linear-gradient(135deg,var(--sage),var(--sage-deep));padding:28px 20px;text-align:center}
+  .header h1{color:#fff;font-size:20px;font-weight:800;margin-bottom:4px}
+  .header p{color:rgba(255,255,255,.8);font-size:13px}
+  .wrap{max-width:640px;margin:0 auto;padding:24px 16px}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px;margin-bottom:16px;box-shadow:var(--shadow)}
+  .card-title{font-size:15px;font-weight:800;color:var(--sage-deep);margin-bottom:14px;display:flex;align-items:center;gap:8px}
+  .field{margin-bottom:14px}
+  .field label{display:block;font-size:13px;font-weight:700;color:var(--ink);margin-bottom:5px}
+  .field .hint{font-size:11.5px;color:var(--ink-soft);font-weight:600;margin-left:4px}
+  .field input[type=text], .field input[type=date], .field select, .field textarea{
+    width:100%;font-family:'Nunito',sans-serif;font-size:14px;color:var(--ink);
+    background:var(--creme);border:1px solid var(--border);border-radius:var(--radius-sm);
+    padding:10px 12px;transition:border .15s
+  }
+  .field textarea{min-height:80px;resize:vertical;line-height:1.5}
+  .field input:focus,.field select:focus,.field textarea:focus{outline:2px solid var(--sage);outline-offset:1px;background:#fff}
+  .checks{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px}
+  .chk{display:inline-flex;align-items:center;gap:6px;cursor:pointer;background:var(--creme);border:1px solid var(--border);border-radius:20px;padding:6px 12px;font-size:13px;font-weight:600;transition:.12s;user-select:none}
+  .chk input{accent-color:var(--sage);width:14px;height:14px}
+  .chk:has(input:checked){background:var(--sage-soft);border-color:var(--sage);color:var(--sage-deep)}
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  @media(max-width:480px){.row2{grid-template-columns:1fr}}
+  .btn{font-family:'Nunito',sans-serif;font-weight:800;font-size:15px;cursor:pointer;border:none;border-radius:var(--radius-sm);padding:14px 28px;display:inline-flex;align-items:center;gap:8px;transition:.15s}
+  .btn-primary{background:var(--sage);color:#fff;width:100%;justify-content:center;margin-top:8px}
+  .btn-primary:hover{background:var(--sage-deep)}
+  .btn-primary:disabled{opacity:.6;cursor:not-allowed}
+  .state{text-align:center;padding:60px 20px}
+  .state-icon{font-size:48px;margin-bottom:16px}
+  .state h2{font-size:20px;font-weight:800;margin-bottom:8px}
+  .state p{color:var(--ink-soft);font-size:14px;line-height:1.6}
+  .progress{height:4px;background:var(--border);border-radius:2px;margin:16px 0 24px}
+  .progress-bar{height:100%;background:var(--sage);border-radius:2px;transition:width .3s}
+  #loading{text-align:center;padding:80px 20px;color:var(--ink-soft)}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>Questionnaire pré-bilan</h1>
+  <p>Cabinet d'orthophonie</p>
+</div>
+
+<div class="wrap">
+  <div id="loading">Chargement du questionnaire…</div>
+  <div id="app" style="display:none"></div>
+</div>
+
+<script>
+const SB_FN = "https://xiznicrburryfmdfbjxk.supabase.co/functions/v1/rapid-service";
+const token = new URLSearchParams(window.location.search).get('token');
+
+// Définition des sections et questions disponibles
+const SECTIONS = {
+  base_enfant: {
+    label: "Informations générales — enfant",
+    questions: [
+      { id:"motif", label:"Motif de consultation", type:"textarea", hint:"Pourquoi consultez-vous ?" },
+      { id:"grossesse", label:"Grossesse et naissance", type:"textarea", hint:"Déroulement, terme, événements particuliers…" },
+      { id:"dev_psy", label:"Développement psychomoteur", type:"textarea", hint:"Premiers pas, premiers mots…" },
+      { id:"dev_langage", label:"Développement du langage", type:"textarea", hint:"Babillage, premiers mots, premières phrases…" },
+      { id:"atcd_med", label:"Antécédents médicaux", type:"textarea" },
+      { id:"audition", label:"Audition / ORL", type:"textarea" },
+      { id:"vue", label:"Vue", type:"textarea" },
+      { id:"atcd_fam", label:"Antécédents familiaux (langage, lecture…)", type:"textarea" },
+      { id:"scolarite", label:"Scolarité et parcours", type:"textarea" },
+      { id:"contexte", label:"Contexte familial", type:"textarea", hint:"Fratrie, langues parlées à la maison…" },
+    ]
+  },
+  base_adulte: {
+    label: "Informations générales — adulte",
+    questions: [
+      { id:"motif", label:"Motif de consultation", type:"textarea" },
+      { id:"histoire", label:"Histoire de la maladie / des difficultés", type:"textarea" },
+      { id:"atcd", label:"Antécédents médicaux", type:"textarea" },
+      { id:"traitements", label:"Traitements médicamenteux actuels", type:"textarea" },
+      { id:"situation_fam", label:"Situation familiale", type:"textarea" },
+      { id:"profession", label:"Profession / activité", type:"text" },
+      { id:"niveau_scolaire", label:"Niveau scolaire", type:"text" },
+      { id:"bilinguisme", label:"Langues parlées", type:"text" },
+    ]
+  },
+  lo: {
+    label: "Langage oral",
+    questions: [
+      { id:"plainte_lo", label:"Difficultés de langage oral observées", type:"textarea" },
+      { id:"comprehension", label:"Compréhension des consignes / conversations", type:"checkboxes", options:["Adaptée à l'âge","Parfois difficile","Souvent difficile","Très difficile"] },
+      { id:"expression", label:"Expression orale", type:"checkboxes", options:["Fluide","Manque de mots","Difficultés d'articulation","Phrases courtes ou incomplètes","Bégaiement"] },
+      { id:"communication", label:"Communication au quotidien", type:"textarea" },
+    ]
+  },
+  le: {
+    label: "Langage écrit",
+    questions: [
+      { id:"plainte_le", label:"Difficultés en lecture / écriture observées", type:"textarea" },
+      { id:"lecture", label:"Lecture", type:"checkboxes", options:["Fluide","Lente","Difficultés de déchiffrage","Difficultés de compréhension"] },
+      { id:"ecriture", label:"Écriture / orthographe", type:"checkboxes", options:["Sans difficultés","Erreurs fréquentes","Écriture lente","Difficultés à organiser les idées à l'écrit"] },
+      { id:"impact_scolaire", label:"Impact sur la scolarité", type:"textarea" },
+    ]
+  },
+  cm: {
+    label: "Cognition mathématique",
+    questions: [
+      { id:"plainte_cm", label:"Difficultés en mathématiques observées", type:"textarea" },
+      { id:"calcul", label:"Calcul", type:"checkboxes", options:["Sans difficultés","Difficultés avec les tables","Erreurs fréquentes","Utilise les doigts systématiquement"] },
+      { id:"problemes", label:"Résolution de problèmes", type:"checkboxes", options:["Sans difficultés","Difficultés de compréhension de l'énoncé","Difficultés de raisonnement"] },
+    ]
+  },
+  oralite: {
+    label: "Oralité alimentaire",
+    questions: [
+      { id:"plainte_oral", label:"Difficultés alimentaires observées", type:"textarea" },
+      { id:"alim_actuelle", label:"Alimentation actuelle", type:"textarea", hint:"Textures acceptées, aliments refusés…" },
+      { id:"histoire_alim", label:"Histoire de l'alimentation", type:"textarea", hint:"Allaitement, diversification…" },
+      { id:"comportement_repas", label:"Comportement aux repas", type:"textarea" },
+    ]
+  },
+  neuro: {
+    label: "Neurologie / mémoire",
+    questions: [
+      { id:"plainte_neuro", label:"Difficultés observées", type:"textarea" },
+      { id:"memoire", label:"Mémoire", type:"checkboxes", options:["Sans difficultés","Oublis fréquents","Difficultés à mémoriser de nouvelles informations","Perte de mots"] },
+      { id:"attention", label:"Attention / concentration", type:"checkboxes", options:["Sans difficultés","Fatigabilité rapide","Difficultés de concentration","Distractibilité"] },
+      { id:"autonomie", label:"Autonomie au quotidien", type:"textarea" },
+      { id:"entourage", label:"Entourage / aidant", type:"textarea" },
+    ]
+  }
+};
+
+let qaData = null;
+
+async function loadQuestionnaire() {
+  if (!token) {
+    showError("Lien invalide", "Ce lien de questionnaire est invalide ou incomplet.");
+    return;
+  }
+  try {
+    const res = await fetch(SB_FN, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action: "get", token })
+    });
+    const json = await res.json();
+    if (json.error === "deja_complete") {
+      showError("Déjà complété", "Vous avez déjà soumis ce questionnaire. Merci !");
+      return;
+    }
+    if (!json.success || !json.data) {
+      showError("Questionnaire introuvable", "Ce lien n'est plus valide ou a expiré.");
+      return;
+    }
+    qaData = json.data;
+    renderForm(qaData.sections);
+  } catch(e) {
+    showError("Erreur de connexion", "Impossible de charger le questionnaire. Vérifiez votre connexion.");
+  }
+}
+
+function renderForm(sections) {
+  const app = document.getElementById('app');
+  document.getElementById('loading').style.display = 'none';
+  app.style.display = '';
+
+  // Intro
+  let html = `<div class="card">
+    <div class="card-title">📋 Informations importantes</div>
+    <p style="font-size:13.5px;color:var(--ink-soft);line-height:1.6">
+      Ce questionnaire est <strong>confidentiel</strong> et sera transmis uniquement à votre orthophoniste.<br>
+      Répondez au mieux selon votre vécu — il n'y a pas de bonne ou mauvaise réponse.<br>
+      Les champs non pertinents peuvent être laissés vides.
+    </p>
+  </div>`;
+
+  // Champs admin de base
+  html += `<div class="card">
+    <div class="card-title">👤 Vous concernant</div>
+    <div class="row2">
+      <div class="field"><label>Prénom <span class="hint">*</span></label><input type="text" id="f_prenom" placeholder="Prénom" required></div>
+      <div class="field"><label>Nom <span class="hint">*</span></label><input type="text" id="f_nom" placeholder="Nom" required></div>
+    </div>
+    <div class="row2">
+      <div class="field"><label>Date de naissance</label><input type="date" id="f_ddn"></div>
+      <div class="field"><label>Email de contact</label><input type="text" id="f_email" placeholder="votre@email.fr"></div>
+    </div>
+    <div class="field"><label>Qui remplit ce questionnaire ?</label>
+      <div class="checks">
+        <label class="chk"><input type="radio" name="qui" value="patient" checked> Le/la patient(e) lui-même</label>
+        <label class="chk"><input type="radio" name="qui" value="parent"> Un parent / responsable légal</label>
+        <label class="chk"><input type="radio" name="qui" value="aidant"> Un aidant</label>
+      </div>
+    </div>
+  </div>`;
+
+  // Sections sélectionnées
+  const sectionIds = Array.isArray(sections) ? sections : Object.keys(sections || {}).filter(k => sections[k]);
+  sectionIds.forEach(secId => {
+    const sec = SECTIONS[secId];
+    if (!sec) return;
+    const questionsToShow = (sections[secId] && Array.isArray(sections[secId]))
+      ? sec.questions.filter(q => sections[secId].includes(q.id))
+      : sec.questions;
+
+    html += `<div class="card">
+      <div class="card-title">📝 ${sec.label}</div>`;
+
+    questionsToShow.forEach(q => {
+      html += `<div class="field"><label>${q.label}${q.hint?`<span class="hint">· ${q.hint}</span>`:''}</label>`;
+      if (q.type === 'textarea') {
+        html += `<textarea id="fq_${secId}_${q.id}" placeholder="Votre réponse…"></textarea>`;
+      } else if (q.type === 'text') {
+        html += `<input type="text" id="fq_${secId}_${q.id}" placeholder="Votre réponse…">`;
+      } else if (q.type === 'checkboxes') {
+        html += `<div class="checks">`;
+        q.options.forEach((o,i) => {
+          html += `<label class="chk"><input type="checkbox" id="fq_${secId}_${q.id}_${i}" value="${o}"> ${o}</label>`;
+        });
+        html += `</div>`;
+      }
+      html += `</div>`;
+    });
+
+    html += `</div>`;
+  });
+
+  // Champ libre
+  html += `<div class="card">
+    <div class="card-title">💬 Informations complémentaires</div>
+    <div class="field">
+      <label>Y a-t-il autre chose que vous souhaiteriez me communiquer ?</label>
+      <textarea id="f_complement" placeholder="Toute information que vous jugez utile…"></textarea>
+    </div>
+  </div>`;
+
+  // Bouton
+  html += `<button class="btn btn-primary" id="btnSubmit" onclick="submitForm()">
+    Envoyer le questionnaire
+  </button>
+  <p style="text-align:center;font-size:12px;color:var(--ink-soft);margin-top:12px">Vos réponses sont transmises de façon sécurisée et confidentielle.</p>`;
+
+  app.innerHTML = html;
+}
+
+async function submitForm() {
+  const prenom = document.getElementById('f_prenom')?.value.trim();
+  const nom = document.getElementById('f_nom')?.value.trim();
+  if (!prenom || !nom) {
+    alert("Merci de renseigner votre prénom et votre nom.");
+    return;
+  }
+
+  const btn = document.getElementById('btnSubmit');
+  btn.disabled = true;
+  btn.textContent = 'Envoi en cours…';
+
+  // Collecter toutes les réponses
+  const reponses = { _prenom: prenom, _nom: nom };
+  reponses._ddn = document.getElementById('f_ddn')?.value || '';
+  reponses._email = document.getElementById('f_email')?.value.trim() || '';
+  reponses._qui = document.querySelector('input[name="qui"]:checked')?.value || 'patient';
+  reponses._complement = document.getElementById('f_complement')?.value.trim() || '';
+
+  const sectionIds = Array.isArray(qaData.sections)
+    ? qaData.sections
+    : Object.keys(qaData.sections || {}).filter(k => qaData.sections[k]);
+
+  sectionIds.forEach(secId => {
+    const sec = SECTIONS[secId];
+    if (!sec) return;
+    const questionsToShow = (qaData.sections[secId] && Array.isArray(qaData.sections[secId]))
+      ? sec.questions.filter(q => qaData.sections[secId].includes(q.id))
+      : sec.questions;
+    questionsToShow.forEach(q => {
+      if (q.type === 'checkboxes') {
+        const vals = [];
+        q.options.forEach((o,i) => {
+          const el = document.getElementById(`fq_${secId}_${q.id}_${i}`);
+          if (el?.checked) vals.push(o);
+        });
+        reponses[`${secId}.${q.id}`] = vals;
+      } else {
+        const el = document.getElementById(`fq_${secId}_${q.id}`);
+        if (el) reponses[`${secId}.${q.id}`] = el.value.trim();
+      }
+    });
+  });
+
+  try {
+    const res = await fetch(SB_FN, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        action: "soumettre",
+        token,
+        reponses,
+        patient_prenom: prenom,
+        patient_email: reponses._email || ''
+      })
+    });
+    const json = await res.json();
+    if (json.success) {
+      document.getElementById('app').innerHTML = `
+        <div class="state">
+          <div class="state-icon">✅</div>
+          <h2>Questionnaire envoyé !</h2>
+          <p>Merci ${prenom}, vos réponses ont bien été transmises à votre orthophoniste.<br>
+          Un email de confirmation vous a été envoyé si vous avez renseigné votre adresse.</p>
+        </div>`;
+    } else {
+      throw new Error(json.error || "Erreur inconnue");
+    }
+  } catch(e) {
+    btn.disabled = false;
+    btn.textContent = 'Envoyer le questionnaire';
+    alert("Une erreur est survenue : " + e.message + "\nVeuillez réessayer.");
+  }
+}
+
+function showError(title, msg) {
+  document.getElementById('loading').style.display = 'none';
+  document.getElementById('app').style.display = '';
+  document.getElementById('app').innerHTML = `
+    <div class="state">
+      <div class="state-icon">⚠️</div>
+      <h2>${title}</h2>
+      <p>${msg}</p>
+    </div>`;
+}
+
+loadQuestionnaire();
+</script>
+</body>
+</html>

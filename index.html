@@ -3528,7 +3528,17 @@ function showAideSection(section){
 }
 
 function openModal(id){document.getElementById(id).classList.add('open');}
-function closeModal(id){document.getElementById(id).classList.remove('open');}
+function closeModal(id){
+  var el=document.getElementById(id||'modal-generic');
+  if(el) el.classList.remove('open');
+}
+function showModal(title,bodyHtml){
+  document.getElementById('modal-generic-title').textContent=title;
+  document.getElementById('modal-generic-body').innerHTML=bodyHtml;
+  document.getElementById('modal-generic').classList.add('open');
+  var btnQa=document.getElementById('btn-envoyer-qa');
+  if(btnQa){ btnQa.addEventListener('click',function(){ envoyerQuestionnaire(this.dataset.pid); }); }
+}
 let _toastT;
 function showToast(msg,type='green'){
   const el=document.getElementById('toast');el.textContent=msg;
@@ -8015,7 +8025,7 @@ function printGir(pid){
     +'<div class="pg-footer"><span>'+ortho.nom+' \u00b7 Orthophoniste</span><span>'+_girRef+'</span></div>'
     +'<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"><\/script>'
     +'<script>function _dlPdf(){var el=document.querySelector(".gir-page")||document.body;html2pdf().set({margin:0,filename:"grille_impact_residuel.pdf",image:{type:"jpeg",quality:0.98},html2canvas:{scale:2,useCORS:true},jsPDF:{unit:"mm",format:"a4",orientation:"portrait"}}).from(el).save();}<\/script>'
-    +'</div></body></html>';
+    +'</div><\/body><\/html>';
 
   openDocumentWindow(html);
 }
@@ -8077,7 +8087,7 @@ function imprimerProchainsRdv(pid){
     +'<div class="title-sub">'+seancesFutures.length+' séance'+(seancesFutures.length>1?'s':'')+' à venir</div></div>'
     +'<div class="body"><table class="tbl"><thead><tr><th>Date</th><th>Heure</th><th>Durée</th><th>Type</th></tr></thead><tbody>'+rows+'</tbody></table></div>'
     +'<div class="footer"><span>Généré le '+new Date().toLocaleDateString('fr-FR')+'</span><span>OrthoBuddy</span></div>'
-    +'</div></body></html>';
+    +'</div><\/body><\/html>';
   openDocumentWindow(html);
 }
 
@@ -12664,7 +12674,7 @@ function _dlPdf(){
     +'</div>'
     +'<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"><\/script>'
     +'<script>'+exportScript+'\nfunction _dlPdf(){var el=document.querySelector(\'.page\');var fname=typeof _docMeta!=="undefined"&&_docMeta.titre?_docMeta.titre.replace(/[^a-z0-9]/gi,\'_\')+\'.pdf\':\'document.pdf\';html2pdf().set({margin:0,filename:fname,image:{type:\'jpeg\',quality:0.98},html2canvas:{scale:2,useCORS:true},jsPDF:{unit:\'mm\',format:\'a4\',orientation:\'portrait\'}}).from(el).save();}\n'+'<\/script>'
-    +'</body></html>';
+    +'<\/body><\/html>';
 
   openDocumentWindow(html);
 }
@@ -15397,7 +15407,7 @@ function renderAnamneseTab(pid){
     html+=sCard('Sp\u00e9cifique \u2014 Neurologie','ti-brain',sNeuro);
   }
 
-  html+='<div style="margin-top:8px;"><button class="btn btn-green" onclick="saveAnamneseTab(\''+pid+'\')"><i class="ti ti-device-floppy"></i> Sauvegarder l\'anamn\u00e8se</button></div>';
+  html+='<div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap;"><button class="btn btn-green" onclick="saveAnamneseTab(\''+pid+'\')"><i class="ti ti-device-floppy"></i> Sauvegarder</button><button class="btn btn-sm" style="background:#7C3AED;color:white;" onclick="ouvrirEnvoiQuestionnaire(\''+pid+'\')"><i class="ti ti-send"></i> Questionnaire patient</button></div>';
   el.innerHTML=html;
 }
 
@@ -15458,6 +15468,57 @@ function anamneseLive(field){
   } else if(t==='radio'){
     // rien, la valeur est déjà cochée visuellement
   }
+}
+
+function _esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function ouvrirEnvoiQuestionnaire(pid){
+  var p=DB.patients.find(function(x){return x.id===pid;});
+  if(!p){showToast('Patient introuvable','red');return;}
+  var sections=[
+    {id:'base_enfant',label:'Anamnese base enfant'},
+    {id:'base_adulte',label:'Anamnese base adulte'},
+    {id:'lo',label:'Langage oral'},
+    {id:'le',label:'Langage ecrit'},
+    {id:'cm',label:'Cognition mathematique'},
+    {id:'oralite',label:'Oralite alimentaire'},
+    {id:'neuro',label:'Neurologie / memoire'}
+  ];
+  var emailPatient=p.email||p.emailParent||p.emailContact||'';
+  var html='<div style="padding:4px;">';
+  html+='<div style="margin-bottom:12px;"><label style="font-size:12px;font-weight:600;display:block;margin-bottom:4px;">Email du destinataire</label>';
+  html+='<input type="text" id="qp-email" value="'+_esc(emailPatient)+'" style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:13px;font-family:inherit;" placeholder="email@exemple.fr"></div>';
+  html+='<div style="margin-bottom:14px;"><label style="font-size:12px;font-weight:600;display:block;margin-bottom:6px;">Sections a inclure</label>';
+  html+='<div style="display:flex;flex-wrap:wrap;gap:6px;">';
+  sections.forEach(function(s){
+    html+='<label style="display:flex;align-items:center;gap:5px;font-size:12px;cursor:pointer;background:var(--bg);border:1px solid var(--border);border-radius:20px;padding:4px 10px;">';
+    html+='<input type="checkbox" id="qp-sec-'+s.id+'"> '+s.label+'</label>';
+  });
+  html+='</div></div>';
+  html+='<button id="btn-envoyer-qa" data-pid="'+pid+'" style="background:#7C3AED;color:white;border:none;border-radius:var(--radius-sm);padding:10px 18px;font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;width:100%;">Envoyer le questionnaire</button>';
+  html+='</div>';
+  showModal('Questionnaire pre-bilan',html);
+}
+
+async function envoyerQuestionnaire(pid){
+  var p=DB.patients.find(function(x){return x.id===pid;})||{};
+  var emailEl=document.getElementById('qp-email');
+  var email=emailEl?emailEl.value.trim():(p.email||p.emailParent||p.emailContact||'');
+  if(!email){showToast('Renseignez l\'email','red');return;}
+  var sections={};
+  ['base_enfant','base_adulte','lo','le','cm','oralite','neuro'].forEach(function(s){
+    var cb=document.getElementById('qp-sec-'+s);
+    if(cb&&cb.checked) sections[s]=true;
+  });
+  if(Object.keys(sections).length===0){showToast('Selectionnez au moins une section','red');return;}
+  try{
+    var res=await fetch('https://xiznicrburryfmdfbjxk.supabase.co/functions/v1/rapid-service',{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({action:'envoyer',patient_id:pid,patient_prenom:p.prenom||'',patient_nom:p.nom||'',patient_email:email,sections:sections})
+    });
+    var json=await res.json();
+    if(json.success){closeModal('modal-generic');showToast('Questionnaire envoye a '+email,'green');}
+    else{showToast('Erreur: '+(json.error||'inconnue'),'red');}
+  }catch(e){showToast('Erreur: '+e.message,'red');}
 }
 
 function saveAnamneseTab(pid, silent){
@@ -16502,7 +16563,7 @@ function exportCollabDoc(){
     +'</div>'
     +'<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"><\/script>'
     +'<script>function _dlPdf(){var el=document.querySelector(\'.page\');html2pdf().set({margin:0,filename:\'recap_collaboration.pdf\',image:{type:\'jpeg\',quality:0.98},html2canvas:{scale:2,useCORS:true},jsPDF:{unit:\'mm\',format:\'a4\',orientation:\'portrait\'}}).from(el).save();}<\/script>'
-    +'</body></html>';
+    +'<\/body><\/html>';
 
   openDocumentWindow(html);
 }
@@ -17788,3 +17849,13 @@ function togglePrevision(){
 }
 
 </script>
+<!-- Modale générique -->
+<div class="overlay" id="modal-generic" onclick="if(event.target===this)closeModal('modal-generic')">
+  <div class="modal modal-sm">
+    <div class="modal-head">
+      <span class="modal-title" id="modal-generic-title"></span>
+      <button class="modal-close" onclick="closeModal('modal-generic')"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+    </div>
+    <div id="modal-generic-body" style="max-height:70vh;overflow-y:auto;"></div>
+  </div>
+</div>
