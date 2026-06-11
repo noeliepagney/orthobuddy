@@ -281,8 +281,12 @@ function renderForm(sections) {
     </div>
   </div>`;
 
-  // Sections sélectionnées
-  const sectionIds = Array.isArray(sections) ? sections : Object.keys(sections || {}).filter(k => sections[k]);
+  // Sections sélectionnées — base toujours en premier
+  const BASE_ORDER = ['base_enfant','base_adulte','base_adulte_neuro'];
+  const allIds = Array.isArray(sections) ? sections : Object.keys(sections || {}).filter(k => sections[k]);
+  const baseIds = BASE_ORDER.filter(id => allIds.includes(id));
+  const otherIds = allIds.filter(id => !BASE_ORDER.includes(id));
+  const sectionIds = [...baseIds, ...otherIds];
   sectionIds.forEach(secId => {
     const sec = SECTIONS[secId];
     if (!sec) return;
