@@ -66,81 +66,157 @@
 const SB_FN = "https://xiznicrburryfmdfbjxk.supabase.co/functions/v1/rapid-service";
 const token = new URLSearchParams(window.location.search).get('token');
 
-// Définition des sections et questions disponibles
+// Définition des sections et questions — alignées sur les clés OrthoBuddy
 const SECTIONS = {
   base_enfant: {
-    label: "Informations générales — enfant",
+    label: "Anamnèse base — enfant",
     questions: [
-      { id:"motif", label:"Motif de consultation", type:"textarea", hint:"Pourquoi consultez-vous ?" },
-      { id:"grossesse", label:"Grossesse et naissance", type:"textarea", hint:"Déroulement, terme, événements particuliers…" },
-      { id:"dev_psy", label:"Développement psychomoteur", type:"textarea", hint:"Premiers pas, premiers mots…" },
-      { id:"dev_langage", label:"Développement du langage", type:"textarea", hint:"Babillage, premiers mots, premières phrases…" },
-      { id:"atcd_med", label:"Antécédents médicaux", type:"textarea" },
-      { id:"audition", label:"Audition / ORL", type:"textarea" },
-      { id:"vue", label:"Vue", type:"textarea" },
-      { id:"atcd_fam", label:"Antécédents familiaux (langage, lecture…)", type:"textarea" },
-      { id:"scolarite", label:"Scolarité et parcours", type:"textarea" },
-      { id:"contexte", label:"Contexte familial", type:"textarea", hint:"Fratrie, langues parlées à la maison…" },
+      { id:"lieu_vie", label:"Lieu de vie", type:"select", options:["Avec ses deux parents","Garde alternée","Vit chez son père","Vit chez sa mère","Foyer"] },
+      { id:"fratrie", label:"Fratrie", type:"select", options:["Enfant unique","Aîné(e)","Cadet(te)","Benjamin/Benjamine"] },
+      { id:"fratrie_detail", label:"Prénom(s) et âge(s) de la fratrie", type:"text" },
+      { id:"bilinguisme", label:"Bilinguisme", type:"select", options:["Oui","Non"] },
+      { id:"langue_maison", label:"Langue parlée à la maison", type:"text" },
+      { id:"atcd_fam_mere", label:"Antécédents familiaux — mère", type:"checkboxes", options:["Lecture","Orthographe","Mathématiques","Concentration","Langage"] },
+      { id:"atcd_fam_pere", label:"Antécédents familiaux — père", type:"checkboxes", options:["Lecture","Orthographe","Mathématiques","Concentration","Langage"] },
+      { id:"atcd_fam_fratrie", label:"Antécédents familiaux — fratrie", type:"checkboxes", options:["Lecture","Orthographe","Mathématiques","Concentration","Langage"] },
+      { id:"grossesse", label:"Grossesse", type:"checkboxes", options:["Sans particularité","Diabète gestationnel","Infection maternelle","MAP","Anomalie fœtale","Souffrance fœtale","Exposition toxiques","Autre"] },
+      { id:"naissance_mode", label:"Mode d'accouchement", type:"select", options:["Voie basse","Césarienne programmée","Césarienne d'urgence"] },
+      { id:"naissance_terme", label:"Terme / prématurité", type:"select", options:["À terme","Prématurité tardive (35-36 SA)","Prématurité modérée (32-34 SA)","Grande prématurité (27-31 SA)","Prématurité extrême (22-26 SA)"] },
+      { id:"naissance_detail", label:"Particularités naissance", type:"checkboxes", options:["Forceps/ventouse/cuillère","Souffrance péri-natale","Réanimation","Soins intensifs/Néonatologie"] },
+      { id:"poids_naissance", label:"Poids de naissance", type:"checkboxes", options:[">2500g","<2500g","<1500g","<1000g"] },
+      { id:"orl", label:"Antécédents ORL", type:"checkboxes", options:["Angines fréquentes","Otites fréquentes","Drains/diabolos","Ablation végétations","Ablation amygdales","Surdité","Audiogramme réalisé","Audiogramme prévu"] },
+      { id:"vision", label:"Vision", type:"checkboxes", options:["Port de lunettes","Myopie","Astigmatisme","Strabisme"] },
+      { id:"traumatismes", label:"Traumatismes / accidents", type:"text" },
+      { id:"traitements", label:"Traitements médicamenteux", type:"text" },
+      { id:"bilans", label:"Bilans déjà réalisés", type:"checkboxes", options:["Psychologique","Psychométrique","Neuropsychologique","Orthophonique","Ergothérapique","Psychomoteur","Ophtalmologique","Neurologique","Orthoptique"] },
+      { id:"suivis", label:"Suivis en cours", type:"checkboxes", options:["Orthophonie","Psychologie","Ergothérapie","Neuropsychologie","Psychomotricité","Orthoptie"] },
+      { id:"diagnostics", label:"Diagnostics posés", type:"textarea" },
+      { id:"age_marche", label:"Âge acquisition marche", type:"text" },
+      { id:"age_babillage", label:"Âge babillage canonique", type:"text" },
+      { id:"age_premiers_mots", label:"Âge premiers mots", type:"text" },
+      { id:"age_phrases", label:"Âge premières phrases", type:"text" },
+      { id:"lateralite", label:"Latéralité", type:"select", options:["Droitier(e)","Gaucher(e)","Ambidextre"] },
+      { id:"proprete_diurne", label:"Propreté diurne (âge)", type:"text" },
+      { id:"proprete_nocturne", label:"Propreté nocturne (âge)", type:"text" },
+      { id:"lieu_sommeil", label:"Lieu de sommeil", type:"select", options:["Chambre seul(e)","Chambre partagée","Lit des parents","Chambre des parents"] },
+      { id:"troubles_sommeil", label:"Troubles du sommeil", type:"checkboxes", options:["Terreurs nocturnes","Réveils nocturnes","Difficulté à s'endormir","Besoin de lumière","Cauchemars","Ronflements","Apnées","Grince des dents","Bon sommeil"] },
+      { id:"alimentation", label:"Alimentation actuelle", type:"checkboxes", options:["Mange de tout","Sélectif(ve)","Gros appétit","Petit appétit","Difficultés à mastiquer","Tousse pendant les repas"] },
+      { id:"autonomie", label:"Autonomie", type:"checkboxes", options:["Se lave seul(e)","Se déshabille seul(e)","S'habille seul(e)","Fait ses lacets","Mange proprement","Coupe sa viande","Mange avec couverts","S'essuie aux toilettes"] },
+      { id:"sensorialite", label:"Particularités sensorielles", type:"checkboxes", options:["Bruit","Textiles/étiquettes","Lumière","Odeurs","Température","Mains sales","Pieds nus"] },
+      { id:"attention", label:"Éléments attentionnels", type:"checkboxes", options:["Oublie ses affaires","Se déconcentre","Brouillon/désordonné(e)","Bouge beaucoup","Mal à attendre","Résultats en dents de scie","Impulsif(ve)"] },
+      { id:"jeux_activites", label:"Jeux / activités", type:"checkboxes", options:["Jeux de construction","Bricolage","Dessin","Activités physiques","Lecture"] },
+      { id:"ecrans_semaine", label:"Temps d'écran semaine", type:"select", options:["0h","1h","2h","3h","4h","5h","6h","Plus de 6h"] },
+      { id:"ecrans_weekend", label:"Temps d'écran weekend", type:"select", options:["0h","1h","2h","3h","4h","5h","6h","Plus de 6h"] },
+      { id:"aime_ecole", label:"Aime l'école", type:"select", options:["Oui","Non","Selon les jours"] },
+      { id:"obs_enseignant", label:"Observations de l'enseignant", type:"textarea" },
+      { id:"bien_etre", label:"Bien-être général", type:"textarea" },
+      { id:"description_patient", label:"Description du patient par les parents", type:"textarea" },
+      { id:"centres_interet", label:"Centres d'intérêt", type:"textarea" },
     ]
   },
   base_adulte: {
-    label: "Informations générales — adulte",
+    label: "Anamnèse base — adulte",
     questions: [
-      { id:"motif", label:"Motif de consultation", type:"textarea" },
-      { id:"histoire", label:"Histoire de la maladie / des difficultés", type:"textarea" },
-      { id:"atcd", label:"Antécédents médicaux", type:"textarea" },
-      { id:"traitements", label:"Traitements médicamenteux actuels", type:"textarea" },
-      { id:"situation_fam", label:"Situation familiale", type:"textarea" },
-      { id:"profession", label:"Profession / activité", type:"text" },
-      { id:"niveau_scolaire", label:"Niveau scolaire", type:"text" },
-      { id:"bilinguisme", label:"Langues parlées", type:"text" },
+      { id:"niveau_scolaire", label:"Niveau scolaire atteint", type:"select", options:["Certificat d'études","CAP/BEP","Bac","Bac+2","Bac+3","Bac+5 et plus"] },
+      { id:"niveau_eleve", label:"Parcours scolaire", type:"select", options:["Bon(ne) élève","Élève moyen(ne)","En difficulté"] },
+      { id:"lateralite_neuro", label:"Latéralité", type:"select", options:["Droitier(e)","Gaucher(e)","Ambidextre"] },
+      { id:"vie_pro_neuro", label:"Vie professionnelle (dernier poste)", type:"textarea" },
+      { id:"date_retraite", label:"Date de retraite", type:"text" },
+      { id:"situation_familiale", label:"Situation familiale", type:"select", options:["Marié(e)","En couple","Veuf/Veuve","Divorcé(e)","Célibataire"] },
+      { id:"lieu_vie_neuro", label:"Lieu de vie actuel", type:"checkboxes", options:["Domicile seul(e)","Domicile avec conjoint","Domicile avec famille","EHPAD","Résidence senior","Autre"] },
+      { id:"aidant", label:"Aidant principal", type:"text" },
+      { id:"occupations", label:"Occupations quotidiennes", type:"textarea" },
+      { id:"conduite", label:"Conduit un véhicule", type:"select", options:["Oui","Non","A arrêté récemment"] },
+      { id:"gestion_finances", label:"Gère ses finances", type:"select", options:["Oui","Non","Avec aide"] },
+      { id:"loisirs_neuro", label:"Lecture / loisirs", type:"textarea" },
+      { id:"vie_sociale", label:"Vie sociale", type:"textarea" },
     ]
   },
   lo: {
     label: "Langage oral",
     questions: [
-      { id:"plainte_lo", label:"Difficultés de langage oral observées", type:"textarea" },
-      { id:"comprehension", label:"Compréhension des consignes / conversations", type:"checkboxes", options:["Adaptée à l'âge","Parfois difficile","Souvent difficile","Très difficile"] },
-      { id:"expression", label:"Expression orale", type:"checkboxes", options:["Fluide","Manque de mots","Difficultés d'articulation","Phrases courtes ou incomplètes","Bégaiement"] },
-      { id:"communication", label:"Communication au quotidien", type:"textarea" },
+      { id:"articulation_lo", label:"Articulation", type:"checkboxes", options:["Déformation des mots","Difficulté à se faire comprendre","Sons mal prononcés"] },
+      { id:"elements_langagiers", label:"Éléments langagiers", type:"checkboxes", options:["Mauvaise intelligibilité","Compréhension difficile","Cherche ses mots","Difficultés à exprimer ses idées","S'énerve quand incompris(e)","Utilisation de la gestuelle / mimiques","Omission de mots grammaticaux"] },
+      { id:"intelligibilite_interlocuteur", label:"Intelligibilité selon interlocuteur", type:"checkboxes", options:["Parents","Maître/maîtresse","Camarades de classe","Grands-parents","Au téléphone"] },
+      { id:"trouble_phono", label:"Trouble phonologique", type:"checkboxes", options:["Difficultés à dire les mots longs","Difficulté à retenir les poésies/comptines","Confusion de sons","Difficulté à apprendre une langue étrangère"] },
+      { id:"aime_parler", label:"Aime parler", type:"select", options:["Oui","Non","Selon les personnes"] },
+      { id:"difficultes_retention_lo", label:"Difficultés à retenir", type:"checkboxes", options:["Comptines","Poésies","Informations verbales","Listes"] },
+      { id:"commentaires_lo", label:"Commentaires", type:"textarea" },
     ]
   },
   le: {
     label: "Langage écrit",
     questions: [
-      { id:"plainte_le", label:"Difficultés en lecture / écriture observées", type:"textarea" },
-      { id:"lecture", label:"Lecture", type:"checkboxes", options:["Fluide","Lente","Difficultés de déchiffrage","Difficultés de compréhension"] },
-      { id:"ecriture", label:"Écriture / orthographe", type:"checkboxes", options:["Sans difficultés","Erreurs fréquentes","Écriture lente","Difficultés à organiser les idées à l'écrit"] },
-      { id:"impact_scolaire", label:"Impact sur la scolarité", type:"textarea" },
+      { id:"retard_langage_le", label:"Retard de langage ou de parole plus jeune", type:"select", options:["Oui","Non","Ne sait pas"] },
+      { id:"confusions_auditives_le", label:"Confusions auditives", type:"checkboxes", options:["Confusions de mots auditivement proches","Confusions de sons"] },
+      { id:"appetence_lecture_le", label:"Appétence à la lecture (0-10)", type:"select", options:["0","1","2","3","4","5","6","7","8","9","10"] },
+      { id:"difficultes_le", label:"Types de difficultés écrites", type:"checkboxes", options:["Lenteur de lecture / non fluide","Écriture phonétique","Confusions de sons","Erreurs fréquentes en lecture","Difficultés de compréhension","Difficultés en orthographe","Fatigue lors des tâches écrites","Confusions de lettres/sons","Sauts de ligne","Oubli de lettres","Inversions","Erreurs en copie","Différence dictée préparée/non préparée"] },
+      { id:"debut_difficultes", label:"Début des difficultés", type:"text" },
+      { id:"obs_enseignant_le", label:"Observations enseignant", type:"textarea" },
+      { id:"commentaires_le", label:"Commentaires", type:"textarea" },
     ]
   },
   cm: {
     label: "Cognition mathématique",
     questions: [
-      { id:"plainte_cm", label:"Difficultés en mathématiques observées", type:"textarea" },
-      { id:"calcul", label:"Calcul", type:"checkboxes", options:["Sans difficultés","Difficultés avec les tables","Erreurs fréquentes","Utilise les doigts systématiquement"] },
-      { id:"problemes", label:"Résolution de problèmes", type:"checkboxes", options:["Sans difficultés","Difficultés de compréhension de l'énoncé","Difficultés de raisonnement"] },
+      { id:"appetence_maths", label:"Appétence aux maths (0-10)", type:"select", options:["0","1","2","3","4","5","6","7","8","9","10"] },
+      { id:"difficultes_maths", label:"Types de difficultés", type:"checkboxes", options:["Résolution de problèmes","Erreurs de calcul","Poser des opérations","Calcul mental","Compter","Lecture de nombres","Saut de 1 à 6 en comptant","Comptage digital persistant","Stratégies de résolution immatures"] },
+      { id:"difficultes_retention_cm", label:"Difficultés à retenir", type:"checkboxes", options:["Tables de multiplication","Termes irréguliers","Comptines numériques"] },
+      { id:"tables_multi", label:"Tables de multiplication", type:"select", options:["Maîtrisées","En cours","Non maîtrisées"] },
+      { id:"obs_enseignant_maths", label:"Observations enseignant", type:"textarea" },
+      { id:"autres_difficultes_maths", label:"Autres difficultés", type:"textarea" },
     ]
   },
   oralite: {
-    label: "Oralité alimentaire",
+    label: "Oralité",
     questions: [
-      { id:"plainte_oral", label:"Difficultés alimentaires observées", type:"textarea" },
-      { id:"alim_actuelle", label:"Alimentation actuelle", type:"textarea", hint:"Textures acceptées, aliments refusés…" },
-      { id:"histoire_alim", label:"Histoire de l'alimentation", type:"textarea", hint:"Allaitement, diversification…" },
-      { id:"comportement_repas", label:"Comportement aux repas", type:"textarea" },
+      { id:"respiration_jour", label:"Respiration en journée", type:"select", options:["Par le nez","Par la bouche","Mixte"] },
+      { id:"respiration_nuit", label:"Respiration la nuit", type:"select", options:["Par le nez","Par la bouche","Mixte"] },
+      { id:"porte_en_bouche", label:"Porte objets/doigts en bouche", type:"select", options:["Oui","Non"] },
+      { id:"alimentation_oralite", label:"Alimentation", type:"checkboxes", options:["Mange de tout","Sélectif(ve)","Difficultés à mastiquer","Tousse pendant les repas","Garde nourriture dans les joues"] },
+      { id:"journee_alim", label:"Journée alimentaire type", type:"textarea" },
+      { id:"evitement_repas", label:"Comportements d'évitement au repas", type:"select", options:["Oui","Non"] },
+      { id:"meme_repas", label:"Mange la même chose que la famille", type:"select", options:["Oui","Non – repas spécial"] },
+      { id:"difficultes_lieux", label:"Difficultés selon les lieux", type:"select", options:["Partout pareil","Mieux avec certaines personnes"] },
+      { id:"antecedents_ortho", label:"Antécédents orthodontiques", type:"select", options:["Oui","Non"] },
+      { id:"commentaires_oralite", label:"Commentaires", type:"textarea" },
     ]
   },
-  neuro: {
-    label: "Neurologie / mémoire",
+  anosmie: {
+    label: "Anosmie",
     questions: [
-      { id:"plainte_neuro", label:"Difficultés observées", type:"textarea" },
-      { id:"memoire", label:"Mémoire", type:"checkboxes", options:["Sans difficultés","Oublis fréquents","Difficultés à mémoriser de nouvelles informations","Perte de mots"] },
-      { id:"attention", label:"Attention / concentration", type:"checkboxes", options:["Sans difficultés","Fatigabilité rapide","Difficultés de concentration","Distractibilité"] },
-      { id:"autonomie", label:"Autonomie au quotidien", type:"textarea" },
-      { id:"entourage", label:"Entourage / aidant", type:"textarea" },
+      { id:"etiologie_anos", label:"Étiologie", type:"checkboxes", options:["Post-rhinite virale","Traumatisme crânien","Cause idiopathique","Polypes naso-sinusiens","Cause neuro-dégénérative","Post-COVID"] },
+      { id:"type_anos", label:"Type d'anosmie", type:"checkboxes", options:["Anosmie (ne sent plus rien)","Hyposmie (sent moins bien)","Hyperosmie (sent trop fort)","Cacosmie (mauvaises odeurs persistantes)","Parosmie (confond des odeurs)","Fantosmie (hallucinations olfactives)"] },
+      { id:"odeurs_aimees_apres", label:"Odeurs aimées actuellement", type:"text" },
+      { id:"odeurs_aimees_avant", label:"Odeurs aimées avant l'anosmie", type:"text" },
+      { id:"retentissement_alim", label:"Retentissement alimentaire", type:"checkboxes", options:["Mange moins","Mange plus","Mange différemment","Pas de retentissement"] },
+      { id:"tabagisme", label:"Tabagisme", type:"select", options:["Oui","Non"] },
+      { id:"regime", label:"Régime alimentaire particulier", type:"text" },
+      { id:"allergies", label:"Allergies", type:"text" },
+      { id:"commentaires_anos", label:"Commentaires", type:"textarea" },
+    ]
+  },
+  base_adulte_neuro: {
+    label: "Neurologie",
+    questions: [
+      { id:"date_premiers_symptomes", label:"Date apparition premiers symptômes", type:"text" },
+      { id:"mode_installation", label:"Mode d'installation", type:"select", options:["Progressif (insidieux)","Brutal (AVC/AIT)","Par paliers"] },
+      { id:"plainte_cognitive", label:"Nature de la plainte cognitive", type:"checkboxes", options:["Mémoire (RDV, événements récents)","Langage (manque du mot)","Compréhension","Praxies (s'habiller, tenir un crayon)","Fonctions exécutives","Orientation spatiale","Reconnaissance visages/lieux","Calcul"] },
+      { id:"caractere_evolutif", label:"Caractère évolutif", type:"select", options:["Stable","Progressif","Par paliers","Fluctuant"] },
+      { id:"anosognosie", label:"Conscience des troubles", type:"select", options:["Conscient(e)","Partiellement conscient(e)","Pas conscient(e)"] },
+      { id:"modif_comportement", label:"Modifications comportementales", type:"checkboxes", options:["Apathie","Ralentissement","Abandon d'activités","Hypersomnie","Désinhibition","Colères / agressivité","Anxiété","Dépression","Troubles du sommeil"] },
+      { id:"antecedents_neuro", label:"Antécédents médicaux spécifiques", type:"checkboxes", options:["Diabète","Hypertension","Hypercholestérolémie","Hallucinations visuelles","Chutes fréquentes","Incontinence","État dépressif","AVC / AIT","Traumatisme crânien","Parkinson"] },
+      { id:"traitements_neuro", label:"Traitements médicamenteux actuels", type:"textarea" },
+      { id:"vision_neuro", label:"Vision", type:"checkboxes", options:["Cataracte","Glaucome","DMLA","Port de lunettes"] },
+      { id:"audition_neuro", label:"Audition", type:"checkboxes", options:["Presbyacousie","Appareillé(e)","Surdité","Ne porte pas ses appareils"] },
+      { id:"examens_neuro", label:"Examens réalisés", type:"checkboxes", options:["IRM","Scanner","Scintigraphie cérébrale","Analyses de sang","Évaluation neuropsychologique","Évaluation gériatrique"] },
+      { id:"atcd_fam_neuro", label:"Antécédents familiaux neuro-dégénératifs", type:"textarea" },
+      { id:"evenements_vie", label:"Événements de vie marquants", type:"textarea" },
+      { id:"commentaires_neuro", label:"Commentaires", type:"textarea" },
     ]
   }
+};
+
 };
 
 let qaData = null;
@@ -225,6 +301,10 @@ function renderForm(sections) {
         html += `<textarea id="fq_${secId}_${q.id}" placeholder="Votre réponse…"></textarea>`;
       } else if (q.type === 'text') {
         html += `<input type="text" id="fq_${secId}_${q.id}" placeholder="Votre réponse…">`;
+      } else if (q.type === 'select') {
+        html += `<select id="fq_${secId}_${q.id}" class="sel"><option value="">— choisir —</option>`;
+        q.options.forEach(o => { html += `<option value="${o}">${o}</option>`; });
+        html += `</select>`;
       } else if (q.type === 'checkboxes') {
         html += `<div class="checks">`;
         q.options.forEach((o,i) => {
