@@ -1,0 +1,1685 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OrthoBuddy — Trames de bilans</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,400;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.31.0/dist/tabler-icons.min.css">
+<style>
+  :root{
+    --creme:#F7F3EC; --creme-2:#FCFAF5; --surface:#FFFFFF;
+    --ink:#3C3A33; --ink-soft:#6E695C;
+    --sage:#6F8C6A; --sage-deep:#56714F; --sage-soft:#E7EDE2;
+    --brique:#A65A43; --brique-soft:#F6E9E2;
+    --border:#E7E0D3; --border-soft:#EFEADF;
+    --radius:16px; --radius-sm:10px;
+    --shadow:0 1px 2px rgba(60,58,51,.04), 0 6px 20px rgba(60,58,51,.06);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{font-family:'Nunito',system-ui,-apple-system,sans-serif;background:var(--creme);color:var(--ink);line-height:1.5;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:880px;margin:0 auto;padding:0 18px 90px}
+
+  .topbar{position:sticky;top:0;z-index:50;background:rgba(247,243,236,.9);backdrop-filter:saturate(140%) blur(8px);border-bottom:1px solid var(--border)}
+  .topbar-inner{max-width:880px;margin:0 auto;padding:14px 18px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:18px;letter-spacing:-.01em}
+  .logo{width:34px;height:34px;border-radius:11px;background:linear-gradient(150deg,var(--sage),var(--sage-deep));display:grid;place-items:center;color:#fff;font-size:20px;flex:0 0 auto}
+  .brand small{display:block;font-weight:600;font-size:12px;color:var(--ink-soft)}
+  .spacer{flex:1 1 auto}
+  .save-state{font-size:12.5px;color:var(--ink-soft);display:flex;align-items:center;gap:6px;min-height:20px}
+  .save-state.dot::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--sage);display:inline-block}
+
+  .controls{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;margin:22px 0 8px}
+  .ctrl{display:flex;flex-direction:column;gap:5px}
+  .ctrl label{font-size:12.5px;font-weight:700;color:var(--ink-soft)}
+  .ctrl select,.ctrl input{font-family:inherit;font-size:15px;color:var(--ink);background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px 12px;min-width:220px}
+  .ctrl select:focus,.ctrl input:focus,textarea:focus,input:focus,select:focus{outline:2px solid var(--sage);outline-offset:1px}
+
+  .btn{font-family:inherit;font-weight:700;font-size:14.5px;cursor:pointer;border-radius:var(--radius-sm);padding:11px 16px;border:1px solid transparent;display:inline-flex;align-items:center;gap:8px;transition:.15s}
+  .btn i{font-size:18px}
+  .btn-primary{background:var(--sage);color:#fff}
+  .btn-primary:hover{background:var(--sage-deep)}
+  .btn-brique{background:var(--brique);color:#fff}
+  .btn-brique:hover{filter:brightness(.93)}
+  .btn-ghost{background:var(--surface);color:var(--ink);border-color:var(--border)}
+  .btn-ghost:hover{background:var(--creme-2)}
+  .btn-danger{background:transparent;color:var(--brique);border-color:transparent}
+  .btn-danger:hover{background:var(--brique-soft)}
+  .actions{display:flex;gap:10px;flex-wrap:wrap;margin:18px 0 26px}
+
+  .lead{background:var(--creme-2);border:1px solid var(--border-soft);border-radius:var(--radius);padding:16px 18px;margin-bottom:8px;font-size:14.5px;color:var(--ink-soft)}
+  .lead b{color:var(--ink)}
+
+  details.section{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);margin:14px 0;box-shadow:var(--shadow);overflow:hidden}
+  details.section>summary{list-style:none;cursor:pointer;padding:16px 18px;display:flex;align-items:center;gap:12px;font-weight:800;font-size:16.5px;background:linear-gradient(180deg,#fff,#fffdf9)}
+  details.section>summary::-webkit-details-marker{display:none}
+  .sec-icon{width:30px;height:30px;border-radius:9px;background:var(--sage-soft);color:var(--sage-deep);display:grid;place-items:center;font-size:17px;flex:0 0 auto}
+  .chev{margin-left:auto;color:var(--ink-soft);transition:transform .2s;font-size:20px}
+  details.section[open] .chev{transform:rotate(180deg)}
+  .sec-body{padding:4px 18px 20px;border-top:1px solid var(--border-soft)}
+
+  .field{margin:16px 0}
+  .field>label{display:block;font-weight:700;font-size:14px;margin-bottom:6px;color:var(--ink)}
+  .field .hint{font-weight:600;font-size:12.5px;color:var(--ink-soft);margin-left:6px}
+  textarea,input.txt{width:100%;font-family:inherit;font-size:15px;color:var(--ink);background:var(--creme-2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px 12px;resize:vertical}
+  textarea{min-height:74px;line-height:1.55}
+  select.sel{width:100%;font-family:inherit;font-size:15px;color:var(--ink);background:var(--creme-2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px 12px}
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  @media(max-width:560px){.row2{grid-template-columns:1fr}}
+
+  .subhead{display:flex;align-items:center;gap:8px;margin:22px 0 4px;font-weight:800;font-size:14.5px;color:var(--brique);text-transform:uppercase;letter-spacing:.04em}
+  .subhead::after{content:"";flex:1;height:1px;background:var(--border)}
+
+  /* Guide d'entretien : consignes / aides */
+  .note{background:var(--brique-soft);border:1px solid #EBD3C7;border-left:3px solid var(--brique);border-radius:var(--radius-sm);padding:12px 14px;margin:14px 0;font-size:13.5px;color:#7a4733;line-height:1.6}
+  .note .gt{display:block;font-weight:800;text-transform:uppercase;letter-spacing:.04em;font-size:11.5px;margin-bottom:4px;color:var(--brique)}
+  .note b{color:#6a3a28}
+  .note .ex{display:block;margin-top:6px;padding-left:10px;border-left:2px solid #E0BCA9;font-style:italic;color:#86604f}
+
+  .scale{display:flex;align-items:center;gap:14px}
+  .scale input[type=range]{flex:1;accent-color:var(--sage)}
+  .scale .val{font-weight:800;font-size:17px;color:var(--sage-deep);min-width:46px;text-align:right}
+  .scale small{color:var(--ink-soft);font-size:11.5px}
+
+  .checks{display:flex;flex-wrap:wrap;gap:8px}
+  .chk{display:inline-flex;align-items:center;gap:7px;cursor:pointer;background:var(--creme-2);border:1px solid var(--border);border-radius:999px;padding:7px 13px;font-size:13.5px;font-weight:600;user-select:none;transition:.12s}
+  .chk input{accent-color:var(--sage);width:15px;height:15px}
+  .chk:has(input:checked){background:var(--sage-soft);border-color:var(--sage);color:var(--sage-deep)}
+
+  /* Listes présence / absence */
+  .plist{display:flex;flex-direction:column;gap:6px}
+  .prow{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+  .prow .cnt{width:130px;font-family:inherit;font-size:13px;background:var(--creme-2);border:1px solid var(--border);border-radius:8px;padding:6px 9px}
+  /* Listes d'épreuves (score + commentaire) */
+  .elist{display:flex;flex-direction:column;gap:8px}
+  .erow{display:flex;flex-direction:column;gap:6px;padding:8px 10px;border:1px solid var(--border-soft);border-radius:10px;background:var(--creme-2)}
+  .efields{display:flex;flex-direction:column;gap:6px;padding-left:24px;margin-top:2px}
+  .efields .escore,.efields .ecom{font-family:inherit;font-size:13.5px;background:#fff;border:1px solid var(--border);border-radius:8px;padding:7px 10px}
+  .efields .ecom{min-height:46px;resize:vertical}
+  /* Grille consonnes */
+  .pgrid{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+  @media(max-width:560px){.pgrid{grid-template-columns:1fr}}
+  .pgrow{display:flex;align-items:center;gap:8px;background:var(--creme-2);border:1px solid var(--border-soft);border-radius:8px;padding:5px 8px}
+  .pcons{font-weight:800;min-width:26px;color:var(--ink)}
+  .pbtns{display:flex;gap:4px;margin-left:auto}
+  .pbtn{font-family:inherit;font-size:11px;font-weight:700;cursor:pointer;border:1px solid var(--border);background:#fff;color:var(--ink-soft);border-radius:7px;padding:4px 8px}
+  .pbtn.on.b-m{background:var(--sage);color:#fff;border-color:var(--sage)}
+  .pbtn.on.b-s{background:#C39A4E;color:#fff;border-color:#C39A4E}
+  .pbtn.on.b-n{background:var(--brique);color:#fff;border-color:var(--brique)}
+  /* Grille d'évaluation par niveau */
+  .rgrid{display:flex;flex-direction:column;gap:6px}
+  .rgrow{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  .rglabel{flex:1;min-width:150px;font-size:13.5px;font-weight:600}
+  .rgsel{max-width:240px}
+
+  /* Modal cabinet */
+  .overlay{position:fixed;inset:0;background:rgba(46,44,38,.4);display:none;z-index:100;align-items:center;justify-content:center;padding:18px}
+  .overlay.open{display:flex}
+  .modal{background:var(--surface);border-radius:var(--radius);max-width:520px;width:100%;max-height:90vh;overflow:auto;box-shadow:0 20px 60px rgba(46,44,38,.3)}
+  .modal-head{padding:18px 20px;border-bottom:1px solid var(--border-soft);font-weight:800;font-size:17px;display:flex;align-items:center;gap:10px}
+  .modal-body{padding:8px 20px 18px}
+  .modal-foot{padding:14px 20px;border-top:1px solid var(--border-soft);display:flex;justify-content:flex-end;gap:10px}
+  .mf{margin:13px 0}
+  .mf label{display:block;font-weight:700;font-size:13px;margin-bottom:5px;color:var(--ink)}
+  .mf input,.mf select{width:100%;font-family:inherit;font-size:14.5px;background:var(--creme-2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:9px 11px}
+  .mf.profile{background:var(--sage-soft);margin:0 -20px 6px;padding:14px 20px;border-bottom:1px solid var(--border-soft)}
+  .mf.profile select{background:#fff}
+
+  @media print{.topbar,.controls,.actions,.lead{display:none}}
+</style>
+</head>
+<body>
+  <div class="topbar">
+    <div class="topbar-inner">
+      <div class="brand"><div class="logo"><i class="ti ti-leaf"></i></div><div>OrthoBuddy<small>Trames de bilans</small></div></div>
+      <div class="spacer"></div>
+      <div class="save-state" id="saveState"></div>
+    </div>
+  </div>
+
+  <div class="wrap">
+    <div class="controls">
+      <div class="ctrl">
+        <label for="trameSel">Trame de bilan</label>
+        <select id="trameSel" class="sel"></select>
+      </div>
+      <div class="ctrl">
+        <label for="patientSel">Patient</label>
+        <select id="patientSel" class="sel"><option value="">— choisir un patient —</option></select>
+      </div>
+      <div class="ctrl">
+        <label for="savedSel">Mes bilans enregistrés</label>
+        <select id="savedSel" class="sel"></select>
+      </div>
+    </div>
+
+    <div class="lead" id="lead"></div>
+
+    <div class="actions">
+      <button class="btn btn-brique" id="btnPdf"><i class="ti ti-file-type-pdf"></i> Aperçu &amp; PDF</button>
+      <button class="btn btn-primary" id="btnWord"><i class="ti ti-file-type-docx"></i> Télécharger Word</button>
+      <button class="btn btn-ghost" id="btnSettings"><i class="ti ti-building"></i> Cabinet &amp; signature</button>
+      <button class="btn btn-ghost" id="btnBackup"><i class="ti ti-download"></i> Exporter une sauvegarde</button>
+      <button class="btn btn-ghost" id="btnImport"><i class="ti ti-upload"></i> Importer</button>
+      <input type="file" id="importFile" accept="application/json,.json" style="display:none">
+      <div class="ctrl" style="display:flex;gap:6px;align-items:flex-end;">
+        <div style="flex:1;">
+          <label for="savedSel">Bilans enregistrés</label>
+          <select id="savedSel" class="sel"><option value="">— ouvrir un bilan —</option></select>
+        </div>
+        <button id="btnDeleteSaved" class="btn btn-ghost" title="Supprimer" style="flex-shrink:0;padding:0 10px;height:36px;color:#c0392b;border-color:#c0392b;" disabled><i class="ti ti-trash"></i></button>
+      </div>
+      <button class="btn btn-ghost" id="btnRenew" style="display:none"><i class="ti ti-copy"></i> Renouvellement</button>
+      <button class="btn btn-danger" id="btnReset"><i class="ti ti-eraser"></i> Réinitialiser</button>
+    </div>
+
+    <div id="form"></div>
+  </div>
+
+  <!-- Modal cabinet -->
+  <div class="overlay" id="overlay">
+    <div class="modal">
+      <div class="modal-head"><i class="ti ti-building"></i> Cabinet &amp; signature</div>
+      <div class="modal-body">
+        <p style="color:var(--ink-soft);font-size:13.5px;margin-top:6px">Ces informations alimentent l'en-tête et la signature des comptes rendus. Enregistrez un ou plusieurs profils ; celui sélectionné est utilisé pour les exports.</p>
+        <div class="mf profile"><label>Profil enregistré</label><select id="cab_profileSel"></select></div>
+        <div class="mf"><label>Nom du cabinet</label><input id="cab_cabinet" placeholder="Cabinet d'orthophonie …"></div>
+        <div class="mf"><label>Nom du praticien</label><input id="cab_nom" placeholder="Prénom Nom"></div>
+        <div class="mf"><label>Statut</label><input id="cab_statut" placeholder="Orthophoniste"></div>
+        <div class="mf"><label>Adresse</label><input id="cab_adresse" placeholder="Rue, code postal, ville"></div>
+        <div class="mf"><label>Téléphone</label><input id="cab_tel" placeholder="03 …"></div>
+        <div class="mf"><label>Email</label><input id="cab_email" placeholder="email@…"></div>
+        <div class="mf"><label>Certifications / mentions (optionnel)</label><input id="cab_certifs" placeholder="Praticien certifié LSVT® …"></div>
+        <div class="mf" style="border-top:1px solid var(--border-soft);padding-top:14px"><label>Nom de ce profil</label><input id="cab_profileName" placeholder="ex. Cabinet principal"></div>
+      </div>
+      <div class="modal-foot">
+        <button class="btn btn-danger" id="cabDelete"><i class="ti ti-trash"></i> Supprimer ce profil</button>
+        <div class="spacer"></div>
+        <button class="btn btn-ghost" id="cabCancel">Annuler</button>
+        <button class="btn btn-primary" id="cabSave"><i class="ti ti-check"></i> Enregistrer</button>
+      </div>
+    </div>
+  </div>
+
+<script>
+/* ============================================================================
+   OrthoBuddy — Moteur de trames de bilans (autonome, localStorage)
+   Data-driven : 1 moteur + 1 config par trame.
+   Types de champ : text | textarea | select | checkboxes | scale | note | subhead
+   Les id de stockage sont DÉTERMINISTES : trameId.sectionId.champId
+   - inHeader:true  -> le champ alimente l'en-tête du document (pas la section)
+   - meta:true (section) -> section de saisie d'en-tête, pas rendue comme bloc CR
+   ========================================================================= */
+
+const TRAMES = {
+
+  "odorat-gout": {
+    titre: "Neurologie — Troubles de l'odorat et du goût",
+    docTitle: "Bilan orthophonique des troubles de l'olfaction et de la gustation",
+    sections: [
+
+      { id:"entete", titre:"En-tête du document", icon:"ti-mail", meta:true,
+        champs:[
+          { id:"destinataire", label:"Médecin destinataire (prescripteur)", type:"text" },
+          { id:"copies", label:"Copies (autres destinataires)", type:"text" },
+          { id:"date_bilan", label:"Date du bilan", type:"text" },
+        ]},
+
+      { id:"administratif", titre:"Éléments administratifs", icon:"ti-id",
+        champs:[
+          { id:"nom", label:"Nom", type:"text", auto:true, inHeader:true },
+          { id:"prenom", label:"Prénom", type:"text", auto:true, inHeader:true },
+          { id:"ddn", label:"Date de naissance (âge le jour du bilan)", type:"text", auto:true, inHeader:true },
+          { id:"adresse", label:"Adresse", type:"text", inHeader:true },
+          { id:"secu", label:"Numéro de sécurité sociale", type:"text", inHeader:true },
+          { id:"profession", label:"Profession", type:"text" },
+          { id:"situation", label:"Situation familiale", type:"text" },
+          { id:"duree", label:"Durée et horaire du bilan", type:"text" },
+        ]},
+
+      { id:"demande", titre:"Demande / plainte", icon:"ti-message-2",
+        champs:[
+          { id:"plainte", label:"Plainte actuelle", type:"textarea" },
+          { id:"demande", label:"Demande", type:"textarea" },
+        ]},
+
+      { id:"anamnese", titre:"Anamnèse", icon:"ti-notebook",
+        champs:[
+          { id:"atcd_med", label:"Antécédents médicaux récents / anciens", type:"textarea" },
+          { id:"atcd_orl", label:"Antécédents ORL récents / anciens", type:"textarea" },
+          { id:"traitement", label:"Traitement médical actuel et iatrogénie", type:"textarea" },
+          { id:"poids", label:"Poids (kg)", type:"text", half:true },
+          { id:"taille", label:"Taille (m)", type:"text", half:true },
+          { id:"regime", label:"Régime alimentaire", type:"textarea" },
+          { id:"modif_alim", label:"Modification de l'alimentation", type:"textarea" },
+          { id:"histoire", label:"Histoire de la maladie", type:"textarea" },
+        ]},
+
+      { id:"types_eval", titre:"Bilan — Types d'évaluation", icon:"ti-flask",
+        champs:[
+          { id:"note1", type:"note", text:"<span class='gt'>Repère</span>L'orthophoniste n'est pas ORL : iel ne dispose pas nécessairement de tests normés (Sniffin' Sticks test). L'évaluation vise <b>l'olfaction</b> (et non l'odorat) et <b>la gustation</b> (et non le goût). Les épreuves peuvent aussi renseigner sur les mémoires de travail et sensorielle du patient." },
+          { id:"note2", type:"note", text:"<span class='gt'>Matériel</span>Privilégier des flacons déjà prêts, incolores ou non visibles par le patient — ni la taille ni la couleur ne doivent l'influencer, sinon le test est biaisé. <b>C'est le bilan le plus biaisable de tous : vigilance.</b> Pour chaque épreuve, noter le matériel utilisé (marque + présentation : odeur liquide / solide / spray ; pour les sprays, indiquer le nombre de pulvérisations sur la touche). Le goût est le sens le plus influençable : attention particulière à la gustation." },
+          { id:"type_bilan", label:"Type de bilan", type:"select", options:["Bilan d'investigation","Bilan classique","Bilan de renouvellement"] },
+          { id:"domaines", label:"Domaine(s) exploré(s)", type:"textarea" },
+          { id:"tests", label:"Nom des test(s) utilisé(s)", type:"textarea" },
+        ]},
+
+      { id:"echelles", titre:"Échelles d'auto-évaluation", icon:"ti-adjustments",
+        champs:[
+          { id:"note_ech", type:"note", text:"<span class='gt'>Consigne</span>Échelles inspirées de l'auto-évaluation de la douleur : de 1 à 10 — 1 = peu de retentissement, 10 = fort retentissement." },
+          { id:"ech_odeur_avant", label:"Importance de l'odeur dans la vie d'avant", type:"scale" },
+          { id:"ech_handicap_odeur", label:"Vécu du handicap aujourd'hui (odeur)", type:"scale" },
+          { id:"ech_gout_avant", label:"Importance du goût dans la vie d'avant", type:"scale" },
+          { id:"ech_handicap_gout", label:"Vécu du handicap aujourd'hui (goût)", type:"scale" },
+        ]},
+
+      { id:"profil", titre:"Synthèse — Profil olfactif", icon:"ti-user-heart",
+        champs:[
+          { id:"note_prof", type:"note", text:"<span class='gt'>Profil olfactif</span>(et non plus « portrait olfactif »). Reconstituer l'environnement olfactif du patient." },
+          { id:"enfance", label:"Enfance (lieu)", type:"text" },
+          { id:"plat_pref", label:"Plat préféré", type:"text", half:true },
+          { id:"boisson_pref", label:"Boisson préférée", type:"text", half:true },
+          { id:"detestes", label:"Plat et boisson détestés", type:"text" },
+          { id:"tabac", label:"Tabagisme", type:"select", options:["Non","Actif","Passif"] },
+          { id:"animaux", label:"Animaux", type:"text" },
+          { id:"lieu_vie", label:"Lieu de vie actuel", type:"text" },
+          { id:"note_maison", type:"note", text:"<span class='gt'>Odeurs de la maison</span>Produits d'entretien (marques et parfums) ? Existence d'une cheminée — en fonction ou décorative ? Fleurs coupées ? Fleurs séchées ? Etc." },
+          { id:"odeurs_maison", label:"Odeurs de la maison", type:"textarea" },
+          { id:"hygiene", label:"Produits d'hygiène", type:"textarea", hint:"Marques et parfums" },
+          { id:"parfum", label:"Parfum", type:"text", half:true },
+          { id:"parfum_conj", label:"Parfum du / de la conjoint·e", type:"text", half:true },
+          { id:"note_pyr", type:"note", text:"<span class='gt'>Astuce</span>Chercher les pyramides olfactives, notamment les notes de cœur et de fond." },
+        ]},
+
+      { id:"souvenir", titre:"Synthèse — Souvenir olfactif", icon:"ti-bulb",
+        champs:[
+          { id:"note_souv", type:"note", text:"<span class='gt'>Consigne</span>« Pouvez-vous me raconter un souvenir lié directement à une odeur ? » Ce peut être une odeur hédonique positive et/ou négative.<br>Noter si l'exercice est aisé ou difficile pour le patient." },
+          { id:"souvenir", label:"Souvenir rapporté", type:"textarea" },
+          { id:"souv_diff", label:"Réalisation de l'exercice", type:"select", options:["Aisée","Difficile"] },
+        ]},
+
+      { id:"discrimination", titre:"Olfaction — Discrimination pure", icon:"ti-circles",
+        champs:[
+          { id:"sub_tri", type:"subhead", text:"Test triangulaire (avec leurre ++)" },
+          { id:"note_tri", type:"note", text:"<span class='gt'>Protocole</span>Proposer 3 touches d'odeurs dont <b>1 leurre</b> (touche trempée dans un flacon d'eau).<br><b>Consigne :</b> « Sentez chaque touche, concentrez-vous non pas sur ce que c'est mais sur votre ressenti. »<br>Guider avec des questions précises : odeur forte ou faible ? (détection) — familière ? qui vous plaît ? (hédonique positif) — qui reste ou qui est fugace ? — premier mot qui vient à l'esprit ?<span class='ex'>Ex. (T = touche) — T1 COCO : « je détecte, au départ fleuri puis sucré/caramélisé, odeur stable, peut-être l'odeur du papier, hédonique positif, non reliée à quelque chose de particulier » (persistance de l'odeur n°1). T2 LEURRE : « interrogation sur un reliquat du n°1, odeur qui s'évanouit, sensation que la touche n'a pas de parfum ». T3 CLOU DE GIROFLE : « ah si, ça me fait penser au clou de girofle ! »</span><b>Attention :</b> si le patient sent une odeur sur le leurre, c'est le signe d'une perturbation importante du système olfactif." },
+          { id:"tri_res", label:"Résultat du test triangulaire", type:"select", options:["Réussi","Non réussi"] },
+          { id:"tri_obs", label:"Observations par touche (T1 / T2 / T3)", type:"textarea" },
+          { id:"tri_comp", label:"Comportement sur touche", type:"textarea", hint:"Adhésif ? Persistant ? Perturbation du système olfactif ? Respectueux du cycle nasal ?" },
+
+          { id:"sub_pareil", type:"subhead", text:"Pareil / pas pareil" },
+          { id:"note_pareil", type:"note", text:"<span class='gt'>Repli</span>Si le test triangulaire est difficile ou échoué, proposer un test plus facile : 2 touches (odeurs identiques ou différentes).<br><b>Consigne :</b> « Sentez ces deux touches, avez-vous l'impression qu'il s'agit de deux odeurs identiques ou différentes ? »<br>3 niveaux de difficulté : 2 familles olfactives opposées (facile) → 2 odeurs différentes d'une même famille (moyen) → 2 odeurs identiques (difficile)." },
+          { id:"pareil_res", label:"Résultat", type:"select", options:["Réussi","Échoué"] },
+          { id:"pareil_niv", label:"Niveau de difficulté", type:"select", options:["Facile","Moyen","Difficile"] },
+          { id:"pareil_obs", label:"Observations", type:"textarea" },
+        ]},
+
+      { id:"identification", titre:"Olfaction — Identification", icon:"ti-photo",
+        champs:[
+          { id:"note_id", type:"note", text:"<span class='gt'>Protocole</span>1 odorant + images (de 2 à 6 selon le trouble et les épreuves précédentes).<br><b>Consigne :</b> présenter une touche avec des images et étiquettes-mots sous les yeux du patient ; lui demander de sentir la touche et de la poser sur l'image correspondante.<br><b>Attention</b> aux représentations mentales : certaines odeurs nécessitent une image et plusieurs dessins pour une même odeur." },
+          { id:"id_res", label:"Résultat", type:"select", options:["Réussi","Non réussi"] },
+          { id:"id_nb", label:"Nombre d'images", type:"text", half:true },
+          { id:"id_cat", label:"Catégorie du stimulus olfactif", type:"text", half:true },
+          { id:"id_obs", label:"Observations", type:"textarea" },
+        ]},
+
+      { id:"gustation", titre:"Synthèse — Gustation", icon:"ti-cup",
+        champs:[
+          { id:"sub_verres", type:"subhead", text:"Test des 6 verres d'eau (protocole V. Le Lan)" },
+          { id:"note_verres", type:"note", text:"<span class='gt'>Protocole</span>6 verres d'eau incolores numérotés de 1 à 6.<br><b>Consigne :</b> « Prenez une gorgée de chaque verre dans l'ordre (du n°1 au n°6) et décrivez vos sensations. »<br>Noter les réponses du patient. <b>En aucun cas on ne parle de saveurs.</b> Le leurre et l'Umami renseignent sur le trouble (agueusie ou dysgueusie)." },
+          { id:"verres_res", label:"Réponses du patient", type:"textarea" },
+
+          { id:"sub_markley", type:"subhead", text:"Classification de Markley" },
+          { id:"note_markley", type:"note", text:"<span class='gt'>Consigne</span>Interroger le patient sur les 6 catégories d'aliments pour obtenir le type de dysgueusie (I à IV). Un patient peut réussir le test des 6 verres et présenter une dysgueusie de type IV." },
+          { id:"markley_type", label:"Type de dysgueusie", type:"select", options:["Aucune","Type I","Type II","Type III","Type IV"] },
+          { id:"markley_obs", label:"Observations", type:"textarea" },
+
+          { id:"sub_autre", type:"subhead", text:"Autres examens" },
+          { id:"trigem", label:"Sensations trigéminales", type:"select", options:["Préservées","Altérées"] },
+          { id:"trigem_det", label:"Détail trigéminal", type:"textarea", hint:"Hypo / hypersensibilité à l'une des 5 sensations ? Laquelle / lesquelles ?" },
+          { id:"nauseeux", label:"Examen du réflexe nauséeux", type:"textarea", hint:"Antériorisation ?" },
+          { id:"bucco", label:"État bucco-dentaire", type:"textarea", hint:"Iatrogénie et salive" },
+        ]},
+
+      { id:"comportement", titre:"Comportement du patient", icon:"ti-eye",
+        champs:[
+          { id:"fatig", label:"Fatigabilité", type:"textarea", half:true },
+          { id:"satur", label:"Phénomène de saturation", type:"textarea", half:true },
+          { id:"interf", label:"Interférences", type:"textarea", half:true },
+          { id:"ideation", label:"Délai et lenteur d'idéation", type:"textarea", half:true },
+          { id:"comp_testing", label:"Comportement pendant le testing", type:"checkboxes",
+            options:["Adapté","Attentif","Autonome","Assidu","Discret","Efficace","Méticuleux","Motivé","Organisé","Opposant","Patient","Persévérant","Rigoureux","Sensible","Vigilant","Volontaire"] },
+          { id:"reac_testing", label:"Réaction au testing", type:"checkboxes",
+            options:["Agitation","Anxiété associée au testing","Anxiété de performance","Appréhension","Calme","Confiance","Énervement","Indifférence","Inquiétude","Sérénité"] },
+        ]},
+
+      { id:"resultats", titre:"Résultats", icon:"ti-clipboard-check",
+        champs:[
+          { id:"r_trouble", label:"Quel trouble ? Quantitatif et/ou qualitatif ?", type:"textarea" },
+          { id:"r_distorsions", label:"Distorsions", type:"textarea" },
+          { id:"r_phantos", label:"Phantosmies ? Pseudogueusies ?", type:"textarea" },
+          { id:"r_satur", label:"Phénomène de saturation", type:"textarea" },
+          { id:"r_autocensure", label:"Manque d'assurance dans les réponses ? Autocensure ?", type:"textarea" },
+          { id:"r_fatig", label:"Fatigabilité", type:"textarea" },
+        ]},
+
+      { id:"diagnostic", titre:"Diagnostic orthophonique", icon:"ti-stethoscope",
+        champs:[
+          { id:"diag_olf", label:"Olfaction", type:"select", options:["—","Anosmie","Hyposmie","Dysosmie"] },
+          { id:"diag_gust", label:"Gustation", type:"select", options:["—","Agueusie","Hypogueusie","Hypergueusie","Dysgueusie"] },
+          { id:"diag_concl", label:"Éléments de conclusion", type:"textarea",
+            def:"Perte ou perturbation du système olfacto-gustatif (quantitatif et/ou qualitatif)." },
+          { id:"ngap", label:"Correspondance du libellé NGAP", type:"textarea",
+            def:"Rééducation et/ou maintien et/ou adaptation des fonctions de communication, du langage, des troubles cognitivo-linguistiques et des fonctions oro-myo-faciales chez les patients atteints de pathologies neurologiques d'origine vasculaire, tumorale ou post-traumatique." },
+        ]},
+
+      { id:"projet", titre:"Projet thérapeutique", icon:"ti-target-arrow",
+        champs:[
+          { id:"note_proj", type:"note", text:"<span class='gt'>Repère</span>Les objectifs s'adaptent au(x) trouble(s) : la rééducation diffère selon qu'il soit quantitatif ou qualitatif, et les conseils généraux aussi. En cas de distorsions gustatives, prévoir un protocole de neutralisation (inspiré des torquegueusies post-radiques)." },
+          { id:"objectifs", label:"Objectifs de la rééducation", type:"textarea" },
+          { id:"note_proj_olf", type:"note", text:"<span class='gt'>Olfaction — exemples</span>Travail sur les familles olfactives (2 niveaux) · lexique olfactif pour chaque famille · écriture olfactive (3 niveaux) · imagerie mentale (≠ visualisation mentale) · mémoire sensorielle." },
+          { id:"proj_olf", label:"Projet — olfaction", type:"textarea" },
+          { id:"note_proj_gust", type:"note", text:"<span class='gt'>Gustation — exemples</span>Neutralisation de la dysgueusie · leurrer le cerveau en jouant sur les influenceurs du goût · jeu gourmet sans dégustation · supervision de dégustations en pleine conscience (solides et liquides) · aide au remplissage des fiches de dégustation." },
+          { id:"proj_gust", label:"Projet — gustation", type:"textarea" },
+
+          { id:"sub_preco", type:"subhead", text:"Préconisations" },
+          { id:"exams", label:"Examen(s) complémentaire(s) proposé(s)", type:"textarea", def:"Avis ORL, IRM cérébrale." },
+          { id:"preco_medecin", label:"Préconisations au médecin prescripteur / traitant", type:"textarea" },
+          { id:"preco_entourage", label:"Préconisations à l'entourage / à la maison", type:"textarea" },
+          { id:"preco_partenaires", label:"Préconisations aux partenaires / lieux de vie", type:"textarea" },
+        ]},
+    ]
+  },
+
+  "langage-oral-enfant": {
+    titre: "Langage oral — enfant",
+    docTitle: "Bilan orthophonique du langage oral chez l'enfant",
+    sections: [
+
+      { id:"entete", titre:"En-tête du document", icon:"ti-mail", meta:true,
+        champs:[
+          { id:"destinataire", label:"Médecin destinataire (prescripteur)", type:"text" },
+          { id:"copies", label:"Copies (autres destinataires)", type:"text" },
+          { id:"date_bilan", label:"Date du bilan", type:"text" },
+        ]},
+
+      { id:"administratif", titre:"Éléments administratifs", icon:"ti-id",
+        champs:[
+          { id:"nom", label:"Nom", type:"text", auto:true, inHeader:true },
+          { id:"prenom", label:"Prénom", type:"text", auto:true, inHeader:true },
+          { id:"ddn", label:"Date de naissance (âge le jour du bilan)", type:"text", auto:true, inHeader:true },
+          { id:"adresse", label:"Adresse", type:"text", inHeader:true },
+          { id:"secu", label:"Numéro de sécurité sociale (ou de l'ouvrant droit)", type:"text", inHeader:true },
+          { id:"classe", label:"Classe / niveau scolaire", type:"text", half:true },
+          { id:"ecole", label:"École / établissement", type:"text", half:true },
+          { id:"langues", label:"Langues parlées à la maison", type:"text" },
+          { id:"garde", label:"Mode de garde / accueil", type:"text" },
+          { id:"medecin", label:"Médecin traitant / prescripteur", type:"text" },
+          { id:"duree", label:"Durée du bilan", type:"text" },
+        ]},
+
+      { id:"demande", titre:"Demande / plainte", icon:"ti-message-2",
+        champs:[
+          { id:"motif", label:"Motif de consultation / qui adresse l'enfant", type:"textarea" },
+          { id:"plainte", label:"Plainte et inquiétudes rapportées", type:"textarea" },
+          { id:"attentes", label:"Attentes de la famille", type:"textarea" },
+        ]},
+
+      { id:"anamnese", titre:"Anamnèse", icon:"ti-notebook",
+        champs:[
+          { id:"grossesse", label:"Grossesse et naissance", type:"textarea", hint:"déroulement, terme, événements péri-nataux, score d'Apgar…" },
+          { id:"dev_psy", label:"Développement psychomoteur", type:"textarea" },
+          { id:"dev_langage", label:"Développement du langage", type:"textarea", hint:"babillage, premiers mots, premières associations…" },
+          { id:"atcd_med", label:"Antécédents médicaux", type:"textarea" },
+          { id:"audition", label:"Audition / ORL", type:"textarea", half:true },
+          { id:"vue", label:"Vue", type:"textarea", half:true },
+          { id:"atcd_fam", label:"Antécédents familiaux (langage / écrit)", type:"textarea" },
+          { id:"scolarite", label:"Scolarité / parcours", type:"textarea" },
+          { id:"contexte", label:"Contexte familial / bilinguisme", type:"textarea" },
+          { id:"activites", label:"Activités quotidiennes / loisirs", type:"textarea" },
+          { id:"sub_quest", type:"subhead", text:"Questionnaires" },
+          { id:"ide_score", label:"Inventaire du développement de l'enfant (IDE) — score", type:"text" },
+          { id:"ide_com", label:"Inventaire du développement de l'enfant (IDE) — commentaires", type:"textarea" },
+        ]},
+
+      { id:"comportement", titre:"Communication, pragmatique, compétences socles", icon:"ti-users",
+        champs:[
+          { id:"note_com", type:"note", text:"<span class='gt'>Repère</span>Observer les prérequis à la communication et l'attitude de l'enfant tout au long du bilan." },
+          { id:"attitude", label:"Attitude pendant le bilan", type:"textarea", hint:"attention, coopération, fatigabilité, confiance…" },
+          { id:"profil_com", label:"Prérequis communicationnels à surveiller", type:"checkboxes",
+            options:["Attention conjointe fragile","Contact visuel limité","Faible élan à la communication","Tour de parole peu respecté","Imitation motrice limitée","Prosodie / babillage atténués"] },
+          { id:"strat_enfant", label:"Stratégies de communication de l'enfant", type:"presence_list", showAbsent:true,
+            options:[
+              {label:"Imitation verbale spontanée", count:true},
+              {label:"Imitation spontanée après reformulation de l'adulte", count:true},
+              {label:"Se saisit d'une double proposition"},
+              {label:"Répond par oui ou non"},
+              {label:"Désigne"},
+              {label:"Fait des gestes pour se faire comprendre"},
+              {label:"Reste calme quand on ne le comprend pas"},
+              {label:"Utilise des stratégies pour réparer les bris de communication"},
+            ] },
+          { id:"strat_enfant_com", label:"Commentaires", type:"textarea" },
+          { id:"strat_parents", label:"Stratégies d'étayage des parents", type:"presence_list", showAbsent:false,
+            options:[
+              {label:"Reformulation sans demande de répétition", count:true},
+              {label:"Expansion", count:true},
+              {label:"Labelling (étiquetage)"},
+              {label:"Incitation (ébauche, prompting)"},
+              {label:"Question ouverte contingente"},
+              {label:"Fait des gestes"},
+            ] },
+          { id:"strat_parents_com", label:"Commentaires", type:"textarea" },
+          { id:"sub_epr_com", type:"subhead", text:"Épreuves" },
+          { id:"epr_com", label:"Épreuves passées (score et commentaire)", type:"epreuves_list",
+            options:["Entretien d'accueil","Dessin sur consignes","Sur le banc","Pragmatique","La gestion de l'implicite","Children's communication checklist (Bishop)","Mesure de la participation communicative de l'enfant"] },
+        ]},
+
+      { id:"articulation", titre:"Articulation / parole", icon:"ti-microphone",
+        champs:[
+          { id:"note_art", type:"note", text:"<span class='gt'>Repère</span>Distinguer le trouble articulatoire (production d'un son isolé) du trouble phonologique (organisation du système)." },
+          { id:"niveau_parole", label:"Niveau de parole", type:"select",
+            options:["Bon niveau de parole","Niveau de parole correct","Séquelles de retard de parole","Retard de parole"] },
+          { id:"troubles_art", label:"Particularités articulatoires observées", type:"checkboxes",
+            options:["Sigmatisme interdental","Sigmatisme latéral (schlintement)","Assourdissement des sonores","Flou articulatoire","Nasalisation","Déglutition primaire / interposition linguale"] },
+          { id:"praxies", label:"Praxies bucco-faciales", type:"select", options:["Réalisées dans l'ensemble","Difficultés d'exécution de certaines praxies"] },
+          { id:"art_obs", label:"Précisions parole / praxies", type:"textarea" },
+        ]},
+
+      { id:"phonologie", titre:"Phonétique / phonologie", icon:"ti-abc",
+        champs:[
+          { id:"note_phono", type:"note", text:"<span class='gt'>Repère</span>Décrire le répertoire phonétique et les processus phonologiques relevés. Reporter ici les résultats des épreuves étalonnées éventuelles." },
+          { id:"scores_chutes", label:"Scores chutés aux épreuves normées en phonologie", type:"select", options:["Oui","Non"], half:true },
+          { id:"diff_voyelles", label:"Difficulté sur les voyelles", type:"select", options:["Oui","Non"], half:true },
+          { id:"phonetisme", label:"Phonétisme complet ?", type:"select", options:["Oui","Non"], half:true },
+          { id:"prod_stables", label:"Productions stables ?", type:"select", options:["Oui","Non"], half:true },
+          { id:"rep_aidante", label:"Répétition aidante ?", type:"select", options:["Oui","Non"] },
+
+          { id:"sub_repertoire", type:"subhead", text:"Répertoire phonétique" },
+          { id:"repertoire", label:"Classer chaque consonne (maîtrisée / stimulable / non produite)", type:"phoneme_grid",
+            consonnes:["p","b","m","t","d","n","gn","k","g","f","v","s","z","l","ch","j","r"] },
+
+          { id:"sub_scores", type:"subhead", text:"Scores" },
+          { id:"rep_syllabe", label:"Répétition de syllabes", type:"text", half:true },
+          { id:"diadococinesie", label:"Diadococinésie", type:"text", half:true },
+
+          { id:"note_interp", type:"note", text:"<span class='gt'>Interprétation</span>Analyse qualitative : repérer les phonèmes altérés (erreurs permanentes et systématiques, y compris en contexte syllabique) et qualifier l'altération (omission, substitution ou distorsion), puis conclure sur la présence éventuelle d'un trouble articulatoire au regard de l'âge d'acquisition des phonèmes. Analyse quantitative : nombre d'items correctement répétés." },
+          { id:"note_diff", type:"note", text:"<span class='gt'>Diagnostic différentiel</span>Une distorsion oriente vers un trouble articulatoire (phonème mal réalisé par une position articulatoire inadéquate). Une omission ou une substitution peut relever d'un trouble articulatoire ou phonologique selon la classification. Articulation et phonologie sont liées : le développement phonologique en production est contraint par les possibilités motrices. Un phonème omis ou systématiquement remplacé qui n'appartient pas au système phonologique de l'enfant traduit une erreur phonologique, en l'absence de patterns articulatoires permettant sa production." },
+
+          { id:"sub_epr_phono", type:"subhead", text:"Épreuves de phonologie" },
+          { id:"note_denom", type:"note", text:"<span class='gt'>Dénomination d'images</span>Patrons d'erreurs rares ou peu communs à signaler : postériorisation, nasalisations, dénasalisation, voisements, élision de la consonne initiale, élision syllabique." },
+          { id:"denom_score", label:"Dénomination d'images — score", type:"text", half:true },
+          { id:"denom_pcc", label:"Score PCC (% consonnes correctes)", type:"text", half:true },
+          { id:"processus", label:"Processus phonologiques relevés", type:"checkboxes",
+            options:["Réduction de groupe consonantique","Élision consonne finale","Élision consonne initiale","Élision syllabique","Antériorisation","Postériorisation","Occlusion","Nasalisation","Dénasalisation","Dévoisement","Voisement","Assimilation","Métathèse"] },
+          { id:"autres_processus", label:"Autres processus observés / commentaires", type:"textarea" },
+          { id:"epr_phono", label:"Autres épreuves (score et commentaire)", type:"epreuves_list",
+            options:["Répétition de mots complexes","Répétition de logatomes","Dénomination rapide automatisée de mots (DRA)","Discrimination phonologique / gnosies auditivo-verbales","Jugement phonologique","Fluence phonologique","Échantillon de langage","Questionnaire parental ICS (intelligibilité)","Questionnaire parental EVALO-BB / EVALO 2-6"] },
+          { id:"phono_obs", label:"Observations / impressions cliniques", type:"textarea" },
+        ]},
+
+      { id:"lexique", titre:"Lexique & sémantique", icon:"ti-vocabulary",
+        champs:[
+          { id:"note_lex", type:"note", text:"<span class='gt'>Repère</span>Croiser le versant réception (désignation) et le versant production (dénomination, évocation). Au-delà du score, analyser les erreurs et les stratégies de compensation mises en place." },
+          { id:"sub_stock", type:"subhead", text:"Stock lexical" },
+          { id:"lex_passif", label:"Lexique passif (réception / désignation)", type:"select", options:["Adapté","Réduit","Difficile à évaluer"], half:true },
+          { id:"lex_actif", label:"Lexique actif (production / dénomination)", type:"select", options:["Adapté","Réduit","Difficile à évaluer"], half:true },
+          { id:"versant", label:"Versant le plus atteint", type:"select", options:["Réception","Production","Les deux","Difficile à évaluer"] },
+
+          { id:"sub_err", type:"subhead", text:"Erreurs de dénomination" },
+          { id:"err_denom", label:"Erreurs de dénomination / désignation", type:"checkboxes",
+            options:["Sur-extension","Sous-extension","Recouvrement"] },
+
+          { id:"sub_para", type:"subhead", text:"Paraphasies et productions inadéquates" },
+          { id:"paraphasies", label:"Paraphasies et productions inadéquates", type:"checkboxes",
+            options:["Paraphasie sémantique","Paraphasie phonémique","Paraphasie morphologique","Persévération lexicale","Néologisme / invention de mot"] },
+          { id:"manque_mot", label:"Manque du mot (dysnomie) en langage spontané", type:"select", options:["Absent","Présent","Difficile à évaluer"] },
+          { id:"manque_indic", label:"Indicateurs du manque du mot", type:"checkboxes",
+            options:["Temps de latence","Mots vides","Approches phonologiques successives","Répétitions / persévérations","Périphrases (stratégie verbale)","Gestes / mime (stratégie non verbale)","Mots de remplissage","Commentaire métacognitif","Conscience du problème"] },
+
+          { id:"sub_etayage", type:"subhead", text:"Sensibilité à l'étayage" },
+          { id:"etayage", label:"Aides efficaces", type:"checkboxes",
+            options:["Ébauche phonémique aidante","Ébauche sémantique aidante","Complètement de phrase aidant","Mise en contexte aidante"],
+            ifEmpty:"Peu ou pas de sensibilité à l'étayage (ébauches non aidantes)." },
+
+          { id:"lex_obs", label:"Analyse qualitative / impressions cliniques", type:"textarea" },
+
+          { id:"sub_epr_lex_e", type:"subhead", text:"Épreuves — expression" },
+          { id:"epr_lex_expr", label:"Épreuves d'expression (score et commentaire)", type:"epreuves_list",
+            options:["Topologie en expression","Définition en spontané","Évocation de mots catégoriels / production de termes génériques","Fluence sémantique","Fluence morphologique","Évocation d'antonymes","Questionnaires relatifs aux caractères sémiques / lexique mis en réseau","Lexique induit","Métaphores et expressions idiomatiques"] },
+          { id:"sub_epr_lex_c", type:"subhead", text:"Épreuves — compréhension" },
+          { id:"epr_lex_comp", label:"Épreuves de compréhension (score et commentaire)", type:"epreuves_list",
+            options:["Désignation à partir d'un mot","Désignation à partir d'un indice","Désignation des parties du corps","Compréhension de qualificatifs","Topologie","Quantificateurs et nombres","Relations sémantiques"] },
+          { id:"sub_epr_lex_q", type:"subhead", text:"Questionnaires" },
+          { id:"epr_lex_quest", label:"Questionnaires (score et commentaire)", type:"epreuves_list",
+            options:["IFDC (Inventaire Français du Développement Communicatif)","DPLF-3","Questionnaire relatif au manque du mot","PABIQ (bilinguisme)"] },
+        ]},
+
+      { id:"morphosyntaxe", titre:"Morphosyntaxe & discours", icon:"ti-list-tree",
+        champs:[
+          { id:"ms_comp_norme", label:"Compréhension morphosyntaxique atteinte en épreuves normées", type:"select", options:["Oui","Non"], half:true },
+          { id:"ms_encodage", label:"Trouble de l'encodage morphosyntaxique en situations contraintes", type:"select", options:["Oui","Non"], half:true },
+          { id:"ms_comp_quot", label:"Difficultés de compréhension de phrases / consignes au quotidien", type:"select", options:["Oui","Non"], half:true },
+          { id:"ms_err_spont", label:"Erreurs morphosyntaxiques en langage spontané", type:"select", options:["Oui","Non"], half:true },
+          { id:"ms_informativite", label:"Manque d'informativité du discours", type:"select", options:["Oui","Non"], half:true },
+          { id:"ms_recit", label:"Difficultés pour raconter une petite histoire", type:"select", options:["Oui","Non"], half:true },
+          { id:"larsp", label:"Stade d'encodage (repère LARSP)", type:"select",
+            hint:"stade 1 : énoncés à 1 élément (mots-phrases) ; stade 2 : énoncés à 2 éléments (premières combinaisons)",
+            options:["Stade 1 — énoncés à 1 élément (mots-phrases)","Stade 2 — énoncés à 2 éléments (premières combinaisons)","Stade 3 — énoncés à 3 éléments (SVO)","Stade 4 — énoncés à 4 éléments ou plus","Stade 5 — plusieurs propositions"] },
+          { id:"ms_domaines", label:"Domaines morphosyntaxiques", type:"rating_grid",
+            levels:["Difficile à évaluer","Perturbations majeures","Perturbations mineures","Maîtrise"],
+            rows:["Prépositions","Genre et nombre","Pronoms","Morphologie verbale","Causalité","Relatives « qui »","But","Circonstancielles de temps","Condition (si)"] },
+          { id:"ms_com", label:"Commentaires", type:"textarea" },
+
+          { id:"sub_ms_expr", type:"subhead", text:"Morphosyntaxe — expression" },
+          { id:"epr_ms_expr", label:"Épreuves (score et commentaire)", type:"epreuves_list",
+            options:["Programmation morphosyntaxique","Production de phrases","Répétition de phrases complexes","Concaténation","Recueil de corpus (enfant sans ou avec peu de langage)"] },
+          { id:"sub_ms_comp", type:"subhead", text:"Morphosyntaxe — compréhension" },
+          { id:"epr_ms_comp", label:"Épreuves (score et commentaire)", type:"epreuves_list",
+            options:["Désignation d'images","Compréhension morphosyntaxique (acting out)","Compréhension syntaxique","Appariement d'énoncés"] },
+          { id:"sub_metasyntaxe", type:"subhead", text:"Métasyntaxe" },
+          { id:"epr_metasyntaxe", label:"Épreuves (score et commentaire)", type:"epreuves_list",
+            options:["Jugement de grammaticalité et reformulation"] },
+          { id:"sub_disc_expr", type:"subhead", text:"Discours — expression" },
+          { id:"epr_disc_expr", label:"Épreuves (score et commentaire)", type:"epreuves_list",
+            options:["Récit oral à partir d'une histoire en images","Dessin animé"] },
+          { id:"sub_disc_pc", type:"subhead", text:"Discours — production / compréhension" },
+          { id:"epr_disc_pc", label:"Épreuves (score et commentaire)", type:"epreuves_list",
+            options:["Mémoire de récit","Compréhension du récit"] },
+          { id:"sub_disc_comp", type:"subhead", text:"Discours — compréhension" },
+          { id:"epr_disc_comp", label:"Épreuves (score et commentaire)", type:"epreuves_list",
+            options:["Compréhension orale de paragraphes","Compréhension de débat"] },
+        ]},
+
+      { id:"ecrit", titre:"Langage écrit (si concerné)", icon:"ti-pencil",
+        champs:[
+          { id:"note_ecrit", type:"note", text:"<span class='gt'>Repère</span>À compléter selon l'âge et le niveau scolaire ; laisser vide si non évalué." },
+          { id:"conscience_phono", label:"Conscience phonologique", type:"textarea", hint:"rimes, phonème initial, segmentation — résultats et interprétation" },
+          { id:"lecture", label:"Lecture", type:"textarea" },
+          { id:"orthographe", label:"Orthographe", type:"textarea" },
+          { id:"graphisme", label:"Graphisme / écriture", type:"textarea" },
+        ]},
+
+      { id:"tests", titre:"Tests utilisés", icon:"ti-clipboard-data",
+        champs:[
+          { id:"tests_utilises", label:"Batteries et tests passés", type:"checkboxes",
+            options:["CELF 5 — Batterie d'évaluation des fonctions langagières et de communication (2019)","PPVT-5 — vocabulaire réceptif et expressif (2023)","EVT-3 — vocabulaire réceptif et expressif (2023)","EVALEO 6-15 (2018)","EVALO 2-6 (2009)","KIKOU 3-8 — compréhension syntaxique et narrative (2009)","Exalang 3-6 (2006)","Exalang 5-8 (2010)","Exalang 8-11 (2012)","Exalang 11-15 (2009)","Bilan phonologique (Éditions Passe-temps)","Test de Dépistage Francophone de Phonologie (2013)","Test Francophone de Phonologie (2008)","ISSEF — Inventaire des structures syllabiques chez l'enfant francophone (2019)","Échelle d'Observation de la Communication (EOC) de la CELF 5 (2019)","OCIF (Éditions Horizon)","QLIF 3-6 — langage et impacts fonctionnels (2023)","QLIF 6-12 — langage et impacts fonctionnels (2023)"] },
+          { id:"tests_obs", label:"Synthèse / résultats des épreuves étalonnées", type:"textarea", hint:"score brut, étalonnage (percentile / écart-type), interprétation" },
+        ]},
+
+      { id:"cognitif", titre:"Domaine cognitif", icon:"ti-brain",
+        champs:[
+          { id:"sub_cog_perc", type:"subhead", text:"Capacités perceptives" },
+          { id:"epr_cog_perc", label:"Épreuves (score et commentaire)", type:"epreuves_list",
+            options:["Dépistage auditif","Discrimination phonologique / gnosies auditivo-phonétiques","Discrimination visuelle"] },
+          { id:"sub_cog_att", type:"subhead", text:"Capacités attentionnelles" },
+          { id:"epr_cog_att", label:"Épreuves (score et commentaire)", type:"epreuves_list",
+            options:["Attention aux sons (bruits / mots)","Reproduction de cellules rythmiques","Attention (barrage)"] },
+          { id:"sub_cog_mnesie", type:"subhead", text:"Capacités mnésiques" },
+          { id:"epr_cog_mnesie", label:"Épreuves (score et commentaire)", type:"epreuves_list",
+            options:["Répétition de chiffres endroit et envers","Répétition de phrases (empan de mots)","Répétition de logatomes","Mémoire de récit (rappel libre / indicé)","Mémoire de parcours visuel endroit et envers","Mémoire de localisation","Mémoire de dessins / signes","Reproduction de suite visuelle","Mémoire kinesthésique"] },
+          { id:"sub_cog_prax", type:"subhead", text:"Capacités praxiques" },
+          { id:"epr_cog_prax", label:"Épreuves (score et commentaire)", type:"epreuves_list",
+            options:["Praxies bucco-linguo-faciales"] },
+          { id:"sub_cog_vs", type:"subhead", text:"Fonctions visuo-spatiales et graphiques" },
+          { id:"epr_cog_vs", label:"Épreuves (score et commentaire)", type:"epreuves_list",
+            options:["Dessin du bonhomme"] },
+        ]},
+
+      { id:"aptitudes_ecrit", titre:"Aptitudes à l'acquisition du langage écrit (GS – début CP)", icon:"ti-book",
+        champs:[
+          { id:"sub_ae_perc", type:"subhead", text:"Capacités perceptives" },
+          { id:"epr_ae_perc", label:"Épreuves (score et commentaire)", type:"epreuves_list",
+            options:["Dépistage auditif","Dépistage visuel"] },
+          { id:"sub_ae_att", type:"subhead", text:"Capacités attentionnelles" },
+          { id:"epr_ae_att", label:"Épreuves (score et commentaire)", type:"epreuves_list",
+            options:["Reproduction de cellules rythmiques","Attention (barrages)"] },
+          { id:"sub_ae_mct", type:"subhead", text:"Mémoire à court terme" },
+          { id:"epr_ae_mct", label:"Épreuves (score et commentaire)", type:"epreuves_list",
+            options:["Répétition de chiffres endroit et envers","Répétition de logatomes","Mémoire de parcours visuel endroit et envers"] },
+          { id:"sub_ae_autres", type:"subhead", text:"Autres habiletés cognitives" },
+          { id:"epr_ae_autres", label:"Épreuves (score et commentaire)", type:"epreuves_list",
+            options:["Collection d'objets","Recherche d'intrus dans une catégorie","Activité de dénombrement"] },
+          { id:"sub_ae_meta", type:"subhead", text:"Capacités métalinguistiques" },
+          { id:"epr_ae_meta", label:"Épreuves (score et commentaire)", type:"epreuves_list",
+            options:["Métaphonologie","Métalexique","Métasyntaxe"] },
+          { id:"sub_ae_vs", type:"subhead", text:"Capacités visuo-spatiales" },
+          { id:"epr_ae_vs", label:"Épreuves (score et commentaire)", type:"epreuves_list",
+            options:["Dessin du bonhomme","Copie de figures géométriques","Écriture en copie / écriture du prénom"] },
+          { id:"sub_ae_ecrit", type:"subhead", text:"Capacités en lien avec l'apprentissage de l'écrit" },
+          { id:"epr_ae_ecrit", label:"Épreuves (score et commentaire)", type:"epreuves_list",
+            options:["Connaissances implicites (conventions de lecture / transcription / code écrit)","Capacités d'identification (dénomination rapide, identification de lettres)","Repérage spatial (feuille / labyrinthe)"] },
+        ]},
+
+      { id:"retentissement", titre:"Retentissement fonctionnel", icon:"ti-activity",
+        champs:[
+          { id:"r_besoins", label:"Expression des besoins", type:"select", options:["RAS","Impact mineur","Impact majeur","Difficile à évaluer"], half:true },
+          { id:"r_emotions", label:"Expression des émotions", type:"select", options:["RAS","Impact mineur","Impact majeur","Difficile à évaluer"], half:true },
+          { id:"r_pairs", label:"Relations avec les pairs", type:"select", options:["RAS","Impact mineur","Impact majeur","Difficile à évaluer"], half:true },
+          { id:"r_adultes", label:"Relations avec les adultes", type:"select", options:["RAS","Impact mineur","Impact majeur","Difficile à évaluer"], half:true },
+          { id:"r_scolaire", label:"Fonctionnement scolaire", type:"select", options:["RAS","Impact mineur","Impact majeur","Difficile à évaluer"], half:true },
+          { id:"r_apprentissages", label:"Apprentissages", type:"select", options:["RAS","Impact mineur","Impact majeur","Difficile à évaluer"], half:true },
+          { id:"r_social", label:"Participation sociale", type:"select", options:["RAS","Impact mineur","Impact majeur","Difficile à évaluer"] },
+          { id:"r_obs", label:"Précisions (contexte, exemples, fréquence)", type:"textarea" },
+        ]},
+
+      { id:"facteurs", titre:"Facteurs & indicateurs", icon:"ti-list-check",
+        champs:[
+          { id:"note_fact", type:"note", text:"<span class='gt'>Repère</span>Éléments à intégrer à la conclusion (en référence à Bishop et al., 2017 / consensus CATALISE)." },
+          { id:"sub_ind", type:"subhead", text:"Indicateurs d'un faible pronostic" },
+          { id:"ind_3ans", label:"Avant 3 ans (et après)", type:"checkboxes",
+            options:["Absence de juxtaposition de mots à 2 ans","Difficultés de compréhension","Absence de communication par gestes ou par imitation"] },
+          { id:"ind_3_4ans", label:"Entre 3 et 4 ans (et après)", type:"checkboxes",
+            options:["Répétition de phrases échouée","Nombre important de domaines langagiers touchés"] },
+          { id:"ind_5ans", label:"Après 5 ans", type:"checkboxes",
+            options:["Habiletés non verbales faibles"] },
+          { id:"risques", label:"Facteurs de risque", type:"checkboxes",
+            options:["Antécédents familiaux de trouble du langage / écrit","Faible niveau de scolarité de la mère (inférieur au lycée)","Garçon","Dernier de la fratrie","Événement lié à la grossesse (diabète, hypertension…)","Condition néonatale (ictère, hypoglycémie, anémie, réanimation…)","Événement périnatal (césarienne, siège, forceps, ventouse, fièvre maternelle…)","Score d'Apgar inférieur ou égal à 7 à 5 minutes","Prématurité (moins de 37 SA)","Exposition à des toxiques durant la grossesse"] },
+          { id:"protection", label:"Facteurs de protection", type:"checkboxes",
+            options:["Échanges quotidiens autour des livres","Opportunités de jeux informels","Mode de garde collectif"] },
+          { id:"cooccurrents", label:"Troubles co-occurrents (connus ou à vérifier)", type:"checkboxes",
+            options:["Agitation motrice","Difficultés d'attention soutenue","Trouble de la motricité globale / fine","Trouble du comportement externalisé","Trouble du comportement internalisé","Troubles des apprentissages","Troubles de l'oralité alimentaire","Bégaiement / bredouillement"] },
+          { id:"apprentissages", label:"Troubles des apprentissages — préciser", type:"checkboxes",
+            showIf:{field:"cooccurrents", value:"Troubles des apprentissages"},
+            options:["Trouble de l'identification des mots écrits","Trouble de la compréhension écrite","Trouble de l'orthographe","Trouble de la cognition mathématique (après 6 ans)"] },
+          { id:"bio", label:"Conditions biomédicales à considérer / vérifier", type:"checkboxes",
+            options:["Surdité","Trouble du spectre autistique","Déficience intellectuelle","Paralysie cérébrale","Conditions dégénératives","Atteinte génétique","Lésion cérébrale acquise","Syndrome de Landau-Kleffner"] },
+          { id:"fact_com", label:"Commentaires", type:"textarea" },
+        ]},
+
+      { id:"diagnostic", titre:"Diagnostic orthophonique", icon:"ti-stethoscope",
+        champs:[
+          { id:"note_raison", type:"note", text:"<span class='gt'>Démarche</span>Construire la conclusion en trois temps : <b>1. Le sujet est-il efficient ?</b> (situer chaque performance par rapport à l'attendu, du supérieur au déficitaire). <b>2. Comment fonctionne-t-il ?</b> (profil homogène ou hétérogène, dissociations réception ↔ production, auditif ↔ visuel, jugement ↔ correction). <b>3. Pourquoi ?</b> (rechercher des facteurs explicatifs / interférents et les répercussions entre domaines). Croiser scores et analyse qualitative, et dégager les points forts et les émergences." },
+          { id:"efficience", label:"Niveau d'efficience global", type:"select",
+            options:["Supérieur à l'attendu","Conforme à l'attendu","En émergence","Fragile","Déficitaire","Hétérogène selon les domaines"] },
+          { id:"fonctionnement", label:"Profil de fonctionnement", type:"select", options:["Homogène","Hétérogène"] },
+          { id:"facteurs_incidents", label:"Facteurs incidents / mises en lien", type:"textarea", hint:"facteurs explicatifs ou interférents, répercussions d'un domaine sur un autre" },
+          { id:"points_forts", label:"Points forts / émergences", type:"textarea" },
+          { id:"note_diag", type:"note", text:"<span class='gt'>Repère</span>Formulation diagnostique en référence aux classifications internationales en vigueur (consensus CATALISE) et au décret n°2002-721 ; propositions à adapter à l'âge de l'enfant." },
+          { id:"diag_3ans", label:"Avant 3 ans", type:"checkboxes",
+            options:["Difficultés de langage","Difficultés de langage s'inscrivant dans un contexte de difficultés plus globales (examens complémentaires nécessaires)"] },
+          { id:"diag_3_5ans", label:"Entre 3 et 5 ans", type:"checkboxes",
+            options:["Difficultés de langage","Enfant à risque de présenter un TDL","Trouble développemental du langage (TDL)","Trouble du langage associé à une condition biomédicale (à préciser)","Trouble du langage s'inscrivant dans un contexte de difficultés plus globales (examens complémentaires nécessaires)"] },
+          { id:"diag_5ans", label:"Après 5 ans", type:"checkboxes",
+            options:["Trouble développemental du langage (TDL)","Trouble du langage associé à une condition biomédicale (à préciser)","Trouble du langage s'inscrivant dans un contexte de difficultés plus globales (examens complémentaires nécessaires)"] },
+          { id:"preciser", label:"Préciser", type:"checkboxes",
+            options:["Sphères du langage atteintes (expression / réception)","Impacts fonctionnels","Indicateurs d'un faible pronostic","Facteurs de risque","Facteurs de protection","Troubles co-occurrents éventuels (y compris trouble des sons de la parole)"] },
+          { id:"spheres", label:"Sphères atteintes (détail)", type:"textarea", hint:"expression / réception ; phonologie, lexique, morphosyntaxe, pragmatique, discours" },
+          { id:"note_redac", type:"note", text:"<span class='gt'>Trame de rédaction</span>Structurer la conclusion ainsi : profil par niveau (pragmatique / communicationnel, phonologique, lexical, morphosyntaxique, discursif), puis synthèse du profil linguistique (versants réceptif et expressif), retentissement fonctionnel (participation sociale, relations, expression des besoins et des émotions), puis conclusion tenant compte des résultats, des impacts fonctionnels, des facteurs de risque et de protection et des indicateurs de pronostic — avant la préconisation (nombre d'AMO) et la mention réglementaire." },
+          { id:"conclusion", label:"Synthèse / conclusion diagnostique", type:"textarea" },
+          { id:"ngap", label:"Correspondance NGAP / cotation", type:"textarea" },
+          { id:"mention", label:"Mention réglementaire", type:"textarea",
+            def:"Ce diagnostic orthophonique est proposé conformément au décret n°2002-721 du 4 mai 2002 et à la loi du 26 janvier 2016, en référence aux classifications internationales en vigueur (consensus CATALISE)." },
+        ]},
+
+      { id:"projet", titre:"Projet thérapeutique", icon:"ti-target-arrow",
+        champs:[
+          { id:"objectifs", label:"Objectifs de la rééducation", type:"textarea" },
+          { id:"reeduc", label:"Rééducation préconisée (nombre d'AMO, cotation)", type:"textarea" },
+          { id:"sub_preco", type:"subhead", text:"Préconisations" },
+          { id:"exams", label:"Examens complémentaires à demander", type:"checkboxes",
+            options:["ORL","Ophtalmologique","Orthoptiste","Pédiatre","Neuropédiatre","Psychologue / psychiatre","Neuropsychologue","Psychomotricien","Ergothérapeute","Autre bilan orthophonique (langage écrit, langage mathématique)"] },
+          { id:"exams_com", label:"Examens complémentaires — précisions", type:"textarea" },
+          { id:"preco_famille", label:"Préconisations à la famille / guidance", type:"textarea" },
+          { id:"preco_ecole", label:"Préconisations à l'école / aux partenaires", type:"textarea" },
+        ]},
+    ]
+  },
+
+  "neuro-cognitivo-linguistique": {
+    titre: "Neurologie adulte — troubles cognitivo-linguistiques",
+    docTitle: "Bilan orthophonique des troubles d'origine neurologique",
+    sections: [
+      { id:"entete", titre:"En-tête du document", icon:"ti-mail", meta:true,
+        champs:[
+          { id:"destinataire", label:"Médecin prescripteur (destinataire)", type:"text" },
+          { id:"copies", label:"Copies", type:"text" },
+          { id:"date_bilan", label:"Date de passation", type:"text" },
+        ]},
+      { id:"administratif", titre:"Éléments administratifs", icon:"ti-id",
+        champs:[
+          { id:"nom", label:"Nom", type:"text", auto:true, inHeader:true },
+          { id:"prenom", label:"Prénom", type:"text", auto:true, inHeader:true },
+          { id:"ddn", label:"Date de naissance (âge)", type:"text", auto:true, inHeader:true },
+          { id:"adresse", label:"Adresse", type:"text", inHeader:true },
+          { id:"secu", label:"N° de sécurité sociale", type:"text", inHeader:true },
+          { id:"profession", label:"Profession", type:"text" },
+          { id:"type_bilan", label:"Type de bilan", type:"select", options:["Bilan initial","Bilan de renouvellement"] },
+        ]},
+      { id:"demande", titre:"Demande / motif / plainte", icon:"ti-message-2",
+        champs:[
+          { id:"motif", label:"Demande, motif et plainte", type:"textarea" },
+          { id:"contexte_diag", label:"Contexte diagnostique / médical", type:"textarea", hint:"diagnostic posé, conclusions des consultations, imagerie…" },
+        ]},
+      { id:"anamnese", titre:"Anamnèse", icon:"ti-notebook",
+        champs:[
+          { id:"niveau_scolaire", label:"Niveau scolaire et cursus professionnel", type:"textarea" },
+          { id:"atcd", label:"Antécédents médicaux personnels", type:"textarea" },
+          { id:"situation_fam", label:"Situation familiale", type:"textarea", hint:"mode de vie, conjoint, enfants…" },
+          { id:"aidant", label:"Aidant principal", type:"text" },
+          { id:"sommeil", label:"Sommeil", type:"textarea", half:true },
+          { id:"alimentation", label:"Alimentation", type:"textarea", half:true },
+          { id:"bilinguisme", label:"Langues / bilinguisme", type:"textarea" },
+          { id:"interets", label:"Centres d'intérêt / loisirs", type:"textarea" },
+          { id:"socio_affectif", label:"Comportement socio-psycho-affectif", type:"textarea" },
+          { id:"interactions_entourage", label:"Interactions de l'entourage / bien-être familial", type:"textarea" },
+        ]},
+      { id:"presentation", titre:"Présentation & comportement", icon:"ti-eye",
+        champs:[
+          { id:"comp_testing", label:"Comportement pendant le testing", type:"checkboxes",
+            options:["Adapté","Attentif","Autonome","Assidu","Discret","Efficace","Méticuleux","Motivé","Organisé","Opposant","Patient","Persévérant","Rigoureux","Sensible","Vigilant","Volontaire"] },
+          { id:"reac_testing", label:"Réaction au testing", type:"checkboxes",
+            options:["Agitation","Anxiété associée au testing","Anxiété de performance","Appréhension","Calme","Confiance","Énervement","Indifférence","Inquiétude","Sérénité"] },
+          { id:"fatigabilite", label:"Fatigabilité", type:"textarea", hint:"testing réalisé en plusieurs fois ? échoué ? pourquoi ?" },
+          { id:"interactions_aidants", label:"Interactions avec les aidants pendant le bilan", type:"textarea", half:true },
+          { id:"interactions_ortho", label:"Interactions avec l'orthophoniste", type:"textarea", half:true },
+        ]},
+      { id:"evaluation", titre:"Types d'évaluation", icon:"ti-flask",
+        champs:[
+          { id:"domaines", label:"Domaines explorés", type:"checkboxes",
+            options:["Langage oral (lexique, sémantique, morphosyntaxe)","Langage écrit (lecture, orthographe)","Mémoire","Attention","Praxies","Structuration spatio-temporelle","Fonctions exécutives","Cognition sociale"] },
+          { id:"tests", label:"Tests / épreuves utilisés", type:"textarea", hint:"batteries et échelles passées (nom et version)" },
+        ]},
+      { id:"resultats", titre:"Résultats des épreuves", icon:"ti-clipboard-data",
+        champs:[
+          { id:"note_res", type:"note", text:"<span class='gt'>Méthode</span>Le bilan est un testing à un moment et dans un contexte donnés, sensible à l'état du patient : distinguer les performances aux tests et les compétences. Pour chaque épreuve, noter score brut, étalonnage (percentile / écart-type) et analyse qualitative. Ne pas reproduire le matériel des tests dans le compte rendu." },
+          { id:"res_oral", label:"Résultats — langage oral", type:"textarea" },
+          { id:"res_ecrit", label:"Résultats — langage écrit", type:"textarea" },
+          { id:"res_cognition", label:"Résultats — fonctions cognitives", type:"textarea" },
+          { id:"res_questionnaires", label:"Questionnaires / échelles (HAD, Epworth, Pichot, Mac Nair…)", type:"textarea" },
+        ]},
+      { id:"analyse_oral", titre:"Analyse — langage oral", icon:"ti-microphone",
+        champs:[
+          { id:"sub_disc", type:"subhead", text:"Niveau discursif (expression)" },
+          { id:"debit", label:"Débit", type:"select", options:["Normal","Ralenti","Rapide"], half:true },
+          { id:"prosodie", label:"Prosodie", type:"select", options:["Adaptée","Peu marquée"], half:true },
+          { id:"manque_mot", label:"Manque du mot", type:"select", options:["Absent","Discret","Modéré","Marqué","Sévère"] },
+          { id:"paraphasies", label:"Paraphasies", type:"checkboxes", options:["Phonémiques","Sémantiques","Formelles","Morphologiques","Sans lien"] },
+          { id:"autres_lex", label:"Autres signes lexicaux", type:"checkboxes", options:["Néologismes","Persévérations lexicales","Mots indéfinis / fourre-tout","Périphrases","Conduites d'approche"] },
+          { id:"informativite", label:"Informativité", type:"select", options:["Bonne","Légèrement perturbée","Moyenne","Faible","Nulle"] },
+          { id:"syntaxe", label:"Syntaxe (expression)", type:"textarea" },
+          { id:"recit", label:"Récit / discours narratif", type:"textarea" },
+          { id:"pragmatique", label:"Aspects pragmatiques", type:"checkboxes",
+            options:["Digressions","Discours égocentré","Manque d'initiation verbale","Écholalie","Persévérations idéiques","Phrases inachevées","Communication non verbale","Stratégies de réparation","Sollicitation de l'interlocuteur"] },
+          { id:"sub_comp", type:"subhead", text:"Compréhension" },
+          { id:"comprehension_orale", label:"Compréhension orale et écrite", type:"textarea" },
+          { id:"sub_lex", type:"subhead", text:"Lexique / sémantique & syntaxe" },
+          { id:"analyse_lexicale", label:"Atteinte lexicale et sémantique", type:"textarea", hint:"trouble central (stock) vs accès au lexique ; stratégies de contournement" },
+          { id:"analyse_syntaxique", label:"Atteinte syntaxique", type:"textarea" },
+          { id:"analyse_phono", label:"Atteinte phonologique", type:"textarea" },
+        ]},
+      { id:"analyse_ecrit", titre:"Analyse — langage écrit", icon:"ti-pencil",
+        champs:[
+          { id:"lecture", label:"Lecture", type:"textarea" },
+          { id:"orthographe", label:"Orthographe", type:"textarea" },
+          { id:"concl_ecrit", label:"Synthèse langage écrit", type:"textarea", hint:"modalité écrite vs orale" },
+        ]},
+      { id:"analyse_cognitive", titre:"Analyse — autres fonctions cognitives", icon:"ti-brain",
+        champs:[
+          { id:"orientation", label:"Orientation spatio-temporelle", type:"textarea" },
+          { id:"memoire", label:"Mémoire", type:"textarea" },
+          { id:"attention", label:"Attention", type:"textarea" },
+          { id:"praxies", label:"Praxies", type:"textarea" },
+          { id:"fonctions_exec", label:"Fonctions exécutives", type:"textarea" },
+        ]},
+      { id:"diagnostic", titre:"Diagnostic orthophonique", icon:"ti-stethoscope",
+        champs:[
+          { id:"severite", label:"Sévérité de l'atteinte", type:"select", options:["Légère","Modérée","Sévère","Massive"] },
+          { id:"troubles_releves", label:"Troubles relevés", type:"checkboxes",
+            options:["Manque du mot / trouble d'accès lexical","Atteinte du stock lexico-sémantique","Trouble de la compréhension","Trouble de l'encodage syntaxique","Troubles mnésiques","Déstructuration spatio-temporelle","Troubles attentionnels","Troubles des fonctions exécutives"] },
+          { id:"conclusion", label:"Éléments de conclusion", type:"textarea" },
+          { id:"ngap", label:"Correspondance NGAP / cotation", type:"textarea",
+            def:"Rééducation et/ou maintien et/ou adaptation des fonctions de communication, du langage, des troubles cognitivo-linguistiques et des fonctions oro-myo-faciales chez les patients atteints de pathologies neurodégénératives (AMO 15.6)." },
+          { id:"mention", label:"Mention réglementaire", type:"textarea",
+            def:"Diagnostic orthophonique proposé conformément au décret n°2002-721 du 4 mai 2002 rendant le diagnostic orthophonique obligatoire." },
+        ]},
+      { id:"projet", titre:"Projet thérapeutique", icon:"ti-target-arrow",
+        champs:[
+          { id:"objectifs", label:"Objectifs de la rééducation", type:"textarea" },
+          { id:"frequence", label:"Fréquence et cotation (nombre d'AMO)", type:"textarea" },
+          { id:"preco", label:"Préconisations", type:"textarea", hint:"autres prises en soins, examens complémentaires, entourage…" },
+        ]},
+    ]
+  },
+
+  "neuro-parole-voix-deglutition": {
+    titre: "Neurologie adulte — parole, voix & déglutition",
+    docTitle: "Bilan orthophonique de la parole, de la voix et de la déglutition (origine neurologique)",
+    sections: [
+      { id:"entete", titre:"En-tête du document", icon:"ti-mail", meta:true,
+        champs:[
+          { id:"destinataire", label:"Médecin prescripteur (destinataire)", type:"text" },
+          { id:"copies", label:"Copies", type:"text" },
+          { id:"date_bilan", label:"Date de passation", type:"text" },
+        ]},
+      { id:"administratif", titre:"Éléments administratifs", icon:"ti-id",
+        champs:[
+          { id:"nom", label:"Nom", type:"text", auto:true, inHeader:true },
+          { id:"prenom", label:"Prénom", type:"text", auto:true, inHeader:true },
+          { id:"ddn", label:"Date de naissance (âge)", type:"text", auto:true, inHeader:true },
+          { id:"adresse", label:"Adresse", type:"text", inHeader:true },
+          { id:"secu", label:"N° de sécurité sociale", type:"text", inHeader:true },
+          { id:"profession", label:"Profession / situation", type:"text" },
+        ]},
+      { id:"demande", titre:"Demande / plainte", icon:"ti-message-2",
+        champs:[
+          { id:"personne_demande", label:"Personne à l'origine de la demande", type:"text" },
+          { id:"domaines_plainte", label:"Domaines concernés", type:"checkboxes",
+            options:["Faiblesse de la voix","Troubles de la déglutition","Troubles de l'articulation / parole","Bavage","Troubles respiratoires"] },
+          { id:"plainte", label:"Plainte détaillée", type:"textarea" },
+        ]},
+      { id:"anamnese", titre:"Anamnèse", icon:"ti-notebook",
+        champs:[
+          { id:"pathologie", label:"Pathologie / diagnostic neurologique", type:"textarea" },
+          { id:"histoire", label:"Histoire de la maladie / signes actuels", type:"textarea" },
+          { id:"atcd", label:"Antécédents médicaux", type:"textarea" },
+          { id:"autres_soins", label:"Autres prises en soins", type:"textarea", hint:"kiné, IDE, pneumologie, VNI…" },
+          { id:"situation", label:"Situation / autonomie", type:"textarea" },
+          { id:"alimentation", label:"Mode d'alimentation actuel", type:"textarea" },
+        ]},
+      { id:"praxies", titre:"Praxies bucco-linguo-faciales", icon:"ti-mood-smile",
+        champs:[
+          { id:"praxies_linguales", label:"Praxies linguales", type:"textarea", half:true },
+          { id:"praxies_labiales", label:"Praxies labiales", type:"textarea", half:true },
+          { id:"praxies_jugales", label:"Praxies jugales", type:"textarea", half:true },
+          { id:"praxies_mandib", label:"Praxies mandibulaires", type:"textarea", half:true },
+          { id:"praxies_faciales", label:"Praxies faciales", type:"textarea" },
+          { id:"mimiques", label:"Imitation de bruits / mimiques", type:"textarea" },
+        ]},
+      { id:"parole", titre:"Parole & intelligibilité", icon:"ti-microphone",
+        champs:[
+          { id:"rep_phonemes", label:"Répétition de phonèmes isolés", type:"select", options:["Réussie","Partielle","Échouée"], half:true },
+          { id:"rep_mots", label:"Répétition de mots", type:"select", options:["Réussie","Partielle","Échouée"], half:true },
+          { id:"rep_phrases", label:"Répétition de phrases", type:"select", options:["Correcte","Partielle","Échouée"], half:true },
+          { id:"intelligibilite", label:"Intelligibilité en conversation (/5)", type:"text", half:true },
+          { id:"lecture_texte", label:"Lecture d'un texte", type:"textarea", hint:"reprises inspiratoires, hypophonie…" },
+          { id:"obs_parole", label:"Observations parole", type:"textarea" },
+        ]},
+      { id:"voix", titre:"Voix", icon:"ti-volume",
+        champs:[
+          { id:"posture", label:"Posture", type:"textarea", half:true },
+          { id:"respiration", label:"Respiration", type:"select", options:["Costale","Abdominale","Mixte"], half:true },
+          { id:"coord_pneumo", label:"Coordination pneumo-phonique", type:"select", options:["Satisfaisante","Limitée","Difficile"], half:true },
+          { id:"tmp", label:"Temps maximum de phonation (s)", type:"text", half:true },
+          { id:"intensite", label:"Intensité", type:"textarea", hint:"voix conversationnelle / projetée / criée (dB)" },
+          { id:"hauteur", label:"Hauteur", type:"select", options:["Correcte","Altérée"], half:true },
+          { id:"timbre", label:"Timbre", type:"select", options:["Normal","Altéré"], half:true },
+          { id:"obs_voix", label:"Observations voix", type:"textarea" },
+        ]},
+      { id:"deglutition", titre:"Déglutition", icon:"ti-cup",
+        champs:[
+          { id:"symptomes", label:"Symptômes directs", type:"textarea", hint:"bavage, fausses routes, toux…" },
+          { id:"anatomie", label:"État anatomique / dentaire", type:"textarea" },
+          { id:"sensibilite", label:"Sensibilité bucco-linguo-faciale", type:"select", options:["Préservée","Altérée"], half:true },
+          { id:"reflexe_nauseeux", label:"Réflexe nauséeux", type:"select", options:["Présent","Diminué","Absent"], half:true },
+          { id:"salive", label:"Déglutition de la salive / salivation", type:"textarea" },
+          { id:"essais", label:"Essais alimentaires", type:"textarea", hint:"phases orale / pharyngée / œsophagienne, textures testées" },
+          { id:"concl_degl", label:"Conclusion déglutition", type:"textarea", hint:"fausses routes observées ? recommandations" },
+        ]},
+      { id:"diagnostic", titre:"Diagnostic orthophonique", icon:"ti-stethoscope",
+        champs:[
+          { id:"conclusion", label:"Éléments de conclusion", type:"textarea" },
+          { id:"ngap", label:"Correspondance NGAP / cotation", type:"textarea",
+            def:"Rééducation et/ou maintien et/ou adaptation des fonctions de communication, du langage, des troubles cognitivo-linguistiques et des fonctions oro-myo-faciales chez les patients atteints de pathologies neurodégénératives (AMO 15.6)." },
+          { id:"mention", label:"Mention réglementaire", type:"textarea",
+            def:"Diagnostic orthophonique proposé conformément au décret n°2002-721 du 4 mai 2002 rendant le diagnostic orthophonique obligatoire." },
+        ]},
+      { id:"projet", titre:"Projet thérapeutique & préconisations", icon:"ti-target-arrow",
+        champs:[
+          { id:"objectifs", label:"Objectifs de la prise en soins", type:"textarea" },
+          { id:"preco_texture", label:"Préconisations alimentaires", type:"textarea", hint:"texture, liquides, posture, fractionnement, matériel adapté" },
+          { id:"preco_autres", label:"Autres préconisations", type:"textarea" },
+        ]},
+    ]
+  },
+
+  "graphisme-dysgraphie": {
+    titre: "Graphisme — dysgraphie (neuro / Parkinson)",
+    docTitle: "Bilan orthophonique du graphisme",
+    sections: [
+      { id:"entete", titre:"En-tête du document", icon:"ti-mail", meta:true,
+        champs:[
+          { id:"destinataire", label:"Médecin prescripteur (destinataire)", type:"text" },
+          { id:"copies", label:"Copies", type:"text" },
+          { id:"date_bilan", label:"Date de l'examen", type:"text" },
+        ]},
+      { id:"administratif", titre:"Éléments administratifs", icon:"ti-id",
+        champs:[
+          { id:"nom", label:"Nom", type:"text", auto:true, inHeader:true },
+          { id:"prenom", label:"Prénom", type:"text", auto:true, inHeader:true },
+          { id:"ddn", label:"Date de naissance (âge)", type:"text", auto:true, inHeader:true },
+          { id:"adresse", label:"Adresse", type:"text", inHeader:true },
+          { id:"secu", label:"N° de sécurité sociale", type:"text", inHeader:true },
+        ]},
+      { id:"demande", titre:"Contexte de la demande", icon:"ti-message-2",
+        champs:[
+          { id:"contexte", label:"Contexte de la demande et plainte", type:"textarea" },
+          { id:"motivation", label:"Motivation / activités investies", type:"textarea" },
+        ]},
+      { id:"anamnese", titre:"Anamnèse", icon:"ti-notebook",
+        champs:[
+          { id:"infos_medicales", label:"Informations médicales et paramédicales", type:"textarea" },
+          { id:"histoire", label:"Histoire de la maladie", type:"textarea" },
+          { id:"autonomie", label:"Autonomie", type:"textarea", half:true },
+          { id:"aidant", label:"Aidant principal", type:"text", half:true },
+          { id:"antecedents", label:"Antécédents", type:"textarea" },
+          { id:"usages", label:"Usages et symptômes", type:"textarea", hint:"outil habituel, plaisir d'écrire, gêne émotionnelle" },
+          { id:"contexte_trouble", label:"Contexte du trouble (graphisme)", type:"textarea", hint:"début, évolution, description, facteurs aggravants" },
+          { id:"consequences", label:"Conséquences psychosociales", type:"textarea" },
+        ]},
+      { id:"autoeval", titre:"Auto-évaluation", icon:"ti-adjustments",
+        champs:[
+          { id:"echelle", label:"Échelle du handicap ressenti (Esnault) — score /48", type:"text" },
+          { id:"interpretation", label:"Interprétation", type:"textarea" },
+        ]},
+      { id:"examen_general", titre:"Aspects cognitivo-linguistiques", icon:"ti-brain",
+        champs:[
+          { id:"cognition", label:"Capacités cognitives", type:"select", options:["Préservées","Relativement préservées","Altérées"] },
+          { id:"langage", label:"Capacités langagières", type:"textarea", hint:"compréhension des consignes, échanges sur le ressenti" },
+          { id:"conscience", label:"Conscience des troubles", type:"select", options:["Préservée","Partielle","Altérée"], half:true },
+          { id:"comportement", label:"Comportement / coopération", type:"text", half:true },
+        ]},
+      { id:"statique", titre:"Statique & posture", icon:"ti-armchair",
+        champs:[
+          { id:"posture", label:"Posture générale", type:"textarea" },
+          { id:"cervico", label:"Stabilité / mobilité cervico-scapulaire", type:"textarea" },
+          { id:"bassin", label:"Stabilité du bassin", type:"select", options:["Satisfaisante","Insatisfaisante"], half:true },
+          { id:"podale", label:"Stabilité podale", type:"select", options:["Satisfaisante","Insatisfaisante"], half:true },
+          { id:"compensations", label:"Compensations posturales observées", type:"textarea" },
+        ]},
+      { id:"motricite", titre:"Motricité & outil scripteur", icon:"ti-hand-finger",
+        champs:[
+          { id:"epaule", label:"Épaule", type:"textarea", half:true },
+          { id:"coude", label:"Coude", type:"textarea", half:true },
+          { id:"poignet", label:"Poignet", type:"textarea", half:true },
+          { id:"doigts", label:"Doigts", type:"textarea", half:true },
+          { id:"amplitude", label:"Amplitude du geste", type:"textarea" },
+          { id:"tenue", label:"Tenue de l'outil scripteur", type:"textarea", hint:"préhension, pression exercée" },
+          { id:"adaptations", label:"Adaptations nécessaires", type:"textarea" },
+        ]},
+      { id:"geste", titre:"Geste graphique & productions", icon:"ti-pencil",
+        champs:[
+          { id:"geste_obs", label:"Geste", type:"checkboxes",
+            options:["Pression excessive","Crispation main / poignet / doigts","Ralentissement","Ruptures du rythme","Tremblement","Fatigabilité progressive"] },
+          { id:"lettre", label:"Lettre", type:"textarea", hint:"micrographie, forme, omissions, auto-corrections" },
+          { id:"ligne", label:"Ligne", type:"textarea", hint:"orientation, horizontalité, reprises" },
+          { id:"mot", label:"Mot", type:"textarea", hint:"progression sur la ligne et la page" },
+        ]},
+      { id:"epreuves", titre:"Épreuves scripturales", icon:"ti-clipboard-data",
+        champs:[
+          { id:"frises", label:"Frises graphiques", type:"textarea" },
+          { id:"ecriture_spontanee", label:"Écriture spontanée", type:"textarea", hint:"nom, date, signature, rédaction de phrases" },
+          { id:"copie", label:"Copie et vitesse", type:"textarea", hint:"nb de caractères / temps, écart-type" },
+          { id:"dictee", label:"Dictée de mots et de nombres", type:"textarea" },
+          { id:"autres_obs", label:"Autres observations", type:"textarea", hint:"fatigabilité, coopération, intégration des consignes" },
+        ]},
+      { id:"conclusion", titre:"Conclusion & diagnostic", icon:"ti-stethoscope",
+        champs:[
+          { id:"type_dysgraphie", label:"Sévérité de la dysgraphie", type:"select", options:["Légère","Modérée","Sévère"] },
+          { id:"dominante", label:"Caractéristiques dominantes", type:"checkboxes",
+            options:["Micrographique","Ralentissement","Perte de fluidité","Altération de la forme des lettres","Désorganisation spatiale","Fatigabilité"] },
+          { id:"hypotheses", label:"Hypothèses diagnostiques", type:"textarea" },
+          { id:"explications", label:"Cette dysgraphie s'explique par", type:"textarea", hint:"troubles moteurs, crispation, fatigabilité, retentissement émotionnel" },
+          { id:"ngap", label:"Plan de soins / cotation NGAP", type:"textarea",
+            def:"Rééducation et/ou maintien et/ou adaptation des fonctions de communication, du langage, des troubles cognitivo-linguistiques et des fonctions oro-myo-faciales chez les patients atteints de pathologies neurodégénératives (AMO 15.6)." },
+        ]},
+      { id:"projet", titre:"Projet thérapeutique", icon:"ti-target-arrow",
+        champs:[
+          { id:"objectifs", label:"Objectifs principaux", type:"textarea" },
+          { id:"protocoles", label:"Protocoles envisagés", type:"textarea" },
+          { id:"preco", label:"Préconisations", type:"textarea", hint:"autres prises en soins, adaptations environnementales et posturales" },
+          { id:"reevaluation", label:"Réévaluation", type:"textarea", hint:"échéance, épreuves comparatives, nouvelle auto-évaluation" },
+        ]},
+    ]
+  },
+
+  /* Pour ajouter une trame : recopier un bloc { id, titre, docTitle, sections:[...] }
+     en respectant les mêmes types de champ. Aucun code à modifier. */
+};
+
+/* ---------- Palette export ---------------------------------------------- */
+const C = { brique:"#A65A43", sage:"#56714F", sageLight:"#6F8C6A", creme:"#F4EFE6", border:"#E2DAC9", ink:"#2F2E29", inkSoft:"#5b574c" };
+
+/* ---------- Utilitaires & état ------------------------------------------ */
+const $ = (s,el=document)=>el.querySelector(s);
+const slug = s => String(s).toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"");
+const esc = s => String(s==null?"":s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+const nl  = s => esc(s).replace(/\n/g,"<br>");
+const STORE = "obtrame::"; // conservé pour les profils cabinet (localStorage)
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   OrthoBuddy — Moteur Supabase
+   ═══════════════════════════════════════════════════════════════════════════ */
+const SB_URL = "https://xiznicrburryfmdfbjxk.supabase.co";
+const SB_ANON = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inhpem5pY3JidXJyeWZtZGZianhrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAwNDM0NjEsImV4cCI6MjA5NTYxOTQ2MX0.vYuV7LIBXXkKJkHVwNPaI-lA7x1HwFROdU1K17ZB1Y8";
+function sbAnonKey(){ return SB_ANON; }
+
+let trameId=null, data={}, saveTimer=null;
+let currentBilanId=null;
+let currentPatientId=null;
+let allPatients=[];
+
+// ── Patients ────────────────────────────────────────────────────────────────
+function loadPatients(){
+  fetch(SB_URL+"/rest/v1/orthobuddy_data?user_id=eq.b443cde9-7186-4239-85ac-e48f1912e51a&select=data", {
+    headers:{"apikey":SB_ANON,"Authorization":"Bearer "+SB_ANON}
+  }).then(r=>r.json()).then(rows=>{
+    if(rows&&rows[0]&&rows[0].data&&rows[0].data.patients){
+      allPatients=rows[0].data.patients;
+    } else { allPatients=[]; }
+    renderPatientSel(allPatients);
+  }).catch(()=>{ allPatients=[]; renderPatientSel([]); });
+}
+
+function renderPatientSel(patients){
+  const sel=$("#patientSel"); if(!sel) return;
+  sel.innerHTML="<option value=''>— choisir un patient —</option>";
+  const actifs=patients.filter(p=>!p.statut||p.statut==='actif'||p.statut==='attente');
+  actifs.sort((a,b)=>((a.nom||'')+(a.prenom||'')).localeCompare((b.nom||'')+(b.prenom||'')));
+  actifs.forEach(p=>{
+    const o=document.createElement("option");
+    o.value=p.id;
+    o.textContent=(p.nom||'')+' '+(p.prenom||'');
+    sel.appendChild(o);
+  });
+  const urlPid=new URLSearchParams(window.location.search).get('patient_id');
+  if(urlPid){ sel.value=urlPid; onPatientChange(); }
+}
+
+function onPatientChange(){
+  const pid=$("#patientSel").value;
+  currentPatientId=pid||null;
+  currentBilanId=null;
+  data={};
+  if(pid){
+    refreshSaved();
+    if(trameId){
+      const p=allPatients.find(x=>x.id===pid);
+      if(p) setTimeout(()=>prefillFromPatient(p),200);
+    }
+  } else {
+    $("#savedSel").innerHTML="<option value=''>— ouvrir un bilan —</option>";
+    $("#btnRenew").style.display="none";
+    $("#btnDeleteSaved").disabled=true;
+  }
+  if(trameId){ renderForm(); markSaved(); }
+}
+
+function prefillFromPatient(p){
+  const map={
+    [trameId+".administratif.nom"]:p.nom||'',
+    [trameId+".administratif.prenom"]:p.prenom||'',
+    [trameId+".administratif.ddn"]:p.ddn||p.dateNaissance||'',
+    [trameId+".administratif.adresse"]:p.adresse||'',
+    [trameId+".administratif.secu"]:p.secu||p.numSecu||''
+  };
+  Object.entries(map).forEach(([k,v])=>{ if(v&&!data[k]) data[k]=v; });
+  renderForm();
+}
+
+// ── Sauvegarde Supabase ─────────────────────────────────────────────────────
+function scheduleSave(){
+  clearTimeout(saveTimer);
+  $("#saveState").className="save-state";
+  $("#saveState").innerHTML="<i class='ti ti-loader-2'></i> Enregistrement…";
+  saveTimer=setTimeout(saveNow,800);
+}
+
+async function saveNow(){
+  if(!currentPatientId){ markSaved(); return; }
+  const payload={
+    patient_id:currentPatientId,
+    type_bilan:trameId,
+    date_bilan:data[trameId+".entete.date_bilan"]||data[trameId+".administratif.date_bilan"]||new Date().toISOString().slice(0,10),
+    data:data,
+    archived:false,
+    updated_at:new Date().toISOString()
+  };
+  try{
+    let res;
+    if(currentBilanId){
+      res=await fetch(SB_URL+"/rest/v1/bilans?id=eq."+currentBilanId,{
+        method:"PATCH",
+        headers:{"apikey":SB_ANON,"Authorization":"Bearer "+SB_ANON,"Content-Type":"application/json","Prefer":"return=representation"},
+        body:JSON.stringify(payload)
+      });
+    } else {
+      res=await fetch(SB_URL+"/rest/v1/bilans",{
+        method:"POST",
+        headers:{"apikey":SB_ANON,"Authorization":"Bearer "+SB_ANON,"Content-Type":"application/json","Prefer":"return=representation"},
+        body:JSON.stringify(payload)
+      });
+    }
+    const rows=await res.json();
+    if(rows&&rows[0]&&rows[0].id) currentBilanId=rows[0].id;
+    refreshSaved(); markSaved();
+  }catch(e){ console.error("Erreur Supabase:",e); markSaved(); }
+}
+
+function markSaved(){
+  const t=new Date().toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"});
+  $("#saveState").className="save-state dot";
+  $("#saveState").textContent="Enregistré à "+t;
+}
+
+// ── Historique ───────────────────────────────────────────────────────────────
+async function refreshSaved(){
+  const sel=$("#savedSel"); if(!sel) return;
+  sel.innerHTML="<option value=''>— ouvrir un bilan —</option>";
+  if(!currentPatientId) return;
+  try{
+    const res=await fetch(SB_URL+"/rest/v1/bilans?patient_id=eq."+currentPatientId+"&archived=eq.false&order=updated_at.desc",{
+      headers:{"apikey":SB_ANON,"Authorization":"Bearer "+SB_ANON}
+    });
+    const rows=await res.json();
+    if(!Array.isArray(rows)) return;
+    rows.forEach(b=>{
+      const tt=TRAMES[b.type_bilan]?TRAMES[b.type_bilan].titre:b.type_bilan;
+      const date=b.date_bilan?" · "+b.date_bilan:"";
+      const o=document.createElement("option");
+      o.value=b.id; o.textContent=tt+date;
+      sel.appendChild(o);
+    });
+    $("#btnRenew").style.display=rows.length>0?"":"none";
+  }catch(e){ console.error(e); }
+}
+
+async function openSaved(bilanId){
+  try{
+    const res=await fetch(SB_URL+"/rest/v1/bilans?id=eq."+bilanId,{
+      headers:{"apikey":SB_ANON,"Authorization":"Bearer "+SB_ANON}
+    });
+    const rows=await res.json();
+    if(!rows||!rows[0]) return;
+    const b=rows[0];
+    if(!TRAMES[b.type_bilan]) return;
+    currentBilanId=b.id; currentPatientId=b.patient_id;
+    trameId=b.type_bilan; data=b.data||{};
+    // Synchroniser trameSel
+    if(b.type_bilan && $("#trameSel")) $("#trameSel").value=b.type_bilan;
+    if(b.patient_id) $("#patientSel").value=b.patient_id;
+    renderForm(); markSaved();
+    $("#btnRenew").style.display="";
+    $("#btnDeleteSaved").disabled=false;
+  }catch(e){ console.error(e); }
+}
+
+// ── Renouvellement ───────────────────────────────────────────────────────────
+async function renewBilan(){
+  if(!currentBilanId||!currentPatientId) return;
+  if(!confirm("Créer un bilan de renouvellement ?\nL'ancien bilan sera archivé et vous repartez d'une copie modifiable.")) return;
+  try{
+    await fetch(SB_URL+"/rest/v1/bilans?id=eq."+currentBilanId,{
+      method:"PATCH",
+      headers:{"apikey":SB_ANON,"Authorization":"Bearer "+SB_ANON,"Content-Type":"application/json"},
+      body:JSON.stringify({archived:true})
+    });
+    const newData=JSON.parse(JSON.stringify(data));
+    const res=await fetch(SB_URL+"/rest/v1/bilans",{
+      method:"POST",
+      headers:{"apikey":SB_ANON,"Authorization":"Bearer "+SB_ANON,"Content-Type":"application/json","Prefer":"return=representation"},
+      body:JSON.stringify({patient_id:currentPatientId,type_bilan:trameId,date_bilan:new Date().toISOString().slice(0,10),data:newData,archived:false})
+    });
+    const rows=await res.json();
+    if(rows&&rows[0]){
+      currentBilanId=rows[0].id;
+      data[trameId+".entete.date_bilan"]="";
+      data[trameId+".administratif.date_bilan"]="";
+      renderForm(); refreshSaved(); markSaved();
+      alert("Renouvellement créé. L'ancien bilan est archivé.\nMettez à jour la date du bilan.");
+    }
+  }catch(e){ alert("Erreur renouvellement : "+e); }
+}
+
+// ── Suppression ───────────────────────────────────────────────────────────────
+async function deleteSaved(bilanId){
+  try{
+    await fetch(SB_URL+"/rest/v1/bilans?id=eq."+bilanId,{
+      method:"DELETE",
+      headers:{"apikey":SB_ANON,"Authorization":"Bearer "+SB_ANON}
+    });
+    if(currentBilanId===bilanId){ currentBilanId=null; data={}; renderForm(); }
+    refreshSaved();
+    $("#btnDeleteSaved").disabled=true;
+    $("#savedSel").value="";
+  }catch(e){ console.error(e); }
+}
+
+function loadData(){ if(!currentBilanId) data={}; }
+
+function exportBackup(){
+  const blob=new Blob([JSON.stringify({_app:"OrthoBuddy-trames",_date:new Date().toISOString(),bilan_id:currentBilanId,data:data},null,2)],{type:"application/json"});
+  const a=document.createElement("a"); a.href=URL.createObjectURL(blob);
+  a.download="orthobuddy-bilan-"+new Date().toISOString().slice(0,10)+".json";
+  document.body.appendChild(a); a.click(); setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},1500);
+}
+
+function importBackup(file){
+  const r=new FileReader();
+  r.onload=()=>{ try{
+    const obj=JSON.parse(r.result);
+    if(!obj||!obj.data){ alert("Fichier non reconnu."); return; }
+    if(!confirm("Importer ce bilan ? Les données actuelles seront remplacées.")) return;
+    data=obj.data; renderForm(); scheduleSave(); alert("Bilan importé.");
+  }catch(e){ alert("Erreur : "+e); } };
+  r.readAsText(file);
+}
+/* ---------- Profils cabinet (multi) ------------------------------------- */
+const CABFIELDS=["cabinet","nom","statut","adresse","tel","email","certifs"];
+function getProfiles(){ try{ return JSON.parse(localStorage.getItem(STORE+"profiles")||"{}"); }catch(e){ return {}; } }
+function setProfiles(p){ localStorage.setItem(STORE+"profiles",JSON.stringify(p)); }
+function getActiveName(){ return localStorage.getItem(STORE+"activeProfile")||""; }
+function setActiveName(n){ localStorage.setItem(STORE+"activeProfile",n); }
+function migrateProfiles(){
+  const profs=getProfiles();
+  if(Object.keys(profs).length===0){
+    let old=null; try{ old=JSON.parse(localStorage.getItem(STORE+"cabinet")||"null"); }catch(e){}
+    if(old && (old.cabinet||old.nom)){ const name=old.cabinet||"Mon cabinet"; profs[name]=old; setProfiles(profs); setActiveName(name); }
+  }
+}
+function getCabinet(){
+  const profs=getProfiles(), a=getActiveName();
+  if(a && profs[a]) return profs[a];
+  const first=Object.keys(profs)[0]; if(first) return profs[first];
+  try{ return JSON.parse(localStorage.getItem(STORE+"cabinet")||"{}"); }catch(e){ return {}; }
+}
+function ck(secId,champId){ return trameId+"."+secId+"."+champId; }
+function val(secId,champId){ return data[ck(secId,champId)]; }
+
+/* ---------- Rendu du formulaire (guide d'entretien) --------------------- */
+function renderForm(){
+  const t=TRAMES[trameId], form=$("#form");
+  $("#lead").innerHTML = "<b>"+esc(t.docTitle||t.titre)+"</b> — complétez les sections ci-dessous. Les encadrés sont des consignes d'entretien (ils restent ici et n'apparaissent pas dans le compte rendu). Les champs vides sont masqués à l'export.";
+  form.innerHTML="";
+
+  t.sections.forEach((sec,si)=>{
+    const det=document.createElement("details"); det.className="section";
+    det.innerHTML="<summary><span class='sec-icon'><i class='ti "+(sec.icon||"ti-folder")+"'></i></span>"+esc(sec.titre)+"<i class='ti ti-chevron-down chev'></i></summary><div class='sec-body'></div>";
+    const body=$(".sec-body",det);
+    let i=0;
+    while(i<sec.champs.length){
+      const c=sec.champs[i];
+      if(c.half && sec.champs[i+1] && sec.champs[i+1].half){
+        const r=document.createElement("div"); r.className="row2";
+        r.appendChild(renderChamp(sec.id,c)); r.appendChild(renderChamp(sec.id,sec.champs[i+1]));
+        body.appendChild(r); i+=2; continue;
+      }
+      body.appendChild(renderChamp(sec.id,c)); i++;
+    }
+    form.appendChild(det);
+  });
+  form.oninput=applyConditional; form.onchange=applyConditional; applyConditional();
+}
+
+function renderChamp(secId,c){
+  const key=ck(secId,c.id);
+  if(c.type==="note"){ const d=document.createElement("div"); d.className="note"; d.innerHTML=c.text; return d; }
+  if(c.type==="subhead"){ const d=document.createElement("div"); d.className="subhead"; d.textContent=c.text; return d; }
+
+  const wrap=document.createElement("div"); wrap.className="field";
+  const id="f-"+slug(key);
+  const lab="<label for='"+id+"'>"+esc(c.label)+
+    (c.auto?" <span class='hint'><i class='ti ti-link'></i> fiche patient</span>":"")+
+    (c.hint?" <span class='hint'>· "+esc(c.hint)+"</span>":"")+"</label>";
+
+  let v=data[key];
+  if(v===undefined && c.def!==undefined){ v=c.def; data[key]=v; }
+
+  if(c.type==="textarea"){
+    wrap.innerHTML=lab+"<textarea id='"+id+"'></textarea>";
+    const el=$("textarea",wrap); el.value=v||""; el.addEventListener("input",()=>{ data[key]=el.value; scheduleSave(); });
+  } else if(c.type==="text"){
+    wrap.innerHTML=lab+"<input id='"+id+"' class='txt' type='text' autocomplete='off'>";
+    const el=$("input",wrap); el.value=v||""; el.addEventListener("input",()=>{ data[key]=el.value; scheduleSave(); });
+  } else if(c.type==="select"){
+    let o="<option value=''>— choisir —</option>";
+    c.options.forEach(x=>{ o+="<option"+(x===v?" selected":"")+">"+esc(x)+"</option>"; });
+    wrap.innerHTML=lab+"<select id='"+id+"' class='sel'>"+o+"</select>";
+    const el=$("select",wrap); el.addEventListener("change",()=>{ data[key]=el.value; scheduleSave(); });
+  } else if(c.type==="scale"){
+    const n=(v===undefined||v==="")?0:Number(v);
+    wrap.innerHTML=lab+"<div class='scale'><small>1</small><input id='"+id+"' type='range' min='0' max='10' step='1'><small>10</small><span class='val'></span></div>";
+    const el=$("input",wrap), out=$(".val",wrap); el.value=n;
+    const r=()=>{ out.textContent=(Number(el.value)===0?"—":el.value+"/10"); };
+    r(); el.addEventListener("input",()=>{ data[key]=Number(el.value); r(); scheduleSave(); });
+  } else if(c.type==="checkboxes"){
+    const sel=Array.isArray(v)?v:[];
+    let h=lab+"<div class='checks'>";
+    c.options.forEach((x,oi)=>{ const cid=id+"-"+oi; h+="<label class='chk'><input type='checkbox' id='"+cid+"' value=\""+esc(x)+"\""+(sel.indexOf(x)>=0?" checked":"")+"> "+esc(x)+"</label>"; });
+    h+="</div>"; wrap.innerHTML=h;
+    wrap.querySelectorAll("input[type=checkbox]").forEach(b=>{ b.addEventListener("change",()=>{ data[key]=[...wrap.querySelectorAll("input:checked")].map(x=>x.value); scheduleSave(); }); });
+  } else if(c.type==="presence_list"){
+    const st=(v&&typeof v==="object")?v:{};
+    let h=lab+"<div class='plist'>";
+    c.options.forEach((o,oi)=>{
+      const ol=(typeof o==="string")?{label:o}:o;
+      const cur=st[ol.label]||{}; const checked=!!cur.p; const cnt=cur.n||"";
+      h+="<div class='prow'><label class='chk'><input type='checkbox'"+(checked?" checked":"")+"> "+esc(ol.label)+"</label>";
+      if(ol.count){ h+="<input class='cnt' type='text' inputmode='numeric' placeholder='nombre de fois' value=\""+att(cnt)+"\""+(checked?"":" style='display:none'")+">"; }
+      h+="</div>";
+    });
+    h+="</div>"; wrap.innerHTML=h;
+    const rows=[...wrap.querySelectorAll(".prow")];
+    const commit=()=>{ const obj={}; rows.forEach((row,oi)=>{ const ol=(typeof c.options[oi]==="string")?{label:c.options[oi]}:c.options[oi]; const cb=row.querySelector("input[type=checkbox]"); const ce=row.querySelector(".cnt"); obj[ol.label]={p:cb.checked,n:ce?ce.value:""}; }); data[key]=obj; scheduleSave(); };
+    rows.forEach(row=>{ const cb=row.querySelector("input[type=checkbox]"); const ce=row.querySelector(".cnt"); cb.addEventListener("change",()=>{ if(ce) ce.style.display=cb.checked?"":"none"; commit(); }); if(ce) ce.addEventListener("input",commit); });
+  } else if(c.type==="epreuves_list"){
+    const st=(v&&typeof v==="object")?v:{};
+    let h=lab+"<div class='elist'>";
+    c.options.forEach((o,oi)=>{
+      const cur=st[o]||{}; const used=!!cur.u;
+      h+="<div class='erow'><label class='chk'><input type='checkbox'"+(used?" checked":"")+"> "+esc(o)+"</label>";
+      h+="<div class='efields'"+(used?"":" style='display:none'")+"><input class='escore' type='text' placeholder='Score / étalonnage' value=\""+att(cur.s||"")+"\"><textarea class='ecom' placeholder='Commentaire'>"+esc(cur.c||"")+"</textarea></div></div>";
+    });
+    h+="</div>"; wrap.innerHTML=h;
+    const rows=[...wrap.querySelectorAll(".erow")];
+    const commitE=()=>{ const obj={}; rows.forEach((row,oi)=>{ const cb=row.querySelector("input[type=checkbox]"); obj[c.options[oi]]={u:cb.checked,s:row.querySelector(".escore").value,c:row.querySelector(".ecom").value}; }); data[key]=obj; scheduleSave(); };
+    rows.forEach(row=>{ const cb=row.querySelector("input[type=checkbox]"); const ef=row.querySelector(".efields"); cb.addEventListener("change",()=>{ ef.style.display=cb.checked?"":"none"; commitE(); }); row.querySelector(".escore").addEventListener("input",commitE); row.querySelector(".ecom").addEventListener("input",commitE); });
+  } else if(c.type==="phoneme_grid"){
+    const buckets=c.buckets||[{key:"m",label:"Maîtrisée"},{key:"s",label:"Stimulable"},{key:"n",label:"Non produite"}];
+    let h=lab+"<div class='pgrid'>";
+    c.consonnes.forEach(cons=>{
+      const cur=(v&&typeof v==="object")?(v[cons]||""):"";
+      h+="<div class='pgrow'><span class='pcons'>"+esc(cons)+"</span><span class='pbtns'>";
+      buckets.forEach(b=>{ const on=cur===b.key; h+="<button type='button' class='pbtn"+(on?" on b-"+b.key:"")+"' data-c=\""+att(cons)+"\" data-b='"+b.key+"'>"+esc(b.label)+"</button>"; });
+      h+="</span></div>";
+    });
+    h+="</div>"; wrap.innerHTML=h;
+    wrap.querySelectorAll(".pbtn").forEach(btn=>{ btn.addEventListener("click",()=>{
+      const cons=btn.getAttribute("data-c"), b=btn.getAttribute("data-b");
+      const cur=(data[key]&&typeof data[key]==="object")?data[key]:{};
+      cur[cons]=(cur[cons]===b)?"":b; data[key]=cur;
+      const row=btn.closest(".pgrow"); row.querySelectorAll(".pbtn").forEach(x=>{ x.className="pbtn"; });
+      if(cur[cons]){ const a=row.querySelector(".pbtn[data-b='"+cur[cons]+"']"); if(a) a.className="pbtn on b-"+cur[cons]; }
+      scheduleSave();
+    }); });
+  } else if(c.type==="rating_grid"){
+    let h=lab+"<div class='rgrid'>";
+    c.rows.forEach(rw=>{
+      const cur=(v&&typeof v==="object")?(v[rw]||""):"";
+      h+="<div class='rgrow'><span class='rglabel'>"+esc(rw)+"</span><select class='sel rgsel' data-r=\""+att(rw)+"\"><option value=''>—</option>";
+      c.levels.forEach(lv=>{ h+="<option"+(cur===lv?" selected":"")+">"+esc(lv)+"</option>"; });
+      h+="</select></div>";
+    });
+    h+="</div>"; wrap.innerHTML=h;
+    wrap.querySelectorAll(".rgsel").forEach(se=>{ se.addEventListener("change",()=>{ const cur=(data[key]&&typeof data[key]==="object")?data[key]:{}; cur[se.getAttribute("data-r")]=se.value; data[key]=cur; scheduleSave(); }); });
+  }
+  if(c.showIf){ wrap.setAttribute("data-showif-key", ck(secId,c.showIf.field)); wrap.setAttribute("data-showif-val", c.showIf.value); }
+  return wrap;
+}
+
+function att(s){ return esc(s).replace(/"/g,"&quot;"); }
+function applyConditional(){
+  document.querySelectorAll("#form [data-showif-key]").forEach(el=>{
+    const key=el.getAttribute("data-showif-key"), val=el.getAttribute("data-showif-val");
+    const v=data[key]; const on=Array.isArray(v)? v.indexOf(val)>=0 : (v===val);
+    el.style.display = on? "" : "none";
+  });
+}
+
+/* ---------- Construction du corps du document (partagé PDF + Word) ------ */
+function fmtValue(c,v){
+  if(c.type==="checkboxes"){ if(Array.isArray(v)&&v.length) return v.join(", "); return c.ifEmpty? c.ifEmpty : ""; }
+  if(c.type==="scale") return (v&&Number(v)>0)? (Number(v)+"/10"):"";
+  if(c.type==="presence_list"){
+    if(!v||typeof v!=="object") return "";
+    const showAbsent=c.showAbsent!==false; const lines=[];
+    c.options.forEach(o=>{ const ol=(typeof o==="string")?{label:o}:o; const st=v[ol.label]||{};
+      if(st.p){ if(ol.count) lines.push(ol.label+(st.n?" ("+st.n+" fois)":"")); else if(!showAbsent) lines.push(ol.label); }
+      else if(showAbsent) lines.push(ol.label+" : non observé");
+    });
+    return lines.join("\n");
+  }
+  if(c.type==="epreuves_list"){
+    if(!v||typeof v!=="object") return "";
+    const lines=[]; c.options.forEach(o=>{ const st=v[o]||{}; if(st.u){ let l=o; if(st.s) l+=" — "+st.s; if(st.c) l+=" : "+st.c; lines.push(l); } });
+    return lines.join("\n");
+  }
+  if(c.type==="phoneme_grid"){
+    if(!v||typeof v!=="object") return "";
+    const buckets=c.buckets||[{key:"m",exportLabel:"Consonnes maîtrisées"},{key:"s",exportLabel:"Consonnes stimulables"},{key:"n",exportLabel:"Consonnes non produites"}];
+    const lines=[]; buckets.forEach(b=>{ const list=c.consonnes.filter(x=>v[x]===b.key); if(list.length) lines.push((b.exportLabel||b.label)+" : "+list.join(", ")); });
+    return lines.join("\n");
+  }
+  if(c.type==="rating_grid"){
+    if(!v||typeof v!=="object") return "";
+    const lines=[]; c.rows.forEach(rw=>{ if(v[rw]) lines.push(rw+" : "+v[rw]); }); return lines.join("\n");
+  }
+  let s=(v==null)?"":String(v).trim(); if(s==="—") s=""; return s;
+}
+
+function banner(text,bg){
+  return "<table width='100%' cellspacing='0' cellpadding='0' style='border-collapse:collapse;margin:16px 0 8px'><tr><td bgcolor='"+bg+"' style='background:"+bg+";padding:6px 12px'><p style='margin:0;color:#ffffff;font-weight:bold;font-size:12.5px;letter-spacing:.04em;line-height:1.2'>"+esc(text)+"</p></td></tr></table>";
+}
+
+function buildDocBody(){
+  const t=TRAMES[trameId], cab=getCabinet();
+  const g=(s,c)=>esc(val(s,c)||"");
+  const nom=g("administratif","nom"), prenom=g("administratif","prenom"),
+        ddn=g("administratif","ddn"), adr=g("administratif","adresse"), secu=g("administratif","secu");
+  const dest=g("entete","destinataire"), copies=g("entete","copies"), dateBilan=g("entete","date_bilan");
+
+  const cabNom=esc(cab.cabinet||"Cabinet d'orthophonie");
+  const prat=esc(cab.nom||""), statut=esc(cab.statut||"Orthophoniste");
+
+  // En-tête : cabinet (gauche) + destinataires (droite)
+  let left="<div style='font-size:12px;line-height:1.4;color:"+C.ink+"'>"+
+    "<p style='margin:0;font-weight:bold;font-size:14px;color:"+C.sage+"'>"+cabNom+"</p>"+
+    (prat?"<p style='margin:0'>"+prat+(statut?", "+statut:"")+"</p>":"")+
+    (cab.adresse?"<p style='margin:0'>"+esc(cab.adresse)+"</p>":"")+
+    (cab.tel?"<p style='margin:0'>"+esc(cab.tel)+"</p>":"")+
+    (cab.email?"<p style='margin:0'>"+esc(cab.email)+"</p>":"")+
+    (cab.certifs?"<p style='margin:0;font-style:italic'>"+esc(cab.certifs)+"</p>":"")+"</div>";
+  let right="<div style='font-size:12px;text-align:right;line-height:1.45;color:"+C.ink+"'>"+
+    (dest?"<p style='margin:0'>Destinataire : <b>"+dest+"</b></p>":"")+
+    (copies?"<p style='margin:0'>Copies : "+copies+"</p>":"")+"</div>";
+  const header="<table width='100%' cellpadding='0' cellspacing='0'><tr>"+
+    "<td style='vertical-align:top;width:55%'>"+left+"</td><td style='vertical-align:top'>"+right+"</td></tr></table>";
+
+  // Bandeau-titre
+  const titleBanner="<table width='100%' cellspacing='0' cellpadding='0' style='border-collapse:collapse;margin:16px 0'><tr><td bgcolor='"+C.brique+"' style='background:"+C.brique+";padding:11px 16px;text-align:center'>"+
+    "<p style='margin:0;color:#fff;font-weight:bold;font-size:15px;letter-spacing:.03em;text-transform:uppercase;line-height:1.25'>"+esc(t.docTitle||t.titre)+"</p>"+
+    "<p style='margin:4px 0 0;color:#fff;font-size:11px;line-height:1.2'>Confidentiel et soumis au secret médical</p></td></tr></table>";
+
+  const subline="<p style='text-align:center;font-style:italic;font-size:12px;color:"+C.inkSoft+";margin:8px 0 14px'>"+
+    "Bilan réalisé par "+(prat||"…")+(statut?", "+statut:"")+(dateBilan?" — "+dateBilan:"")+"</p>";
+
+  // Bloc patient
+  const patRight="Patient <b>"+(nom||"")+" "+(prenom||"")+"</b>"+(ddn?", né(e) le "+ddn:"")+(secu?"<br>Assuré n° "+secu:"")+(adr?"<br>"+adr:"");
+  const patient="<table width='100%' cellpadding='0' cellspacing='0' bgcolor='"+C.creme+"' style='background:"+C.creme+";border:1px solid "+C.border+"'><tr>"+
+    "<td style='vertical-align:top;padding:9px 12px;font-size:12.5px'><p style='margin:0;line-height:1.4'>"+(dateBilan?"Date du bilan : "+dateBilan:"")+"</p></td>"+
+    "<td style='vertical-align:top;padding:9px 12px;font-size:12.5px;text-align:right'><p style='margin:0;line-height:1.4'>"+patRight+"</p></td></tr></table>";
+
+  // Sections
+  let body="";
+  t.sections.forEach(sec=>{
+    if(sec.meta) return;
+    const blocks=[];
+    sec.champs.forEach(c=>{
+      if(c.type==="note") return;
+      if(c.inHeader) return;
+      if(c.type==="subhead"){ blocks.push({sub:c.text,items:[]}); return; }
+      const v=fmtValue(c,val(sec.id,c.id)); if(v==="") return;
+      const line="<p style='margin:4px 0;font-size:13px;line-height:1.5'><b style='color:"+C.sage+"'>"+esc(c.label)+" :</b> "+nl(v)+"</p>";
+      if(blocks.length && blocks[blocks.length-1].sub!==undefined) blocks[blocks.length-1].items.push(line);
+      else blocks.push({line});
+    });
+    let inner="";
+    blocks.forEach(b=>{
+      if(b.sub!==undefined){ if(b.items.length){ inner+="<p style='margin:11px 0 2px;font-weight:bold;color:"+C.brique+";text-transform:uppercase;font-size:11px;letter-spacing:.03em'>"+esc(b.sub)+"</p>"+b.items.join(""); } }
+      else inner+=b.line;
+    });
+    if(inner.trim()!=="") body+=banner(sec.titre,C.sage)+inner;
+  });
+
+  const signature="<div style='margin-top:30px;font-size:13px'>"+
+    "<p style='margin:0 0 22px'>Je reste à votre disposition pour tout renseignement complémentaire.<br>Cordialement,</p>"+
+    "<p style='margin:0;font-weight:bold'>"+(prat||"[Nom du praticien]")+"</p>"+
+    "<p style='margin:2px 0 0;color:#777'>"+statut+"</p></div>";
+
+  const note=(!body)? "<p style='color:#999'>Aucune donnée saisie pour le moment.</p>":"";
+
+  return header+titleBanner+subline+patient+(body||note)+signature;
+}
+
+/* ---------- Aperçu & PDF ------------------------------------------------ */
+function exportPDF(){
+  const t=TRAMES[trameId];
+  const patient=$("#patientInput").value.trim()||"patient";
+  const filename="Bilan_"+slug(patient)+"_"+slug(t.titre)+".pdf";
+  const css=
+    "*{box-sizing:border-box} "+
+    "body{font-family:'Nunito','Segoe UI',system-ui,sans-serif;color:"+C.ink+";margin:0;background:#e9e5dc;line-height:1.5} "+
+    ".toolbar{position:sticky;top:0;z-index:10;display:flex;gap:10px;justify-content:flex-end;align-items:center;padding:12px 18px;background:#fff;border-bottom:1px solid "+C.border+"} "+
+    ".toolbar .lbl{margin-right:auto;font-weight:700;color:"+C.inkSoft+";font-size:13px} "+
+    ".toolbar button{font-family:inherit;font-weight:700;border:1px solid "+C.border+";background:#fff;border-radius:9px;padding:10px 16px;cursor:pointer;font-size:14px} "+
+    ".toolbar .pdf{background:"+C.brique+";color:#fff;border-color:"+C.brique+"} "+
+    "#page{max-width:820px;margin:20px auto 40px;background:#fff;padding:32px 34px;box-shadow:0 2px 18px rgba(0,0,0,.12)} "+
+    ".pf{margin-top:26px;border-top:1px solid "+C.border+";padding-top:6px;font-size:9.5px;color:#9a9486;display:flex;justify-content:space-between} "+
+    "table{border-collapse:collapse} tr,table,.banner-table{page-break-inside:avoid}";
+  const inner=
+    "<div class='toolbar'>"+
+      "<span class='lbl'>Aperçu du compte rendu</span>"+
+      "<button class='pdf' id='btnDl'>Télécharger le PDF</button>"+
+      "<button onclick='window.close()'>Fermer</button>"+
+    "</div>"+
+    "<div id='page'><div id='doc'>"+buildDocBody()+
+      "<div class='pf'><span>Document confidentiel &mdash; soumis au secret m&eacute;dical</span><span>G&eacute;n&eacute;r&eacute; avec OrthoBuddy</span></div>"+
+    "</div></div>";
+  const js=
+    "function dl(){var el=document.getElementById('doc');"+
+    "if(typeof html2pdf==='undefined'){alert('La librairie PDF est encore en cours de chargement, réessaie dans une seconde.');return;}"+
+    "var b=document.getElementById('btnDl');b.disabled=true;b.textContent='Génération…';"+
+    "var opt={margin:[12,12,14,12],filename:"+JSON.stringify(filename)+",image:{type:'jpeg',quality:0.98},"+
+    "html2canvas:{scale:2,backgroundColor:'#ffffff',useCORS:true,logging:false},"+
+    "jsPDF:{unit:'mm',format:'a4',orientation:'portrait'},pagebreak:{mode:['css','legacy'],avoid:['tr','table']}};"+
+    "var ready=(document.fonts&&document.fonts.ready)?document.fonts.ready:Promise.resolve();"+
+    "ready.then(function(){return html2pdf().set(opt).from(el).save();}).then(function(){b.disabled=false;b.textContent='Télécharger le PDF';})"+
+    ".catch(function(e){b.disabled=false;b.textContent='Télécharger le PDF';alert('Erreur lors de la génération du PDF : '+e);});}"+
+    "document.getElementById('btnDl').addEventListener('click',dl);";
+  const html="<!DOCTYPE html><html lang='fr'><head><meta charset='UTF-8'><title>"+esc(t.docTitle||t.titre)+"</title>"+
+    "<link href='https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap' rel='stylesheet'>"+
+    "<script src='https://cdn.jsdelivr.net/npm/html2pdf.js@0.10.2/dist/html2pdf.bundle.min.js'><\/script>"+
+    "<style>"+css+"</style></head><body>"+inner+
+    "<script>"+js+"<\/script>"+
+    "</body></html>";
+  const w=window.open("","_blank");
+  if(!w){ alert("Le navigateur a bloqué la fenêtre. Autorisez les pop-up pour ce site."); return; }
+  w.document.open(); w.document.write(html); w.document.close();
+}
+
+/* ---------- Export Word (.doc) ------------------------------------------ */
+function exportWord(){
+  const t=TRAMES[trameId];
+  const patient=$("#patientInput").value.trim()||"patient";
+  const wordHtml="<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>"+
+    "<head><meta charset='utf-8'><title>"+esc(t.docTitle||t.titre)+"</title>"+
+    "<!--[if gte mso 9]><xml><w:WordDocument><w:View>Print</w:View></w:WordDocument></xml><![endif]-->"+
+    "<style>@page WordSection1{size:21cm 29.7cm;margin:1.6cm 1.8cm}div.WordSection1{page:WordSection1}"+
+    "body{font-family:'Calibri','Segoe UI',sans-serif;color:"+C.ink+";font-size:11pt;line-height:1.35}"+
+    "p{margin:0 0 3pt;mso-line-height-rule:exactly} td p{margin:0} table{border-collapse:collapse}</style></head><body><div class='WordSection1'>"+
+    buildDocBody()+
+    "<p style='margin-top:26px;font-size:8.5pt;color:#9a9486;border-top:1px solid "+C.border+";padding-top:6px'>Document confidentiel — soumis au secret médical · Généré avec OrthoBuddy</p>"+
+    "</div></body></html>";
+  const blob=new Blob(["\ufeff"+wordHtml],{type:"application/msword"});
+  const a=document.createElement("a");
+  a.href=URL.createObjectURL(blob);
+  a.download="Bilan_"+slug(patient)+"_"+slug(t.titre)+".doc";
+  document.body.appendChild(a); a.click();
+  setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove(); },1500);
+}
+
+/* ---------- Modal cabinet ----------------------------------------------- */
+function fillCabFields(c){ c=c||{}; CABFIELDS.forEach(f=>{ $("#cab_"+f).value=c[f]||""; }); if(!c.statut) $("#cab_statut").value="Orthophoniste"; }
+function readCabFields(){ const c={}; CABFIELDS.forEach(f=>{ c[f]=$("#cab_"+f).value.trim(); }); return c; }
+function refreshProfileSelect(selectName){
+  const profs=getProfiles(), sel=$("#cab_profileSel"); sel.innerHTML="";
+  Object.keys(profs).forEach(n=>{ const o=document.createElement("option"); o.value=n; o.textContent=n; sel.appendChild(o); });
+  const nw=document.createElement("option"); nw.value="__new__"; nw.textContent="+ Nouveau profil"; sel.appendChild(nw);
+  if(selectName!==undefined && selectName!==null) sel.value=selectName;
+}
+function loadProfileIntoForm(name){
+  const profs=getProfiles();
+  if(name==="__new__" || !profs[name]){ fillCabFields({}); $("#cab_profileName").value=""; }
+  else { fillCabFields(profs[name]); $("#cab_profileName").value=name; }
+}
+function openCabinet(){
+  migrateProfiles();
+  const profs=getProfiles(), active=getActiveName();
+  const start=(active && profs[active]) ? active : (Object.keys(profs)[0] || "__new__");
+  refreshProfileSelect(start);
+  loadProfileIntoForm(start);
+  $("#overlay").classList.add("open");
+}
+function closeCabinet(){ $("#overlay").classList.remove("open"); }
+function saveCabinet(){
+  const c=readCabFields();
+  let name=$("#cab_profileName").value.trim();
+  if(!name) name=c.cabinet||"Mon cabinet";
+  const profs=getProfiles(); profs[name]=c; setProfiles(profs); setActiveName(name);
+  closeCabinet();
+}
+function deleteProfile(){
+  const cur=$("#cab_profileSel").value, profs=getProfiles();
+  if(cur==="__new__" || !profs[cur]){ closeCabinet(); return; }
+  if(!confirm("Supprimer le profil « "+cur+" » ?")) return;
+  delete profs[cur]; setProfiles(profs);
+  const next=Object.keys(profs)[0]||"";
+  setActiveName(next);
+  refreshProfileSelect(next||"__new__");
+  loadProfileIntoForm(next||"__new__");
+}
+
+/* ---------- Init -------------------------------------------------------- */
+function init(){
+  migrateProfiles();
+  // Peupler le sélecteur de trames
+  const trameSel=$("#trameSel");
+  Object.keys(TRAMES).forEach(id=>{ const o=document.createElement("option"); o.value=id; o.textContent=TRAMES[id].titre; trameSel.appendChild(o); });
+  trameId=trameSel.value;
+  $("#saveState").textContent="Chargement…";
+
+  loadPatients();
+
+  trameSel.addEventListener("change",()=>{ trameId=trameSel.value; loadData(); renderForm(); markSaved(); });
+  $("#patientSel").addEventListener("change",onPatientChange);
+
+  const savedSelEl=$("#savedSel");
+  if(savedSelEl) savedSelEl.addEventListener("change",e=>{
+    const k=e.target.value;
+    const del=$("#btnDeleteSaved"); if(del) del.disabled=!k;
+    if(k) openSaved(k);
+  });
+
+  const delBtn=$("#btnDeleteSaved");
+  if(delBtn) delBtn.addEventListener("click",()=>{
+    const k=$("#savedSel")?$("#savedSel").value:"";
+    if(!k) return;
+    if(!confirm("Supprimer définitivement ce bilan ?\nCette action est irréversible.")) return;
+    deleteSaved(k);
+  });
+
+  $("#btnRenew").addEventListener("click",renewBilan);
+  $("#btnBackup").addEventListener("click",exportBackup);
+  $("#btnImport").addEventListener("click",()=>$("#importFile").click());
+  $("#importFile").addEventListener("change",e=>{ const f=e.target.files[0]; if(f) importBackup(f); e.target.value=""; });
+  $("#btnPdf").addEventListener("click",exportPDF);
+  $("#btnWord").addEventListener("click",exportWord);
+  $("#btnSettings").addEventListener("click",openCabinet);
+  $("#cabSave").addEventListener("click",saveCabinet);
+  $("#cabCancel").addEventListener("click",closeCabinet);
+  $("#cabDelete").addEventListener("click",deleteProfile);
+  $("#cab_profileSel").addEventListener("change",e=>{ loadProfileIntoForm(e.target.value); if(e.target.value==="__new__") $("#cab_profileName").focus(); });
+  $("#overlay").addEventListener("click",e=>{ if(e.target.id==="overlay") closeCabinet(); });
+
+  $("#btnReset").addEventListener("click",()=>{
+    if(!trameId||!currentPatientId) return;
+    if(confirm("Effacer toutes les données saisies pour ce bilan ?")){ data={}; renderForm(); scheduleSave(); }
+  });
+
+  $("#saveState").textContent="Prêt";
+}
+document.addEventListener("DOMContentLoaded",init);
+</script>
+</body>
+</html>
