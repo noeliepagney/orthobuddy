@@ -15471,32 +15471,263 @@ function anamneseLive(field){
 }
 
 function _esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+// Définition des sections/questions pour le questionnaire pré-bilan
+// Les id correspondent EXACTEMENT aux clés data-ana de l'anamnèse OrthoBuddy
+var QA_SECTIONS = {
+  base_enfant: {
+    label: 'Anamnèse base — enfant',
+    base: true,
+    questions: [
+      {id:'lieu_vie', label:'Lieu de vie'},
+      {id:'prof_pere', label:'Profession du père'},
+      {id:'prof_mere', label:'Profession de la mère'},
+      {id:'fratrie', label:'Fratrie'},
+      {id:'fratrie_detail', label:'Prénom(s) et âge(s) fratrie'},
+      {id:'bilinguisme', label:'Bilinguisme'},
+      {id:'langue_maison', label:'Langue parlée à la maison'},
+      {id:'atcd_fam_mere', label:'Antécédents familiaux — mère'},
+      {id:'atcd_fam_pere', label:'Antécédents familiaux — père'},
+      {id:'atcd_fam_fratrie', label:'Antécédents familiaux — fratrie'},
+      {id:'origine_plainte', label:'De qui vient la plainte'},
+      {id:'rythme_famille', label:'Rythme familial / disponibilité'},
+      {id:'grossesse', label:'Grossesse'},
+      {id:'naissance_mode', label:"Mode d'accouchement"},
+      {id:'naissance_terme', label:'Terme / prématurité'},
+      {id:'naissance_detail', label:'Particularités naissance'},
+      {id:'poids_naissance', label:'Poids de naissance'},
+      {id:'orl', label:'Antécédents ORL'},
+      {id:'vision', label:'Vision'},
+      {id:'traumatismes', label:'Traumatismes / accidents'},
+      {id:'traitements', label:'Traitements médicamenteux'},
+      {id:'bilans', label:'Bilans déjà réalisés'},
+      {id:'suivis', label:'Suivis en cours'},
+      {id:'diagnostics', label:'Diagnostics posés'},
+      {id:'age_marche', label:'Âge acquisition marche'},
+      {id:'age_babillage', label:'Âge babillage canonique'},
+      {id:'age_premiers_mots', label:'Âge premiers mots'},
+      {id:'age_phrases', label:'Âge premières phrases'},
+      {id:'lateralite', label:'Latéralité'},
+      {id:'proprete_diurne', label:'Propreté diurne (âge)'},
+      {id:'proprete_nocturne', label:'Propreté nocturne (âge)'},
+      {id:'lieu_sommeil', label:'Lieu de sommeil'},
+      {id:'troubles_sommeil', label:'Troubles du sommeil'},
+      {id:'alimentation', label:'Alimentation actuelle'},
+      {id:'autonomie', label:'Autonomie'},
+      {id:'sensorialite', label:'Particularités sensorielles'},
+      {id:'attention', label:'Éléments attentionnels'},
+      {id:'jeux_activites', label:'Jeux / activités'},
+      {id:'ecrans_semaine', label:"Temps d'écran semaine"},
+      {id:'ecrans_weekend', label:"Temps d'écran weekend"},
+      {id:'classe', label:'Classe / niveau scolaire'},
+      {id:'aime_ecole', label:"Aime l'école"},
+      {id:'obs_enseignant', label:"Observations de l'enseignant"},
+      {id:'temps_devoirs', label:'Temps de devoirs'},
+      {id:'bien_etre', label:'Bien-être général'},
+      {id:'description_patient', label:'Description du patient par les parents'},
+      {id:'centres_interet', label:"Centres d'intérêt"},
+    ]
+  },
+  base_adulte: {
+    label: 'Anamnèse base — adulte',
+    base: true,
+    questions: [
+      {id:'niveau_scolaire', label:'Niveau scolaire atteint'},
+      {id:'niveau_eleve', label:'Parcours scolaire'},
+      {id:'lateralite_neuro', label:'Latéralité'},
+      {id:'vie_pro_neuro', label:'Vie professionnelle (dernier poste)'},
+      {id:'date_retraite', label:'Date de retraite'},
+      {id:'situation_familiale', label:'Situation familiale'},
+      {id:'lieu_vie_neuro', label:'Lieu de vie actuel'},
+      {id:'aidant', label:'Aidant principal'},
+      {id:'occupations', label:'Occupations quotidiennes'},
+      {id:'conduite', label:'Conduit un véhicule'},
+      {id:'gestion_finances', label:'Gère ses finances'},
+      {id:'loisirs_neuro', label:'Lecture / loisirs'},
+      {id:'vie_sociale', label:'Vie sociale'},
+    ]
+  },
+  lo: {
+    label: 'Langage oral',
+    questions: [
+      {id:'articulation_lo', label:'Articulation'},
+      {id:'elements_langagiers', label:'Éléments langagiers'},
+      {id:'intelligibilite_interlocuteur', label:'Intelligibilité selon interlocuteur'},
+      {id:'trouble_phono', label:'Trouble phonologique'},
+      {id:'trouble_va_lo', label:'Trouble visuo-attentionnel'},
+      {id:'aime_parler', label:'Aime parler'},
+      {id:'difficultes_retention_lo', label:'Difficultés à retenir'},
+      {id:'temps_lecture_lo', label:'Temps de lecture/jour'},
+      {id:'commentaires_lo', label:'Commentaires'},
+    ]
+  },
+  le: {
+    label: 'Langage écrit',
+    questions: [
+      {id:'retard_langage_le', label:'Retard de langage ou de parole plus jeune'},
+      {id:'confusions_auditives_le', label:'Confusions auditives'},
+      {id:'trouble_phono_le', label:'Trouble phonologique'},
+      {id:'visuo_attentionnel_le', label:'Visuo-attentionnel'},
+      {id:'appetence_lecture_le', label:'Appétence à la lecture (0-10)'},
+      {id:'difficultes_le', label:'Types de difficultés écrites'},
+      {id:'le_avec_lo', label:'Évolution du LO avec apprentissage LE'},
+      {id:'difficultes_retention_le', label:'Difficultés à retenir'},
+      {id:'temps_lecture_le', label:'Temps de lecture/jour'},
+      {id:'debut_difficultes', label:'Début des difficultés'},
+      {id:'obs_enseignant_le', label:"Observations enseignant"},
+      {id:'commentaires_le', label:'Commentaires'},
+    ]
+  },
+  cm: {
+    label: 'Cognition mathématique',
+    questions: [
+      {id:'retard_langage_cm', label:'Retard de langage ou de parole plus jeune'},
+      {id:'confusions_auditives_cm', label:'Confusions auditives'},
+      {id:'trouble_phono_cm', label:'Trouble phonologique'},
+      {id:'visuo_attentionnel_cm', label:'Visuo-attentionnel'},
+      {id:'appetence_maths', label:'Appétence aux maths (0-10)'},
+      {id:'appetence_lecture', label:'Appétence à la lecture (0-10)'},
+      {id:'difficultes_maths', label:'Types de difficultés'},
+      {id:'difficultes_retention_cm', label:'Difficultés à retenir'},
+      {id:'tables_multi', label:'Tables de multiplication'},
+      {id:'obs_enseignant_maths', label:"Observations enseignant"},
+      {id:'autres_difficultes_maths', label:'Autres difficultés'},
+    ]
+  },
+  oralite: {
+    label: 'Oralité',
+    questions: [
+      {id:'respiration_jour', label:'Respiration en journée'},
+      {id:'respiration_nuit', label:'Respiration la nuit'},
+      {id:'porte_en_bouche', label:'Porte objets/doigts en bouche'},
+      {id:'alimentation_oralite', label:'Alimentation'},
+      {id:'journee_alim', label:'Journée alimentaire type'},
+      {id:'evitement_repas', label:"Comportements d'évitement au repas"},
+      {id:'meme_repas', label:'Mange la même chose que la famille'},
+      {id:'difficultes_lieux', label:'Difficultés selon les lieux'},
+      {id:'antecedents_ortho', label:'Antécédents orthodontiques'},
+      {id:'commentaires_oralite', label:'Commentaires'},
+    ]
+  },
+  anosmie: {
+    label: 'Anosmie',
+    questions: [
+      {id:'etiologie_anos', label:'Étiologie'},
+      {id:'type_anos', label:"Type d'anosmie"},
+      {id:'odeurs_aimees_apres', label:'Odeurs aimées actuellement'},
+      {id:'odeurs_aimees_avant', label:"Odeurs aimées avant l'anosmie"},
+      {id:'retentissement_alim', label:'Retentissement alimentaire'},
+      {id:'tabagisme', label:'Tabagisme'},
+      {id:'regime', label:'Régime alimentaire particulier'},
+      {id:'allergies', label:'Allergies'},
+      {id:'commentaires_anos', label:'Commentaires'},
+    ]
+  },
+  base_adulte_neuro: {
+    label: 'Neurologie',
+    questions: [
+      {id:'date_premiers_symptomes', label:'Date apparition premiers symptômes'},
+      {id:'mode_installation', label:"Mode d'installation"},
+      {id:'plainte_cognitive', label:'Nature de la plainte cognitive'},
+      {id:'caractere_evolutif', label:'Caractère évolutif'},
+      {id:'anosognosie', label:'Conscience des troubles'},
+      {id:'modif_comportement', label:'Modifications comportementales'},
+      {id:'antecedents_neuro', label:'Antécédents médicaux spécifiques'},
+      {id:'traitements_neuro', label:'Traitements médicamenteux actuels'},
+      {id:'reaction_antidep', label:'Réaction aux antidépresseurs'},
+      {id:'vision_neuro', label:'Vision'},
+      {id:'audition_neuro', label:'Audition'},
+      {id:'gout_odorat', label:'Goût et odorat'},
+      {id:'examens_neuro', label:'Examens réalisés'},
+      {id:'atcd_fam_neuro', label:'Antécédents familiaux neuro-dégénératifs'},
+      {id:'evenements_vie', label:'Événements de vie marquants'},
+      {id:'info_langagiere', label:'Informations langagières'},
+      {id:'commentaires_neuro', label:'Commentaires'},
+    ]
+  }
+};
+
 function ouvrirEnvoiQuestionnaire(pid){
   var p=DB.patients.find(function(x){return x.id===pid;});
   if(!p){showToast('Patient introuvable','red');return;}
-  var sections=[
-    {id:'base_enfant',label:'Anamnese base enfant'},
-    {id:'base_adulte',label:'Anamnese base adulte'},
-    {id:'lo',label:'Langage oral'},
-    {id:'le',label:'Langage ecrit'},
-    {id:'cm',label:'Cognition mathematique'},
-    {id:'oralite',label:'Oralite alimentaire'},
-    {id:'neuro',label:'Neurologie / memoire'}
-  ];
   var emailPatient=p.email||p.emailParent||p.emailContact||'';
-  var html='<div style="padding:4px;">';
-  html+='<div style="margin-bottom:12px;"><label style="font-size:12px;font-weight:600;display:block;margin-bottom:4px;">Email du destinataire</label>';
-  html+='<input type="text" id="qp-email" value="'+_esc(emailPatient)+'" style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:13px;font-family:inherit;" placeholder="email@exemple.fr"></div>';
-  html+='<div style="margin-bottom:14px;"><label style="font-size:12px;font-weight:600;display:block;margin-bottom:6px;">Sections a inclure</label>';
-  html+='<div style="display:flex;flex-wrap:wrap;gap:6px;">';
-  sections.forEach(function(s){
-    html+='<label style="display:flex;align-items:center;gap:5px;font-size:12px;cursor:pointer;background:var(--bg);border:1px solid var(--border);border-radius:20px;padding:4px 10px;">';
-    html+='<input type="checkbox" id="qp-sec-'+s.id+'"> '+s.label+'</label>';
-  });
-  html+='</div></div>';
-  html+='<button id="btn-envoyer-qa" data-pid="'+pid+'" style="background:#7C3AED;color:white;border:none;border-radius:var(--radius-sm);padding:10px 18px;font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;width:100%;">Envoyer le questionnaire</button>';
+
+  // Détecter enfant ou adulte
+  var isEnfant = false;
+  if(p.ddn){
+    var ddn = new Date(p.ddn);
+    var age = (new Date() - ddn) / (1000*60*60*24*365.25);
+    isEnfant = age < 18;
+  }
+  var defaultBase = isEnfant ? 'base_enfant' : 'base_adulte';
+
+  var html='<div style="padding:4px;max-height:70vh;overflow-y:auto;">';
+
+  // Email
+  html+='<div style="margin-bottom:14px;">';
+  html+='<label style="font-size:12px;font-weight:600;display:block;margin-bottom:4px;">Email du destinataire</label>';
+  html+='<input type="text" id="qp-email" value="'+_esc(emailPatient)+'" style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:13px;font-family:inherit;" placeholder="email@exemple.fr">';
   html+='</div>';
-  showModal('Questionnaire pre-bilan',html);
+
+  // Sections et questions
+  Object.keys(QA_SECTIONS).forEach(function(secId){
+    var sec = QA_SECTIONS[secId];
+    var isActiveBase = (secId === defaultBase);
+    var isOtherBase = (sec.base && !isActiveBase);
+    var bgColor = isActiveBase ? 'var(--green-ll,#e8f5e9)' : 'var(--bg)';
+    var borderColor = isActiveBase ? 'var(--green,#1D9E75)' : 'var(--border)';
+
+    // Masquer l'autre base
+    if(isOtherBase) return;
+
+    html+='<div style="margin-bottom:10px;border:1px solid '+borderColor+';border-radius:var(--radius-sm);overflow:hidden;">';
+
+    // Header section avec checkbox globale
+    html+='<div style="display:flex;align-items:center;gap:8px;padding:8px 10px;background:'+bgColor+';cursor:pointer;" data-secid="'+secId+'" onclick="toggleQASection(this.dataset.secid)">';
+    if(!isActiveBase){
+      html+='<input type="checkbox" id="qp-sec-'+secId+'" data-secid="'+secId+'" onchange="toggleQASectionCheck(this.dataset.secid)" onclick="event.stopPropagation()" style="width:14px;height:14px;accent-color:var(--green,#1D9E75);">';
+    } else {
+      html+='<input type="checkbox" id="qp-sec-'+secId+'" checked disabled style="width:14px;height:14px;">';
+    }
+    html+='<span style="font-size:12px;font-weight:700;flex:1;">'+_esc(sec.label)+(isActiveBase?' <span style="font-size:10px;color:var(--green,#1D9E75);">obligatoire</span>':'')+'</span>';
+    html+='<span id="qp-chev-'+secId+'" style="font-size:10px;color:var(--text-soft);">▼</span>';
+    html+='</div>';
+
+    // Questions (cachées par défaut sauf base)
+    html+='<div id="qp-qs-'+secId+'" style="display:'+(isActiveBase?'block':'none')+';padding:6px 10px;border-top:1px solid var(--border);">';
+    sec.questions.forEach(function(q){
+      var checkedAttr = isActiveBase ? 'checked' : '';
+      html+='<label style="display:flex;align-items:center;gap:6px;padding:4px 0;font-size:12px;cursor:pointer;border-bottom:1px solid var(--border-soft,#f0f0f0);">';
+      html+='<input type="checkbox" id="qp-q-'+secId+'-'+q.id+'" '+checkedAttr+' style="width:13px;height:13px;accent-color:var(--green,#1D9E75);"> '+_esc(q.label);
+      html+='</label>';
+    });
+    html+='</div>';
+    html+='</div>';
+  });
+
+  html+='<button id="btn-envoyer-qa" data-pid="'+pid+'" style="background:#7C3AED;color:white;border:none;border-radius:var(--radius-sm);padding:10px 18px;font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;width:100%;margin-top:8px;">Envoyer le questionnaire</button>';
+  html+='</div>';
+
+  showModal('Questionnaire pré-bilan',html);
+}
+
+function toggleQASection(secId){
+  var el=document.getElementById('qp-qs-'+secId);
+  var chev=document.getElementById('qp-chev-'+secId);
+  var cb=document.getElementById('qp-sec-'+secId);
+  if(!el) return;
+  var open=el.style.display!=='none';
+  el.style.display=open?'none':'block';
+  if(chev) chev.textContent=open?'▶':'▼';
+}
+
+function toggleQASectionCheck(secId){
+  var cb=document.getElementById('qp-sec-'+secId);
+  var el=document.getElementById('qp-qs-'+secId);
+  if(!cb||!el) return;
+  var checked=cb.checked;
+  el.style.display=checked?'block':'none';
+  // Cocher/décocher toutes les questions
+  el.querySelectorAll('input[type=checkbox]').forEach(function(q){ q.checked=checked; });
 }
 
 async function envoyerQuestionnaire(pid){
@@ -15505,9 +15736,18 @@ async function envoyerQuestionnaire(pid){
   var email=emailEl?emailEl.value.trim():(p.email||p.emailParent||p.emailContact||'');
   if(!email){showToast('Renseignez l\'email','red');return;}
   var sections={};
-  ['base_enfant','base_adulte','lo','le','cm','oralite','neuro'].forEach(function(s){
-    var cb=document.getElementById('qp-sec-'+s);
-    if(cb&&cb.checked) sections[s]=true;
+  Object.keys(QA_SECTIONS).forEach(function(secId){
+    var sec=QA_SECTIONS[secId];
+    var cb=document.getElementById('qp-sec-'+secId);
+    if(cb&&cb.checked){
+      // Collecter les questions cochées
+      var qs=[];
+      sec.questions.forEach(function(q){
+        var qcb=document.getElementById('qp-q-'+secId+'-'+q.id);
+        if(qcb&&qcb.checked) qs.push(q.id);
+      });
+      if(qs.length>0) sections[secId]=qs;
+    }
   });
   if(Object.keys(sections).length===0){showToast('Selectionnez au moins une section','red');return;}
   try{
