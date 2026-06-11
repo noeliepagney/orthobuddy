@@ -4022,6 +4022,7 @@ function renderPatients(){
           <button class="patient-tab" onclick="switchPTab('${p.id}','docs',this);renderDocsPatientTabById('${p.id}')"><i class="ti ti-briefcase"></i> Administratif<span id="docs-badge-${p.id}" style="background:var(--bg);color:var(--text-soft);border:1px solid var(--border);border-radius:10px;font-size:9px;padding:0 5px;margin-left:4px;display:none;"></span></button>
           <button class="patient-tab" onclick="switchPTab('${p.id}','gir',this);renderGirTab('${p.id}')"><i class="ti ti-chart-bar"></i> Grille FNO</button>
           <button class="patient-tab" onclick="switchPTab('${p.id}','taches',this)"><i class="ti ti-checklist"></i> Tâches${renderTachesPatientBadge(p.id)}</button>
+          <button class="patient-tab" onclick="ouvrirBilans('${p.id}')"><i class="ti ti-clipboard-text"></i> Bilans</button>
         </div>
         <div class="patient-tab-content active" id="ptab-${p.id}-dossier"></div>
         <div class="patient-tab-content" id="ptab-${p.id}-seances"></div>
@@ -8017,6 +8018,10 @@ function printGir(pid){
     +'</div></body></html>';
 
   openDocumentWindow(html);
+}
+
+function ouvrirBilans(pid){
+  window.open('trames.html?patient_id='+pid, '_blank');
 }
 
 function switchPTab(pid,tab,btn){
