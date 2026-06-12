@@ -15090,6 +15090,7 @@ function renderAnamneseTab(pid){
   var hasAnos  = !!sec.anosmie;
   var hasNeuro = !!sec.base_adulte;
   var hasAphasie = !!sec.aphasie;
+  var hasBegaiement = !!sec.begaiement;
   var hasAny   = isEnfant||hasLO||hasLE||hasMath||hasOralite||hasAnos||hasNeuro;
   var hasEnfantSection = isEnfant;
 
@@ -15168,7 +15169,7 @@ function renderAnamneseTab(pid){
   html+='<div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px 14px;margin-bottom:14px;">';
   html+='<div style="font-size:11px;font-weight:700;color:var(--text-soft);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px;">Sections \u00e0 afficher</div>';
   html+='<div style="display:flex;flex-wrap:wrap;gap:8px;">';
-  [{key:'base_enfant',label:'Anamn\u00e8se enfant',icon:'ti-baby'},{key:'base_adulte',label:'Anamn\u00e8se adulte',icon:'ti-brain'},{key:'aphasie',label:'Aphasie',icon:'ti-brain-2'},{key:'lo',label:'Langage oral',icon:'ti-message-circle'},{key:'le',label:'Langage \u00e9crit',icon:'ti-pencil'},{key:'cm',label:'Cognition math\u00e9matique',icon:'ti-calculator'},{key:'oralite',label:'Oralit\u00e9',icon:'ti-droplet'},{key:'anosmie',label:'Anosmie',icon:'ti-wind'}].forEach(function(s){
+  [{key:'base_enfant',label:'Anamn\u00e8se enfant',icon:'ti-baby'},{key:'base_adulte',label:'Anamn\u00e8se adulte',icon:'ti-brain'},{key:'aphasie',label:'Aphasie',icon:'ti-brain-2'},{key:'lo',label:'Langage oral',icon:'ti-message-circle'},{key:'le',label:'Langage \u00e9crit',icon:'ti-pencil'},{key:'cm',label:'Cognition math\u00e9matique',icon:'ti-calculator'},{key:'oralite',label:'Oralit\u00e9',icon:'ti-droplet'},{key:'anosmie',label:'Anosmie',icon:'ti-wind'},{key:'begaiement',label:'B\u00e9gaiement',icon:'ti-message-circle-2'}].forEach(function(s){
     var isCh=sec[s.key]?' checked':'';
     html+='<label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer;background:var(--bg);border:1px solid var(--border);border-radius:20px;padding:4px 12px;"><input type="checkbox" data-section="'+s.key+'" onchange="toggleAnamneseSection(this,\''+pid+'\')"'+(sec[s.key]?' checked':'')+'>  <i class="ti '+s.icon+'"></i> '+s.label+'</label>';
   });
@@ -15450,6 +15451,24 @@ function renderAnamneseTab(pid){
     sAphasie+=multiSelect('Troubles associ\u00e9s','troubles_associes_aphasie',['Apraxie de la parole / anarthrie','Dysarthrie','H\u00e9mipl\u00e9gie / h\u00e9mipl\u00e9gie brachio-faciale','H\u00e9min\u00e9gligence visuelle (c\u00f4t\u00e9 pr\u00e9ciser)','Troubles neurovisuels (h\u00e9mianopsie, NSU)','Troubles praxiques gestuels','Troubles cognitifs associ\u00e9s (FE, m\u00e9moire, attention)','\u00c9pilepsie','Troubles de d\u00e9glutition','Troubles psychiatriques / thymiques']);
     sAphasie+=textArea('Pr\u00e9cisions sur les troubles associ\u00e9s','troubles_associes_texte_aphasie');
     html+=sCard('Sp\u00e9cifique \u2014 Aphasie','ti-brain-2',sAphasie);
+  }
+
+  if(hasBegaiement){
+    var sBeg='';
+    sBeg+=inlineField('D\u00e9but du b\u00e9gaiement','debut_begaiement','text',null,{width:'200px'});
+    sBeg+=textArea('\u00c9volution du b\u00e9gaiement','evolution_begaiement');
+    sBeg+=textArea('Description du b\u00e9gaiement','description_begaiement');
+    sBeg+=textArea('Variations situationnelles','variations_situationnelles_begaiement');
+    sBeg+=textArea('Signes de lutte observ\u00e9s par la famille','signes_lutte_begaiement');
+    sBeg+=textArea('R\u00e9action de l\'enfant quand il b\u00e9gaie','reaction_enfant_begaiement');
+    sBeg+=textArea('Strat\u00e9gies d\'\u00e9vitement identifi\u00e9es','evitements_begaiement');
+    sBeg+=textArea('Impact scolaire','impact_scolaire_begaiement');
+    sBeg+=textArea('Impact social et comportement relationnel','impact_social_begaiement');
+    sBeg+=textArea('Ressenti des parents quand l\'enfant b\u00e9gaie','ressenti_parents_begaiement');
+    sBeg+=textArea('Comment les parents aident-ils l\'enfant ?','aide_parents_begaiement');
+    sBeg+=inlineField('Ant\u00e9c\u00e9dent personnel de b\u00e9gaiement chez un parent','atcd_perso_begaiement_parent','radio',['Oui','Non']);
+    if(val('atcd_perso_begaiement_parent')==='Oui') sBeg+=inlineField('Pr\u00e9ciser (lequel, \u00e9volution)','atcd_perso_begaiement_detail','text',null,{width:'280px'});
+    html+=sCard('Sp\u00e9cifique \u2014 B\u00e9gaiement','ti-message-circle-2',sBeg);
   }
 
   if(hasAnos){
