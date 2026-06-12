@@ -15101,7 +15101,7 @@ function renderAnamneseTab(pid){
         opts.forEach(function(o){ h+='<option value="'+esc(o)+'">'+o+'</option>'; });
         h+='</select>';
       } else {
-        h+='<span style="padding:3px 10px;border-radius:20px;font-size:11px;font-weight:500;background:#EEF4F1;color:#5C8B6E;border:1px solid #C8DDD4;cursor:pointer;" onclick="anaSelectReset(\'' + pid + '\',\'' + key + '\')">'+esc(val(key))+' ×</span>';
+        h+='<span data-ana-reset="'+key+'" data-ana-opts="'+esc(JSON.stringify(opts))+'" style="padding:3px 10px;border-radius:20px;font-size:11px;font-weight:500;background:#EEF4F1;color:#5C8B6E;border:1px solid #C8DDD4;cursor:pointer;" onclick="anaSelectReset(\'' + pid + '\',\'' + key + '\',this)">'+esc(val(key))+' ×</span>';
       }
     } else if(type==='radio'){
       h+='<div style="display:flex;gap:8px;flex-wrap:wrap;">';
@@ -15127,7 +15127,7 @@ function renderAnamneseTab(pid){
     if(selected.length>0){
       h+='<div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:6px;">';
       selected.forEach(function(v){
-        h+='<span style="display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:500;background:#EEF4F1;color:#5C8B6E;border:1px solid #C8DDD4;">'+esc(v)+'<button onclick="anaMultiRemove(\''+pid+'\',\''+key+'\',\''+esc(v.replace(/'/g,"\\'"))+'\')" style="background:none;border:none;cursor:pointer;font-size:12px;color:#5C8B6E;padding:0 0 0 4px;line-height:1;opacity:.7;">&times;</button></span>';
+        h+='<span style="display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:500;background:#EEF4F1;color:#5C8B6E;border:1px solid #C8DDD4;">'+esc(v)+'<button onclick="anaMultiRestoreOption(this,\''+key+'\',\''+esc(v.replace(/'/g,"\\'"))+'\'); anaMultiRemove(\''+pid+'\',\''+key+'\',\''+esc(v.replace(/'/g,"\\'"))+'\'); this.parentElement.remove();" style="background:none;border:none;cursor:pointer;font-size:12px;color:#5C8B6E;padding:0 0 0 4px;line-height:1;opacity:.7;">&times;</button></span>';
       });
       h+='</div>';
     }
@@ -15424,12 +15424,30 @@ function scToggle(hdr){
   if(b.style.display==='none'){ b.style.display='block'; if(ch) ch.style.transform=''; }
   else { b.style.display='none'; if(ch) ch.style.transform='rotate(-90deg)'; }
 }
-function anaSelectReset(pid, key){
+function anaSelectReset(pid, key, badge){
   var p = DB.patients.find(function(x){ return x.id===pid; });
   if(!p||!p.anamnese) return;
   p.anamnese[key] = '';
   save();
-  renderAnamneseTab(pid);
+  if(badge){
+    var opts = [];
+    try{ opts = JSON.parse(badge.dataset.anaOpts||'[]'); }catch(e){}
+    var sel = document.createElement('select');
+    sel.setAttribute('data-ana', key);
+    sel.setAttribute('onchange','anamneseLive(this)');
+    sel.style.cssText = 'padding:4px 8px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:12px;background:var(--bg);max-width:200px;';
+    var optEmpty = document.createElement('option');
+    optEmpty.value=''; optEmpty.textContent='—';
+    sel.appendChild(optEmpty);
+    opts.forEach(function(o){
+      var op = document.createElement('option');
+      op.value = o; op.textContent = o;
+      sel.appendChild(op);
+    });
+    badge.replaceWith(sel);
+  } else {
+    renderAnamneseTab(pid);
+  }
 }
 function anaMultiAdd(sel,pid,key){
   var v=sel.value; if(!v) return;
@@ -15438,13 +15456,57 @@ function anaMultiAdd(sel,pid,key){
   if(!p.anamnese) p.anamnese={};
   if(!p.anamnese[key]) p.anamnese[key]=[];
   if(p.anamnese[key].indexOf(v)<0) p.anamnese[key].push(v);
-  sel.value=''; save(); renderAnamneseTab(pid);
+  save();
+  // Mise à jour locale sans re-render complet du tab
+  var container = sel.closest('div');
+  if(container){
+    var tagsDiv = container.querySelector('.ana-tags-'+key);
+    if(!tagsDiv){
+      tagsDiv = document.createElement('div');
+      tagsDiv.className = 'ana-tags-'+key;
+      tagsDiv.style.cssText = 'display:flex;flex-wrap:wrap;gap:4px;margin-top:6px;';
+      sel.insertAdjacentElement('afterend', tagsDiv);
+    }
+    var badge = document.createElement('span');
+    badge.style.cssText = 'display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:500;background:#EEF4F1;color:#5C8B6E;border:1px solid #C8DDD4;';
+    badge.textContent = v;
+    var btn = document.createElement('button');
+    btn.textContent = '×';
+    btn.style.cssText = 'background:none;border:none;cursor:pointer;font-size:12px;color:#5C8B6E;padding:0 0 0 4px;line-height:1;opacity:.7;';
+    btn.onclick = function(){
+      anaMultiRemove(pid,key,v);
+      // Remettre l'option dans le select
+      var opt2 = document.createElement('option');
+      opt2.value = v; opt2.textContent = v;
+      sel.appendChild(opt2);
+      badge.remove();
+    };
+    badge.appendChild(btn);
+    tagsDiv.appendChild(badge);
+    // Retirer l'option du select pour ne pas la proposer 2x
+    var opt = sel.querySelector('option[value="'+v.replace(/"/g,'&quot;')+'"]');
+    if(opt) opt.remove();
+  }
+  sel.value='';
+}
+function anaMultiRestoreOption(btn,key,v){
+  var container = btn.closest('div');
+  if(!container) return;
+  // Chercher le select correspondant dans le même bloc multiSelect
+  var wrapper = btn.closest('div[style*="margin-bottom:10px"]') || container.parentElement;
+  if(!wrapper) return;
+  var sel = wrapper.querySelector('select[onchange*="anaMultiAdd"]');
+  if(sel){
+    var opt2 = document.createElement('option');
+    opt2.value = v; opt2.textContent = v;
+    sel.appendChild(opt2);
+  }
 }
 function anaMultiRemove(pid,key,v){
   var p=DB.patients.find(function(x){return x.id===pid;});
   if(!p||!p.anamnese) return;
   p.anamnese[key]=(p.anamnese[key]||[]).filter(function(x){return x!==v;});
-  save(); renderAnamneseTab(pid);
+  save();
 }
 function toggleAnamneseSection(cb, pid){
   var p = DB.patients.find(function(x){ return x.id===pid; });
@@ -15468,8 +15530,16 @@ function anamneseLive(field){
     var key = field.dataset.ana;
     var val = field.value;
     if(val){
-      var badge = '<span style="padding:3px 10px;border-radius:20px;font-size:11px;font-weight:500;background:#EEF4F1;color:#5C8B6E;border:1px solid #C8DDD4;cursor:pointer;" onclick="anaSelectReset(\''+pid+'\',\''+key+'\')">'+val+' ×</span>';
-      field.outerHTML = badge;
+      // Capturer les options du select avant remplacement
+      var opts = [];
+      field.querySelectorAll('option').forEach(function(o){ if(o.value!=='') opts.push(o.value); });
+      var badge = document.createElement('span');
+      badge.setAttribute('data-ana-reset', key);
+      badge.setAttribute('data-ana-opts', JSON.stringify(opts));
+      badge.style.cssText = 'padding:3px 10px;border-radius:20px;font-size:11px;font-weight:500;background:#EEF4F1;color:#5C8B6E;border:1px solid #C8DDD4;cursor:pointer;';
+      badge.textContent = val + ' ×';
+      badge.onclick = function(){ anaSelectReset(pid, key, badge); };
+      field.replaceWith(badge);
     }
   } else if(t==='radio'){
     // rien, la valeur est déjà cochée visuellement
