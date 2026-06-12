@@ -15078,6 +15078,7 @@ function renderAnamneseTab(pid){
   var hasOralite = !!sec.oralite;
   var hasAnos  = !!sec.anosmie;
   var hasNeuro = !!sec.base_adulte;
+  var hasAphasie = !!sec.aphasie;
   var hasAny   = isEnfant||hasLO||hasLE||hasMath||hasOralite||hasAnos||hasNeuro;
   var hasEnfantSection = isEnfant;
 
@@ -15156,7 +15157,7 @@ function renderAnamneseTab(pid){
   html+='<div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px 14px;margin-bottom:14px;">';
   html+='<div style="font-size:11px;font-weight:700;color:var(--text-soft);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px;">Sections \u00e0 afficher</div>';
   html+='<div style="display:flex;flex-wrap:wrap;gap:8px;">';
-  [{key:'base_enfant',label:'Anamn\u00e8se base enfant',icon:'ti-baby'},{key:'lo',label:'Langage oral',icon:'ti-message-circle'},{key:'le',label:'Langage \u00e9crit',icon:'ti-pencil'},{key:'cm',label:'Cognition math\u00e9matique',icon:'ti-calculator'},{key:'oralite',label:'Oralit\u00e9',icon:'ti-droplet'},{key:'anosmie',label:'Anosmie',icon:'ti-wind'},{key:'base_adulte',label:'Anamn\u00e8se base adulte / Neuro',icon:'ti-brain'}].forEach(function(s){
+  [{key:'base_enfant',label:'Anamn\u00e8se enfant',icon:'ti-baby'},{key:'base_adulte',label:'Anamn\u00e8se adulte',icon:'ti-brain'},{key:'aphasie',label:'Aphasie',icon:'ti-brain-2'},{key:'lo',label:'Langage oral',icon:'ti-message-circle'},{key:'le',label:'Langage \u00e9crit',icon:'ti-pencil'},{key:'cm',label:'Cognition math\u00e9matique',icon:'ti-calculator'},{key:'oralite',label:'Oralit\u00e9',icon:'ti-droplet'},{key:'anosmie',label:'Anosmie',icon:'ti-wind'}].forEach(function(s){
     var isCh=sec[s.key]?' checked':'';
     html+='<label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer;background:var(--bg);border:1px solid var(--border);border-radius:20px;padding:4px 12px;"><input type="checkbox" data-section="'+s.key+'" onchange="toggleAnamneseSection(this,\''+pid+'\')"'+(sec[s.key]?' checked':'')+'>  <i class="ti '+s.icon+'"></i> '+s.label+'</label>';
   });
@@ -15195,6 +15196,7 @@ function renderAnamneseTab(pid){
     sFam+=inlineField('Conscience de ses difficultés','conscience_difficultes','radio',['Oui','Non','Partiellement']);
     sFam+=textArea('Rythme familial / disponibilit\u00e9','rythme_famille');
     sFam+=textArea('Commentaires','commentaires_famille');
+    html+='<div style="font-size:13px;font-weight:700;color:var(--green-d);margin:18px 0 8px;padding-bottom:4px;border-bottom:2px solid var(--green);">\ud83d\udccb Anamn\u00e8se enfant</div>';
     html+=sCard('Famille','ti-home',sFam);
 
     // PÉRINATAILITÉ
@@ -15296,6 +15298,7 @@ function renderAnamneseTab(pid){
     sLO+=multiSelect('Difficult\u00e9s \u00e0 retenir','difficultes_retention_lo',['Comptines','Po\u00e9sies','Informations verbales','Listes']);
     sLO+=inlineField('Temps de lecture/jour','temps_lecture_lo','select1',['5min','10min','15min','30min','45min','1h','Plus d\'1h']);
     sLO+=textArea('Commentaires','commentaires_lo');
+    html+='<div style="font-size:13px;font-weight:700;color:var(--green-d);margin:18px 0 8px;padding-bottom:4px;border-bottom:2px solid var(--green);">\ud83d\udd0d Anamn\u00e8ses sp\u00e9cifiques</div>';
     html+=sCard('Sp\u00e9cifique \u2014 Langage oral','ti-message-circle',sLO);
   }
 
@@ -15355,6 +15358,77 @@ function renderAnamneseTab(pid){
     html+=sCard('Sp\u00e9cifique \u2014 Oralit\u00e9','ti-droplet',sOr);
   }
 
+  if(hasNeuro){
+    html+='<div style="font-size:13px;font-weight:700;color:var(--green-d);margin:18px 0 8px;padding-bottom:4px;border-bottom:2px solid var(--green);">\ud83d\udccb Anamn\u00e8se adulte</div>';
+
+    // ── Général ──
+    var sGen='';
+    sGen+=inlineField('Demandeur de la consultation','demandeur_neuro','radio',['Le patient lui-m\u00eame','L\'entourage','Le m\u00e9decin traitant','Un m\u00e9decin sp\u00e9cialiste']);
+    sGen+=textArea('Plainte actuelle','plainte_actuelle_neuro');
+    sGen+=textArea('Plainte de l\'entourage','plainte_entourage_neuro');
+    sGen+=textArea('Impact sur la vie quotidienne','impact_vie_quotidienne_neuro');
+    html+=sCard('G\u00e9n\u00e9ral','ti-message-2',sGen);
+
+    // ── Vie sociale ──
+    var sViesoc='';
+    sViesoc+=inlineField('Situation familiale','situation_familiale','radio',['Mari\u00e9(e)','En couple','Veuf/Veuve','Divorc\u00e9(e)','C\u00e9libataire']);
+    sViesoc+=inlineField('Aidant principal','aidant','text',null,{width:'200px'});
+    html+=sCard('Vie sociale','ti-users',sViesoc);
+
+    // ── Parcours ──
+    var sParcours='';
+    sParcours+=inlineField('Niveau scolaire atteint','niveau_scolaire','select1',['Certificat d\'\u00e9tudes','CAP/BEP','Bac','Bac+2','Bac+3','Bac+5 et plus']);
+    sParcours+=inlineField('Parcours scolaire','niveau_eleve','radio',['Bon(ne) \u00e9l\u00e8ve','\u00c9l\u00e8ve moyen(ne)','En difficult\u00e9']);
+    sParcours+=textArea('Profession / vie professionnelle (dernier poste)','vie_pro_neuro');
+    sParcours+=inlineField('Date de retraite','date_retraite','text',null,{width:'150px'});
+    sParcours+=inlineField('Lat\u00e9ralit\u00e9','lateralite_neuro','radio',['Droitier(e)','Gaucher(e)','Ambidextre']);
+    sParcours+=textArea('\u00c9v\u00e9nements de vie marquants','evenements_vie');
+    html+=sCard('Parcours','ti-school',sParcours);
+
+    // ── Antécédents médicaux ──
+    var sAtcdMed='';
+    sAtcdMed+=inlineField('Conscience des troubles','anosognosie','radio',['Conscient(e)','Partiellement conscient(e)','Pas conscient(e)']);
+    sAtcdMed+=multiSelect('Ant\u00e9c\u00e9dents m\u00e9dicaux sp\u00e9cifiques','antecedents_neuro',['Diab\u00e8te','Hypertension','Hypercholest\u00e9rol\u00e9mie','Hallucinations visuelles','Chutes fr\u00e9quentes','Incontinence','\u00c9tat d\u00e9pressif','AVC / AIT','Traumatisme cr\u00e2nien','Parkinson']);
+    sAtcdMed+=textArea('Autres / commentaires','commentaires_neuro');
+    sAtcdMed+=textArea('Traitements m\u00e9dicamenteux actuels','traitements_neuro');
+    sAtcdMed+=inlineField('R\u00e9action aux antid\u00e9presseurs','reaction_antidep','radio',['Oui','Non','Ne sait pas']);
+    sAtcdMed+=multiSelect('Vision','vision_neuro',['Cataracte','Glaucome','DMLA','Port de lunettes']);
+    sAtcdMed+=multiSelect('Audition','audition_neuro',['Presbyacousie','Appareill\u00e9(e)','Surdit\u00e9','Ne porte pas ses appareils']);
+    sAtcdMed+=inlineField('Go\u00fbt et odorat','gout_odorat','radio',['Conserv\u00e9s','Alt\u00e9r\u00e9s','Tr\u00e8s alt\u00e9r\u00e9s']);
+    sAtcdMed+=textArea('Ant\u00e9c\u00e9dents familiaux neuro-d\u00e9g\u00e9n\u00e9ratifs','atcd_fam_neuro');
+    sAtcdMed+=textArea('Autres prises en soins en cours','autres_soins_neuro');
+    sAtcdMed+=multiSelect('Examens r\u00e9alis\u00e9s','examens_neuro',['IRM','Scanner','Scintigraphie c\u00e9r\u00e9brale','Analyses de sang','\u00c9valuation neuropsychologique','\u00c9valuation g\u00e9riatrique']);
+    if((a.examens_neuro||[]).length>0) sAtcdMed+=textArea('R\u00e9sultats / conclusions','resultats_examens');
+    sAtcdMed+=textArea('Informations langagi\u00e8res','info_langagiere');
+    html+=sCard('Ant\u00e9c\u00e9dents m\u00e9dicaux','ti-stethoscope',sAtcdMed);
+
+    // ── Vie quotidienne ──
+    var sViequot='';
+    sViequot+=inlineField('Conduit un v\u00e9hicule','conduite','radio',['Oui','Non','A arr\u00eat\u00e9 r\u00e9cemment']);
+    sViequot+=inlineField('G\u00e8re ses finances','gestion_finances','radio',['Oui','Non','Avec aide']);
+    sViequot+=multiSelect('Lieu de vie actuel','lieu_vie_neuro',['Domicile seul(e)','Domicile avec conjoint','Domicile avec famille','EHPAD','R\u00e9sidence senior','Autre']);
+    sViequot+=textArea('Occupations quotidiennes / loisirs','occupations');
+    html+=sCard('Vie quotidienne','ti-sun',sViequot);
+  }
+
+  // (Spécifique — Anosmie sera enrichi séparément : poids/taille/date symptômes)
+
+  if(hasAphasie){
+    // ── Spécifique — Aphasie ──
+    var sAphasie='';
+    sAphasie+=inlineField('\u00c9tiologie neurologique','etiologie_neuro','select1',['AVC isch\u00e9mique','AVC h\u00e9morragique','Traumatisme cr\u00e2nien','Tumeur','Maladie neurod\u00e9g\u00e9n\u00e9rative','Autre']);
+    sAphasie+=inlineField('Date accident / l\u00e9sion','date_accident_aphasie','text',null,{width:'150px'});
+    sAphasie+=textArea('Localisation l\u00e9sionnelle (si connue)','localisation_lesion_aphasie');
+    sAphasie+=inlineField('Date apparition premiers sympt\u00f4mes','date_premiers_symptomes','text',null,{width:'150px'});
+    sAphasie+=inlineField('Mode d\'installation','mode_installation','radio',['Progressif (insidieux)','Brutal (AVC/AIT)','Par paliers']);
+    sAphasie+=inlineField('Caract\u00e8re \u00e9volutif','caractere_evolutif','radio',['Stable','Progressif','Par paliers','Fluctuant']);
+    sAphasie+=multiSelect('Nature de la plainte cognitive','plainte_cognitive',['M\u00e9moire (RDV, \u00e9v\u00e9nements r\u00e9cents)','Langage (manque du mot)','Compr\u00e9hension','Praxies (s\'habiller, tenir un crayon)','Fonctions ex\u00e9cutives','Orientation spatiale','Reconnaissance visages/lieux','Calcul']);
+    sAphasie+=multiSelect('Modifications comportementales','modif_comportement',['Apathie','Ralentissement','Abandon d\'activit\u00e9s','Hypersomnie','D\u00e9sinhibition','Col\u00e8res / agressivit\u00e9','Anxi\u00e9t\u00e9','D\u00e9pression','Troubles du sommeil']);
+    sAphasie+=multiSelect('Troubles associ\u00e9s','troubles_associes_aphasie',['Apraxie de la parole / anarthrie','Dysarthrie','H\u00e9mipl\u00e9gie / h\u00e9mipl\u00e9gie brachio-faciale','H\u00e9min\u00e9gligence visuelle','Troubles neurovisuels','Troubles praxiques gestuels','Troubles cognitifs associ\u00e9s','\u00c9pilepsie','Troubles de d\u00e9glutition','Troubles psychiatriques / thymiques']);
+    sAphasie+=textArea('Pr\u00e9cisions sur les troubles associ\u00e9s','troubles_associes_texte_aphasie');
+    html+=sCard('Sp\u00e9cifique \u2014 Aphasie','ti-brain-2',sAphasie);
+  }
+
   if(hasAnos){
     var sAnos='';
     sAnos+=multiSelect('\u00c9tiologie','etiologie_anos',['Post-rhinite virale','Traumatisme cr\u00e2nien','Cause idiopathique','Polypes naso-sinusiens','Cause neuro-d\u00e9g\u00e9n\u00e9rative','Cause m\u00e9dicamenteuse','Post-COVID']);
@@ -15371,50 +15445,13 @@ function renderAnamneseTab(pid){
     sAnos+=inlineField('Boisson pr\u00e9f\u00e9r\u00e9e','boisson_preferee','text',null,{width:'280px'});
     sAnos+=inlineField('Plat d\u00e9test\u00e9','plat_deteste','text',null,{width:'280px'});
     sAnos+=inlineField('Boisson d\u00e9test\u00e9e','boisson_detestee','text',null,{width:'280px'});
+    sAnos+=inlineField('Poids (kg)','poids_neuro','text',null,{width:'100px'});
+    sAnos+=inlineField('Taille (m)','taille_neuro','text',null,{width:'100px'});
+    sAnos+=inlineField('Date apparition premiers sympt\u00f4mes','date_premiers_symptomes_anos','text',null,{width:'150px'});
     sAnos+=textArea('Commentaires','commentaires_anos');
     html+=sCard('Sp\u00e9cifique \u2014 Anosmie','ti-wind',sAnos);
   }
 
-  if(hasNeuro){
-    var sNeuro='';
-    sNeuro+=inlineField('Demandeur de la consultation','demandeur_neuro','radio',['Le patient lui-m\u00eame','L\'entourage','Le m\u00e9decin traitant','Un m\u00e9decin sp\u00e9cialiste']);
-    sNeuro+=textArea('Plainte actuelle','plainte_actuelle_neuro');
-    sNeuro+=inlineField('Poids (kg)','poids_neuro','text',null,{width:'100px'});
-    sNeuro+=inlineField('Taille (m)','taille_neuro','text',null,{width:'100px'});
-    sNeuro+=inlineField('Niveau scolaire atteint','niveau_scolaire','select1',['Certificat d\'\u00e9tudes','CAP/BEP','Bac','Bac+2','Bac+3','Bac+5 et plus']);
-    sNeuro+=inlineField('Parcours scolaire','niveau_eleve','radio',['Bon(ne) \u00e9l\u00e8ve','\u00c9l\u00e8ve moyen(ne)','En difficult\u00e9']);
-    sNeuro+=inlineField('Lat\u00e9ralit\u00e9','lateralite_neuro','radio',['Droitier(e)','Gaucher(e)','Ambidextre']);
-    sNeuro+=textArea('Vie professionnelle (dernier poste)','vie_pro_neuro');
-    sNeuro+=inlineField('Date de retraite','date_retraite','text',null,{width:'150px'});
-    sNeuro+=inlineField('Situation familiale','situation_familiale','radio',['Mari\u00e9(e)','En couple','Veuf/Veuve','Divorc\u00e9(e)','C\u00e9libataire']);
-    sNeuro+=multiSelect('Lieu de vie actuel','lieu_vie_neuro',['Domicile seul(e)','Domicile avec conjoint','Domicile avec famille','EHPAD','R\u00e9sidence senior','Autre']);
-    sNeuro+=inlineField('Aidant principal','aidant','text',null,{width:'200px'});
-    sNeuro+=textArea('Occupations quotidiennes','occupations');
-    sNeuro+=inlineField('Conduit un v\u00e9hicule','conduite','radio',['Oui','Non','A arr\u00eat\u00e9 r\u00e9cemment']);
-    sNeuro+=inlineField('G\u00e8re ses finances','gestion_finances','radio',['Oui','Non','Avec aide']);
-    sNeuro+=textArea('Lecture / loisirs','loisirs_neuro');
-    sNeuro+=textArea('Vie sociale','vie_sociale');
-    sNeuro+=inlineField('\u00c9tiologie neurologique','etiologie_neuro','select1',['AVC isch\u00e9mique','AVC h\u00e9morragique','Traumatisme cr\u00e2nien','Tumeur','Maladie neurod\u00e9g\u00e9n\u00e9rative','Autre']);
-    sNeuro+=inlineField('Date apparition premiers sympt\u00f4mes','date_premiers_symptomes','text',null,{width:'150px'});
-    sNeuro+=inlineField('Mode d\'installation','mode_installation','radio',['Progressif (insidieux)','Brutal (AVC/AIT)','Par paliers']);
-    sNeuro+=multiSelect('Nature de la plainte cognitive','plainte_cognitive',['M\u00e9moire (RDV, \u00e9v\u00e9nements r\u00e9cents)','Langage (manque du mot)','Compr\u00e9hension','Praxies (s\'habiller, tenir un crayon)','Fonctions ex\u00e9cutives','Orientation spatiale','Reconnaissance visages/lieux','Calcul']);
-    sNeuro+=inlineField('Caract\u00e8re \u00e9volutif','caractere_evolutif','radio',['Stable','Progressif','Par paliers','Fluctuant']);
-    sNeuro+=inlineField('Conscience des troubles','anosognosie','radio',['Conscient(e)','Partiellement conscient(e)','Pas conscient(e)']);
-    sNeuro+=multiSelect('Modifications comportementales','modif_comportement',['Apathie','Ralentissement','Abandon d\'activit\u00e9s','Hypersomnie','D\u00e9sinhibition','Col\u00e8res / agressivit\u00e9','Anxi\u00e9t\u00e9','D\u00e9pression','Troubles du sommeil']);
-    sNeuro+=multiSelect('Ant\u00e9c\u00e9dents m\u00e9dicaux sp\u00e9cifiques','antecedents_neuro',['Diab\u00e8te','Hypertension','Hypercholest\u00e9rol\u00e9mie','Hallucinations visuelles','Chutes fr\u00e9quentes','Incontinence','\u00c9tat d\u00e9pressif','AVC / AIT','Traumatisme cr\u00e2nien','Parkinson']);
-    sNeuro+=textArea('Traitements m\u00e9dicamenteux actuels','traitements_neuro');
-    sNeuro+=inlineField('R\u00e9action aux antid\u00e9presseurs','reaction_antidep','radio',['Oui','Non','Ne sait pas']);
-    sNeuro+=multiSelect('Vision','vision_neuro',['Cataracte','Glaucome','DMLA','Port de lunettes']);
-    sNeuro+=multiSelect('Audition','audition_neuro',['Presbyacousie','Appareill\u00e9(e)','Surdit\u00e9','Ne porte pas ses appareils']);
-    sNeuro+=inlineField('Go\u00fbt et odorat','gout_odorat','radio',['Conserv\u00e9s','Alt\u00e9r\u00e9s','Tr\u00e8s alt\u00e9r\u00e9s']);
-    sNeuro+=multiSelect('Examens r\u00e9alis\u00e9s','examens_neuro',['IRM','Scanner','Scintigraphie c\u00e9r\u00e9brale','Analyses de sang','\u00c9valuation neuropsychologique','\u00c9valuation g\u00e9riatrique']);
-    if((a.examens_neuro||[]).length>0) sNeuro+=textArea('R\u00e9sultats / conclusions','resultats_examens');
-    sNeuro+=textArea('Ant\u00e9c\u00e9dents familiaux neuro-d\u00e9g\u00e9n\u00e9ratifs','atcd_fam_neuro');
-    sNeuro+=textArea('\u00c9v\u00e9nements de vie marquants','evenements_vie');
-    sNeuro+=textArea('Informations langagi\u00e8res','info_langagiere');
-    sNeuro+=textArea('Commentaires','commentaires_neuro');
-    html+=sCard('Sp\u00e9cifique \u2014 Neurologie','ti-brain',sNeuro);
-  }
 
   if(QUESTIONNAIRES_RECUS[pid] && QUESTIONNAIRES_RECUS[pid].length){
     html+='<div style="margin-bottom:10px;background:#FFF1EE;border:1px solid #E07856;border-radius:var(--radius-sm);padding:10px 14px;display:flex;align-items:center;gap:10px;justify-content:space-between;">';
