@@ -7735,6 +7735,7 @@ const TRAMES = {
               "Troubles de déglutition",
               "Troubles psychiatriques / thymiques"
             ] },
+          { id:"troubles_associes_texte", label:"Précisions sur les troubles associés", type:"textarea" },
           { id:"antecedents", label:"Antécédents médicaux pré-morbides", type:"textarea",
             hint:"⚠️ Troubles DYS pré-morbides ? Niveau de langue antérieur ? Bilinguisme ?" },
           { id:"traitements", label:"Traitements en cours", type:"textarea" },
@@ -8247,7 +8248,10 @@ function prefillFromPatient(p){
 
   if(trameId==='aphasie'){
     // Éléments administratifs
-    if(a.lateralite_neuro) map[trameId+".administratif.lateralite"]=a.lateralite_neuro;
+    if(a.lateralite_neuro){
+      var latMap={'Droitier(e)':'Droitier','Gaucher(e)':'Gaucher','Ambidextre':'Ambidextre'};
+      map[trameId+".administratif.lateralite"]=latMap[a.lateralite_neuro]||a.lateralite_neuro;
+    }
     if(a.niveau_scolaire) map[trameId+".administratif.nsc"]=a.niveau_scolaire;
     let situation=[];
     if(a.situation_familiale) situation.push(a.situation_familiale);
@@ -8275,7 +8279,6 @@ function prefillFromPatient(p){
       'Autre':'Autres \u2014 pr\u00e9ciser'
     };
     if(a.etiologie_neuro && etioMap[a.etiologie_neuro]) map[trameId+".anamnese.etiologie"]=etioMap[a.etiologie_neuro];
-    if(a.date_premiers_symptomes) map[trameId+".anamnese.date_accident"]=a.date_premiers_symptomes;
     if(a.antecedents_neuro && a.antecedents_neuro.length) map[trameId+".anamnese.antecedents"]=fmtArr(a.antecedents_neuro);
     if(a.traitements_neuro) map[trameId+".anamnese.traitements"]=a.traitements_neuro;
     let sensoriels=[];
@@ -8283,6 +8286,25 @@ function prefillFromPatient(p){
     if(a.audition_neuro && a.audition_neuro.length) sensoriels.push("Audition : "+fmtArr(a.audition_neuro));
     if(a.gout_odorat) sensoriels.push("Go\u00fbt et odorat : "+a.gout_odorat);
     if(sensoriels.length) map[trameId+".anamnese.sensoriels"]=sensoriels.join('\n');
+    if(a.autres_soins_neuro) map[trameId+".anamnese.autres_soins"]=a.autres_soins_neuro;
+
+    // Latéralité (admin)
+    if(a.lateralite_neuro){
+      var latMap={'Droitier(e)':'Droitier','Gaucher(e)':'Gaucher','Ambidextre':'Ambidextre'};
+      map[trameId+".administratif.lateralite"]=latMap[a.lateralite_neuro]||a.lateralite_neuro;
+    }
+
+    // Demande / motif / plainte (compléments)
+    if(a.plainte_entourage_neuro) map[trameId+".demande.plainte_famille"]=a.plainte_entourage_neuro;
+    if(a.impact_vie_quotidienne_neuro) map[trameId+".demande.impact_qv"]=a.impact_vie_quotidienne_neuro;
+
+    // Spécifique Aphasie
+    if(a.date_accident_aphasie) map[trameId+".anamnese.date_accident"]=a.date_accident_aphasie;
+    if(a.localisation_lesion_aphasie) map[trameId+".anamnese.localisation_lesion"]=a.localisation_lesion_aphasie;
+    if(a.troubles_associes_aphasie && a.troubles_associes_aphasie.length){
+      map[trameId+".anamnese.troubles_associes"]=a.troubles_associes_aphasie.slice();
+    }
+    if(a.troubles_associes_texte_aphasie) map[trameId+".anamnese.troubles_associes_texte"]=a.troubles_associes_texte_aphasie;
   }
 
   if(trameId==='odorat-gout'){
