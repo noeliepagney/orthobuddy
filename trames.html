@@ -1635,6 +1635,8 @@ const TRAMES = {
       { id:"phonologie", titre:"Phonétique / phonologie", icon:"ti-abc",
         champs:[
           { id:"note_phono", type:"note", text:"<span class='gt'>Repère</span>Décrire le répertoire phonétique et les processus phonologiques relevés. Reporter ici les résultats des épreuves étalonnées éventuelles." },
+          { id:"trouble_phono", label:"Trouble phonologique (rapporté)", type:"checkboxes",
+            options:["RL/RP plus jeune","Difficultés à dire les mots longs petits et encore maintenant","Difficulté à retenir les poésies/comptines","Difficulté à apprendre une langue étrangère","Confusion de sons","Difficulté à dire les mots longs"] },
           { id:"scores_chutes", label:"Scores chutés aux épreuves normées en phonologie", type:"select", options:["Oui","Non"], half:true },
           { id:"diff_voyelles", label:"Difficulté sur les voyelles", type:"select", options:["Oui","Non"], half:true },
           { id:"phonetisme", label:"Phonétisme complet ?", type:"select", options:["Oui","Non"], half:true },
@@ -1797,6 +1799,8 @@ const TRAMES = {
       { id:"facteurs", titre:"Facteurs & indicateurs", icon:"ti-list-check",
         champs:[
           { id:"note_fact", type:"note", text:"<span class='gt'>Repère</span>Éléments à intégrer à la conclusion (en référence à Bishop et al., 2017 / consensus CATALISE)." },
+          { id:"haut_potentiel", label:"Haut potentiel (indicateurs)", type:"checkboxes",
+            options:["Empathique","Anxieux(se)","Sens de l'humour","Envie de tout faire par soi-même","Beaucoup de questions existentielles","Vocabulaire riche et précis","Langage précoce ou tardif directement développé","Lecture précoce ou appétence pour la lecture"] },
           { id:"sub_ind", type:"subhead", text:"Indicateurs d'un faible pronostic" },
           { id:"ind_3ans", label:"Avant 3 ans (et après)", type:"checkboxes",
             options:["Absence de juxtaposition de mots à 2 ans","Difficultés de compréhension","Absence de communication par gestes ou par imitation"] },
@@ -8131,6 +8135,123 @@ function prefillFromPatient(p){
   // Champs cliniques spécifiques par trame (depuis p.anamnese)
   const a = p.anamnese || {};
   function fmtArr(v){ return Array.isArray(v) ? v.join(', ') : (v||''); }
+
+  if(trameId==='langage-oral-enfant'){
+    // ── Éléments administratifs ──
+    if(p.classe) map[trameId+".administratif.classe"]=p.classe;
+    if(a.langue_maison) map[trameId+".administratif.langues"]=a.langue_maison;
+    let garde=[];
+    if(a.mode_garde && a.mode_garde.length) garde.push(fmtArr(a.mode_garde));
+    if(a.age_entree_ecole) garde.push("Entr\u00e9e \u00e0 l'\u00e9cole : "+a.age_entree_ecole);
+    if(garde.length) map[trameId+".administratif.garde"]=garde.join(' \u2014 ');
+
+    // ── Demande / plainte ──
+    if(a.plainte_lo) map[trameId+".demande.plainte"]=a.plainte_lo;
+    if(a.attentes_lo) map[trameId+".demande.attentes"]=a.attentes_lo;
+
+    // ── Anamnèse ──
+    // Grossesse et naissance
+    let grossesse=[];
+    if(a.grossesse && a.grossesse.length) grossesse.push(fmtArr(a.grossesse));
+    if(a.naissance_mode) grossesse.push("Mode d'accouchement : "+a.naissance_mode);
+    if(a.naissance_terme) grossesse.push("Terme : "+a.naissance_terme);
+    if(a.naissance_detail && a.naissance_detail.length) grossesse.push("Particularit\u00e9s : "+fmtArr(a.naissance_detail));
+    if(a.poids_naissance && a.poids_naissance.length) grossesse.push("Poids de naissance : "+fmtArr(a.poids_naissance));
+    if(a.commentaires_peri) grossesse.push(a.commentaires_peri);
+    if(grossesse.length) map[trameId+".anamnese.grossesse"]=grossesse.join('\n');
+
+    // Développement psychomoteur
+    let devPsy=[];
+    if(a.marche_4_pattes) devPsy.push("Marche \u00e0 4 pattes : "+a.marche_4_pattes);
+    if(a.age_marche) devPsy.push("\u00c2ge marche : "+a.age_marche);
+    if(a.age_velo) devPsy.push("\u00c2ge v\u00e9lo : "+a.age_velo);
+    if(a.lateralite) devPsy.push("Lat\u00e9ralit\u00e9 : "+a.lateralite);
+    if(a.memo_comptines) devPsy.push("M\u00e9morisation comptines : "+a.memo_comptines);
+    if(a.proprete_diurne) devPsy.push("Propret\u00e9 diurne : "+a.proprete_diurne);
+    if(a.proprete_nocturne) devPsy.push("Propret\u00e9 nocturne : "+a.proprete_nocturne);
+    if(a.commentaires_dev) devPsy.push(a.commentaires_dev);
+    if(devPsy.length) map[trameId+".anamnese.dev_psy"]=devPsy.join('\n');
+
+    // Développement du langage
+    let devLangage=[];
+    if(a.age_babillage) devLangage.push("\u00c2ge babillage canonique : "+a.age_babillage);
+    if(a.age_premiers_mots) devLangage.push("\u00c2ge premiers mots : "+a.age_premiers_mots);
+    if(a.age_phrases) devLangage.push("\u00c2ge premi\u00e8res phrases : "+a.age_phrases);
+    if(a.regression_langage) devLangage.push("R\u00e9gression du langage : "+a.regression_langage);
+    if(a.age_regression) devLangage.push("\u00c2ge de la r\u00e9gression : "+a.age_regression);
+    if(devLangage.length) map[trameId+".anamnese.dev_langage"]=devLangage.join('\n');
+
+    // Antécédents médicaux
+    let atcdMed=[];
+    if(a.orl && a.orl.length) atcdMed.push("ORL : "+fmtArr(a.orl));
+    if(a.audiogramme_resultats) atcdMed.push("Audiogramme : "+a.audiogramme_resultats);
+    if(a.vision && a.vision.length) atcdMed.push("Vision : "+fmtArr(a.vision));
+    if(a.traumatismes) atcdMed.push("Traumatismes : "+a.traumatismes);
+    if(a.operations) atcdMed.push("Op\u00e9rations : "+a.operations);
+    if(a.traitements) atcdMed.push("Traitements : "+a.traitements);
+    if(a.bilans && a.bilans.length) atcdMed.push("Bilans r\u00e9alis\u00e9s : "+fmtArr(a.bilans));
+    if(a.suivis && a.suivis.length) atcdMed.push("Suivis en cours : "+fmtArr(a.suivis));
+    if(a.diagnostics) atcdMed.push("Diagnostics : "+a.diagnostics);
+    if(a.commentaires_med) atcdMed.push(a.commentaires_med);
+    if(atcdMed.length) map[trameId+".anamnese.atcd_med"]=atcdMed.join('\n');
+
+    // Audition / ORL et Vue (champs séparés)
+    if(a.orl && a.orl.length){
+      let aud = fmtArr(a.orl);
+      if(a.audiogramme_resultats) aud += '\n' + a.audiogramme_resultats;
+      map[trameId+".anamnese.audition"]=aud;
+    }
+    if(a.vision && a.vision.length) map[trameId+".anamnese.vue"]=fmtArr(a.vision);
+
+    // Antécédents familiaux
+    let atcdFam=[];
+    if(a.atcd_fam_mere && a.atcd_fam_mere.length) atcdFam.push("M\u00e8re : "+fmtArr(a.atcd_fam_mere));
+    if(a.atcd_fam_pere && a.atcd_fam_pere.length) atcdFam.push("P\u00e8re : "+fmtArr(a.atcd_fam_pere));
+    if(a.atcd_fam_fratrie && a.atcd_fam_fratrie.length) atcdFam.push("Fratrie : "+fmtArr(a.atcd_fam_fratrie));
+    if(atcdFam.length) map[trameId+".anamnese.atcd_fam"]=atcdFam.join('\n');
+
+    // Scolarité / parcours
+    let scolarite=[];
+    if(p.classe) scolarite.push("Classe : "+p.classe);
+    if(a.difficultes_scolaires) scolarite.push("Difficult\u00e9s scolaires : "+a.difficultes_scolaires);
+    if(a.difficultes_detail) scolarite.push(a.difficultes_detail);
+    if(a.aime_ecole) scolarite.push("Aime l'\u00e9cole : "+a.aime_ecole);
+    if(a.redoublement) scolarite.push("Redoublement : "+a.redoublement);
+    if(a.redoublement_classe) scolarite.push("Classe(s) redoubl\u00e9e(s) : "+a.redoublement_classe);
+    if(a.amenagements && a.amenagements.length) scolarite.push("Am\u00e9nagements : "+fmtArr(a.amenagements));
+    if(a.lieu_devoirs && a.lieu_devoirs.length) scolarite.push("Lieu des devoirs : "+fmtArr(a.lieu_devoirs));
+    if(a.temps_devoirs) scolarite.push("Temps de devoirs : "+a.temps_devoirs);
+    if(a.obs_enseignant) scolarite.push("Observations enseignant : "+a.obs_enseignant);
+    if(a.commentaires_scol) scolarite.push(a.commentaires_scol);
+    if(scolarite.length) map[trameId+".anamnese.scolarite"]=scolarite.join('\n');
+
+    // Contexte familial / bilinguisme
+    let contexte=[];
+    if(a.lieu_vie) contexte.push("Lieu de vie : "+a.lieu_vie);
+    if(a.fratrie) contexte.push("Fratrie : "+a.fratrie+(a.fratrie_detail?(' ('+a.fratrie_detail+')'):''));
+    if(a.prof_pere) contexte.push("Profession du p\u00e8re : "+a.prof_pere);
+    if(a.prof_mere) contexte.push("Profession de la m\u00e8re : "+a.prof_mere);
+    if(a.bilinguisme) contexte.push("Bilinguisme : "+a.bilinguisme+(a.langue_maison?(' ('+a.langue_maison+')'):''));
+    if(a.origine_plainte) contexte.push("Origine de la plainte : "+a.origine_plainte);
+    if(a.conscience_difficultes) contexte.push("Conscience des difficult\u00e9s : "+a.conscience_difficultes);
+    if(a.commentaires_famille) contexte.push(a.commentaires_famille);
+    if(contexte.length) map[trameId+".anamnese.contexte"]=contexte.join('\n');
+
+    // Activités quotidiennes / loisirs
+    let activites=[];
+    if(a.lieu_sommeil) activites.push("Lieu de sommeil : "+a.lieu_sommeil);
+    if(a.troubles_sommeil && a.troubles_sommeil.length) activites.push("Troubles du sommeil : "+fmtArr(a.troubles_sommeil));
+    if(a.autonomie && a.autonomie.length) activites.push("Autonomie : "+fmtArr(a.autonomie));
+    if(a.attention && a.attention.length) activites.push("\u00c9l\u00e9ments attentionnels : "+fmtArr(a.attention));
+    let jeux=[];
+    if(a.jeux_activites && a.jeux_activites.length) jeux.push(fmtArr(a.jeux_activites));
+    if(a.jeux_activites_autres) jeux.push(a.jeux_activites_autres);
+    if(jeux.length) activites.push("Jeux / activit\u00e9s : "+jeux.join(', '));
+    if(a.ecrans_semaine) activites.push("\u00c9crans semaine : "+a.ecrans_semaine);
+    if(a.ecrans_weekend) activites.push("\u00c9crans weekend : "+a.ecrans_weekend);
+    if(a.commentaires_vie) activites.push(a.commentaires_vie);
+    if(activites.length) map[trameId+".anamnese.activites"]=activites.join('\n');
+  }
 
   if(trameId==='aphasie'){
     // Éléments administratifs
