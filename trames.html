@@ -235,19 +235,26 @@ const TRAMES = {
           { id:"ddn", label:"Date de naissance (âge le jour du bilan)", type:"text", auto:true, inHeader:true },
           { id:"adresse", label:"Adresse", type:"text", inHeader:true },
           { id:"secu", label:"Numéro de sécurité sociale", type:"text", inHeader:true },
-          { id:"profession", label:"Profession", type:"text" },
+          { id:"profession", label:"Profession", type:"textarea" },
           { id:"situation", label:"Situation familiale", type:"text" },
+          { id:"lieu_vie_actuel", label:"Lieu de vie actuel", type:"text" },
+          { id:"aidant_principal", label:"Aidant principal", type:"text" },
           { id:"duree", label:"Durée et horaire du bilan", type:"text" },
         ]},
 
       { id:"demande", titre:"Demande / plainte", icon:"ti-message-2",
         champs:[
           { id:"plainte", label:"Plainte actuelle", type:"textarea" },
-          { id:"demande", label:"Demande", type:"textarea" },
+          { id:"demande", label:"Demandeur de la consultation", type:"textarea" },
         ]},
 
       { id:"anamnese", titre:"Anamnèse", icon:"ti-notebook",
         champs:[
+          { id:"type_anosmie", label:"Type d'anosmie", type:"text" },
+          { id:"date_symptomes", label:"Date d'apparition des premiers symptômes", type:"text", half:true },
+          { id:"mode_installation", label:"Mode d'installation", type:"text", half:true },
+          { id:"caractere_evolutif", label:"Caractère évolutif", type:"text", half:true },
+          { id:"etiologie", label:"Étiologie", type:"text" },
           { id:"atcd_med", label:"Antécédents médicaux récents / anciens", type:"textarea" },
           { id:"atcd_orl", label:"Antécédents ORL récents / anciens", type:"textarea" },
           { id:"traitement", label:"Traitement médical actuel et iatrogénie", type:"textarea" },
@@ -255,7 +262,12 @@ const TRAMES = {
           { id:"taille", label:"Taille (m)", type:"text", half:true },
           { id:"regime", label:"Régime alimentaire", type:"textarea" },
           { id:"modif_alim", label:"Modification de l'alimentation", type:"textarea" },
+          { id:"retentissement_alim", label:"Retentissement alimentaire", type:"text" },
+          { id:"tabagisme", label:"Tabagisme", type:"text", half:true },
+          { id:"allergies", label:"Allergies", type:"text", half:true },
           { id:"histoire", label:"Histoire de la maladie", type:"textarea" },
+          { id:"modif_comportement", label:"Modifications comportementales", type:"text" },
+          { id:"autres", label:"Autres", type:"textarea" },
           { id:"tests", label:"Nom des test(s) utilisé(s)", type:"textarea" },
         ]},
 
@@ -284,6 +296,7 @@ const TRAMES = {
           { id:"boisson_pref", label:"Boisson préférée", type:"text", half:true },
           { id:"detestes", label:"Plat et boisson détestés", type:"text" },
           { id:"tabac", label:"Tabagisme", type:"select", options:["Non","Actif","Passif"] },
+          { id:"allergies_profil", label:"Allergies", type:"text" },
           { id:"animaux", label:"Animaux", type:"text" },
           { id:"lieu_vie", label:"Lieu de vie actuel", type:"text" },
           { id:"note_maison", type:"note", text:"<span class='gt'>Odeurs de la maison</span>Produits d'entretien (marques et parfums) ? Existence d'une cheminée — en fonction ou décorative ? Fleurs coupées ? Fleurs séchées ? Etc." },
@@ -8227,6 +8240,57 @@ function prefillFromPatient(p){
     }
   }
   if(assure) map[trameId+".administratif.assure"]=assure;
+
+  // Champs cliniques spécifiques par trame (depuis p.anamnese)
+  const a = p.anamnese || {};
+  function fmtArr(v){ return Array.isArray(v) ? v.join(', ') : (v||''); }
+
+  if(trameId==='odorat-gout'){
+    // Éléments administratifs
+    if(a.lieu_vie_neuro && a.lieu_vie_neuro.length) map[trameId+".administratif.lieu_vie_actuel"]=fmtArr(a.lieu_vie_neuro);
+    if(a.aidant) map[trameId+".administratif.aidant_principal"]=a.aidant;
+    let profession=[];
+    if(a.vie_pro_neuro) profession.push(a.vie_pro_neuro);
+    if(a.date_retraite) profession.push("Retraite : "+a.date_retraite);
+    if(profession.length) map[trameId+".administratif.profession"]=profession.join('\n');
+    if(a.situation_familiale) map[trameId+".administratif.situation"]=a.situation_familiale;
+
+    // Demande / plainte
+    let plainte=[];
+    if(a.plainte_actuelle_neuro) plainte.push(a.plainte_actuelle_neuro);
+    if(a.plainte_cognitive && a.plainte_cognitive.length) plainte.push("Nature de la plainte cognitive : "+fmtArr(a.plainte_cognitive));
+    if(plainte.length) map[trameId+".demande.plainte"]=plainte.join('\n');
+    if(a.demandeur_neuro) map[trameId+".demande.demande"]=a.demandeur_neuro;
+
+    // Anamnèse
+    if(a.type_anos && a.type_anos.length) map[trameId+".anamnese.type_anosmie"]=fmtArr(a.type_anos);
+    if(a.date_premiers_symptomes) map[trameId+".anamnese.date_symptomes"]=a.date_premiers_symptomes;
+    if(a.mode_installation) map[trameId+".anamnese.mode_installation"]=a.mode_installation;
+    if(a.caractere_evolutif) map[trameId+".anamnese.caractere_evolutif"]=a.caractere_evolutif;
+    if(a.etiologie_anos && a.etiologie_anos.length) map[trameId+".anamnese.etiologie"]=fmtArr(a.etiologie_anos);
+    if(a.antecedents_neuro && a.antecedents_neuro.length) map[trameId+".anamnese.atcd_med"]=fmtArr(a.antecedents_neuro);
+    if(a.atcd_orl_anos && a.atcd_orl_anos.length) map[trameId+".anamnese.atcd_orl"]=fmtArr(a.atcd_orl_anos);
+    if(a.traitements_neuro) map[trameId+".anamnese.traitement"]=a.traitements_neuro;
+    if(a.poids_neuro) map[trameId+".anamnese.poids"]=a.poids_neuro;
+    if(a.taille_neuro) map[trameId+".anamnese.taille"]=a.taille_neuro;
+    if(a.regime) map[trameId+".anamnese.regime"]=a.regime;
+    if(a.retentissement_alim && a.retentissement_alim.length) map[trameId+".anamnese.retentissement_alim"]=fmtArr(a.retentissement_alim);
+    if(a.tabagisme) map[trameId+".anamnese.tabagisme"]=a.tabagisme;
+    if(a.allergies) map[trameId+".anamnese.allergies"]=a.allergies;
+    if(a.modif_comportement && a.modif_comportement.length) map[trameId+".anamnese.modif_comportement"]=fmtArr(a.modif_comportement);
+    if(a.commentaires_anos) map[trameId+".anamnese.autres"]=a.commentaires_anos;
+
+    // Synthèse — Profil olfactif
+    if(a.plat_prefere) map[trameId+".profil.plat_pref"]=a.plat_prefere;
+    if(a.boisson_preferee) map[trameId+".profil.boisson_pref"]=a.boisson_preferee;
+    let detestes=[];
+    if(a.plat_deteste) detestes.push(a.plat_deteste);
+    if(a.boisson_detestee) detestes.push(a.boisson_detestee);
+    if(detestes.length) map[trameId+".profil.detestes"]=detestes.join(' / ');
+    if(a.tabagisme) map[trameId+".profil.tabac"]=a.tabagisme;
+    if(a.allergies) map[trameId+".profil.allergies_profil"]=a.allergies;
+    if(a.lieu_vie_neuro && a.lieu_vie_neuro.length) map[trameId+".profil.lieu_vie"]=fmtArr(a.lieu_vie_neuro);
+  }
 
   Object.entries(map).forEach(([k,v])=>{ if(v&&!data[k]) data[k]=v; });
   renderForm();
