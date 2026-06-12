@@ -8208,6 +8208,7 @@ function prefillFromPatient(p){
 
   if(trameId==='communication-precoce'){
     // ── Éléments administratifs ──
+    if(a.ecole) map[trameId+".administratif.etablissement"]=a.ecole;
     if(a.langue_maison) map[trameId+".administratif.langues"]=a.langue_maison;
 
     // ── Demande / plainte ──
@@ -8270,6 +8271,83 @@ function prefillFromPatient(p){
     if(a.jeux_activites && a.jeux_activites.length) interetsCp.push(fmtArr(a.jeux_activites));
     if(a.jeux_activites_autres) interetsCp.push(a.jeux_activites_autres);
     if(interetsCp.length) map[trameId+".anamnese.interets"]=interetsCp.join(', ');
+  }
+
+  if(trameId==='tap-handicap-na'){
+    // ── Demande / motif ──
+    if(a.prescripteur_tap && a.prescripteur_tap.length) map[trameId+".demande.prescripteur"]=a.prescripteur_tap.slice();
+    if(a.diagnostics) map[trameId+".demande.diagnostic_pose"]=a.diagnostics;
+    else if(a.diagnostic_cp) map[trameId+".demande.diagnostic_pose"]=a.diagnostic_cp;
+    if(a.plainte_lo) map[trameId+".demande.demande_famille"]=a.plainte_lo;
+
+    // ── Anamnèse médicale ──
+    let grossesseTap=[];
+    if(a.grossesse && a.grossesse.length) grossesseTap.push(fmtArr(a.grossesse));
+    if(a.naissance_mode) grossesseTap.push("Mode d'accouchement : "+a.naissance_mode);
+    if(a.naissance_terme) grossesseTap.push("Terme : "+a.naissance_terme);
+    if(a.prematurite_oralite && a.prematurite_oralite!=='Non') grossesseTap.push("Pr\u00e9maturit\u00e9 : "+a.prematurite_oralite);
+    if(a.reanimation_oralite && a.reanimation_oralite!=='Non') grossesseTap.push("R\u00e9animation n\u00e9onatale : "+a.reanimation_oralite);
+    if(grossesseTap.length) map[trameId+".anamnese_medicale.grossesse_naissance"]=grossesseTap.join('\n');
+
+    if(a.atcd_fam_mere || a.atcd_fam_pere || a.atcd_fam_fratrie){
+      let atcdFamTap=[];
+      if(a.atcd_fam_mere && a.atcd_fam_mere.length) atcdFamTap.push("M\u00e8re : "+fmtArr(a.atcd_fam_mere));
+      if(a.atcd_fam_pere && a.atcd_fam_pere.length) atcdFamTap.push("P\u00e8re : "+fmtArr(a.atcd_fam_pere));
+      if(a.atcd_fam_fratrie && a.atcd_fam_fratrie.length) atcdFamTap.push("Fratrie : "+fmtArr(a.atcd_fam_fratrie));
+      map[trameId+".anamnese_medicale.atcd_familiaux"]=atcdFamTap.join('\n');
+    }
+
+    if(a.sante_generale_tap && a.sante_generale_tap.length) map[trameId+".anamnese_medicale.sante_generale"]=a.sante_generale_tap.slice();
+    else if(a.pathologies_oralite && a.pathologies_oralite.length) map[trameId+".anamnese_medicale.sante_generale"]=a.pathologies_oralite.slice();
+    if(a.pathologies_oralite_autres) map[trameId+".anamnese_medicale.sante_com"]=a.pathologies_oralite_autres;
+    if(a.traitements) map[trameId+".anamnese_medicale.traitements"]=a.traitements;
+    if(a.suivis && a.suivis.length) map[trameId+".anamnese_medicale.suivis"]=fmtArr(a.suivis);
+    else if(a.autres_soins_neuro) map[trameId+".anamnese_medicale.suivis"]=a.autres_soins_neuro;
+
+    if(a.nutrition_artificielle_oralite){
+      const naMapTap={'Jamais':'Non (jamais)','Ant\u00e9rieure':'Ant\u00e9rieure \u2014 sevr\u00e9e','En cours \u2014 pr\u00e9ciser (SNG, gastrostomie\u2026)':'En cours \u2014 pr\u00e9ciser'};
+      map[trameId+".anamnese_medicale.na_present"]=naMapTap[a.nutrition_artificielle_oralite]||a.nutrition_artificielle_oralite;
+    }
+    if(a.na_voie_oralite && a.na_voie_oralite.length) map[trameId+".anamnese_medicale.na_voie"]=a.na_voie_oralite.slice();
+    if(a.na_depuis_oralite) map[trameId+".anamnese_medicale.na_depuis"]=a.na_depuis_oralite;
+    if(a.na_rythme_oralite) map[trameId+".anamnese_medicale.na_rythme"]=a.na_rythme_oralite;
+    if(a.na_prise_orale_oralite) map[trameId+".anamnese_medicale.na_prise_orale"]=a.na_prise_orale_oralite;
+    if(a.na_faim_oralite) map[trameId+".anamnese_medicale.na_faim"]=a.na_faim_oralite;
+    if(a.na_impacts_oralite && a.na_impacts_oralite.length) map[trameId+".anamnese_medicale.na_impacts"]=a.na_impacts_oralite.slice();
+    if(a.hospitalisation_oralite) map[trameId+".anamnese_medicale.na_com"]=a.hospitalisation_oralite;
+
+    // ── Développement de l'enfant ──
+    let dvptPsyTap=[];
+    if(a.age_marche) dvptPsyTap.push("\u00c2ge marche : "+a.age_marche);
+    if(a.marche_4_pattes) dvptPsyTap.push("Marche \u00e0 4 pattes : "+a.marche_4_pattes);
+    if(dvptPsyTap.length) map[trameId+".dvpt_enfant.dvpt_psychomoteur"]=dvptPsyTap.join('\n');
+
+    if(a.troubles_sommeil && a.troubles_sommeil.length) map[trameId+".dvpt_enfant.sommeil_fa"]=fmtArr(a.troubles_sommeil);
+
+    let propreteTap=[];
+    if(a.proprete_diurne) propreteTap.push("Diurne : "+a.proprete_diurne);
+    if(a.proprete_nocturne) propreteTap.push("Nocturne : "+a.proprete_nocturne);
+    if(propreteTap.length) map[trameId+".dvpt_enfant.proprete"]=propreteTap.join(' / ');
+
+    if(a.brossage_oralite) map[trameId+".dvpt_enfant.brossage"]=a.brossage_oralite;
+    if(a.mouchage_oralite) map[trameId+".dvpt_enfant.mouchage"]=a.mouchage_oralite;
+    if(a.exploration_orale_oralite) map[trameId+".dvpt_enfant.exploration_orale"]=a.exploration_orale_oralite;
+    if(a.bavage_oralite) map[trameId+".dvpt_enfant.bavage"]=a.bavage_oralite;
+    if(a.com_verbale_oralite) map[trameId+".dvpt_enfant.com_verbale"]=a.com_verbale_oralite;
+    if(a.com_non_verbale_oralite) map[trameId+".dvpt_enfant.com_non_verbale"]=a.com_non_verbale_oralite;
+
+    // ── Histoire de l'alimentation ──
+    if(a.alim_bebe) map[trameId+".histoire_alim.alim_neonatal"]=a.alim_bebe;
+    if(a.alim_evolution_tap) map[trameId+".histoire_alim.alim_evolution"]=a.alim_evolution_tap;
+    if(a.alim_mode_tap && a.alim_mode_tap.length) map[trameId+".histoire_alim.alim_mode"]=a.alim_mode_tap.slice();
+    if(a.journee_alim) map[trameId+".histoire_alim.journee_type"]=a.journee_alim;
+    if(a.evitement_repas || a.meme_repas || a.difficultes_lieux){
+      let comportRepasTap=[];
+      if(a.evitement_repas) comportRepasTap.push("\u00c9vitement au repas : "+a.evitement_repas);
+      if(a.meme_repas) comportRepasTap.push("M\u00eame repas que la famille : "+a.meme_repas);
+      if(a.difficultes_lieux) comportRepasTap.push("Difficult\u00e9s selon les lieux : "+a.difficultes_lieux);
+      map[trameId+".histoire_alim.comportement_repas"]=comportRepasTap.join('\n');
+    }
   }
 
   if(trameId==='bpa'){
@@ -8393,6 +8471,16 @@ function prefillFromPatient(p){
   if(trameId==='oralite-alimentaire'){
     // ── Demande / motif / plainte ──
     if(a.origine_plainte) map[trameId+".demande.motif"]=a.origine_plainte;
+    if(a.prescripteur_oralite && a.prescripteur_oralite.length) map[trameId+".demande.prescripteur"]=a.prescripteur_oralite.slice();
+
+    // ── Anamnèse médicale (nouveaux champs spécifiques) ──
+    if(a.prematurite_oralite) map[trameId+".anamnese.prematurite"]=a.prematurite_oralite;
+    if(a.reanimation_oralite) map[trameId+".anamnese.reanimation"]=a.reanimation_oralite;
+    if(a.hospitalisation_oralite) map[trameId+".anamnese.hospitalisation"]=a.hospitalisation_oralite;
+    if(a.poids_courbe_oralite) map[trameId+".anamnese.poids"]=a.poids_courbe_oralite;
+    if(a.nutrition_artificielle_oralite) map[trameId+".anamnese.nutrition_artificielle"]=a.nutrition_artificielle_oralite;
+    if(a.pathologies_oralite && a.pathologies_oralite.length) map[trameId+".anamnese.pathologies"]=a.pathologies_oralite.slice();
+    if(a.pathologies_oralite_autres) map[trameId+".anamnese.pathologies_autres"]=a.pathologies_oralite_autres;
 
     // ── Habitudes alimentaires (historique) — anamnèse ──
     let habitudesOr=[];
@@ -8413,15 +8501,6 @@ function prefillFromPatient(p){
     if(a.diagnostics) map[trameId+".anamnese.diagnostic"]=a.diagnostics;
     if(a.traitements) map[trameId+".anamnese.traitements"]=a.traitements;
     if(a.suivis && a.suivis.length) map[trameId+".anamnese.autres_soins"]=fmtArr(a.suivis);
-
-    let pathologiesOr=[];
-    const pathMap={'Diab\u00e8te':null,'Hypertension':null};
-    if(a.orl && a.orl.length){
-      // mapper certaines options ORL vers pathologies si pertinent
-      const orlVal = fmtArr(a.orl);
-      pathologiesOr.push("ORL : "+orlVal);
-    }
-    if(pathologiesOr.length) map[trameId+".anamnese.pathologies_autres"]=pathologiesOr.join('\n');
   }
 
   if(trameId==='cognition-mathematique'){
@@ -8558,6 +8637,7 @@ function prefillFromPatient(p){
   if(trameId==='langage-oral-enfant'){
     // ── Éléments administratifs ──
     if(p.classe) map[trameId+".administratif.classe"]=p.classe;
+    if(a.ecole) map[trameId+".administratif.ecole"]=a.ecole;
     if(a.langue_maison) map[trameId+".administratif.langues"]=a.langue_maison;
     let garde=[];
     if(a.mode_garde && a.mode_garde.length) garde.push(fmtArr(a.mode_garde));
@@ -8565,6 +8645,7 @@ function prefillFromPatient(p){
     if(garde.length) map[trameId+".administratif.garde"]=garde.join(' \u2014 ');
 
     // ── Demande / plainte ──
+    if(a.origine_plainte) map[trameId+".demande.motif"]=a.origine_plainte;
     if(a.plainte_lo) map[trameId+".demande.plainte"]=a.plainte_lo;
     if(a.attentes_lo) map[trameId+".demande.attentes"]=a.attentes_lo;
 
@@ -8672,9 +8753,418 @@ function prefillFromPatient(p){
     if(activites.length) map[trameId+".anamnese.activites"]=activites.join('\n');
   }
 
+  if(trameId==='neuro-cognitivo-linguistique'){
+    // ── Éléments administratifs ──
+    if(a.vie_pro_neuro) map[trameId+".administratif.profession"]=a.vie_pro_neuro;
+
+    // ── Demande / motif / plainte ──
+    let motifNcl=[];
+    if(a.plainte_actuelle_neuro) motifNcl.push(a.plainte_actuelle_neuro);
+    if(a.plainte_entourage_neuro) motifNcl.push("Plainte de l'entourage : "+a.plainte_entourage_neuro);
+    if(a.demandeur_neuro) motifNcl.push("Demandeur : "+a.demandeur_neuro);
+    if(motifNcl.length) map[trameId+".demande.motif"]=motifNcl.join('\n');
+
+    let contexteDiagNcl=[];
+    if(a.antecedents_neuro && a.antecedents_neuro.length) contexteDiagNcl.push("Ant\u00e9c\u00e9dents : "+fmtArr(a.antecedents_neuro));
+    if(a.examens_neuro && a.examens_neuro.length) contexteDiagNcl.push("Examens r\u00e9alis\u00e9s : "+fmtArr(a.examens_neuro));
+    if(a.resultats_examens) contexteDiagNcl.push("R\u00e9sultats : "+a.resultats_examens);
+    if(contexteDiagNcl.length) map[trameId+".demande.contexte_diag"]=contexteDiagNcl.join('\n');
+
+    // ── Anamnèse ──
+    if(a.niveau_scolaire) map[trameId+".anamnese.niveau_scolaire"]=a.niveau_scolaire;
+    if(a.lateralite_neuro){
+      var latMapNcl={'Droitier(e)':'Droitier','Gaucher(e)':'Gaucher','Ambidextre':'Ambidextre'};
+      map[trameId+".anamnese.lateralite"]=latMapNcl[a.lateralite_neuro]||a.lateralite_neuro;
+    }
+    let atcdNcl=[];
+    if(a.antecedents_neuro && a.antecedents_neuro.length) atcdNcl.push(fmtArr(a.antecedents_neuro));
+    if(a.atcd_fam_neuro) atcdNcl.push("Ant\u00e9c\u00e9dents familiaux neuro-d\u00e9g\u00e9n\u00e9ratifs : "+a.atcd_fam_neuro);
+    if(atcdNcl.length) map[trameId+".anamnese.atcd"]=atcdNcl.join('\n');
+
+    let situationFamNcl=[];
+    if(a.situation_familiale) situationFamNcl.push(a.situation_familiale);
+    if(a.lieu_vie_neuro && a.lieu_vie_neuro.length) situationFamNcl.push(fmtArr(a.lieu_vie_neuro));
+    if(situationFamNcl.length) map[trameId+".anamnese.situation_fam"]=situationFamNcl.join(' \u2014 ');
+    if(a.aidant) map[trameId+".anamnese.aidant"]=a.aidant;
+
+    if(a.lieu_sommeil || (a.troubles_sommeil && a.troubles_sommeil.length)){
+      let sommeilNcl=[];
+      if(a.lieu_sommeil) sommeilNcl.push("Lieu de sommeil : "+a.lieu_sommeil);
+      if(a.troubles_sommeil && a.troubles_sommeil.length) sommeilNcl.push("Troubles du sommeil : "+fmtArr(a.troubles_sommeil));
+      map[trameId+".anamnese.sommeil"]=sommeilNcl.join('\n');
+    }
+    if(a.alimentation && a.alimentation.length) map[trameId+".anamnese.alimentation"]=fmtArr(a.alimentation);
+
+    if(a.bilinguisme){
+      let bilingNcl = a.bilinguisme;
+      if(a.langue_maison) bilingNcl += ' (' + a.langue_maison + ')';
+      map[trameId+".anamnese.bilinguisme"]=bilingNcl;
+    }
+    if(a.occupations) map[trameId+".anamnese.interets"]=a.occupations;
+
+    let socioNcl=[];
+    if(a.anosognosie) socioNcl.push("Conscience des troubles : "+a.anosognosie);
+    if(a.modif_comportement && a.modif_comportement.length) socioNcl.push("Modifications comportementales : "+fmtArr(a.modif_comportement));
+    if(socioNcl.length) map[trameId+".anamnese.socio_affectif"]=socioNcl.join('\n');
+  }
+
+  if(trameId==='neuro-parole-voix-deglutition'){
+    // ── Éléments administratifs ──
+    let professionNpvd=[];
+    if(a.vie_pro_neuro) professionNpvd.push(a.vie_pro_neuro);
+    if(a.situation_familiale) professionNpvd.push(a.situation_familiale);
+    if(professionNpvd.length) map[trameId+".administratif.profession"]=professionNpvd.join(' \u2014 ');
+
+    // ── Demande / plainte ──
+    if(a.demandeur_neuro) map[trameId+".demande.personne_demande"]=a.demandeur_neuro;
+    let plainteNpvd=[];
+    if(a.plainte_actuelle_neuro) plainteNpvd.push(a.plainte_actuelle_neuro);
+    if(a.plainte_entourage_neuro) plainteNpvd.push("Plainte de l'entourage : "+a.plainte_entourage_neuro);
+    if(a.impact_vie_quotidienne_neuro) plainteNpvd.push("Impact sur la vie quotidienne : "+a.impact_vie_quotidienne_neuro);
+    if(plainteNpvd.length) map[trameId+".demande.plainte"]=plainteNpvd.join('\n');
+
+    // ── Anamnèse ──
+    let atcdNpvd=[];
+    if(a.antecedents_neuro && a.antecedents_neuro.length) atcdNpvd.push(fmtArr(a.antecedents_neuro));
+    if(a.traitements_neuro) atcdNpvd.push("Traitements : "+a.traitements_neuro);
+    if(atcdNpvd.length) map[trameId+".anamnese.atcd"]=atcdNpvd.join('\n');
+
+    if(a.autres_soins_neuro) map[trameId+".anamnese.autres_soins"]=a.autres_soins_neuro;
+
+    let situationNpvd=[];
+    if(a.lieu_vie_neuro && a.lieu_vie_neuro.length) situationNpvd.push(fmtArr(a.lieu_vie_neuro));
+    if(a.conduite) situationNpvd.push("Conduite : "+a.conduite);
+    if(a.gestion_finances) situationNpvd.push("Gestion des finances : "+a.gestion_finances);
+    if(situationNpvd.length) map[trameId+".anamnese.situation"]=situationNpvd.join('\n');
+
+    if(a.alimentation && a.alimentation.length) map[trameId+".anamnese.alimentation"]=fmtArr(a.alimentation);
+  }
+
+  if(trameId==='graphisme-dysgraphie'){
+    // ── Demande / plainte ──
+    let contexteGraph=[];
+    if(a.demandeur_neuro) contexteGraph.push("Demandeur : "+a.demandeur_neuro);
+    if(a.plainte_actuelle_neuro) contexteGraph.push(a.plainte_actuelle_neuro);
+    if(a.plainte_entourage_neuro) contexteGraph.push("Plainte de l'entourage : "+a.plainte_entourage_neuro);
+    if(a.impact_vie_quotidienne_neuro) contexteGraph.push("Impact sur la vie quotidienne : "+a.impact_vie_quotidienne_neuro);
+    if(contexteGraph.length) map[trameId+".demande.contexte"]=contexteGraph.join('\n');
+
+    let motivationGraph=[];
+    if(a.occupations) motivationGraph.push(a.occupations);
+    if(a.vie_pro_neuro) motivationGraph.push("Profession : "+a.vie_pro_neuro);
+    if(motivationGraph.length) map[trameId+".demande.motivation"]=motivationGraph.join(', ');
+
+    // ── Anamnèse ──
+    let infosMedGraph=[];
+    if(a.traitements_neuro) infosMedGraph.push("Traitements : "+a.traitements_neuro);
+    if(a.examens_neuro && a.examens_neuro.length) infosMedGraph.push("Examens r\u00e9alis\u00e9s : "+fmtArr(a.examens_neuro));
+    if(a.resultats_examens) infosMedGraph.push("R\u00e9sultats : "+a.resultats_examens);
+    if(a.autres_soins_neuro) infosMedGraph.push("Autres prises en soins : "+a.autres_soins_neuro);
+    if(infosMedGraph.length) map[trameId+".anamnese.infos_medicales"]=infosMedGraph.join('\n');
+
+    let antecedentsGraph=[];
+    if(a.antecedents_neuro && a.antecedents_neuro.length) antecedentsGraph.push(fmtArr(a.antecedents_neuro));
+    if(a.vision_neuro && a.vision_neuro.length) antecedentsGraph.push("Vision : "+fmtArr(a.vision_neuro));
+    if(a.audition_neuro && a.audition_neuro.length) antecedentsGraph.push("Audition : "+fmtArr(a.audition_neuro));
+    if(a.lateralite_neuro){
+      var latMapGraph={'Droitier(e)':'Droitier','Gaucher(e)':'Gaucher','Ambidextre':'Ambidextre'};
+      antecedentsGraph.push("Lat\u00e9ralit\u00e9 : "+(latMapGraph[a.lateralite_neuro]||a.lateralite_neuro));
+    }
+    if(antecedentsGraph.length) map[trameId+".anamnese.antecedents"]=antecedentsGraph.join('\n');
+
+    if(a.lateralite_neuro){
+      var latMapGraph2={'Droitier(e)':'Droitier','Gaucher(e)':'Gaucher','Ambidextre':'Ambidextre'};
+      map[trameId+".anamnese.usages"]="Lat\u00e9ralit\u00e9 : "+(latMapGraph2[a.lateralite_neuro]||a.lateralite_neuro);
+    }
+
+    let consequencesGraph=[];
+    if(a.modif_comportement && a.modif_comportement.length) consequencesGraph.push("Modifications comportementales : "+fmtArr(a.modif_comportement));
+    if(a.lieu_vie_neuro && a.lieu_vie_neuro.length) consequencesGraph.push("Lieu de vie : "+fmtArr(a.lieu_vie_neuro));
+    if(a.aidant) consequencesGraph.push("Aidant principal : "+a.aidant);
+    if(consequencesGraph.length) map[trameId+".anamnese.consequences"]=consequencesGraph.join('\n');
+  }
+
+  if(trameId==='voix-adulte'){
+    // ── Éléments administratifs ──
+    if(a.vie_pro_neuro) map[trameId+".administratif.profession"]=a.vie_pro_neuro;
+    if(a.situation_familiale) map[trameId+".administratif.situation_fam"]=a.situation_familiale;
+    if(a.bilinguisme){
+      let bilingVA = a.bilinguisme;
+      if(a.langue_maison) bilingVA += ' (' + a.langue_maison + ')';
+      map[trameId+".administratif.langues"]=bilingVA;
+    }
+
+    // ── Demande / motif / plainte ──
+    if(a.profession_voix_a) map[trameId+".administratif.profession"]=a.profession_voix_a;
+    let motifVA=[];
+    if(a.motif_voix_a) motifVA.push(a.motif_voix_a);
+    if(a.plainte_actuelle_neuro) motifVA.push(a.plainte_actuelle_neuro);
+    if(a.demandeur_neuro) motifVA.push("Demandeur : "+a.demandeur_neuro);
+    if(motifVA.length) map[trameId+".demande.motif"]=motifVA.join('\n');
+    if(a.historique_voix_a) map[trameId+".demande.historique"]=a.historique_voix_a;
+    if(a.plainte_intensite_voix_a && a.plainte_intensite_voix_a.length) map[trameId+".demande.plainte_intensite"]=a.plainte_intensite_voix_a.slice();
+    if(a.plainte_frequence_voix_a && a.plainte_frequence_voix_a.length) map[trameId+".demande.plainte_frequence"]=a.plainte_frequence_voix_a.slice();
+    if(a.plainte_duree_voix_a && a.plainte_duree_voix_a.length) map[trameId+".demande.plainte_duree"]=a.plainte_duree_voix_a.slice();
+    if(a.plainte_esthetique_voix_a) map[trameId+".demande.plainte_esthetique"]=a.plainte_esthetique_voix_a;
+    if(a.charge_pro_voix_a) map[trameId+".demande.charge_pro"]=a.charge_pro_voix_a;
+    if(a.charge_fam_voix_a) map[trameId+".demande.charge_fam"]=a.charge_fam_voix_a;
+    if(a.charge_loisirs_voix_a) map[trameId+".demande.charge_loisirs"]=a.charge_loisirs_voix_a;
+    if(a.charge_com_voix_a) map[trameId+".demande.charge_com"]=a.charge_com_voix_a;
+    if(a.hygiene_items_voix_a && a.hygiene_items_voix_a.length) map[trameId+".demande.hygiene_items"]=a.hygiene_items_voix_a.slice();
+    if(a.gene_sensitive_voix_a && a.gene_sensitive_voix_a.length) map[trameId+".demande.gene_sensitive"]=a.gene_sensitive_voix_a.slice();
+    if(a.gene_respi_voix_a && a.gene_respi_voix_a.length) map[trameId+".demande.gene_respi"]=a.gene_respi_voix_a.slice();
+    if(a.gene_phagique_voix_a && a.gene_phagique_voix_a.length) map[trameId+".demande.gene_phagique"]=a.gene_phagique_voix_a.slice();
+    if(a.retentissement_voix_a) map[trameId+".demande.retentissement"]=a.retentissement_voix_a;
+    else if(a.impact_vie_quotidienne_neuro) map[trameId+".demande.retentissement"]=a.impact_vie_quotidienne_neuro;
+
+    // ── Anamnèse médicale ──
+    let atcdVA=[];
+    if(a.antecedents_neuro && a.antecedents_neuro.length) atcdVA.push("Ant\u00e9c\u00e9dents : "+fmtArr(a.antecedents_neuro));
+    if(a.audition_neuro && a.audition_neuro.length) atcdVA.push("Audition : "+fmtArr(a.audition_neuro));
+    if(a.vision_neuro && a.vision_neuro.length) atcdVA.push("Vision : "+fmtArr(a.vision_neuro));
+    if(atcdVA.length) map[trameId+".anamnese_medicale.atcd_chir"]=atcdVA.join('\n');
+    if(a.traitements_neuro) map[trameId+".anamnese_medicale.traitements_com"]=a.traitements_neuro;
+  }
+
+  if(trameId==='dysarthrie'){
+    // ── Éléments administratifs ──
+    let professionDys=[];
+    if(a.vie_pro_neuro) professionDys.push(a.vie_pro_neuro);
+    if(a.situation_familiale) professionDys.push(a.situation_familiale);
+    if(professionDys.length) map[trameId+".administratif.profession"]=professionDys.join(' \u2014 ');
+    if(a.niveau_scolaire) map[trameId+".administratif.nsc"]=a.niveau_scolaire;
+    if(a.lateralite_neuro){
+      var latMapDys={'Droitier(e)':'Droitier','Gaucher(e)':'Gaucher','Ambidextre':'Ambidextre'};
+      map[trameId+".administratif.lateralite"]=latMapDys[a.lateralite_neuro]||a.lateralite_neuro;
+    }
+
+    // ── Demande / plainte ──
+    if(a.qui_adresse_dysa) map[trameId+".demande.qui_adresse"]=a.qui_adresse_dysa;
+    else if(a.demandeur_neuro) map[trameId+".demande.qui_adresse"]=a.demandeur_neuro;
+    let motifDys=[];
+    if(a.plainte_actuelle_neuro) motifDys.push(a.plainte_actuelle_neuro);
+    if(a.etiologie_dysa) motifDys.push("\u00c9tiologie : "+a.etiologie_dysa);
+    if(a.date_debut_dysa) motifDys.push("D\u00e9but des sympt\u00f4mes : "+a.date_debut_dysa);
+    if(a.mode_installation_dysa) motifDys.push("Mode d'installation : "+a.mode_installation_dysa);
+    if(motifDys.length) map[trameId+".demande.motif"]=motifDys.join('\n');
+    let plainteParoleDys=[];
+    if(a.plainte_parole_dysa) plainteParoleDys.push(a.plainte_parole_dysa);
+    if(a.plainte_cognitive && a.plainte_cognitive.length) plainteParoleDys.push("Nature de la plainte cognitive : "+fmtArr(a.plainte_cognitive));
+    if(plainteParoleDys.length) map[trameId+".demande.plainte_parole"]=plainteParoleDys.join('\n');
+    if(a.impact_dysa) map[trameId+".demande.plainte_impact"]=a.impact_dysa;
+    else if(a.impact_vie_quotidienne_neuro) map[trameId+".demande.plainte_impact"]=a.impact_vie_quotidienne_neuro;
+
+    // ── Anamnèse ──
+    if(a.etiologie_dysa) map[trameId+".anamnese.pathologie"]=a.etiologie_dysa;
+    let histoireDys=[];
+    if(a.date_debut_dysa) histoireDys.push("D\u00e9but des sympt\u00f4mes : "+a.date_debut_dysa);
+    if(a.mode_installation_dysa) histoireDys.push("Mode d'installation : "+a.mode_installation_dysa);
+    if(histoireDys.length) map[trameId+".anamnese.histoire_maladie"]=histoireDys.join('\n');
+    if(a.antecedents_neuro && a.antecedents_neuro.length) map[trameId+".anamnese.atcd_med"]=fmtArr(a.antecedents_neuro);
+    if(a.traitements_neuro) map[trameId+".anamnese.traitements"]=a.traitements_neuro;
+    if(a.autres_soins_neuro) map[trameId+".anamnese.autres_soins"]=a.autres_soins_neuro;
+
+    let statutMoteurDys=[];
+    if(a.audition_neuro && a.audition_neuro.length) statutMoteurDys.push("Audition : "+fmtArr(a.audition_neuro));
+    if(a.vision_neuro && a.vision_neuro.length) statutMoteurDys.push("Vision : "+fmtArr(a.vision_neuro));
+    if(a.gout_odorat) statutMoteurDys.push("Go\u00fbt et odorat : "+a.gout_odorat);
+    if(statutMoteurDys.length) map[trameId+".anamnese.statut_moteur"]=statutMoteurDys.join('\n');
+
+    let donneesSocDys=[];
+    if(a.lieu_vie_neuro && a.lieu_vie_neuro.length) donneesSocDys.push(fmtArr(a.lieu_vie_neuro));
+    if(a.aidant) donneesSocDys.push("Aidant principal : "+a.aidant);
+    if(donneesSocDys.length) map[trameId+".anamnese.donnees_sociales"]=donneesSocDys.join('\n');
+  }
+
+  if(trameId==='bilan-sla'){
+    // ── Éléments administratifs ──
+    let professionSla=[];
+    if(a.vie_pro_neuro) professionSla.push(a.vie_pro_neuro);
+    if(a.situation_familiale) professionSla.push(a.situation_familiale);
+    if(professionSla.length) map[trameId+".administratif.profession"]=professionSla.join(' \u2014 ');
+    if(a.niveau_scolaire) map[trameId+".administratif.nsc"]=a.niveau_scolaire;
+    if(a.lateralite_neuro){
+      var latMapSla={'Droitier(e)':'Droitier','Gaucher(e)':'Gaucher','Ambidextre':'Ambidextre'};
+      map[trameId+".administratif.lateralite"]=latMapSla[a.lateralite_neuro]||a.lateralite_neuro;
+    }
+
+    // ── Anamnèse générale ──
+    if(a.date_diag_sla) map[trameId+".anamnese_generale.date_diag"]=a.date_diag_sla;
+    if(a.symptomes_inaug_sla) map[trameId+".anamnese_generale.symptomes_inaug"]=a.symptomes_inaug_sla;
+    if(a.atteinte_initiale_sla && a.atteinte_initiale_sla.length) map[trameId+".anamnese_generale.atteinte_initiale"]=a.atteinte_initiale_sla.slice();
+    if(a.centre_ref_sla) map[trameId+".anamnese_generale.centre_ref"]=a.centre_ref_sla;
+    if(a.appareillage_resp_sla && a.appareillage_resp_sla.length) map[trameId+".anamnese_generale.appareillage_resp"]=a.appareillage_resp_sla.slice();
+    if(a.nutrition_art_sla && a.nutrition_art_sla.length){
+      map[trameId+".anamnese_generale.nutrition_art"]=a.nutrition_art_sla.slice();
+      if(a.nutrition_art_sla.indexOf('Gastrostomie (PEG)')>=0) map[trameId+".anamnese_deglutition.gastrostomie"]='Oui';
+      else if(a.nutrition_art_sla.indexOf('Aucune')>=0) map[trameId+".anamnese_deglutition.gastrostomie"]='Non';
+    }
+    if(a.plainte_cog_sla && a.plainte_cog_sla.length) map[trameId+".anamnese_generale.plainte_cog"]=a.plainte_cog_sla.slice();
+    if(a.etat_emot_sla) map[trameId+".anamnese_generale.etat_emot"]=a.etat_emot_sla;
+
+    let plaintePrincSla=[];
+    if(a.plainte_actuelle_neuro) plaintePrincSla.push(a.plainte_actuelle_neuro);
+    if(a.plainte_entourage_neuro) plaintePrincSla.push("Plainte de l'entourage : "+a.plainte_entourage_neuro);
+    if(plaintePrincSla.length) map[trameId+".anamnese_generale.plainte_princ"]=plaintePrincSla.join('\n');
+
+    if(a.atcd_fam_neuro) map[trameId+".anamnese_generale.atcd_fam"]=a.atcd_fam_neuro;
+    if(a.antecedents_neuro && a.antecedents_neuro.length) map[trameId+".anamnese_generale.atcd_perso"]=a.antecedents_neuro.slice();
+
+    let modeVieSla=[];
+    if(a.mode_vie_sla) modeVieSla.push(a.mode_vie_sla);
+    if(a.lieu_vie_neuro && a.lieu_vie_neuro.length) modeVieSla.push(fmtArr(a.lieu_vie_neuro));
+    if(a.aidant) modeVieSla.push("Aidant principal : "+a.aidant);
+    if(modeVieSla.length) map[trameId+".anamnese_generale.mode_vie"]=modeVieSla.join('\n');
+
+    if(a.autres_soins_neuro) map[trameId+".anamnese_generale.suivis_med"]=a.autres_soins_neuro;
+    if(a.traitements_neuro) map[trameId+".anamnese_generale.traitements"]=a.traitements_neuro;
+  }
+
+  if(trameId==='dysphagie-neuro'){
+    // ── Éléments administratifs ──
+    let situationDn=[];
+    if(a.lieu_vie_neuro && a.lieu_vie_neuro.length) situationDn.push(fmtArr(a.lieu_vie_neuro));
+    if(a.situation_familiale) situationDn.push(a.situation_familiale);
+    if(situationDn.length) map[trameId+".administratif.situation"]=situationDn.join(' \u2014 ');
+    if(a.examens_neuro && a.examens_neuro.length) map[trameId+".administratif.examens_comp"]=a.examens_neuro.slice();
+    if(a.resultats_examens) map[trameId+".administratif.examens_resultats"]=a.resultats_examens;
+
+    // ── Demande / plainte ──
+    if(a.personne_demande_dyph) map[trameId+".demande.personne_demande"]=a.personne_demande_dyph;
+    else if(a.demandeur_neuro) map[trameId+".demande.personne_demande"]=a.demandeur_neuro;
+    if(a.domaines_plainte_dyph && a.domaines_plainte_dyph.length) map[trameId+".demande.domaines_plainte"]=a.domaines_plainte_dyph.slice();
+    let plainteDn=[];
+    if(a.plainte_detaillee_dyph) plainteDn.push(a.plainte_detaillee_dyph);
+    if(a.plainte_actuelle_neuro) plainteDn.push(a.plainte_actuelle_neuro);
+    if(a.plainte_entourage_neuro) plainteDn.push("Plainte de l'entourage : "+a.plainte_entourage_neuro);
+    if(plainteDn.length) map[trameId+".demande.plainte"]=plainteDn.join('\n');
+    if(a.anosognosie) map[trameId+".demande.conscience_trouble"]=(a.anosognosie==='Conscient(e)')?'Bonne conscience':(a.anosognosie==='Partiellement conscient(e)'?'Conscience partielle':'Anosognosie');
+
+    // ── Anamnèse ──
+    if(a.pathologie_dyph) map[trameId+".anamnese.pathologie"]=a.pathologie_dyph;
+    if(a.histoire_dyph) map[trameId+".anamnese.histoire"]=a.histoire_dyph;
+    let atcdDn=[];
+    if(a.atcd_chir_dyph) atcdDn.push(a.atcd_chir_dyph);
+    if(a.antecedents_neuro && a.antecedents_neuro.length) atcdDn.push(fmtArr(a.antecedents_neuro));
+    if(atcdDn.length) map[trameId+".anamnese.atcd"]=atcdDn.join('\n');
+    if(a.traitements_dyph) map[trameId+".anamnese.traitements"]=a.traitements_dyph;
+    else if(a.traitements_neuro) map[trameId+".anamnese.traitements"]=a.traitements_neuro;
+    if(a.autres_soins_dyph) map[trameId+".anamnese.autres_soins"]=a.autres_soins_dyph;
+    else if(a.autres_soins_neuro) map[trameId+".anamnese.autres_soins"]=a.autres_soins_neuro;
+    if(a.qualite_vie_dyph) map[trameId+".anamnese.qualite_vie"]=a.qualite_vie_dyph;
+    else if(a.impact_vie_quotidienne_neuro) map[trameId+".anamnese.qualite_vie"]=a.impact_vie_quotidienne_neuro;
+
+    if(a.alimentation_dyph) map[trameId+".anamnese.alimentation"]=a.alimentation_dyph;
+    if(a.evolution_poids_dyph) map[trameId+".anamnese.poids"]=a.evolution_poids_dyph;
+    if(a.episodes_febriles_dyph) map[trameId+".anamnese.hyperthermie"]=a.episodes_febriles_dyph;
+  }
+
+  if(trameId==='deglutition-dysfonctionnelle'){
+    // ── Éléments administratifs ──
+    if(p.classe) map[trameId+".administratif.classe"]=p.classe;
+    if(a.fratrie) map[trameId+".administratif.place_fratrie"]=a.fratrie+(a.fratrie_detail?(' ('+a.fratrie_detail+')'):'');
+
+    // ── Demande / plainte ──
+    if(a.motif_deg) map[trameId+".demande.motif"]=a.motif_deg;
+    else if(a.origine_plainte) map[trameId+".demande.motif"]=a.origine_plainte;
+    let plainteDeg=[];
+    if(a.qui_adresse_deg) plainteDeg.push("Adress\u00e9 par : "+a.qui_adresse_deg);
+    if(a.plainte_lo) plainteDeg.push(a.plainte_lo);
+    if(a.attentes_lo) plainteDeg.push("Attentes : "+a.attentes_lo);
+    if(plainteDeg.length) map[trameId+".demande.plainte"]=plainteDeg.join('\n');
+    if(a.appareillage_deg) map[trameId+".demande.appareillage"]=a.appareillage_deg;
+    if(a.appareillage_detail_deg) map[trameId+".demande.appareillage_det"]=a.appareillage_detail_deg;
+
+    // ── Anamnèse ──
+    let naissanceDeg=[];
+    if(a.grossesse && a.grossesse.length) naissanceDeg.push(fmtArr(a.grossesse));
+    if(a.naissance_mode) naissanceDeg.push("Mode d'accouchement : "+a.naissance_mode);
+    if(a.naissance_terme) naissanceDeg.push("Terme : "+a.naissance_terme);
+    if(a.naissance_detail && a.naissance_detail.length) naissanceDeg.push("Particularit\u00e9s : "+fmtArr(a.naissance_detail));
+    if(naissanceDeg.length) map[trameId+".anamnese.naissance"]=naissanceDeg.join('\n');
+
+    if(a.age_marche) map[trameId+".anamnese.dev_moteur"]=a.age_marche;
+    if(a.alim_bebe) map[trameId+".anamnese.allaitement"]=a.alim_bebe;
+
+    if(a.succion && a.succion.length) map[trameId+".anamnese.succion_items"]=fmtArr(a.succion);
+    else if(a.succion_habits && a.succion_habits.length) map[trameId+".anamnese.succion_items"]=fmtArr(a.succion_habits);
+
+    let comprtRepasDeg=[];
+    if(a.alimentation_oralite && a.alimentation_oralite.length) comprtRepasDeg.push(fmtArr(a.alimentation_oralite));
+    if(a.evitement_repas) comprtRepasDeg.push("\u00c9vitement au repas : "+a.evitement_repas);
+    if(comprtRepasDeg.length) map[trameId+".anamnese.comprt_repas"]=comprtRepasDeg.join('\n');
+
+    let orlDeg=[];
+    if(a.orl && a.orl.length) orlDeg.push(fmtArr(a.orl));
+    if(a.atcd_orl_anos && a.atcd_orl_anos.length) orlDeg.push(fmtArr(a.atcd_orl_anos));
+    if(orlDeg.length) map[trameId+".anamnese.orl_items"]=orlDeg.join(', ');
+    if(a.audiogramme_resultats) map[trameId+".anamnese.orl_com"]=a.audiogramme_resultats;
+
+    if(a.troubles_sommeil && a.troubles_sommeil.length) map[trameId+".anamnese.sommeil_items"]=fmtArr(a.troubles_sommeil);
+
+    if(a.age_cuillere) map[trameId+".anamnese.age_cuillere"]=a.age_cuillere;
+    if(a.age_morceaux) map[trameId+".anamnese.age_morceaux"]=a.age_morceaux;
+    if(a.liquides_age) map[trameId+".anamnese.liquides_age"]=a.liquides_age;
+    if(a.succion_contexte) map[trameId+".anamnese.succion_contexte"]=a.succion_contexte;
+    if(a.bruxisme_deg) map[trameId+".anamnese.bruxisme"]=a.bruxisme_deg;
+    if(a.appareil_nuit_deg) map[trameId+".anamnese.appareil_nuit"]=a.appareil_nuit_deg;
+    if(a.scoliose_deg) map[trameId+".anamnese.scoliose"]=a.scoliose_deg;
+    if(a.orthodontie_deg==='Oui'){
+      map[trameId+".anamnese.orthodontie"]=a.orthodontie_detail_deg||'Oui';
+    } else if(a.orthodontie_deg==='Non'){
+      map[trameId+".anamnese.orthodontie"]='Non';
+    }
+
+    if(a.atcd_fam_mere || a.atcd_fam_pere || a.atcd_fam_fratrie){
+      let atcdFamDeg=[];
+      if(a.atcd_fam_mere && a.atcd_fam_mere.length) atcdFamDeg.push("M\u00e8re : "+fmtArr(a.atcd_fam_mere));
+      if(a.atcd_fam_pere && a.atcd_fam_pere.length) atcdFamDeg.push("P\u00e8re : "+fmtArr(a.atcd_fam_pere));
+      if(a.atcd_fam_fratrie && a.atcd_fam_fratrie.length) atcdFamDeg.push("Fratrie : "+fmtArr(a.atcd_fam_fratrie));
+      map[trameId+".anamnese.atcd_fam"]=atcdFamDeg.join('\n');
+    }
+    if(a.suivis && a.suivis.length) map[trameId+".anamnese.autres_soins"]=fmtArr(a.suivis);
+  }
+
+  if(trameId==='voix-enfant'){
+    // ── Éléments administratifs ──
+    if(p.classe) map[trameId+".administratif.classe"]=p.classe;
+
+    // ── Demande / plainte ──
+    if(a.adresse_par_voix_e && a.adresse_par_voix_e.length) map[trameId+".plainte.adresse_par"]=a.adresse_par_voix_e.slice();
+    else if(a.adresse_par_omf && a.adresse_par_omf.length) map[trameId+".plainte.adresse_par"]=a.adresse_par_omf.slice();
+    if(a.plainte_enfant_voix_e) map[trameId+".plainte.plainte_enfant"]=a.plainte_enfant_voix_e;
+    if(a.plainte_parents_voix_e) map[trameId+".plainte.plainte_parents"]=a.plainte_parents_voix_e;
+    else if(a.plainte_lo) map[trameId+".plainte.plainte_parents"]=a.plainte_lo;
+    if(a.gene_ressentie_voix_e) map[trameId+".plainte.gene_ressentie"]=a.gene_ressentie_voix_e;
+    if(a.contexte_survenue_voix_e) map[trameId+".plainte.contexte_survenue"]=a.contexte_survenue_voix_e;
+
+    // ── Anamnèse — spécificités enfant ──
+    if(a.habitudes_vocales_voix_e && a.habitudes_vocales_voix_e.length) map[trameId+".anam_enfant.habitudes_vocales"]=a.habitudes_vocales_voix_e.slice();
+    if(a.sensations_voix_e && a.sensations_voix_e.length) map[trameId+".anam_enfant.sensations_enfant"]=a.sensations_voix_e.slice();
+
+    let bilanOrlVE=[];
+    if(a.bilan_orl_voix_e) bilanOrlVE.push(a.bilan_orl_voix_e);
+    if(a.audiogramme_resultats) bilanOrlVE.push(a.audiogramme_resultats);
+    if(bilanOrlVE.length) map[trameId+".anam_enfant.bilan_orl"]=bilanOrlVE.join('\n');
+
+    if(a.comportement_vocal_voix_e) map[trameId+".anam_enfant.comportement_vocal"]=a.comportement_vocal_voix_e;
+    if(a.place_vocale_voix_e) map[trameId+".anam_enfant.place_vocale"]=a.place_vocale_voix_e;
+
+    let atcdMedVE=[];
+    if(a.atcd_med_voix_e) atcdMedVE.push(a.atcd_med_voix_e);
+    if(a.orl && a.orl.length) atcdMedVE.push("ORL : "+fmtArr(a.orl));
+    if(a.traumatismes) atcdMedVE.push("Traumatismes : "+a.traumatismes);
+    if(a.operations) atcdMedVE.push("Op\u00e9rations : "+a.operations);
+    if(a.diagnostics) atcdMedVE.push("Diagnostics : "+a.diagnostics);
+    if(atcdMedVE.length) map[trameId+".anam_enfant.atcd_med"]=atcdMedVE.join('\n');
+    if(a.traitement_voix_e) map[trameId+".anam_enfant.traitement"]=a.traitement_voix_e;
+    else if(a.traitements) map[trameId+".anam_enfant.traitement"]=a.traitements;
+  }
+
   if(trameId==='aphasie'){
     // Éléments administratifs
     if(a.lateralite_neuro){
+
       var latMap={'Droitier(e)':'Droitier','Gaucher(e)':'Gaucher','Ambidextre':'Ambidextre'};
       map[trameId+".administratif.lateralite"]=latMap[a.lateralite_neuro]||a.lateralite_neuro;
     }

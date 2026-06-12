@@ -15093,6 +15093,13 @@ function renderAnamneseTab(pid){
   var hasBegaiement = !!sec.begaiement;
   var hasBpa = !!sec.bpa;
   var hasCommPrecoce = !!sec.commprecoce;
+  var hasOmf = !!sec.omf;
+  var hasDysarthrie = !!sec.dysarthrie;
+  var hasDeglutition = !!sec.deglutition;
+  var hasSla = !!sec.sla;
+  var hasDysphagie = !!sec.dysphagie;
+  var hasVoixAdulte = !!sec.voix_adulte;
+  var hasVoixEnfant = !!sec.voix_enfant;
   var hasAny   = isEnfant||hasLO||hasLE||hasMath||hasOralite||hasAnos||hasNeuro;
   var hasEnfantSection = isEnfant;
 
@@ -15171,7 +15178,7 @@ function renderAnamneseTab(pid){
   html+='<div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px 14px;margin-bottom:14px;">';
   html+='<div style="font-size:11px;font-weight:700;color:var(--text-soft);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px;">Sections \u00e0 afficher</div>';
   html+='<div style="display:flex;flex-wrap:wrap;gap:8px;">';
-  [{key:'base_enfant',label:'Anamn\u00e8se enfant',icon:'ti-baby'},{key:'base_adulte',label:'Anamn\u00e8se adulte',icon:'ti-brain'},{key:'aphasie',label:'Aphasie',icon:'ti-brain-2'},{key:'lo',label:'Langage oral',icon:'ti-message-circle'},{key:'le',label:'Langage \u00e9crit',icon:'ti-pencil'},{key:'cm',label:'Cognition math\u00e9matique',icon:'ti-calculator'},{key:'oralite',label:'Oralit\u00e9',icon:'ti-droplet'},{key:'anosmie',label:'Anosmie',icon:'ti-wind'},{key:'begaiement',label:'B\u00e9gaiement',icon:'ti-message-circle-2'},{key:'bpa',label:'BPA',icon:'ti-shield-check'},{key:'commprecoce',label:'Communication pr\u00e9coce',icon:'ti-baby-carriage'}].forEach(function(s){
+  [{key:'base_enfant',label:'Anamn\u00e8se enfant',icon:'ti-baby'},{key:'base_adulte',label:'Anamn\u00e8se adulte',icon:'ti-brain'},{key:'aphasie',label:'Aphasie',icon:'ti-brain-2'},{key:'lo',label:'Langage oral',icon:'ti-message-circle'},{key:'le',label:'Langage \u00e9crit',icon:'ti-pencil'},{key:'cm',label:'Cognition math\u00e9matique',icon:'ti-calculator'},{key:'oralite',label:'Oralit\u00e9',icon:'ti-droplet'},{key:'anosmie',label:'Anosmie',icon:'ti-wind'},{key:'begaiement',label:'B\u00e9gaiement',icon:'ti-message-circle-2'},{key:'bpa',label:'BPA',icon:'ti-shield-check'},{key:'commprecoce',label:'Communication pr\u00e9coce',icon:'ti-baby-carriage'},{key:'omf',label:'OMF',icon:'ti-mood-smile'},{key:'dysarthrie',label:'Dysarthrie',icon:'ti-activity'},{key:'deglutition',label:'D\u00e9glutition dysfonctionnelle',icon:'ti-droplet-half-2'},{key:'sla',label:'SLA',icon:'ti-pulse'},{key:'dysphagie',label:'Dysphagie',icon:'ti-soup'},{key:'voix_adulte',label:'Voix (adulte)',icon:'ti-microphone'},{key:'voix_enfant',label:'Voix (enfant)',icon:'ti-microphone-2'}].forEach(function(s){
     var isCh=sec[s.key]?' checked':'';
     html+='<label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer;background:var(--bg);border:1px solid var(--border);border-radius:20px;padding:4px 12px;"><input type="checkbox" data-section="'+s.key+'" onchange="toggleAnamneseSection(this,\''+pid+'\')"'+(sec[s.key]?' checked':'')+'>  <i class="ti '+s.icon+'"></i> '+s.label+'</label>';
   });
@@ -15266,6 +15273,7 @@ function renderAnamneseTab(pid){
     // SCOLARITÉ
     var sScol='';
     sScol+=inlineField('Derni\u00e8re classe','classe','select1',['TPS','PS','MS','GS','CP','CE1','CE2','CM1','CM2','6\u00e8me','5\u00e8me','4\u00e8me','3\u00e8me','Seconde','Premi\u00e8re','Terminale']);
+    sScol+=inlineField('\u00c9cole / \u00e9tablissement','ecole','text',null,{width:'250px'});
     sScol+=inlineField('Difficult\u00e9s scolaires','difficultes_scolaires','radio',['Oui','Non']);
     if(val('difficultes_scolaires')==='Oui') sScol+=textArea('Pr\u00e9ciser les difficult\u00e9s','difficultes_detail');
     sScol+=inlineField('Aime l\'\u00e9cole','aime_ecole','select1',['Oui','Non','Selon les jours']);
@@ -15339,6 +15347,7 @@ function renderAnamneseTab(pid){
     sLE+=inlineField('Temps de lecture/jour','temps_lecture_le','select1',['5min','10min','15min','30min','45min','1h','Plus d\'1h']);
     sLE+=inlineField('D\u00e9but des difficult\u00e9s','debut_difficultes','text',null,{width:'200px'});
     sLE+=textArea('Observations enseignant','obs_enseignant_le');
+    sLE+=textArea('Plainte et inqui\u00e9tudes (langage \u00e9crit)','plainte_le');
     sLE+=textArea('Commentaires','commentaires_le');
     html+=sCard('Sp\u00e9cifique \u2014 Langage \u00e9crit','ti-pencil',sLE);
   }
@@ -15358,6 +15367,8 @@ function renderAnamneseTab(pid){
     sMath+=inlineField('Tables de multiplication','tables_multi','radio',['Ma\u00eetris\u00e9es','En cours','Non ma\u00eetris\u00e9es']);
     sMath+=inlineField('Temps de lecture/jour','temps_lecture_cm','select1',['5min','10min','15min','30min','45min','1h','Plus d\'1h']);
     sMath+=textArea('Observations enseignant','obs_enseignant_maths');
+    sMath+=textArea('Description des difficult\u00e9s rapport\u00e9es par la famille','description_difficultes_cm');
+    sMath+=textArea('Attentes de la famille / de l\u2019\u00e9quipe \u00e9ducative','attentes_cm');
     sMath+=textArea('Autres difficult\u00e9s','autres_difficultes_maths');
     html+=sCard('Sp\u00e9cifique \u2014 Cognition math\u00e9matique','ti-calculator',sMath);
   }
@@ -15380,6 +15391,35 @@ function renderAnamneseTab(pid){
     sOr+=multiSelect('Fratrie','atcd_alim_fratrie',['Difficult\u00e9s allaitement','Difficult\u00e9s biberon','Difficult\u00e9s diversification']);
     sOr+='</div>';
     sOr+=inlineField('Ant\u00e9c\u00e9dents orthodontiques','antecedents_ortho','radio',['Oui','Non']);
+    sOr+='<div style="margin-bottom:10px;"><div style="font-size:11px;font-weight:600;color:var(--text-soft);text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px;">Anamn\u00e8se m\u00e9dicale (oralit\u00e9)</div></div>';
+    sOr+=multiSelect('Adress\u00e9 par (prescripteur)','prescripteur_oralite',['P\u00e9diatre','ORL','Gastro-p\u00e9diatre','Neurop\u00e9diatre','Di\u00e9t\u00e9ticien / nutritionniste','M\u00e9decin PMI','H\u00f4pital','Autre']);
+    sOr+=multiSelect('Prescripteur / \u00e9metteur de la demande (TAP)','prescripteur_tap',['Gastro-p\u00e9diatre','Neurop\u00e9diatre','Sortie de n\u00e9onatologie','P\u00e9diatre','M\u00e9decin PMI','SESSAD / IME','Autre']);
+    sOr+=inlineField('Pr\u00e9maturit\u00e9','prematurite_oralite','select1',['Non','Oui \u2014 pr\u00e9ciser les semaines d\u2019am\u00e9norrh\u00e9e']);
+    sOr+=inlineField('R\u00e9animation / mise sous O\u2082 n\u00e9onatale','reanimation_oralite','select1',['Non','Oui \u2014 pr\u00e9ciser la dur\u00e9e']);
+    sOr+=textArea('Hospitalisations (motifs, dur\u00e9e)','hospitalisation_oralite');
+    sOr+=inlineField('Courbe de poids / croissance staturo-pond\u00e9rale','poids_courbe_oralite','select1',['Normale','Difficult\u00e9s / cassure \u2014 pr\u00e9ciser']);
+    sOr+=inlineField('Nutrition artificielle','nutrition_artificielle_oralite','select1',['Jamais','Ant\u00e9rieure','En cours \u2014 pr\u00e9ciser (SNG, gastrostomie\u2026)']);
+    sOr+=multiSelect('Pathologies associ\u00e9es','pathologies_oralite',['RGO','Allergies / intol\u00e9rances alimentaires','Infections ORL r\u00e9p\u00e9t\u00e9es','Infections bronchiques / pneumopathies','Probl\u00e8mes de transit','Bruxisme']);
+    sOr+=multiSelect('\u00c9tat de sant\u00e9 (TAP)','sante_generale_tap',['RGO','\u00c9pilepsie','Probl\u00e8mes ORL','Probl\u00e8mes visuels','Caries / mauvaise hygi\u00e8ne bucco-dentaire','Allergies','Mycoses buccales / aphtes']);
+    sOr+=textArea('Autres pathologies / pr\u00e9cisions','pathologies_oralite_autres');
+    if(val('nutrition_artificielle_oralite')==='En cours \u2014 pr\u00e9ciser (SNG, gastrostomie\u2026)'){
+      sOr+='<div style="margin-bottom:10px;"><div style="font-size:11px;font-weight:600;color:var(--text-soft);text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px;">D\u00e9tails nutrition artificielle (si en cours)</div></div>';
+      sOr+=multiSelect('Voie d\'abord','na_voie_oralite',['SNG (sonde naso-gastrique)','SOG (sonde oro-gastrique)','Gastrostomie (bouton Mic-Key)','J\u00e9junostomie','Nutrition parent\u00e9rale (voie veineuse)']);
+      sOr+=inlineField('Depuis quand','na_depuis_oralite','text',null,{width:'150px'});
+      sOr+=textArea('Rythme d\'administration','na_rythme_oralite');
+      sOr+=inlineField('Prises orales autoris\u00e9es','na_prise_orale_oralite','select1',['Oui, sans restriction','Oui, selon tol\u00e9rance','Non \u2014 prises orales contre-indiqu\u00e9es','Partiellement']);
+      sOr+=inlineField('Manifestation de la faim malgr\u00e9 la NA','na_faim_oralite','select1',['Pr\u00e9sente','Absente ou incertaine','Variable']);
+      sOr+=multiSelect('Impacts de la NA sur l\'oralit\u00e9','na_impacts_oralite',['Exp\u00e9riences sensorielles n\u00e9gatives (passages de sonde r\u00e9p\u00e9t\u00e9s)','Exploration orale limit\u00e9e (sonde encombrant le nez ou la bouche)','Sch\u00e9ma corporel perturb\u00e9 (gastrostomie)','Sensation de faim d\u00e9cid\u00e9e par rythme externe','Repr\u00e9sentations alimentaires alt\u00e9r\u00e9es','Aversion alimentaire d\u00e9velopp\u00e9e']);
+    }
+    sOr+='<div style="margin-bottom:10px;"><div style="font-size:11px;font-weight:600;color:var(--text-soft);text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px;">D\u00e9veloppement oral / habitudes (TAP)</div></div>';
+    sOr+=multiSelect('Mode d\'alimentation actuel','alim_mode_tap',['Oral exclusif','Mixte oral + ent\u00e9rale','Ent\u00e9rale exclusive','Parent\u00e9rale','Mixte oral + parent\u00e9rale']);
+    sOr+=textArea('\u00c9volution de l\'alimentation depuis la naissance (\u00e2ges, difficult\u00e9s, adaptations)','alim_evolution_tap');
+    sOr+=inlineField('Brossage de dents','brossage_oralite','select1',['Possible autonome','Possible avec aide','Difficile \u2014 pr\u00e9ciser','Impossible']);
+    sOr+=inlineField('Mouchage','mouchage_oralite','select1',['Possible autonome','Possible avec aide','Difficile','Impossible']);
+    sOr+=inlineField('Exploration orale (objets, mains)','exploration_orale_oralite','select1',['Pr\u00e9sente et normale','Peu ou absente',"Excessive (Angelman, mordre, s'aiguiser les dents\u2026)"]);
+    sOr+=inlineField('Bavage','bavage_oralite','select1',['Absent','L\u00e9ger','Mod\u00e9r\u00e9','Important \u2014 permanent','Important \u2014 lors des activit\u00e9s']);
+    sOr+=textArea('Communication verbale','com_verbale_oralite');
+    sOr+=textArea('Communication non verbale / CAA','com_non_verbale_oralite');
     sOr+=textArea('Commentaires','commentaires_oralite');
     html+=sCard('Sp\u00e9cifique \u2014 Oralit\u00e9','ti-droplet',sOr);
   }
@@ -15486,6 +15526,113 @@ function renderAnamneseTab(pid){
     var sCommPrecoce='';
     sCommPrecoce+=textArea('Diagnostic m\u00e9dical pos\u00e9 (ou en cours)','diagnostic_cp');
     html+=sCard('Sp\u00e9cifique \u2014 Communication pr\u00e9coce','ti-baby-carriage',sCommPrecoce);
+  }
+
+  if(hasOmf){
+    var sOmf='';
+    sOmf+=multiSelect('Adress\u00e9 par','adresse_par_omf',['M\u00e9decin traitant','P\u00e9diatre','ORL','Orthodontiste','Chirurgien-dentiste','Gastro-p\u00e9diatre','Autre']);
+    sOmf+=multiSelect('Motifs de consultation','motifs_omf',['Otites \u00e0 r\u00e9p\u00e9tition','Pose d\'a\u00e9rateurs transtympaniques (ATT)','Surdit\u00e9 de transmission','Ventilation buccale','Ronflements / apn\u00e9es du sommeil','Bavage','Difficult\u00e9s articulatoires','Inintelligibilit\u00e9','D\u00e9glutition atypique','TAP / difficult\u00e9s alimentaires','TDSP','Autre']);
+    sOmf+=multiSelect('Sympt\u00f4mes rapport\u00e9s','symptomes_omf',['Sensation d\'oreille bouch\u00e9e','Autophonie','Acouph\u00e8nes','Vertiges','Otalgie','Hypoacousie','Parle fort','Demande de r\u00e9p\u00e9titions','Difficult\u00e9s de concentration','Agitation','Repli sur soi']);
+    html+=sCard('Sp\u00e9cifique \u2014 OMF','ti-mood-smile',sOmf);
+  }
+
+  if(hasDysarthrie){
+    var sDysa='';
+    sDysa+=inlineField('Qui adresse le patient','qui_adresse_dysa','select1',['Le patient lui-m\u00eame','L\'entourage','Le m\u00e9decin traitant','Un m\u00e9decin sp\u00e9cialiste']);
+    sDysa+=inlineField('\u00c9tiologie neurologique','etiologie_dysa','select1',['AVC isch\u00e9mique','AVC h\u00e9morragique','Traumatisme cr\u00e2nien','Tumeur','Maladie neurod\u00e9g\u00e9n\u00e9rative (Parkinson, SLA, SEP\u2026)','Autre']);
+    sDysa+=inlineField('Date de d\u00e9but des sympt\u00f4mes','date_debut_dysa','text',null,{width:'150px'});
+    sDysa+=inlineField('Mode d\'installation','mode_installation_dysa','radio',['Progressif (insidieux)','Brutal (AVC/AIT)','Par paliers']);
+    sDysa+=textArea('Plainte concernant la parole','plainte_parole_dysa');
+    sDysa+=textArea('Impact sur la vie quotidienne','impact_dysa');
+    html+=sCard('Sp\u00e9cifique \u2014 Dysarthrie','ti-activity',sDysa);
+  }
+
+  if(hasDeglutition){
+    var sDeg='';
+    sDeg+=inlineField('Qui adresse le patient','qui_adresse_deg','select1',['Le patient lui-m\u00eame','L\'entourage','Le m\u00e9decin traitant','Orthodontiste / dentiste','ORL','Autre m\u00e9decin sp\u00e9cialiste']);
+    sDeg+=textArea('Motif de consultation / plainte','motif_deg');
+    sDeg+=inlineField('Appareillage orthodontique en cours','appareillage_deg','select1',['Oui','Non']);
+    if(val('appareillage_deg')==='Oui') sDeg+=textArea('Appareillage \u2014 pr\u00e9cisions','appareillage_detail_deg');
+    if((a.succion||[]).length>0) sDeg+=textArea('Contexte de succion (\u00e0 l\'\u00e9cole ? la nuit ? le jour ?)','succion_contexte');
+    sDeg+=inlineField('\u00c2ge d\'alimentation \u00e0 la cuill\u00e8re','age_cuillere','text',null,{width:'100px'});
+    sDeg+=inlineField('\u00c2ge de passage aux morceaux','age_morceaux','text',null,{width:'100px'});
+    sDeg+=inlineField('Jusqu\'\u00e0 quel \u00e2ge les liquides au biberon / t\u00e9tine ?','liquides_age','text',null,{width:'100px'});
+    sDeg+=inlineField('Bruxisme','bruxisme_deg','select1',['Non','Diurne','Nocturne','Diurne et nocturne']);
+    sDeg+=inlineField('Appareil de nuit','appareil_nuit_deg','select1',['Aucun','Orthodontique','Orthop\u00e9dique (avancement mandibulaire)','Autre']);
+    sDeg+=inlineField('Scoliose / port de corset','scoliose_deg','select1',['Non','Scoliose suivie','Port de corset']);
+    sDeg+=inlineField('Suivi orthodontique','orthodontie_deg','radio',['Oui','Non']);
+    if(val('orthodontie_deg')==='Oui') sDeg+=textArea('Suivi orthodontique \u2014 pr\u00e9cisions','orthodontie_detail_deg');
+    html+=sCard('Sp\u00e9cifique \u2014 D\u00e9glutition dysfonctionnelle','ti-droplet-half-2',sDeg);
+  }
+
+  if(hasSla){
+    var sSla='';
+    sSla+=inlineField('Date du diagnostic','date_diag_sla','text',null,{width:'150px'});
+    sSla+=textArea('Sympt\u00f4mes inauguraux','symptomes_inaug_sla');
+    sSla+=multiSelect('Atteinte initiale','atteinte_initiale_sla',['Bulbaire','Spinale (membres sup\u00e9rieurs)','Spinale (membres inf\u00e9rieurs)','Respiratoire','Mixte']);
+    sSla+=inlineField('Suivi en centre de r\u00e9f\u00e9rence SLA','centre_ref_sla','radio',['Oui','Non']);
+    sSla+=multiSelect('Appareillage respiratoire','appareillage_resp_sla',['Aucun','VNI nocturne','VNI diurne et nocturne','Oxyg\u00e9noth\u00e9rapie','Trach\u00e9otomie']);
+    sSla+=multiSelect('Nutrition artificielle','nutrition_art_sla',['Aucune','SNG','Gastrostomie (PEG)','Jejunostomie']);
+    sSla+=multiSelect('Plaintes cognitivo-langagi\u00e8res rapport\u00e9es','plainte_cog_sla',['Manque du mot','Troubles attentionnels','Troubles ex\u00e9cutifs','Troubles du comportement','Aucune']);
+    sSla+=textArea('Mode de vie / entourage / aidants','mode_vie_sla');
+    sSla+=textArea('\u00c9tat \u00e9motionnel sur les derni\u00e8res semaines','etat_emot_sla');
+    html+=sCard('Sp\u00e9cifique \u2014 SLA','ti-pulse',sSla);
+  }
+
+  if(hasDysphagie){
+    var sDyph='';
+    sDyph+=inlineField('Personne \u00e0 l\'origine de la demande','personne_demande_dyph','text',null,{width:'220px'});
+    sDyph+=textArea('Pathologie / diagnostic neurologique','pathologie_dyph');
+    sDyph+=textArea('Histoire de la maladie et \u00e9volution','histoire_dyph');
+    sDyph+=multiSelect('Plaintes rapport\u00e9es','domaines_plainte_dyph',['Toux pendant les repas','Fausses routes (solides)','Fausses routes (liquides)','Sensation de blocage','Voix mouill\u00e9e apr\u00e8s d\u00e9glutition','Perte de poids','Allongement du temps de repas','Refus alimentaire']);
+    sDyph+=textArea('Plainte d\u00e9taill\u00e9e','plainte_detaillee_dyph');
+    sDyph+=inlineField('Mode d\'alimentation actuel','alimentation_dyph','select1',['Orale exclusive','Orale + compl\u00e9ment','Mixte (orale + SNG/PEG)','Artificielle exclusive (SNG/PEG)']);
+    sDyph+=multiSelect('Textures consomm\u00e9es (IDDSI)','textures_dyph',['Normal','Tendre','Hach\u00e9 / mouill\u00e9','Mouliné / lisse','Liquide \u00e9pais','Liquide nature']);
+    sDyph+=inlineField('\u00c9volution du poids','evolution_poids_dyph','select1',['Stable','Perte de poids','Prise de poids']);
+    sDyph+=inlineField('\u00c9pisodes f\u00e9briles / pneumopathies inexpliqu\u00e9es','episodes_febriles_dyph','radio',['Oui','Non']);
+    sDyph+=textArea('Antécédents chirurgicaux ORL/digestifs','atcd_chir_dyph');
+    sDyph+=textArea('Traitements pouvant impacter la d\u00e9glutition','traitements_dyph');
+    sDyph+=textArea('Autres prises en soins (kin\u00e9 respiratoire, di\u00e9t\u00e9ticien\u2026)','autres_soins_dyph');
+    sDyph+=textArea('R\u00e9percussions sur la qualit\u00e9 de vie','qualite_vie_dyph');
+    html+=sCard('Sp\u00e9cifique \u2014 Dysphagie','ti-soup',sDyph);
+  }
+
+  if(hasVoixAdulte){
+    var sVoixA='';
+    sVoixA+=inlineField('Profession / usage vocal professionnel','profession_voix_a','text',null,{width:'250px'});
+    sVoixA+=textArea('Motif de consultation','motif_voix_a');
+    sVoixA+=textArea('Historique de la dysphonie','historique_voix_a');
+    sVoixA+=multiSelect('Intensit\u00e9 \u2014 difficult\u00e9s rapport\u00e9es','plainte_intensite_voix_a',['Difficult\u00e9 \u00e0 parler fort','Difficult\u00e9 \u00e0 parler doucement']);
+    sVoixA+=multiSelect('Fr\u00e9quence / hauteur \u2014 difficult\u00e9s rapport\u00e9es','plainte_frequence_voix_a',["Difficult\u00e9 d'acc\u00e8s aux graves","Difficult\u00e9 d'acc\u00e8s aux m\u00e9diums","Difficult\u00e9 d'acc\u00e8s aux aigus"]);
+    sVoixA+=multiSelect('Dur\u00e9e / fatigabilit\u00e9','plainte_duree_voix_a',['Fatigabilit\u00e9 vocale rapide','Bonne r\u00e9cup\u00e9ration vocale','Difficult\u00e9 de r\u00e9cup\u00e9ration vocale']);
+    sVoixA+=textArea('Plainte esth\u00e9tique (perception de la voix)','plainte_esthetique_voix_a');
+    sVoixA+=inlineField('Usage professionnel de la voix','charge_pro_voix_a','text',null,{width:'200px'});
+    sVoixA+=inlineField('Usage familial de la voix','charge_fam_voix_a','text',null,{width:'200px'});
+    sVoixA+=inlineField('Usage loisirs de la voix','charge_loisirs_voix_a','text',null,{width:'200px'});
+    sVoixA+=textArea('Pr\u00e9cisions sur la charge vocale','charge_com_voix_a');
+    sVoixA+=multiSelect('Facteurs de risque','hygiene_items_voix_a',['Tabac','Alcool','Autres substances','Hydratation insuffisante','Bonne hydratation','Environnement bruyant','For\u00e7age vocal r\u00e9gulier','Raclements de gorge fr\u00e9quents']);
+    sVoixA+=multiSelect('G\u00eane sensitive','gene_sensitive_voix_a',['Douleurs','Picotements',"Sensation d'\u00e9tranglement",'Globus','Raclement de gorge']);
+    sVoixA+=multiSelect('G\u00eane respiratoire','gene_respi_voix_a',['Essoufflement','Bruit inspiratoire (stridor)','Bruit expiratoire (wheezing)']);
+    sVoixA+=multiSelect('G\u00eane phagique','gene_phagique_voix_a',['Blocage','Fausse route','\u00c9ructations','Vomissements']);
+    sVoixA+=textArea('Retentissement professionnel et social','retentissement_voix_a');
+    html+=sCard('Sp\u00e9cifique \u2014 Voix (adulte)','ti-microphone',sVoixA);
+  }
+
+  if(hasVoixEnfant){
+    var sVoixE='';
+    sVoixE+=multiSelect('Adress\u00e9 par','adresse_par_voix_e',['ORL','M\u00e9decin traitant / p\u00e9diatre','Parents','\u00c9cole','Auto-r\u00e9f\u00e9rence']);
+    sVoixE+=textArea('Plainte de l\'enfant (sa propre description de sa voix)','plainte_enfant_voix_e');
+    sVoixE+=textArea('Plainte des parents','plainte_parents_voix_e');
+    sVoixE+=inlineField('G\u00eane ressentie par l\'enfant','gene_ressentie_voix_e','select1',['Pas de g\u00eane \u2014 peu motiv\u00e9','G\u00eane l\u00e9g\u00e8re','G\u00eane mod\u00e9r\u00e9e','G\u00eane importante \u2014 motivation au changement','Ne peut pas encore exprimer']);
+    sVoixE+=textArea('Contexte de survenue et \u00e9volution','contexte_survenue_voix_e');
+    sVoixE+=textArea('Bilan ORL r\u00e9cent','bilan_orl_voix_e');
+    sVoixE+=textArea('Comportement vocal selon les activit\u00e9s (r\u00e9cr\u00e9, sport, classe, maison)','comportement_vocal_voix_e');
+    sVoixE+=textArea('Place vocale dans la famille et \u00e0 l\'\u00e9cole','place_vocale_voix_e');
+    sVoixE+=multiSelect('Habitudes vocales','habitudes_vocales_voix_e',['Parle beaucoup et longtemps','Parle fort r\u00e9guli\u00e8rement','Cris fr\u00e9quents (r\u00e9cr\u00e9, sport)','Imitations de voix (personnages, bruits)','Chant r\u00e9gulier (chorale, karaok\u00e9\u2026)','Hemmage fr\u00e9quent','Toux chronique','Milieu bruyant (fam / scolaire)']);
+    sVoixE+=multiSelect('Sensations corporelles rapport\u00e9es','sensations_voix_e',['Boule / g\u00eane dans la gorge','Sensation de serrage','Fatigue vocale','Douleurs laryng\u00e9es ou p\u00e9ri-laryng\u00e9es','Voix qui s\'\u00e9teint','Voix qui change en cours de journ\u00e9e']);
+    sVoixE+=textArea('Antécédents médicaux (rhinites, allergies, asthme, RGO\u2026)','atcd_med_voix_e');
+    sVoixE+=inlineField('Traitements en cours','traitement_voix_e','text',null,{width:'250px'});
+    html+=sCard('Sp\u00e9cifique \u2014 Voix (enfant)','ti-microphone-2',sVoixE);
   }
 
   if(hasAnos){
@@ -15841,6 +15988,7 @@ var QA_SECTIONS = {
       {id:'ecrans_semaine', label:"Temps d'écran semaine"},
       {id:'ecrans_weekend', label:"Temps d'écran weekend"},
       {id:'classe', label:'Classe / niveau scolaire'},
+      {id:'ecole', label:'\u00c9cole / \u00e9tablissement'},
       {id:'aime_ecole', label:"Aime l'école"},
       {id:'obs_enseignant', label:"Observations de l'enseignant"},
       {id:'temps_devoirs', label:'Temps de devoirs'},
@@ -15896,6 +16044,7 @@ var QA_SECTIONS = {
       {id:'temps_lecture_le', label:'Temps de lecture/jour'},
       {id:'debut_difficultes', label:'Début des difficultés'},
       {id:'obs_enseignant_le', label:"Observations enseignant"},
+      {id:'plainte_le', label:'Plainte et inqui\u00e9tudes (langage \u00e9crit)'},
       {id:'commentaires_le', label:'Commentaires'},
     ]
   },
@@ -15911,6 +16060,8 @@ var QA_SECTIONS = {
       {id:'difficultes_maths', label:'Types de difficultés'},
       {id:'difficultes_retention_cm', label:'Difficultés à retenir'},
       {id:'tables_multi', label:'Tables de multiplication'},
+      {id:'description_difficultes_cm', label:'Description des difficult\u00e9s rapport\u00e9es'},
+      {id:'attentes_cm', label:'Attentes de la famille / de l\u2019\u00e9quipe \u00e9ducative'},
       {id:'obs_enseignant_maths', label:"Observations enseignant"},
       {id:'autres_difficultes_maths', label:'Autres difficultés'},
     ]
@@ -15927,7 +16078,130 @@ var QA_SECTIONS = {
       {id:'meme_repas', label:'Mange la même chose que la famille'},
       {id:'difficultes_lieux', label:'Difficultés selon les lieux'},
       {id:'antecedents_ortho', label:'Antécédents orthodontiques'},
+      {id:'prescripteur_oralite', label:'Adress\u00e9 par (prescripteur)'},
+      {id:'prescripteur_tap', label:'Prescripteur / \u00e9metteur de la demande (TAP)'},
+      {id:'prematurite_oralite', label:'Pr\u00e9maturit\u00e9'},
+      {id:'reanimation_oralite', label:'R\u00e9animation / mise sous O\u2082 n\u00e9onatale'},
+      {id:'hospitalisation_oralite', label:'Hospitalisations (motifs, dur\u00e9e)'},
+      {id:'poids_courbe_oralite', label:'Courbe de poids / croissance staturo-pond\u00e9rale'},
+      {id:'nutrition_artificielle_oralite', label:'Nutrition artificielle'},
+      {id:'pathologies_oralite', label:'Pathologies associ\u00e9es'},
+      {id:'sante_generale_tap', label:'\u00c9tat de sant\u00e9 (TAP)'},
+      {id:'pathologies_oralite_autres', label:'Autres pathologies / pr\u00e9cisions'},
+      {id:'na_voie_oralite', label:"Voie d'abord (nutrition artificielle)"},
+      {id:'na_depuis_oralite', label:'Nutrition artificielle depuis quand'},
+      {id:'na_rythme_oralite', label:"Rythme d'administration (NA)"},
+      {id:'na_prise_orale_oralite', label:'Prises orales autoris\u00e9es'},
+      {id:'na_faim_oralite', label:'Manifestation de la faim malgr\u00e9 la NA'},
+      {id:'na_impacts_oralite', label:"Impacts de la NA sur l'oralit\u00e9"},
+      {id:'alim_mode_tap', label:"Mode d'alimentation actuel"},
+      {id:'alim_evolution_tap', label:"\u00c9volution de l'alimentation depuis la naissance"},
+      {id:'brossage_oralite', label:'Brossage de dents'},
+      {id:'mouchage_oralite', label:'Mouchage'},
+      {id:'exploration_orale_oralite', label:'Exploration orale'},
+      {id:'bavage_oralite', label:'Bavage'},
+      {id:'com_verbale_oralite', label:'Communication verbale'},
+      {id:'com_non_verbale_oralite', label:'Communication non verbale / CAA'},
       {id:'commentaires_oralite', label:'Commentaires'},
+    ]
+  },
+  dysarthrie: {
+    label: 'Dysarthrie',
+    questions: [
+      {id:'qui_adresse_dysa', label:'Qui adresse le patient'},
+      {id:'etiologie_dysa', label:'\u00c9tiologie neurologique'},
+      {id:'date_debut_dysa', label:'Date de d\u00e9but des sympt\u00f4mes'},
+      {id:'mode_installation_dysa', label:"Mode d'installation"},
+      {id:'plainte_parole_dysa', label:'Plainte concernant la parole'},
+      {id:'impact_dysa', label:'Impact sur la vie quotidienne'},
+    ]
+  },
+  deglutition: {
+    label: 'D\u00e9glutition dysfonctionnelle',
+    questions: [
+      {id:'qui_adresse_deg', label:'Qui adresse le patient'},
+      {id:'motif_deg', label:'Motif de consultation / plainte'},
+      {id:'appareillage_deg', label:'Appareillage orthodontique en cours'},
+      {id:'appareillage_detail_deg', label:'Appareillage \u2014 pr\u00e9cisions'},
+      {id:'succion_contexte', label:'Contexte de succion'},
+      {id:'age_cuillere', label:"\u00c2ge d'alimentation \u00e0 la cuill\u00e8re"},
+      {id:'age_morceaux', label:'\u00c2ge de passage aux morceaux'},
+      {id:'liquides_age', label:"\u00c2ge limite liquides au biberon / t\u00e9tine"},
+      {id:'bruxisme_deg', label:'Bruxisme'},
+      {id:'appareil_nuit_deg', label:'Appareil de nuit'},
+      {id:'scoliose_deg', label:'Scoliose / port de corset'},
+      {id:'orthodontie_deg', label:'Suivi orthodontique'},
+      {id:'orthodontie_detail_deg', label:'Suivi orthodontique \u2014 pr\u00e9cisions'},
+    ]
+  },
+  sla: {
+    label: 'SLA',
+    questions: [
+      {id:'date_diag_sla', label:'Date du diagnostic'},
+      {id:'symptomes_inaug_sla', label:'Sympt\u00f4mes inauguraux'},
+      {id:'atteinte_initiale_sla', label:'Atteinte initiale'},
+      {id:'centre_ref_sla', label:'Suivi en centre de r\u00e9f\u00e9rence SLA'},
+      {id:'appareillage_resp_sla', label:'Appareillage respiratoire'},
+      {id:'nutrition_art_sla', label:'Nutrition artificielle'},
+      {id:'plainte_cog_sla', label:'Plaintes cognitivo-langagi\u00e8res rapport\u00e9es'},
+      {id:'mode_vie_sla', label:'Mode de vie / entourage / aidants'},
+      {id:'etat_emot_sla', label:'\u00c9tat \u00e9motionnel sur les derni\u00e8res semaines'},
+    ]
+  },
+  dysphagie: {
+    label: 'Dysphagie',
+    questions: [
+      {id:'personne_demande_dyph', label:"Personne \u00e0 l'origine de la demande"},
+      {id:'pathologie_dyph', label:'Pathologie / diagnostic neurologique'},
+      {id:'histoire_dyph', label:'Histoire de la maladie et \u00e9volution'},
+      {id:'domaines_plainte_dyph', label:'Plaintes rapport\u00e9es'},
+      {id:'plainte_detaillee_dyph', label:'Plainte d\u00e9taill\u00e9e'},
+      {id:'alimentation_dyph', label:"Mode d'alimentation actuel"},
+      {id:'textures_dyph', label:'Textures consomm\u00e9es (IDDSI)'},
+      {id:'evolution_poids_dyph', label:'\u00c9volution du poids'},
+      {id:'episodes_febriles_dyph', label:'\u00c9pisodes f\u00e9briles / pneumopathies inexpliqu\u00e9es'},
+      {id:'atcd_chir_dyph', label:'Ant\u00e9c\u00e9dents chirurgicaux ORL/digestifs'},
+      {id:'traitements_dyph', label:'Traitements pouvant impacter la d\u00e9glutition'},
+      {id:'autres_soins_dyph', label:'Autres prises en soins'},
+      {id:'qualite_vie_dyph', label:'R\u00e9percussions sur la qualit\u00e9 de vie'},
+    ]
+  },
+  voix_adulte: {
+    label: 'Voix (adulte)',
+    questions: [
+      {id:'profession_voix_a', label:'Profession / usage vocal professionnel'},
+      {id:'motif_voix_a', label:'Motif de consultation'},
+      {id:'historique_voix_a', label:'Historique de la dysphonie'},
+      {id:'plainte_intensite_voix_a', label:'Intensit\u00e9 \u2014 difficult\u00e9s rapport\u00e9es'},
+      {id:'plainte_frequence_voix_a', label:'Fr\u00e9quence / hauteur \u2014 difficult\u00e9s rapport\u00e9es'},
+      {id:'plainte_duree_voix_a', label:'Dur\u00e9e / fatigabilit\u00e9'},
+      {id:'plainte_esthetique_voix_a', label:'Plainte esth\u00e9tique (perception de la voix)'},
+      {id:'charge_pro_voix_a', label:'Usage professionnel de la voix'},
+      {id:'charge_fam_voix_a', label:'Usage familial de la voix'},
+      {id:'charge_loisirs_voix_a', label:'Usage loisirs de la voix'},
+      {id:'charge_com_voix_a', label:'Pr\u00e9cisions sur la charge vocale'},
+      {id:'hygiene_items_voix_a', label:'Facteurs de risque'},
+      {id:'gene_sensitive_voix_a', label:'G\u00eane sensitive'},
+      {id:'gene_respi_voix_a', label:'G\u00eane respiratoire'},
+      {id:'gene_phagique_voix_a', label:'G\u00eane phagique'},
+      {id:'retentissement_voix_a', label:'Retentissement professionnel et social'},
+    ]
+  },
+  voix_enfant: {
+    label: 'Voix (enfant)',
+    questions: [
+      {id:'adresse_par_voix_e', label:'Adress\u00e9 par'},
+      {id:'plainte_enfant_voix_e', label:"Plainte de l'enfant"},
+      {id:'plainte_parents_voix_e', label:'Plainte des parents'},
+      {id:'gene_ressentie_voix_e', label:"G\u00eane ressentie par l'enfant"},
+      {id:'contexte_survenue_voix_e', label:'Contexte de survenue et \u00e9volution'},
+      {id:'bilan_orl_voix_e', label:'Bilan ORL r\u00e9cent'},
+      {id:'comportement_vocal_voix_e', label:'Comportement vocal selon les activit\u00e9s'},
+      {id:'place_vocale_voix_e', label:"Place vocale dans la famille et \u00e0 l'\u00e9cole"},
+      {id:'habitudes_vocales_voix_e', label:'Habitudes vocales'},
+      {id:'sensations_voix_e', label:'Sensations corporelles rapport\u00e9es'},
+      {id:'atcd_med_voix_e', label:'Ant\u00e9c\u00e9dents m\u00e9dicaux'},
+      {id:'traitement_voix_e', label:'Traitements en cours'},
     ]
   },
   anosmie: {
