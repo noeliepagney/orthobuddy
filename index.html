@@ -15091,6 +15091,7 @@ function renderAnamneseTab(pid){
   var hasNeuro = !!sec.base_adulte;
   var hasAphasie = !!sec.aphasie;
   var hasBegaiement = !!sec.begaiement;
+  var hasBpa = !!sec.bpa;
   var hasAny   = isEnfant||hasLO||hasLE||hasMath||hasOralite||hasAnos||hasNeuro;
   var hasEnfantSection = isEnfant;
 
@@ -15169,7 +15170,7 @@ function renderAnamneseTab(pid){
   html+='<div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px 14px;margin-bottom:14px;">';
   html+='<div style="font-size:11px;font-weight:700;color:var(--text-soft);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px;">Sections \u00e0 afficher</div>';
   html+='<div style="display:flex;flex-wrap:wrap;gap:8px;">';
-  [{key:'base_enfant',label:'Anamn\u00e8se enfant',icon:'ti-baby'},{key:'base_adulte',label:'Anamn\u00e8se adulte',icon:'ti-brain'},{key:'aphasie',label:'Aphasie',icon:'ti-brain-2'},{key:'lo',label:'Langage oral',icon:'ti-message-circle'},{key:'le',label:'Langage \u00e9crit',icon:'ti-pencil'},{key:'cm',label:'Cognition math\u00e9matique',icon:'ti-calculator'},{key:'oralite',label:'Oralit\u00e9',icon:'ti-droplet'},{key:'anosmie',label:'Anosmie',icon:'ti-wind'},{key:'begaiement',label:'B\u00e9gaiement',icon:'ti-message-circle-2'}].forEach(function(s){
+  [{key:'base_enfant',label:'Anamn\u00e8se enfant',icon:'ti-baby'},{key:'base_adulte',label:'Anamn\u00e8se adulte',icon:'ti-brain'},{key:'aphasie',label:'Aphasie',icon:'ti-brain-2'},{key:'lo',label:'Langage oral',icon:'ti-message-circle'},{key:'le',label:'Langage \u00e9crit',icon:'ti-pencil'},{key:'cm',label:'Cognition math\u00e9matique',icon:'ti-calculator'},{key:'oralite',label:'Oralit\u00e9',icon:'ti-droplet'},{key:'anosmie',label:'Anosmie',icon:'ti-wind'},{key:'begaiement',label:'B\u00e9gaiement',icon:'ti-message-circle-2'},{key:'bpa',label:'BPA',icon:'ti-shield-check'}].forEach(function(s){
     var isCh=sec[s.key]?' checked':'';
     html+='<label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer;background:var(--bg);border:1px solid var(--border);border-radius:20px;padding:4px 12px;"><input type="checkbox" data-section="'+s.key+'" onchange="toggleAnamneseSection(this,\''+pid+'\')"'+(sec[s.key]?' checked':'')+'>  <i class="ti '+s.icon+'"></i> '+s.label+'</label>';
   });
@@ -15469,6 +15470,15 @@ function renderAnamneseTab(pid){
     sBeg+=inlineField('Ant\u00e9c\u00e9dent personnel de b\u00e9gaiement chez un parent','atcd_perso_begaiement_parent','radio',['Oui','Non']);
     if(val('atcd_perso_begaiement_parent')==='Oui') sBeg+=inlineField('Pr\u00e9ciser (lequel, \u00e9volution)','atcd_perso_begaiement_detail','text',null,{width:'280px'});
     html+=sCard('Sp\u00e9cifique \u2014 B\u00e9gaiement','ti-message-circle-2',sBeg);
+  }
+
+  if(hasBpa){
+    var sBpa='';
+    sBpa+=multiSelect('Origine de la demande','origine_bpa',['Famille','M\u00e9decin / p\u00e9diatre','Enseignant','Infirmi\u00e8re scolaire','Acc\u00e8s direct','Autre']);
+    sBpa+=inlineField('Depuis quand','depuis_bpa','text',null,{width:'200px'});
+    sBpa+=multiSelect('Plainte exprim\u00e9e','plainte_items_bpa',['Absence ou retard de langage','Inintelligibilit\u00e9','Absence de phrases',"Probl\u00e8me d'articulation / phonologie","Probl\u00e8me de compr\u00e9hension",'Lecture lente ou laborieuse','Difficult\u00e9s de d\u00e9chiffrage',"Difficult\u00e9s d'orthographe",'\u00c9criture laborieuse / peu lisible','Difficult\u00e9s de calcul / raisonnement math\u00e9matique','Difficult\u00e9s attentionnelles','Difficult\u00e9s de communication / pragmatique','Probl\u00e8me de voix','Fonctions OMF (t\u00e9tine, respiration buccale, d\u00e9glutition\u2026)','Autre']);
+    sBpa+=textArea('Pr\u00e9cisions sur la plainte','plainte_libre_bpa');
+    html+=sCard('Sp\u00e9cifique \u2014 BPA','ti-shield-check',sBpa);
   }
 
   if(hasAnos){

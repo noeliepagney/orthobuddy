@@ -8137,6 +8137,17 @@ function prefillFromPatient(p){
   const a = p.anamnese || {};
   function fmtArr(v){ return Array.isArray(v) ? v.join(', ') : (v||''); }
 
+  if(trameId==='bpa'){
+    // ── Éléments administratifs ──
+    if(p.classe) map[trameId+".administratif.classe"]=p.classe;
+
+    // ── Motif / Plainte ──
+    if(a.origine_bpa && a.origine_bpa.length) map[trameId+".demande.origine"]=a.origine_bpa.slice();
+    if(a.depuis_bpa) map[trameId+".demande.depuis"]=a.depuis_bpa;
+    if(a.plainte_items_bpa && a.plainte_items_bpa.length) map[trameId+".demande.plainte_items"]=a.plainte_items_bpa.slice();
+    if(a.plainte_libre_bpa) map[trameId+".demande.plainte_libre"]=a.plainte_libre_bpa;
+  }
+
   if(trameId==='begaiement-fluence'){
     // ── Demande / plainte ──
     let plainteBeg=[];
