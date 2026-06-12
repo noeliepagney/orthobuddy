@@ -737,6 +737,7 @@ const TRAMES = {
 
       { id:"anamnese", titre:"Anamnèse médicale", icon:"ti-notebook",
         champs:[
+          { id:"habitudes_alim", label:"Habitudes alimentaires (historique)", type:"textarea", hint:"alimentation b\u00e9b\u00e9, succion, comportements alimentaires actuels rapport\u00e9s par la famille" },
           { id:"diagnostic", label:"Diagnostic médical posé (ou suspecté)", type:"textarea", hint:"TSA, hypotonie, paralysie cérébrale, prématurité, syndrome génétique, maladie neuromusculaire…" },
           { id:"grossesse", label:"Grossesse et naissance", type:"textarea", hint:"terme, déroulement, score Apgar, césarienne, forceps…" },
           { id:"prematurite", label:"Prématurité", type:"select", options:["Non","Oui — préciser les semaines d'aménorrhée"], half:true },
@@ -8135,6 +8136,40 @@ function prefillFromPatient(p){
   // Champs cliniques spécifiques par trame (depuis p.anamnese)
   const a = p.anamnese || {};
   function fmtArr(v){ return Array.isArray(v) ? v.join(', ') : (v||''); }
+
+  if(trameId==='oralite-alimentaire'){
+    // ── Demande / motif / plainte ──
+    if(a.origine_plainte) map[trameId+".demande.motif"]=a.origine_plainte;
+
+    // ── Habitudes alimentaires (historique) — anamnèse ──
+    let habitudesOr=[];
+    if(a.alim_bebe) habitudesOr.push("Alimentation b\u00e9b\u00e9 : "+a.alim_bebe);
+    if(a.alimentation_oralite && a.alimentation_oralite.length) habitudesOr.push("Alimentation actuelle : "+fmtArr(a.alimentation_oralite));
+    if(a.succion && a.succion.length) habitudesOr.push("Succion : "+fmtArr(a.succion));
+    if(habitudesOr.length) map[trameId+".anamnese.habitudes_alim"]=habitudesOr.join('\n');
+
+    // ── Anamnèse médicale ──
+    let grossesseOr=[];
+    if(a.grossesse && a.grossesse.length) grossesseOr.push(fmtArr(a.grossesse));
+    if(a.naissance_mode) grossesseOr.push("Mode d'accouchement : "+a.naissance_mode);
+    if(a.naissance_terme) grossesseOr.push("Terme : "+a.naissance_terme);
+    if(a.naissance_detail && a.naissance_detail.length) grossesseOr.push("Particularit\u00e9s : "+fmtArr(a.naissance_detail));
+    if(a.poids_naissance && a.poids_naissance.length) grossesseOr.push("Poids de naissance : "+fmtArr(a.poids_naissance));
+    if(grossesseOr.length) map[trameId+".anamnese.grossesse"]=grossesseOr.join('\n');
+
+    if(a.diagnostics) map[trameId+".anamnese.diagnostic"]=a.diagnostics;
+    if(a.traitements) map[trameId+".anamnese.traitements"]=a.traitements;
+    if(a.suivis && a.suivis.length) map[trameId+".anamnese.autres_soins"]=fmtArr(a.suivis);
+
+    let pathologiesOr=[];
+    const pathMap={'Diab\u00e8te':null,'Hypertension':null};
+    if(a.orl && a.orl.length){
+      // mapper certaines options ORL vers pathologies si pertinent
+      const orlVal = fmtArr(a.orl);
+      pathologiesOr.push("ORL : "+orlVal);
+    }
+    if(pathologiesOr.length) map[trameId+".anamnese.pathologies_autres"]=pathologiesOr.join('\n');
+  }
 
   if(trameId==='cognition-mathematique'){
     // ── Éléments administratifs ──
