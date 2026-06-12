@@ -270,15 +270,20 @@ function renderForm(sections) {
   </div>`;
 
   // Champs admin de base
+  const pinfo = qaData.patient_info || {};
   html += `<div class="card">
     <div class="card-title">👤 Vous concernant</div>
     <div class="row2">
-      <div class="field"><label>Prénom <span class="hint">*</span></label><input type="text" id="f_prenom" placeholder="Prénom" required></div>
-      <div class="field"><label>Nom <span class="hint">*</span></label><input type="text" id="f_nom" placeholder="Nom" required></div>
+      <div class="field"><label>Prénom <span class="hint">*</span></label><input type="text" id="f_prenom" placeholder="Prénom" required value="${pinfo.prenom||''}"></div>
+      <div class="field"><label>Nom <span class="hint">*</span></label><input type="text" id="f_nom" placeholder="Nom" required value="${pinfo.nom||''}"></div>
     </div>
     <div class="row2">
-      <div class="field"><label>Date de naissance</label><input type="date" id="f_ddn"></div>
-      <div class="field"><label>Email de contact</label><input type="text" id="f_email" placeholder="votre@email.fr"></div>
+      <div class="field"><label>Date de naissance</label><input type="date" id="f_ddn" value="${pinfo.ddn||''}"></div>
+      <div class="field"><label>Téléphone</label><input type="text" id="f_tel" placeholder="06 12 34 56 78" value="${pinfo.tel||''}"></div>
+    </div>
+    <div class="row2">
+      <div class="field"><label>Email de contact</label><input type="text" id="f_email" placeholder="votre@email.fr" value="${pinfo.email||''}"></div>
+      <div class="field"></div>
     </div>
     <div class="field"><label>Qui remplit ce questionnaire ?</label>
       <div class="checks">
@@ -369,6 +374,7 @@ async function submitForm() {
   const reponses = { _prenom: prenom, _nom: nom };
   reponses._ddn = document.getElementById('f_ddn')?.value || '';
   reponses._email = document.getElementById('f_email')?.value.trim() || '';
+  reponses._tel = document.getElementById('f_tel')?.value.trim() || '';
   reponses._qui = document.querySelector('input[name="qui"]:checked')?.value || 'patient';
   reponses._complement = document.getElementById('f_complement')?.value.trim() || '';
 
