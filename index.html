@@ -15361,6 +15361,9 @@ function renderAnamneseTab(pid){
 
   if(hasOralite){
     var sOr='';
+    sOr+=inlineField('Alimentation b\u00e9b\u00e9','alim_bebe','select1',['Allaitement exclusif','Allaitement mixte','Biberon']);
+    sOr+=multiSelect('Alimentation actuelle','alimentation',['Mange de tout','S\u00e9lectif(ve)','Gros app\u00e9tit','Petit app\u00e9tit','Difficult\u00e9s \u00e0 mastiquer','Tousse pendant les repas']);
+    sOr+=multiSelect('Succion','succion',['Pouce/doigt','T\u00e9tine','Doudou/v\u00eatement']);
     sOr+=inlineField('Respiration en journ\u00e9e','respiration_jour','radio',['Par le nez','Par la bouche','Mixte']);
     sOr+=inlineField('Respiration la nuit','respiration_nuit','radio',['Par le nez','Par la bouche','Mixte']);
     sOr+=inlineField('Porte objets/doigts en bouche','porte_en_bouche','radio',['Oui','Non']);
