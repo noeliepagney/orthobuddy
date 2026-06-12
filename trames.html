@@ -153,10 +153,6 @@
         <label for="patientSel">Patient</label>
         <select id="patientSel" class="sel"><option value="">— choisir un patient —</option></select>
       </div>
-      <div class="ctrl">
-        <label for="savedSel">Mes bilans enregistrés</label>
-        <select id="savedSel" class="sel"></select>
-      </div>
     </div>
 
     <div class="lead" id="lead"></div>
@@ -165,18 +161,19 @@
       <button class="btn btn-brique" id="btnPdf"><i class="ti ti-file-type-pdf"></i> Aperçu &amp; PDF</button>
       <button class="btn btn-primary" id="btnWord"><i class="ti ti-file-type-docx"></i> Télécharger Word</button>
       <button class="btn btn-ghost" id="btnSettings"><i class="ti ti-building"></i> Cabinet &amp; signature</button>
-      <button class="btn btn-ghost" id="btnBackup"><i class="ti ti-download"></i> Exporter une sauvegarde</button>
-      <button class="btn btn-ghost" id="btnImport"><i class="ti ti-upload"></i> Importer</button>
-      <input type="file" id="importFile" accept="application/json,.json" style="display:none">
-      <div class="ctrl" style="display:flex;gap:6px;align-items:flex-end;">
-        <div style="flex:1;">
-          <label for="savedSel">Bilans enregistrés</label>
-          <select id="savedSel" class="sel"><option value="">— ouvrir un bilan —</option></select>
-        </div>
-        <button id="btnDeleteSaved" class="btn btn-ghost" title="Supprimer" style="flex-shrink:0;padding:0 10px;height:36px;color:#c0392b;border-color:#c0392b;" disabled><i class="ti ti-trash"></i></button>
-      </div>
       <button class="btn btn-ghost" id="btnRenew" style="display:none"><i class="ti ti-copy"></i> Renouvellement</button>
       <button class="btn btn-danger" id="btnReset"><i class="ti ti-eraser"></i> Réinitialiser</button>
+    </div>
+
+    <div class="actions" style="align-items:flex-end;">
+      <div class="ctrl" style="flex:1;min-width:220px;">
+        <label for="savedSel">Bilans enregistrés</label>
+        <select id="savedSel" class="sel"><option value="">— ouvrir un bilan —</option></select>
+      </div>
+      <button id="btnDeleteSaved" class="btn btn-ghost" title="Supprimer" style="flex-shrink:0;height:36px;color:#c0392b;border-color:#c0392b;" disabled><i class="ti ti-trash"></i></button>
+      <button class="btn btn-ghost" id="btnImport" style="flex-shrink:0;height:36px;"><i class="ti ti-upload"></i> Importer</button>
+      <button class="btn btn-ghost" id="btnBackup" style="flex-shrink:0;height:36px;"><i class="ti ti-download"></i> Exporter</button>
+      <input type="file" id="importFile" accept="application/json,.json" style="display:none">
     </div>
 
     <div id="form"></div>
