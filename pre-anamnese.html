@@ -411,6 +411,7 @@ async function submitForm() {
         action: "soumettre",
         token,
         reponses,
+        anamnese_existante: qaData.anamnese_existante || {},
         patient_prenom: prenom,
         patient_email: reponses._email || ''
       })
