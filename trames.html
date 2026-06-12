@@ -8115,7 +8115,16 @@ function fillSub(catName, selectTrame){ const sub=$("#subSel"); sub.innerHTML=""
 function currentLeaf(){ const c=$("#catSel").value; const i=Number($("#subSel").value||0); return (CATEGORIES[c]||[])[i]||null; }
 function findCatForTrame(tid){ for(const c of Object.keys(CATEGORIES)){ const i=CATEGORIES[c].findIndex(l=>l.trame===tid); if(i>=0) return {cat:c,idx:i}; } return null; }
 function renderPlaceholder(label){ $("#lead").innerHTML=""; $("#form").innerHTML="<div class='note'><span class='gt'>À venir</span>La trame « "+esc(label)+" » n'est pas encore créée. Dis-moi quand tu veux qu'on la construise.</div>"; $("#saveState").className="save-state"; $("#saveState").textContent=""; }
-function selectFromSub(){ const leaf=currentLeaf(); if(!leaf) return; if(leaf.trame){ trameId=leaf.trame; loadData(); renderForm(); markSaved(); } else { trameId=null; renderPlaceholder(leaf.label); } }
+function selectFromSub(){
+  const leaf=currentLeaf(); if(!leaf) return;
+  if(leaf.trame){
+    trameId=leaf.trame; loadData(); renderForm(); markSaved();
+    if(currentPatientId){
+      const p=allPatients.find(x=>x.id===currentPatientId);
+      if(p) setTimeout(()=>prefillFromPatient(p),100);
+    }
+  } else { trameId=null; renderPlaceholder(leaf.label); }
+}
 
 /* ---------- Palette export ---------------------------------------------- */
 const C = { brique:"#A65A43", sage:"#56714F", sageLight:"#6F8C6A", creme:"#F4EFE6", border:"#E2DAC9", ink:"#2F2E29", inkSoft:"#5b574c" };
@@ -8185,14 +8194,40 @@ function onPatientChange(){
   if(trameId){ renderForm(); markSaved(); }
 }
 
+function fmtDdnAge(ddn){
+  if(!ddn) return '';
+  const d=new Date(ddn);
+  if(isNaN(d.getTime())) return ddn;
+  const now=new Date();
+  let age=now.getFullYear()-d.getFullYear();
+  const m=now.getMonth()-d.getMonth();
+  if(m<0||(m===0&&now.getDate()<d.getDate())) age--;
+  const ddnFmt=d.toLocaleDateString('fr-FR');
+  return ddnFmt+' ('+age+' ans)';
+}
+
 function prefillFromPatient(p){
   const map={
     [trameId+".administratif.nom"]:p.nom||'',
     [trameId+".administratif.prenom"]:p.prenom||'',
-    [trameId+".administratif.ddn"]:p.ddn||p.dateNaissance||'',
+    [trameId+".administratif.ddn"]:fmtDdnAge(p.ddn)||'',
     [trameId+".administratif.adresse"]:p.adresse||'',
-    [trameId+".administratif.secu"]:p.secu||p.numSecu||''
+    [trameId+".administratif.secu"]:p.nir||'',
+    [trameId+".administratif.profession"]:p.anamnese && (p.anamnese.profession||p.anamnese.vie_pro_neuro)||''
   };
+  // Assuré = patient lui-même si adulte, sinon parent (premier contact)
+  let assure='';
+  if(p.ddn){
+    const age=new Date().getFullYear()-new Date(p.ddn).getFullYear();
+    if(age<18 && Array.isArray(p.contacts) && p.contacts.length){
+      const c=p.contacts[0];
+      assure=((c.prenom||'')+' '+(c.nom||p.nom||'')).trim();
+    } else {
+      assure=((p.prenom||'')+' '+(p.nom||'')).trim();
+    }
+  }
+  if(assure) map[trameId+".administratif.assure"]=assure;
+
   Object.entries(map).forEach(([k,v])=>{ if(v&&!data[k]) data[k]=v; });
   renderForm();
 }
