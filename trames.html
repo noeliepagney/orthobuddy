@@ -9126,10 +9126,10 @@ function prefillFromPatient(p){
 
     if(a.attention && a.attention.length){
       const comportDiurneMap={
-        'Oublie ses affaires':null,'Se d\u00e9concentre':'Troubles attentionnels','Brouillon/d\u00e9sordonn\u00e9(e)':null,
-        'Bouge beaucoup':'Hyperactivit\u00e9 / agitation excessive','Mal \u00e0 attendre':null,"Mal \u00e0 se faire des ami(e)s":null,
-        'Pas conscience du danger plus jeune':null,'R\u00e9sultats en dents de scie':'Difficult\u00e9s scolaires / apprentissages',
-        'Impulsif(ve)':'Irritabilit\u00e9, humeur labile'
+        'Oublie souvent ses affaires':null,'Se d\u00e9concentre facilement':'Troubles attentionnels','A du mal \u00e0 \u00eatre ordonn\u00e9(e) dans son travail':null,
+        'A besoin de bouger beaucoup':'Hyperactivit\u00e9 / agitation excessive','A du mal \u00e0 attendre son tour':null,"A du mal \u00e0 se faire des ami(e)s":null,
+        'N\'avait pas toujours conscience du danger plus jeune':null,'R\u00e9sultats scolaires irr\u00e9guliers selon les jours':'Difficult\u00e9s scolaires / apprentissages',
+        'A tendance \u00e0 agir sans r\u00e9fl\u00e9chir':'Irritabilit\u00e9, humeur labile'
       };
       let comportDiurne=[];
       a.attention.forEach(function(v){ if(comportDiurneMap[v] && comportDiurne.indexOf(comportDiurneMap[v])<0) comportDiurne.push(comportDiurneMap[v]); });

@@ -15198,7 +15198,7 @@ function renderAnamneseTab(pid){
   if(hasEnfantSection){
     // FAMILLE
     var sFam='';
-    sFam+=inlineField('Lieu de vie','lieu_vie','select1',['Avec ses deux parents','Garde altern\u00e9e','Vit chez son p\u00e8re','Vit chez sa m\u00e8re','Foyer']);
+    sFam+=inlineField('Lieu de vie','lieu_vie','select1',['Avec ses deux parents','En garde alternée','Chez son père','Chez sa mère',"En famille d'accueil / foyer"]);
     sFam+=inlineField('Profession du p\u00e8re','prof_pere','text',null,{width:'220px'});
     sFam+=inlineField('Profession de la m\u00e8re','prof_mere','text',null,{width:'220px'});
     sFam+=inlineField('Fratrie','fratrie','radio',['Enfant unique','A\u00een\u00e9(e)','Cadet(te)','Benjamin/Benjamine']);
@@ -15206,9 +15206,9 @@ function renderAnamneseTab(pid){
       sFam+=inlineField('Pr\u00e9nom(s) et \u00e2ge(s) fratrie','fratrie_detail','text',null,{width:'250px'});
     }
     sFam+='<div style="margin-bottom:10px;"><div style="font-size:11px;font-weight:600;color:var(--text-soft);text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px;">Ant\u00e9c\u00e9dents familiaux (difficult\u00e9s scolaires)</div>';
-    sFam+=multiSelect('M\u00e8re','atcd_fam_mere',['Lecture','Orthographe','Math\u00e9matiques','Concentration','Langage']);
-    sFam+=multiSelect('P\u00e8re','atcd_fam_pere',['Lecture','Orthographe','Math\u00e9matiques','Concentration','Langage']);
-    sFam+=multiSelect('Fratrie','atcd_fam_fratrie',['Lecture','Orthographe','Math\u00e9matiques','Concentration','Langage']);
+    sFam+=multiSelect('M\u00e8re','atcd_fam_mere',['Difficult\u00e9s de lecture','Difficult\u00e9s d\'orthographe','Difficult\u00e9s en math\u00e9matiques','Difficult\u00e9s de concentration','Difficult\u00e9s de langage']);
+    sFam+=multiSelect('P\u00e8re','atcd_fam_pere',['Difficult\u00e9s de lecture','Difficult\u00e9s d\'orthographe','Difficult\u00e9s en math\u00e9matiques','Difficult\u00e9s de concentration','Difficult\u00e9s de langage']);
+    sFam+=multiSelect('Fratrie','atcd_fam_fratrie',['Difficult\u00e9s de lecture','Difficult\u00e9s d\'orthographe','Difficult\u00e9s en math\u00e9matiques','Difficult\u00e9s de concentration','Difficult\u00e9s de langage']);
     sFam+='</div>';
     sFam+=inlineField('De qui vient la plainte','origine_plainte','select1',['Parent','École','Médecin','Autre']);
     sFam+=inlineField('Conscience de ses difficultés','conscience_difficultes','radio',['Oui','Non','Partiellement']);
@@ -15218,23 +15218,23 @@ function renderAnamneseTab(pid){
 
     // PÉRINATAILITÉ
     var sPeri='';
-    sPeri+=multiSelect('Grossesse','grossesse',['Sans particularit\u00e9','Diab\u00e8te gestationnel','Infection maternelle','MAP','Anomalie f\u0153tale','Souffrance f\u0153tale','Exposition toxiques','Autre']);
+    sPeri+=multiSelect('Grossesse','grossesse',['Sans particularit\u00e9','Diab\u00e8te gestationnel','Infection pendant la grossesse','Menace d\u2019accouchement pr\u00e9matur\u00e9 (MAP)','Anomalie d\u00e9tect\u00e9e chez le b\u00e9b\u00e9','Souffrance du b\u00e9b\u00e9 pendant la grossesse','Exposition \u00e0 des substances (tabac, alcool, m\u00e9dicaments\u2026)','Autre']);
     sPeri+=inlineField('Mode d\'accouchement','naissance_mode','select1',['Voie basse','C\u00e9sarienne programm\u00e9e','C\u00e9sarienne d\'urgence']);
-    sPeri+=inlineField('Terme / pr\u00e9maturit\u00e9','naissance_terme','select1',['\u00c0 terme','Pr\u00e9maturit\u00e9 tardive (35-36 SA)','Pr\u00e9maturit\u00e9 mod\u00e9r\u00e9e (32-34 SA)','Grande pr\u00e9maturit\u00e9 (27-31 SA)','Pr\u00e9maturit\u00e9 extr\u00eame (22-26 SA)']);
-    sPeri+=multiSelect('Particularit\u00e9s naissance','naissance_detail',['Forceps/ventouse/cuill\u00e8re','Souffrance p\u00e9ri-natale','R\u00e9animation','Soins intensifs/N\u00e9onatologie']);
-    sPeri+=multiSelect('Poids de naissance','poids_naissance',['>2500g','<2500g','<1500g','<1000g']);
+    sPeri+=inlineField('Terme / pr\u00e9maturit\u00e9','naissance_terme','select1',['\u00c0 terme','Pr\u00e9maturit\u00e9 l\u00e9g\u00e8re (35-36 semaines de grossesse)','Pr\u00e9maturit\u00e9 mod\u00e9r\u00e9e (32-34 semaines)','Grande pr\u00e9maturit\u00e9 (27-31 semaines)','Pr\u00e9maturit\u00e9 extr\u00eame (22-26 semaines)']);
+    sPeri+=multiSelect('Particularit\u00e9s naissance','naissance_detail',['Utilisation de forceps, ventouse ou spatules','Difficult\u00e9s pendant l\u2019accouchement','R\u00e9animation \u00e0 la naissance','Passage en soins intensifs / n\u00e9onatologie']);
+    sPeri+=multiSelect('Poids de naissance','poids_naissance',['Plus de 2,5 kg','Moins de 2,5 kg','Moins de 1,5 kg','Moins de 1 kg']);
     sPeri+=textArea('Commentaires','commentaires_peri');
     html+=sCard('P\u00e9rinatalit\u00e9','ti-heart',sPeri);
 
     // ANTÉCÉDENTS
     var sMed='';
-    sMed+=multiSelect('ORL','orl',['Angines fr\u00e9quentes','Otites fr\u00e9quentes','Drains/diabolos','Ablation v\u00e9g\u00e9tations','Ablation amygdales','Surdit\u00e9','Audiogramme r\u00e9alis\u00e9','Audiogramme pr\u00e9vu']);
+    sMed+=multiSelect('ORL','orl',['Angines fr\u00e9quentes','Otites fr\u00e9quentes','Pose d\u2019a\u00e9rateurs ("yoyos")','Ablation des v\u00e9g\u00e9tations','Ablation des amygdales','Surdit\u00e9','Audiogramme d\u00e9j\u00e0 r\u00e9alis\u00e9','Audiogramme pr\u00e9vu']);
     if((a.orl||[]).indexOf('Audiogramme r\u00e9alis\u00e9')>=0) sMed+=inlineField('R\u00e9sultats audiogramme','audiogramme_resultats','text',null,{width:'300px'});
     sMed+=multiSelect('Vision','vision',['Port de lunettes','Myopie','Astigmatisme','Strabisme']);
     sMed+=inlineField('Traumatismes / accidents','traumatismes','text',null,{width:'280px'});
     sMed+=inlineField('Op\u00e9rations chirurgicales','operations','text',null,{width:'280px'});
     sMed+=inlineField('Traitements m\u00e9dicamenteux','traitements','text',null,{width:'280px'});
-    sMed+=multiSelect('Bilans d\u00e9j\u00e0 r\u00e9alis\u00e9s','bilans',['Psychologique','Psychom\u00e9trique','Neuropsychologique','Orthophonique','Ergoth\u00e9rapique','Psychomoteur','Ophtalmologique','Neurologique','Orthoptique']);
+    sMed+=multiSelect('Bilans d\u00e9j\u00e0 r\u00e9alis\u00e9s','bilans',['Bilan psychologique','Tests de QI (psychom\u00e9trique)','Bilan neuropsychologique','Bilan orthophonique','Bilan en ergoth\u00e9rapie','Bilan psychomoteur','Bilan ophtalmologique (yeux)','Bilan neurologique','Bilan orthoptique (vision)']);
     sMed+=multiSelect('Suivis en cours','suivis',['Orthophonie','Psychologie','Ergoth\u00e9rapie','Neuropsychologie','Psychomotricit\u00e9','Orthoptie']);
     sMed+=textArea('Diagnostics pos\u00e9s','diagnostics');
     sMed+=textArea('Commentaires','commentaires_med');
@@ -15262,7 +15262,7 @@ function renderAnamneseTab(pid){
     sVie+=inlineField('Lieu de sommeil','lieu_sommeil','select1',['Chambre seul(e)','Chambre partag\u00e9e','Lit des parents','Chambre des parents']);
     sVie+=multiSelect('Troubles du sommeil','troubles_sommeil',['Terreurs nocturnes','R\u00e9veils nocturnes','Difficult\u00e9 \u00e0 s\'endormir','Besoin de lumi\u00e8re','Cauchemars','Ronflements','Apn\u00e9es','Grince des dents','Bon sommeil']);
     sVie+=multiSelect('Autonomie','autonomie',['Se lave seul(e)','Se d\u00e9shabille seul(e)','S\'habille seul(e)','Fait ses lacets','Mange proprement','Coupe sa viande','Mange avec couverts','S\'essuie aux toilettes']);
-    sVie+=multiSelect('Éléments attentionnels','attention',['Oublie ses affaires','Se déconcentre','Brouillon/désordonné(e)','Bouge beaucoup','Mal à attendre','Mal à se faire des ami(e)s','Pas conscience du danger plus jeune','Résultats en dents de scie','Impulsif(ve)']);
+    sVie+=multiSelect('Attention et concentration','attention',['Oublie souvent ses affaires','Se déconcentre facilement','A du mal à être ordonné(e) dans son travail','A besoin de bouger beaucoup','A du mal à attendre son tour','A du mal à se faire des ami(e)s','N\'avait pas toujours conscience du danger plus jeune','Résultats scolaires irréguliers selon les jours','A tendance à agir sans réfléchir']);
     sVie+=multiSelect('Jeux / activit\u00e9s','jeux_activites',['Jeux de construction','Bricolage','Dessin','Activit\u00e9s physiques','Lecture']);
     sVie+=inlineField('Autres jeux / activit\u00e9s','jeux_activites_autres','text',null,{width:'250px'});
     sVie+=inlineField('Temps d\'\u00e9cran semaine','ecrans_semaine','select1',['0h','1h','2h','3h','4h','5h','6h','Plus de 6h']);
@@ -15299,7 +15299,7 @@ function renderAnamneseTab(pid){
     sLO+=inlineField('\u00c2ge d\'entr\u00e9e \u00e0 l\'\u00e9cole','age_entree_ecole','select1',['2 ans','2 ans 1/2','3 ans','3 ans 1/2']);
     sLO+=inlineField('Bilinguisme','bilinguisme','radio',['Oui','Non']);
     if(val('bilinguisme')==='Oui') sLO+=inlineField('Langue parl\u00e9e \u00e0 la maison','langue_maison','text',null,{width:'200px'});
-    sLO+=multiSelect('Particularit\u00e9s sensorielles','sensorialite',['Bruit','Textiles/\u00e9tiquettes','Lumi\u00e8re','Odeurs','Temp\u00e9rature','Mains sales','Pieds nus']);
+    sLO+=multiSelect('Sensibilit\u00e9s particuli\u00e8res','sensorialite',['Bruit','Textiles / \u00e9tiquettes qui grattent','Lumi\u00e8re','Odeurs','Temp\u00e9rature','Ne supporte pas d\u2019avoir les mains sales','Marche difficilement pieds nus']);
     sLO+=multiSelect('Am\u00e9nagements scolaires','amenagements',['AESH','Ordinateur','Aide technologique','Cours sur cl\u00e9 USB','R\u00e9duction devoirs','Adaptation police','PAP','PPS','PPRE','PAI']);
     sLO+=multiSelect('Lieu des devoirs','lieu_devoirs',['Bureau chambre','Cuisine','Salon']);
 
@@ -15317,7 +15317,7 @@ function renderAnamneseTab(pid){
     if((a.difficultes_langagieres_lo||[]).indexOf('Sons mal prononc\u00e9s')>=0) sLO+=inlineField('Sons concern\u00e9s','sons_detail','text',null,{width:'280px'});
 
     sLO+=multiSelect('Enfant compris par','intelligibilite_interlocuteur',['Parents','Ma\u00eetre/ma\u00eetresse','Camarades de classe','Grands-parents','Au t\u00e9l\u00e9phone']);
-    sLO+=multiSelect('Trouble VA/neurovisuel','trouble_va_lo',['Tendance à sauter des lignes en lecture','Copie difficile (repérage dans le texte)','Maux de tête après la lecture','Tendance à se cogner / mal apprécier les distances','Difficultés en géométrie']);
+    sLO+=multiSelect('Difficult\u00e9s visuo-attentionnelles','trouble_va_lo',['A tendance \u00e0 sauter des lignes en lisant','A du mal \u00e0 recopier un texte (s\'y retrouver)','A mal \u00e0 la t\u00eate apr\u00e8s avoir lu','A tendance \u00e0 se cogner / mal \u00e9valuer les distances','A des difficult\u00e9s en g\u00e9om\u00e9trie']);
     sLO+=inlineField('Aime parler','aime_parler','radio',['Oui','Non','Selon les personnes']);
     sLO+=inlineField('\u00c9volution du langage oral depuis l\'apprentissage de la lecture/\u00e9criture','lo_avec_le','radio',['Am\u00e9lioration','Stable','D\u00e9t\u00e9rioration','Sans objet']);
     sLO+=multiSelect('Difficult\u00e9s \u00e0 retenir','difficultes_retention_lo',['Comptines','Po\u00e9sies','Informations verbales','Listes']);
@@ -15338,12 +15338,12 @@ function renderAnamneseTab(pid){
     if((a.difficultes_langagieres_lo||[]).indexOf('Sons mal prononc\u00e9s')>=0) sLE+=inlineField('Sons concern\u00e9s','sons_detail','text',null,{width:'280px'});
     sLE+=inlineField('Retard de langage ou de parole plus jeune','retard_langage_le','radio',['Oui','Non','Ne sait pas']);
     sLE+=multiSelect('Confusions auditives','confusions_auditives_le',['Confusions de mots auditivement proches','Confusions de sons']);
-    sLE+=multiSelect('Trouble phono','trouble_phono_le',['Difficultés à dire les mots longs petits et encore maintenant','Difficulté à apprendre une langue étrangère','Confusion de sons']);
-    sLE+=multiSelect('Visuo-attentionnel','visuo_attentionnel_le',['Tendance à sauter des lignes en lecture','Copie difficile (repérage dans le texte)','Maux de tête après la lecture','Tendance à se cogner / mal apprécier les distances','Difficultés en géométrie']);
+    sLE+=multiSelect('Difficult\u00e9s de prononciation ou de m\u00e9morisation','trouble_phono_le',["A du mal \u00e0 dire les mots longs, encore aujourd'hui",'A du mal \u00e0 apprendre une langue \u00e9trang\u00e8re','Confond certains sons']);
+    sLE+=multiSelect('Difficult\u00e9s visuo-attentionnelles','visuo_attentionnel_le',['A tendance \u00e0 sauter des lignes en lisant','A du mal \u00e0 recopier un texte (s\'y retrouver)','A mal \u00e0 la t\u00eate apr\u00e8s avoir lu','A tendance \u00e0 se cogner / mal \u00e9valuer les distances','A des difficult\u00e9s en g\u00e9om\u00e9trie']);
     sLE+=inlineField('Appétence à la lecture (0-10)','appetence_lecture_le','select1',['0','1','2','3','4','5','6','7','8','9','10']);
     sLE+=multiSelect('Types de difficultés écrites','difficultes_le',['Lenteur de lecture / non fluide','Écriture phonétique','Confusions de sons','Erreurs de découpage (segmentation) de mots','Erreurs fréquentes en lecture','Difficultés de compréhension','Difficultés en orthographe','Fatigue lors des tâches écrites','Confusions de lettres/sons','Sauts de ligne','Oubli de lettres','Inversions','Mauvaise transcription de graphies','Erreurs en copie','Écriture sur les lignes difficile','Espace feuille mal géré','Différence dictée préparée/non préparée','Travail important pour les dictées','Un mot écrit de 5 façons différentes']);
     sLE+=inlineField('\u00c9volution du LO avec apprentissage LE','le_avec_lo','radio',['Am\u00e9lioration','Stable','D\u00e9t\u00e9rioration','Sans objet']);
-    sLE+=multiSelect('Difficult\u00e9s \u00e0 retenir','difficultes_retention_le',['Comptines','Po\u00e9sies','Informations verbales','Listes']);
+    sLE+=multiSelect('Difficult\u00e9s \u00e0 retenir','difficultes_retention_le',['Comptines','Po\u00e9sies',"Informations dites \u00e0 l'oral",'Listes']);
     sLE+=inlineField('Temps de lecture/jour','temps_lecture_le','select1',['5min','10min','15min','30min','45min','1h','Plus d\'1h']);
     sLE+=inlineField('D\u00e9but des difficult\u00e9s','debut_difficultes','text',null,{width:'200px'});
     sLE+=textArea('Observations enseignant','obs_enseignant_le');
@@ -15357,13 +15357,13 @@ function renderAnamneseTab(pid){
     sMath+=multiSelect('Difficult\u00e9s langagi\u00e8res observ\u00e9es','difficultes_langagieres_lo',['D\u00e9formation des mots','Difficult\u00e9 \u00e0 se faire comprendre','Sons mal prononc\u00e9s','Compr\u00e9hension difficile','Cherche ses mots','Difficult\u00e9s \u00e0 exprimer ses id\u00e9es','S\'\u00e9nerve quand incompris(e)','Utilisation de la gestuelle / mimiques','Utilisation du "moi, je"','Erreurs sur le genre des noms','Omission de mots grammaticaux','Discours souvent avort\u00e9','M\u00e9morisation des comptines difficile']);
     if((a.difficultes_langagieres_lo||[]).indexOf('Sons mal prononc\u00e9s')>=0) sMath+=inlineField('Sons concern\u00e9s','sons_detail','text',null,{width:'280px'});
     sMath+=inlineField('Retard de langage ou de parole plus jeune','retard_langage_cm','radio',['Oui','Non','Ne sait pas']);
-    sMath+=multiSelect('Confusions auditives','confusions_auditives_cm',['Confusions de mots auditivement proches','Difficulté à apprendre une langue étrangère']);
-    sMath+=multiSelect('Trouble phono','trouble_phono_cm',['Difficultés à dire les mots longs petits et encore maintenant','Confusion de sons']);
-    sMath+=multiSelect('Visuo-attentionnel','visuo_attentionnel_cm',['Tendance à sauter des lignes en lecture','Copie difficile (repérage dans le texte)','Maux de tête après la lecture','Tendance à se cogner / mal apprécier les distances','Difficultés en géométrie']);
+    sMath+=multiSelect('Confusions auditives','confusions_auditives_cm',["Confond des mots qui se ressemblent \u00e0 l'oral",'A du mal \u00e0 apprendre une langue \u00e9trang\u00e8re']);
+    sMath+=multiSelect('Difficult\u00e9s de prononciation ou de m\u00e9morisation','trouble_phono_cm',["A du mal \u00e0 dire les mots longs, encore aujourd'hui",'Confond certains sons']);
+    sMath+=multiSelect('Difficult\u00e9s visuo-attentionnelles','visuo_attentionnel_cm',['A tendance \u00e0 sauter des lignes en lisant','A du mal \u00e0 recopier un texte (s\'y retrouver)','A mal \u00e0 la t\u00eate apr\u00e8s avoir lu','A tendance \u00e0 se cogner / mal \u00e9valuer les distances','A des difficult\u00e9s en g\u00e9om\u00e9trie']);
     sMath+=inlineField('Appétence aux maths (0-10)','appetence_maths','select1',['0','1','2','3','4','5','6','7','8','9','10']);
     sMath+=inlineField('App\u00e9tence \u00e0 la lecture (0-10)','appetence_lecture','select1',['0','1','2','3','4','5','6','7','8','9','10']);
-    sMath+=multiSelect('Types de difficult\u00e9s','difficultes_maths',['R\u00e9solution de probl\u00e8mes','Erreurs de calcul','Poser des op\u00e9rations','Calcul mental','Compter','Lecture de nombres','Transcription de graphies','Erreurs en copie','\u00c9criture sur les lignes difficile','Espace feuille mal g\u00e9r\u00e9','Sauter de 1 \u00e0 6 en comptant','Points sur d\u00e9 non reconnus','Comptage digital persistant','Strat\u00e9gies de r\u00e9solution immatures']);
-    sMath+=multiSelect('Difficult\u00e9s \u00e0 retenir','difficultes_retention_cm',['Tables de multiplication','Termes irr\u00e9guliers','Comptines num\u00e9riques']);
+    sMath+=multiSelect('Types de difficult\u00e9s','difficultes_maths',['R\u00e9solution de probl\u00e8mes','Erreurs de calcul','Poser des op\u00e9rations','Calcul mental','Difficult\u00e9s \u00e0 compter','Lecture des nombres','Difficult\u00e9s de transcription des chiffres / nombres \u00e0 l\'\u00e9crit','Erreurs en copie de nombres','\u00c9criture des chiffres sur la ligne difficile','Mauvaise gestion de l\'espace sur la feuille','Compte sur ses doigts en grandissant','Ne reconna\u00eet pas les quantit\u00e9s sans compter (ex : sur un d\u00e9)','Continue \u00e0 compter sur ses doigts ou un \u00e0 un','M\u00e9thodes de calcul peu efficaces pour son \u00e2ge']);
+    sMath+=multiSelect('Difficult\u00e9s \u00e0 retenir','difficultes_retention_cm',['Tables de multiplication','Termes irr\u00e9guliers (quatre-vingt, soixante-dix\u2026)','Comptines num\u00e9riques']);
     sMath+=inlineField('Tables de multiplication','tables_multi','radio',['Ma\u00eetris\u00e9es','En cours','Non ma\u00eetris\u00e9es']);
     sMath+=inlineField('Temps de lecture/jour','temps_lecture_cm','select1',['5min','10min','15min','30min','45min','1h','Plus d\'1h']);
     sMath+=textArea('Observations enseignant','obs_enseignant_maths');
@@ -15472,7 +15472,7 @@ function renderAnamneseTab(pid){
     var sViequot='';
     sViequot+=inlineField('Conduit un v\u00e9hicule','conduite','radio',['Oui','Non','A arr\u00eat\u00e9 r\u00e9cemment']);
     sViequot+=inlineField('G\u00e8re ses finances','gestion_finances','radio',['Oui','Non','Avec aide']);
-    sViequot+=multiSelect('Lieu de vie actuel','lieu_vie_neuro',['Domicile seul(e)','Domicile avec conjoint','Domicile avec famille','EHPAD','R\u00e9sidence senior','Autre']);
+    sViequot+=multiSelect('Lieu de vie actuel','lieu_vie_neuro',['Domicile, seul(e)','Domicile, avec conjoint(e)','Domicile, avec famille','EHPAD (maison de retraite m\u00e9dicalis\u00e9e)','R\u00e9sidence senior','Autre']);
     sViequot+=textArea('Occupations quotidiennes / loisirs','occupations');
     html+=sCard('Vie quotidienne','ti-sun',sViequot);
   }
