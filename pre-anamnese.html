@@ -259,6 +259,14 @@ function renderForm(sections) {
       Répondez au mieux selon votre vécu — il n'y a pas de bonne ou mauvaise réponse.<br>
       Les champs non pertinents peuvent être laissés vides.
     </p>
+  </div>
+  <div class="card" style="border-left:4px solid var(--sage-deep);background:var(--sage-soft);">
+    <div class="card-title">📄 À apporter au premier rendez-vous</div>
+    <p style="font-size:13.5px;color:var(--ink);line-height:1.7">
+      Merci de vous munir de votre <strong>ordonnance</strong> et de votre <strong>carte vitale</strong> lors du premier rendez-vous — le suivi ne pourra pas débuter sans ces documents.<br><br>
+      Si vous le souhaitez, vous pouvez aussi me transmettre votre ordonnance en amont par email à
+      <a href="mailto:noelie.orthophonie@gmail.com" style="color:var(--sage-deep);font-weight:700;">noelie.orthophonie@gmail.com</a>.
+    </p>
   </div>`;
 
   // Champs admin de base
@@ -298,19 +306,26 @@ function renderForm(sections) {
       <div class="card-title">📝 ${sec.label}</div>`;
 
     questionsToShow.forEach(q => {
-      html += `<div class="field"><label>${q.label}${q.hint?`<span class="hint">· ${q.hint}</span>`:''}</label>`;
+      const existing = (qaData.anamnese_existante || {})[q.id];
+      const hasExisting = existing && (Array.isArray(existing) ? existing.length>0 : String(existing).trim()!=='');
+      html += `<div class="field"><label>${q.label}${q.hint?`<span class="hint">· ${q.hint}</span>`:''}${hasExisting?` <span class="hint" style="color:var(--sage-deep)">· pré-rempli, vous pouvez modifier</span>`:''}</label>`;
       if (q.type === 'textarea') {
-        html += `<textarea id="fq_${secId}_${q.id}" placeholder="Votre réponse…"></textarea>`;
+        const val = (typeof existing === 'string') ? existing : '';
+        html += `<textarea id="fq_${secId}_${q.id}" placeholder="Votre réponse…">${val}</textarea>`;
       } else if (q.type === 'text') {
-        html += `<input type="text" id="fq_${secId}_${q.id}" placeholder="Votre réponse…">`;
+        const val = (typeof existing === 'string') ? existing : '';
+        html += `<input type="text" id="fq_${secId}_${q.id}" placeholder="Votre réponse…" value="${val}">`;
       } else if (q.type === 'select') {
+        const val = (typeof existing === 'string') ? existing : '';
         html += `<select id="fq_${secId}_${q.id}" class="sel"><option value="">— choisir —</option>`;
-        q.options.forEach(o => { html += `<option value="${o}">${o}</option>`; });
+        q.options.forEach(o => { html += `<option value="${o}"${o===val?' selected':''}>${o}</option>`; });
         html += `</select>`;
       } else if (q.type === 'checkboxes') {
+        const existingArr = Array.isArray(existing) ? existing : [];
         html += `<div class="checks">`;
         q.options.forEach((o,i) => {
-          html += `<label class="chk"><input type="checkbox" id="fq_${secId}_${q.id}_${i}" value="${o}"> ${o}</label>`;
+          const checkedAttr = existingArr.includes(o) ? ' checked' : '';
+          html += `<label class="chk"><input type="checkbox" id="fq_${secId}_${q.id}_${i}" value="${o}"${checkedAttr}> ${o}</label>`;
         });
         html += `</div>`;
       }

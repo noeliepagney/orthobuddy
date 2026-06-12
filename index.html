@@ -15751,7 +15751,7 @@ async function envoyerQuestionnaire(pid){
   try{
     var res=await fetch('https://xiznicrburryfmdfbjxk.supabase.co/functions/v1/rapid-service',{
       method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({action:'envoyer',patient_id:pid,patient_prenom:p.prenom||'',patient_nom:p.nom||'',patient_email:email,sections:sections})
+      body:JSON.stringify({action:'envoyer',patient_id:pid,patient_prenom:p.prenom||'',patient_nom:p.nom||'',patient_email:email,sections:sections,anamnese_existante:p.anamnese||{}})
     });
     var json=await res.json();
     if(json.success){closeModal('modal-generic');showToast('Questionnaire envoye a '+email,'green');}
