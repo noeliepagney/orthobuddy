@@ -8137,6 +8137,113 @@ function prefillFromPatient(p){
   const a = p.anamnese || {};
   function fmtArr(v){ return Array.isArray(v) ? v.join(', ') : (v||''); }
 
+  if(trameId==='begaiement-fluence'){
+    // ── Demande / plainte ──
+    let plainteBeg=[];
+    if(a.debut_begaiement) plainteBeg.push("D\u00e9but du b\u00e9gaiement : "+a.debut_begaiement);
+    if(a.description_begaiement) plainteBeg.push("Description : "+a.description_begaiement);
+    if(a.evolution_begaiement) plainteBeg.push("\u00c9volution : "+a.evolution_begaiement);
+    if(a.variations_situationnelles_begaiement) plainteBeg.push("Variations situationnelles : "+a.variations_situationnelles_begaiement);
+    if(a.signes_lutte_begaiement) plainteBeg.push("Signes de lutte observ\u00e9s : "+a.signes_lutte_begaiement);
+    if(a.reaction_enfant_begaiement) plainteBeg.push("R\u00e9action de l'enfant : "+a.reaction_enfant_begaiement);
+    if(a.evitements_begaiement) plainteBeg.push("Strat\u00e9gies d'\u00e9vitement : "+a.evitements_begaiement);
+    if(plainteBeg.length) map[trameId+".demande.plainte_patient"]=plainteBeg.join('\n');
+
+    let retentissementBeg=[];
+    if(a.impact_scolaire_begaiement) retentissementBeg.push("Impact scolaire : "+a.impact_scolaire_begaiement);
+    if(a.impact_social_begaiement) retentissementBeg.push("Impact social et relationnel : "+a.impact_social_begaiement);
+    if(a.ressenti_parents_begaiement) retentissementBeg.push("Ressenti des parents : "+a.ressenti_parents_begaiement);
+    if(a.aide_parents_begaiement) retentissementBeg.push("Aide apport\u00e9e par les parents : "+a.aide_parents_begaiement);
+    if(retentissementBeg.length) map[trameId+".demande.retentissement"]=retentissementBeg.join('\n');
+
+    if(a.origine_plainte) map[trameId+".demande.origine_demande"]=a.origine_plainte;
+
+    // ── Anamnèse ──
+    let naissanceBeg=[];
+    if(a.grossesse && a.grossesse.length) naissanceBeg.push(fmtArr(a.grossesse));
+    if(a.naissance_mode) naissanceBeg.push("Mode d'accouchement : "+a.naissance_mode);
+    if(a.naissance_terme) naissanceBeg.push("Terme : "+a.naissance_terme);
+    if(a.naissance_detail && a.naissance_detail.length) naissanceBeg.push("Particularit\u00e9s : "+fmtArr(a.naissance_detail));
+    if(a.poids_naissance && a.poids_naissance.length) naissanceBeg.push("Poids de naissance : "+fmtArr(a.poids_naissance));
+    if(naissanceBeg.length) map[trameId+".anamnese.naissance"]=naissanceBeg.join('\n');
+
+    let dvptMoteurBeg=[];
+    if(a.marche_4_pattes) dvptMoteurBeg.push("Marche \u00e0 4 pattes : "+a.marche_4_pattes);
+    if(a.age_marche) dvptMoteurBeg.push("\u00c2ge marche : "+a.age_marche);
+    if(a.lateralite) dvptMoteurBeg.push("Lat\u00e9ralit\u00e9 : "+a.lateralite);
+    if(a.proprete_diurne) dvptMoteurBeg.push("Propret\u00e9 diurne : "+a.proprete_diurne);
+    if(a.proprete_nocturne) dvptMoteurBeg.push("Propret\u00e9 nocturne : "+a.proprete_nocturne);
+    if(dvptMoteurBeg.length) map[trameId+".anamnese.dvpt_moteur"]=dvptMoteurBeg.join('\n');
+
+    let santeBeg=[];
+    if(a.orl && a.orl.length) santeBeg.push("ORL : "+fmtArr(a.orl));
+    if(a.vision && a.vision.length) santeBeg.push("Vision : "+fmtArr(a.vision));
+    if(a.traumatismes) santeBeg.push("Traumatismes : "+a.traumatismes);
+    if(a.traitements) santeBeg.push("Traitements : "+a.traitements);
+    if(santeBeg.length) map[trameId+".anamnese.sante"]=santeBeg.join('\n');
+
+    let dvptLangageBeg=[];
+    if(a.age_babillage) dvptLangageBeg.push("\u00c2ge babillage : "+a.age_babillage);
+    if(a.age_premiers_mots) dvptLangageBeg.push("\u00c2ge premiers mots : "+a.age_premiers_mots);
+    if(a.age_phrases) dvptLangageBeg.push("\u00c2ge premi\u00e8res phrases : "+a.age_phrases);
+    if(a.regression_langage) dvptLangageBeg.push("R\u00e9gression du langage : "+a.regression_langage);
+    if(a.difficultes_langagieres_lo && a.difficultes_langagieres_lo.length) dvptLangageBeg.push("Difficult\u00e9s langagi\u00e8res : "+fmtArr(a.difficultes_langagieres_lo));
+    if(a.intelligibilite_interlocuteur && a.intelligibilite_interlocuteur.length) dvptLangageBeg.push("Enfant compris par : "+fmtArr(a.intelligibilite_interlocuteur));
+    if(dvptLangageBeg.length) map[trameId+".anamnese.dvpt_langage"]=dvptLangageBeg.join('\n');
+
+    let autresBilansBeg=[];
+    if(a.bilans && a.bilans.length) autresBilansBeg.push("Bilans r\u00e9alis\u00e9s : "+fmtArr(a.bilans));
+    if(a.suivis && a.suivis.length) autresBilansBeg.push("Suivis en cours : "+fmtArr(a.suivis));
+    if(a.diagnostics) autresBilansBeg.push("Diagnostics : "+a.diagnostics);
+    if(autresBilansBeg.length) map[trameId+".anamnese.autres_bilans"]=autresBilansBeg.join('\n');
+
+    if(a.fratrie) map[trameId+".anamnese.fratrie"]=a.fratrie+(a.fratrie_detail?(' ('+a.fratrie_detail+')'):'');
+
+    let professionParentsBeg=[];
+    if(a.prof_pere) professionParentsBeg.push("P\u00e8re : "+a.prof_pere);
+    if(a.prof_mere) professionParentsBeg.push("M\u00e8re : "+a.prof_mere);
+    if(professionParentsBeg.length) map[trameId+".anamnese.profession_parents"]=professionParentsBeg.join(' \u2014 ');
+
+    if(a.bilinguisme){
+      let biling = a.bilinguisme;
+      if(a.langue_maison) biling += ' (' + a.langue_maison + ')';
+      map[trameId+".anamnese.bilinguisme"]=biling;
+    }
+
+    if(a.atcd_perso_begaiement_parent==='Oui'){
+      let atcdBeg = "Oui";
+      if(a.atcd_perso_begaiement_detail) atcdBeg += " \u2014 " + a.atcd_perso_begaiement_detail;
+      map[trameId+".anamnese.atcd_familiaux"]=atcdBeg;
+    } else if(a.atcd_perso_begaiement_parent==='Non'){
+      map[trameId+".anamnese.atcd_familiaux"]="Non";
+    }
+
+    let scolariteBeg=[];
+    if(p.classe) scolariteBeg.push("Classe : "+p.classe);
+    if(a.aime_ecole) scolariteBeg.push("Aime l'\u00e9cole : "+a.aime_ecole);
+    if(a.redoublement) scolariteBeg.push("Redoublement : "+a.redoublement);
+    if(a.redoublement_classe) scolariteBeg.push("Classe(s) redoubl\u00e9e(s) : "+a.redoublement_classe);
+    if(a.amenagements && a.amenagements.length) scolariteBeg.push("Am\u00e9nagements : "+fmtArr(a.amenagements));
+    if(a.obs_enseignant) scolariteBeg.push("Observations enseignant : "+a.obs_enseignant);
+    if(scolariteBeg.length) map[trameId+".anamnese.scolarite"]=scolariteBeg.join('\n');
+
+    let vieSocialeBeg=[];
+    if(a.description_patient) vieSocialeBeg.push(a.description_patient);
+    if(a.centres_interet) vieSocialeBeg.push("Centres d'int\u00e9r\u00eat : "+a.centres_interet);
+    let jeuxBeg=[];
+    if(a.jeux_activites && a.jeux_activites.length) jeuxBeg.push(fmtArr(a.jeux_activites));
+    if(a.jeux_activites_autres) jeuxBeg.push(a.jeux_activites_autres);
+    if(jeuxBeg.length) vieSocialeBeg.push("Jeux / activit\u00e9s : "+jeuxBeg.join(', '));
+    if(vieSocialeBeg.length) map[trameId+".anamnese.vie_sociale"]=vieSocialeBeg.join('\n');
+
+    let sommeilAlimBeg=[];
+    if(a.lieu_sommeil) sommeilAlimBeg.push("Lieu de sommeil : "+a.lieu_sommeil);
+    if(a.troubles_sommeil && a.troubles_sommeil.length) sommeilAlimBeg.push("Troubles du sommeil : "+fmtArr(a.troubles_sommeil));
+    if(a.alim_bebe) sommeilAlimBeg.push("Alimentation b\u00e9b\u00e9 : "+a.alim_bebe);
+    if(a.alimentation && a.alimentation.length) sommeilAlimBeg.push("Alimentation actuelle : "+fmtArr(a.alimentation));
+    if(sommeilAlimBeg.length) map[trameId+".anamnese.sommeil_alim"]=sommeilAlimBeg.join('\n');
+  }
+
   if(trameId==='oralite-alimentaire'){
     // ── Demande / motif / plainte ──
     if(a.origine_plainte) map[trameId+".demande.motif"]=a.origine_plainte;
