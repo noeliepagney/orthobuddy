@@ -8245,6 +8245,46 @@ function prefillFromPatient(p){
   const a = p.anamnese || {};
   function fmtArr(v){ return Array.isArray(v) ? v.join(', ') : (v||''); }
 
+  if(trameId==='aphasie'){
+    // Éléments administratifs
+    if(a.lateralite_neuro) map[trameId+".administratif.lateralite"]=a.lateralite_neuro;
+    if(a.niveau_scolaire) map[trameId+".administratif.nsc"]=a.niveau_scolaire;
+    let situation=[];
+    if(a.situation_familiale) situation.push(a.situation_familiale);
+    if(a.lieu_vie_neuro && a.lieu_vie_neuro.length) situation.push(fmtArr(a.lieu_vie_neuro));
+    if(situation.length) map[trameId+".administratif.situation"]=situation.join(' — ');
+    let profession=[];
+    if(a.vie_pro_neuro) profession.push(a.vie_pro_neuro);
+    if(a.date_retraite) profession.push("Retraite : "+a.date_retraite);
+    if(profession.length) map[trameId+".administratif.profession"]=profession.join('\n');
+
+    // Demande / motif / plainte
+    if(a.demandeur_neuro) map[trameId+".demande.qui_adresse"]=a.demandeur_neuro;
+    let plainte=[];
+    if(a.plainte_actuelle_neuro) plainte.push(a.plainte_actuelle_neuro);
+    if(a.plainte_cognitive && a.plainte_cognitive.length) plainte.push("Nature de la plainte cognitive : "+fmtArr(a.plainte_cognitive));
+    if(plainte.length) map[trameId+".demande.plainte_patient"]=plainte.join('\n');
+
+    // Anamnèse médicale et neurologique
+    const etioMap={
+      'AVC isch\u00e9mique':'AVC isch\u00e9mique',
+      'AVC h\u00e9morragique':'AVC h\u00e9morragique',
+      'Traumatisme cr\u00e2nien':'Traumatisme cr\u00e2nien',
+      'Tumeur':'Tumeur',
+      'Maladie neurod\u00e9g\u00e9n\u00e9rative':'Autres \u2014 pr\u00e9ciser',
+      'Autre':'Autres \u2014 pr\u00e9ciser'
+    };
+    if(a.etiologie_neuro && etioMap[a.etiologie_neuro]) map[trameId+".anamnese.etiologie"]=etioMap[a.etiologie_neuro];
+    if(a.date_premiers_symptomes) map[trameId+".anamnese.date_accident"]=a.date_premiers_symptomes;
+    if(a.antecedents_neuro && a.antecedents_neuro.length) map[trameId+".anamnese.antecedents"]=fmtArr(a.antecedents_neuro);
+    if(a.traitements_neuro) map[trameId+".anamnese.traitements"]=a.traitements_neuro;
+    let sensoriels=[];
+    if(a.vision_neuro && a.vision_neuro.length) sensoriels.push("Vision : "+fmtArr(a.vision_neuro));
+    if(a.audition_neuro && a.audition_neuro.length) sensoriels.push("Audition : "+fmtArr(a.audition_neuro));
+    if(a.gout_odorat) sensoriels.push("Go\u00fbt et odorat : "+a.gout_odorat);
+    if(sensoriels.length) map[trameId+".anamnese.sensoriels"]=sensoriels.join('\n');
+  }
+
   if(trameId==='odorat-gout'){
     // Éléments administratifs
     if(a.lieu_vie_neuro && a.lieu_vie_neuro.length) map[trameId+".administratif.lieu_vie_actuel"]=fmtArr(a.lieu_vie_neuro);

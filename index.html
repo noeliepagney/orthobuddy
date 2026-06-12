@@ -15394,6 +15394,7 @@ function renderAnamneseTab(pid){
     sNeuro+=inlineField('G\u00e8re ses finances','gestion_finances','radio',['Oui','Non','Avec aide']);
     sNeuro+=textArea('Lecture / loisirs','loisirs_neuro');
     sNeuro+=textArea('Vie sociale','vie_sociale');
+    sNeuro+=inlineField('\u00c9tiologie neurologique','etiologie_neuro','select1',['AVC isch\u00e9mique','AVC h\u00e9morragique','Traumatisme cr\u00e2nien','Tumeur','Maladie neurod\u00e9g\u00e9n\u00e9rative','Autre']);
     sNeuro+=inlineField('Date apparition premiers sympt\u00f4mes','date_premiers_symptomes','text',null,{width:'150px'});
     sNeuro+=inlineField('Mode d\'installation','mode_installation','radio',['Progressif (insidieux)','Brutal (AVC/AIT)','Par paliers']);
     sNeuro+=multiSelect('Nature de la plainte cognitive','plainte_cognitive',['M\u00e9moire (RDV, \u00e9v\u00e9nements r\u00e9cents)','Langage (manque du mot)','Compr\u00e9hension','Praxies (s\'habiller, tenir un crayon)','Fonctions ex\u00e9cutives','Orientation spatiale','Reconnaissance visages/lieux','Calcul']);
