@@ -1411,7 +1411,7 @@ const TRAMES = {
             options:["Langage oral (même partiel)","Gestes naturels","Langue des Signes (LSF / Makaton / PECS)","Pictogrammes / imagiers","Tableau de communication","Appareil de communication avec voix de synthèse","Application tablette (Proloquo, Snap Core, Grid…)","Aucun système en place"] },
           { id:"caa_pertinence", label:"Pertinence d'une mise en place / adaptation de CAA", type:"select",
             options:["À évaluer","Recommandée","Déjà en place, à ajuster","Non indiquée à ce stade"] },
-          { id:"caa_com", label:"Commentaires CAA / perspectives", type:"textarea" },,
+          { id:"caa_com", label:"Commentaires CAA / perspectives", type:"textarea" },
 
           { id:"note_caa_detail", type:"note", text:"<span class='gt'>Repère</span>La CAA ne remplace pas la parole — elle la soutient et la favorise. Tous les enfants sans langage fonctionnel sont candidats à la CAA. Le choix du système dépend du profil moteur, cognitif et sensoriel de l'enfant. Impliquer la famille dès le départ est indispensable : la CAA ne fonctionne que si elle est utilisée dans tous les contextes de vie." },
           { id:"caa_systemes_utilises", label:"Systèmes CAA en place ou essayés", type:"checkboxes",
@@ -8136,6 +8136,72 @@ function prefillFromPatient(p){
   // Champs cliniques spécifiques par trame (depuis p.anamnese)
   const a = p.anamnese || {};
   function fmtArr(v){ return Array.isArray(v) ? v.join(', ') : (v||''); }
+
+  if(trameId==='communication-precoce'){
+    // ── Éléments administratifs ──
+    if(a.langue_maison) map[trameId+".administratif.langues"]=a.langue_maison;
+
+    // ── Demande / plainte ──
+    if(a.origine_plainte) map[trameId+".demande.motif"]=a.origine_plainte;
+    if(a.plainte_lo) map[trameId+".demande.plainte"]=a.plainte_lo;
+    if(a.attentes_lo) map[trameId+".demande.attentes"]=a.attentes_lo;
+
+    // ── Anamnèse ──
+    if(a.diagnostic_cp) map[trameId+".anamnese.diagnostic"]=a.diagnostic_cp;
+
+    let grossesseCp=[];
+    if(a.grossesse && a.grossesse.length) grossesseCp.push(fmtArr(a.grossesse));
+    if(a.naissance_mode) grossesseCp.push("Mode d'accouchement : "+a.naissance_mode);
+    if(a.naissance_terme) grossesseCp.push("Terme : "+a.naissance_terme);
+    if(a.naissance_detail && a.naissance_detail.length) grossesseCp.push("Particularit\u00e9s : "+fmtArr(a.naissance_detail));
+    if(a.poids_naissance && a.poids_naissance.length) grossesseCp.push("Poids de naissance : "+fmtArr(a.poids_naissance));
+    if(grossesseCp.length) map[trameId+".anamnese.grossesse"]=grossesseCp.join('\n');
+
+    let devPsyCp=[];
+    if(a.marche_4_pattes) devPsyCp.push("Marche \u00e0 4 pattes : "+a.marche_4_pattes);
+    if(a.age_marche) devPsyCp.push("\u00c2ge marche : "+a.age_marche);
+    if(a.lateralite) devPsyCp.push("Lat\u00e9ralit\u00e9 : "+a.lateralite);
+    if(a.proprete_diurne) devPsyCp.push("Propret\u00e9 diurne : "+a.proprete_diurne);
+    if(a.proprete_nocturne) devPsyCp.push("Propret\u00e9 nocturne : "+a.proprete_nocturne);
+    if(devPsyCp.length) map[trameId+".anamnese.dev_psy"]=devPsyCp.join('\n');
+
+    let atcdMedCp=[];
+    if(a.traumatismes) atcdMedCp.push("Traumatismes : "+a.traumatismes);
+    if(a.operations) atcdMedCp.push("Op\u00e9rations : "+a.operations);
+    if(a.traitements) atcdMedCp.push("Traitements : "+a.traitements);
+    if(a.diagnostics) atcdMedCp.push("Diagnostics : "+a.diagnostics);
+    if(atcdMedCp.length) map[trameId+".anamnese.atcd_med"]=atcdMedCp.join('\n');
+
+    if(a.orl && a.orl.length) map[trameId+".anamnese.audition"]=fmtArr(a.orl);
+    if(a.vision && a.vision.length) map[trameId+".anamnese.vue"]=fmtArr(a.vision);
+
+    let atcdFamCp=[];
+    if(a.atcd_fam_mere && a.atcd_fam_mere.length) atcdFamCp.push("M\u00e8re : "+fmtArr(a.atcd_fam_mere));
+    if(a.atcd_fam_pere && a.atcd_fam_pere.length) atcdFamCp.push("P\u00e8re : "+fmtArr(a.atcd_fam_pere));
+    if(a.atcd_fam_fratrie && a.atcd_fam_fratrie.length) atcdFamCp.push("Fratrie : "+fmtArr(a.atcd_fam_fratrie));
+    if(atcdFamCp.length) map[trameId+".anamnese.atcd_fam"]=atcdFamCp.join('\n');
+
+    if(a.suivis && a.suivis.length) map[trameId+".anamnese.autres_soins"]=fmtArr(a.suivis);
+    let contexteCp=[];
+    if(a.lieu_vie) contexteCp.push("Lieu de vie : "+a.lieu_vie);
+    if(a.fratrie) contexteCp.push("Fratrie : "+a.fratrie+(a.fratrie_detail?(' ('+a.fratrie_detail+')'):''));
+    if(a.prof_pere) contexteCp.push("Profession du p\u00e8re : "+a.prof_pere);
+    if(a.prof_mere) contexteCp.push("Profession de la m\u00e8re : "+a.prof_mere);
+    if(a.bilinguisme) contexteCp.push("Bilinguisme : "+a.bilinguisme+(a.langue_maison?(' ('+a.langue_maison+')'):''));
+    if(contexteCp.length) map[trameId+".anamnese.contexte"]=contexteCp.join('\n');
+
+    let alimCp=[];
+    if(a.alim_bebe) alimCp.push("Alimentation b\u00e9b\u00e9 : "+a.alim_bebe);
+    if(a.alimentation && a.alimentation.length) alimCp.push("Alimentation actuelle : "+fmtArr(a.alimentation));
+    if(a.succion && a.succion.length) alimCp.push("Succion : "+fmtArr(a.succion));
+    if(alimCp.length) map[trameId+".anamnese.alimentation"]=alimCp.join('\n');
+
+    let interetsCp=[];
+    if(a.centres_interet) interetsCp.push(a.centres_interet);
+    if(a.jeux_activites && a.jeux_activites.length) interetsCp.push(fmtArr(a.jeux_activites));
+    if(a.jeux_activites_autres) interetsCp.push(a.jeux_activites_autres);
+    if(interetsCp.length) map[trameId+".anamnese.interets"]=interetsCp.join(', ');
+  }
 
   if(trameId==='bpa'){
     // ── Éléments administratifs ──
