@@ -2228,7 +2228,7 @@ function switchEnv(env){
   updateEnvButtons();
   showToast(env === 'test' ? '🧪 Mode TEST activé' : '🟢 Mode PRODUCTION activé');
   // Recharger les données depuis la bonne base Supabase
-  sbLoad().then(()=>{ renderAll(); });
+  sbLoad().then(()=>{ renderAll(); checkQuestionnairesRecus(); });
 }
 function updateEnvButtons(){
   const env = localStorage.getItem('sb_env') || 'prod';
@@ -3538,6 +3538,8 @@ function showModal(title,bodyHtml){
   document.getElementById('modal-generic').classList.add('open');
   var btnQa=document.getElementById('btn-envoyer-qa');
   if(btnQa){ btnQa.addEventListener('click',function(){ envoyerQuestionnaire(this.dataset.pid); }); }
+  var btnQi=document.getElementById('btn-integrer-qa');
+  if(btnQi){ btnQi.addEventListener('click',function(){ integrerQuestionnaire(this.dataset.pid,this.dataset.token); }); }
 }
 let _toastT;
 function showToast(msg,type='green'){
@@ -15405,6 +15407,12 @@ function renderAnamneseTab(pid){
     html+=sCard('Sp\u00e9cifique \u2014 Neurologie','ti-brain',sNeuro);
   }
 
+  if(QUESTIONNAIRES_RECUS[pid] && QUESTIONNAIRES_RECUS[pid].length){
+    html+='<div style="margin-bottom:10px;background:#FFF1EE;border:1px solid #E07856;border-radius:var(--radius-sm);padding:10px 14px;display:flex;align-items:center;gap:10px;justify-content:space-between;">';
+    html+='<span style="font-size:12.5px;font-weight:700;color:#C0392B;"><i class="ti ti-mail-opened"></i> Questionnaire pré-bilan reçu</span>';
+    html+='<button onclick="ouvrirIntegrationQuestionnaire(\''+pid+'\')" style="background:#E07856;color:white;border:none;border-radius:var(--radius-sm);padding:6px 14px;font-family:inherit;font-size:12px;font-weight:700;cursor:pointer;">Voir et intégrer</button>';
+    html+='</div>';
+  }
   html+='<div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap;"><button class="btn btn-green" onclick="saveAnamneseTab(\''+pid+'\')"><i class="ti ti-device-floppy"></i> Sauvegarder</button><button class="btn btn-sm" style="background:#7C3AED;color:white;" onclick="ouvrirEnvoiQuestionnaire(\''+pid+'\')"><i class="ti ti-send"></i> Questionnaire patient</button></div>';
   el.innerHTML=html;
 }
@@ -15469,6 +15477,147 @@ function anamneseLive(field){
 }
 
 function _esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+// ── Questionnaires pré-bilan reçus : détection + intégration ────────────────
+var QUESTIONNAIRES_RECUS = {}; // patient_id -> [{token, reponses, anamnese_existante}]
+
+async function checkQuestionnairesRecus(){
+  try{
+    var res = await fetch('https://xiznicrburryfmdfbjxk.supabase.co/rest/v1/pre_anamnese?statut=eq.complete&integre=eq.false&select=token,patient_id,reponses,anamnese_existante,submitted_at', {
+      headers:{'apikey':'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inhpem5pY3JidXJyeWZtZGZianhrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAwNDM0NjEsImV4cCI6MjA5NTYxOTQ2MX0.vYuV7LIBXXkKJkHVwNPaI-lA7x1HwFROdU1K17ZB1Y8','Authorization':'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inhpem5pY3JidXJyeWZtZGZianhrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAwNDM0NjEsImV4cCI6MjA5NTYxOTQ2MX0.vYuV7LIBXXkKJkHVwNPaI-lA7x1HwFROdU1K17ZB1Y8'}
+    });
+    var rows = await res.json();
+    if(!Array.isArray(rows)) return;
+    QUESTIONNAIRES_RECUS = {};
+    rows.forEach(function(row){
+      if(!QUESTIONNAIRES_RECUS[row.patient_id]) QUESTIONNAIRES_RECUS[row.patient_id] = [];
+      QUESTIONNAIRES_RECUS[row.patient_id].push(row);
+    });
+    // Rafraîchir l'affichage des patients si une liste est déjà rendue
+    if(typeof renderPatients === 'function') renderPatients();
+  }catch(e){ console.error('checkQuestionnairesRecus', e); }
+}
+
+function _qaFmtVal(v){
+  if(v===undefined||v===null||v==='') return '';
+  if(Array.isArray(v)) return v.length ? v.join(', ') : '';
+  if(v===true) return 'Oui';
+  if(v===false) return 'Non';
+  return String(v);
+}
+
+function ouvrirIntegrationQuestionnaire(pid){
+  var p = DB.patients.find(function(x){return x.id===pid;});
+  if(!p){showToast('Patient introuvable','red');return;}
+  var items = QUESTIONNAIRES_RECUS[pid];
+  if(!items || !items.length){showToast('Aucun questionnaire à intégrer','red');return;}
+  var q = items[0]; // le plus récent (déjà ordonné par submitted_at desc côté requête si besoin)
+  var reponses = q.reponses || {};
+  var existante = q.anamnese_existante || {};
+
+  if(!p.anamnese) p.anamnese = {};
+  var a = p.anamnese;
+
+  // Construire la liste des champs anamnèse (hors _xxx admin)
+  var fields = [];
+  Object.keys(reponses).forEach(function(key){
+    if(key.indexOf('_')===0) return; // champs admin traités séparément
+    var val = reponses[key];
+    var fval = _qaFmtVal(val);
+    if(fval==='') return;
+    var parts = key.split('.');
+    var qid = parts[1] || parts[0];
+    var oldVal = a[qid];
+    var oldFval = _qaFmtVal(oldVal);
+    var modified = oldFval!=='' && oldFval!==fval;
+    fields.push({key:qid, newVal:val, newFval:fval, oldFval:oldFval, modified:modified});
+  });
+
+  var html = '<div style="padding:4px;max-height:70vh;overflow-y:auto;">';
+  html += '<p style="font-size:12.5px;color:var(--text-soft);margin-bottom:10px;">Sélectionnez les réponses à intégrer dans l\'anamnèse de '+_esc(p.prenom||'')+' '+_esc(p.nom||'')+'. Les champs surlignés en orange diffèrent de ce qui était déjà renseigné.</p>';
+
+  // Champs admin (infos patient) — affichage informatif
+  var adminLabels = {_ddn:'Date de naissance', _tel:'Téléphone', _email:'Email de contact', _qui:'Rempli par', _complement:'Complément'};
+  var adminRows = '';
+  Object.keys(adminLabels).forEach(function(k){
+    var v = reponses[k];
+    if(!v) return;
+    adminRows += '<div style="font-size:12px;padding:4px 0;border-bottom:1px solid var(--border-soft,#f0f0f0);"><b>'+adminLabels[k]+':</b> '+_esc(_qaFmtVal(v))+'</div>';
+  });
+  if(adminRows){
+    html += '<div style="background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-sm);padding:8px 10px;margin-bottom:10px;">'+adminRows+'</div>';
+  }
+
+  if(fields.length===0){
+    html += '<p style="font-size:13px;color:var(--text-soft);">Aucune réponse à intégrer (toutes vides).</p>';
+  }
+  fields.forEach(function(f, i){
+    var bg = f.modified ? '#FFF1EE' : 'var(--bg)';
+    var border = f.modified ? '#E07856' : 'var(--border)';
+    html += '<label style="display:flex;align-items:flex-start;gap:8px;padding:8px 10px;border:1px solid '+border+';background:'+bg+';border-radius:var(--radius-sm);margin-bottom:6px;cursor:pointer;">';
+    html += '<input type="checkbox" id="qi-field-'+i+'" data-key="'+f.key+'" checked style="margin-top:2px;width:14px;height:14px;accent-color:var(--green,#1D9E75);">';
+    html += '<div style="flex:1;font-size:12.5px;">';
+    html += '<div style="font-weight:700;">'+_esc(f.key)+'</div>';
+    html += '<div style="color:'+(f.modified?'#C0392B':'var(--text)')+';font-weight:'+(f.modified?'700':'400')+';">'+_esc(f.newFval)+'</div>';
+    if(f.modified){
+      html += '<div style="font-size:11px;color:var(--text-soft);margin-top:2px;">Ancien : '+_esc(f.oldFval)+' <span style="background:#E07856;color:#fff;font-size:9px;font-weight:700;padding:1px 5px;border-radius:8px;margin-left:4px;">MODIFIÉ</span></div>';
+    }
+    html += '</div></label>';
+  });
+
+  html += '<button id="btn-integrer-qa" data-pid="'+pid+'" data-token="'+q.token+'" style="background:var(--green,#1D9E75);color:white;border:none;border-radius:var(--radius-sm);padding:10px 18px;font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;width:100%;margin-top:8px;">Intégrer les réponses sélectionnées</button>';
+  html += '</div>';
+
+  // Stocker les fields pour la fonction d'intégration
+  window._qaPendingFields = fields;
+  window._qaPendingReponses = reponses;
+
+  showModal('Questionnaire reçu — '+(p.prenom||''),html);
+}
+
+async function integrerQuestionnaire(pid, token){
+  var p = DB.patients.find(function(x){return x.id===pid;});
+  if(!p) return;
+  if(!p.anamnese) p.anamnese = {};
+  var a = p.anamnese;
+
+  var fields = window._qaPendingFields || [];
+  var nbIntegres = 0;
+  fields.forEach(function(f, i){
+    var cb = document.getElementById('qi-field-'+i);
+    if(cb && cb.checked){
+      a[f.key] = f.newVal;
+      nbIntegres++;
+    }
+  });
+
+  // Compléter téléphone/email si vides dans la fiche patient
+  var reponses = window._qaPendingReponses || {};
+  if(reponses._tel && !p.tel) p.tel = reponses._tel;
+
+  p.anamnese = a;
+  save();
+
+  // Marquer comme intégré côté Supabase
+  try{
+    await fetch('https://xiznicrburryfmdfbjxk.supabase.co/rest/v1/pre_anamnese?token=eq.'+token, {
+      method:'PATCH',
+      headers:{
+        'apikey':'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inhpem5pY3JidXJyeWZtZGZianhrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAwNDM0NjEsImV4cCI6MjA5NTYxOTQ2MX0.vYuV7LIBXXkKJkHVwNPaI-lA7x1HwFROdU1K17ZB1Y8',
+        'Authorization':'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inhpem5pY3JidXJyeWZtZGZianhrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAwNDM0NjEsImV4cCI6MjA5NTYxOTQ2MX0.vYuV7LIBXXkKJkHVwNPaI-lA7x1HwFROdU1K17ZB1Y8',
+        'Content-Type':'application/json'
+      },
+      body: JSON.stringify({integre:true})
+    });
+  }catch(e){ console.error(e); }
+
+  delete QUESTIONNAIRES_RECUS[pid];
+  closeModal('modal-generic');
+  showToast(nbIntegres+' réponse(s) intégrée(s) à l\'anamnèse','green');
+  // Rafraîchir l'onglet anamnèse si ouvert
+  if(typeof renderAnamneseTab==='function') renderAnamneseTab(pid);
+  if(typeof renderPatients==='function') renderPatients();
+}
+
 // Définition des sections/questions pour le questionnaire pré-bilan
 // Les id correspondent EXACTEMENT aux clés data-ana de l'anamnèse OrthoBuddy
 var QA_SECTIONS = {
