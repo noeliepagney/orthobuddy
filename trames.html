@@ -8027,6 +8027,7 @@ function selectFromSub(){
     if(currentPatientId){
       const p=allPatients.find(x=>x.id===currentPatientId);
       if(p) setTimeout(()=>prefillFromPatient(p),100);
+      else setTimeout(()=>{ const p2=getPatientFallback(currentPatientId); if(p2) prefillFromPatient(p2); },400);
     }
   } else { trameId=null; renderPlaceholder(leaf.label); }
 }
@@ -8052,6 +8053,12 @@ let trameId=null, data={}, saveTimer=null;
 let currentBilanId=null;
 let currentPatientId=null;
 let allPatients=[];
+function getPatientFallback(pid){
+  try{
+    const db=JSON.parse(localStorage.getItem("orthobuddy_v3")||"{}");
+    return (db.patients||[]).find(x=>x.id===pid)||null;
+  }catch(e){ return null; }
+}
 
 // ── Patients ────────────────────────────────────────────────────────────────
 function loadPatients(){
@@ -8089,7 +8096,7 @@ function onPatientChange(){
     refreshSaved();
     if(trameId){
       const p=allPatients.find(x=>x.id===pid);
-      if(p) setTimeout(()=>prefillFromPatient(p),200);
+      if(p) setTimeout(()=>prefillFromPatient(p),200);      else setTimeout(()=>{ const p2=getPatientFallback(pid); if(p2) prefillFromPatient(p2); },400);
     }
   } else {
     $("#savedSel").innerHTML="<option value=''>— ouvrir un bilan —</option>";
@@ -8136,6 +8143,68 @@ function prefillFromPatient(p){
   // Champs cliniques spécifiques par trame (depuis p.anamnese)
   const a = p.anamnese || {};
   function fmtArr(v){ return Array.isArray(v) ? v.join(', ') : (v||''); }
+
+  if(trameId==='omf-tubaire'){
+    // ── Éléments administratifs ──
+    if(p.classe) map[trameId+".administratif.classe"]=p.classe;
+
+    // ── Demande / motif / plainte ──
+    if(a.plainte_lo) map[trameId+".demande.plainte"]=a.plainte_lo;
+    if(a.adresse_par_omf && a.adresse_par_omf.length) map[trameId+".demande.prescripteur"]=a.adresse_par_omf.slice();
+    if(a.motifs_omf && a.motifs_omf.length) map[trameId+".demande.motif_items"]=a.motifs_omf.slice();
+
+    // ── Anamnèse ──
+    let grossesseOmf=[];
+    if(a.grossesse && a.grossesse.length) grossesseOmf.push(fmtArr(a.grossesse));
+    if(a.naissance_mode) grossesseOmf.push("Mode d'accouchement : "+a.naissance_mode);
+    if(a.naissance_terme) grossesseOmf.push("Terme : "+a.naissance_terme);
+    if(a.poids_naissance && a.poids_naissance.length) grossesseOmf.push("Poids de naissance : "+fmtArr(a.poids_naissance));
+    if(grossesseOmf.length) map[trameId+".anamnese.grossesse"]=grossesseOmf.join('\n');
+
+    let devGeneralOmf=[];
+    if(a.marche_4_pattes) devGeneralOmf.push("Marche \u00e0 4 pattes : "+a.marche_4_pattes);
+    if(a.age_marche) devGeneralOmf.push("\u00c2ge marche : "+a.age_marche);
+    if(a.lateralite) devGeneralOmf.push("Lat\u00e9ralit\u00e9 : "+a.lateralite);
+    if(devGeneralOmf.length) map[trameId+".anamnese.dev_general"]=devGeneralOmf.join('\n');
+
+    if(p.classe) map[trameId+".anamnese.scolarite"]=p.classe;
+
+    if(a.orl && a.orl.length) map[trameId+".anamnese.atcd_orl"]=fmtArr(a.orl);
+
+    let atcdMedOmf=[];
+    if(a.traumatismes) atcdMedOmf.push("Traumatismes : "+a.traumatismes);
+    if(a.operations) atcdMedOmf.push("Op\u00e9rations : "+a.operations);
+    if(a.diagnostics) atcdMedOmf.push("Diagnostics : "+a.diagnostics);
+    if(atcdMedOmf.length) map[trameId+".anamnese.atcd_med"]=atcdMedOmf.join('\n');
+
+    if(a.traitements) map[trameId+".anamnese.traitements"]=a.traitements;
+
+    let loisirsOmf=[];
+    if(a.jeux_activites && a.jeux_activites.length) loisirsOmf.push(fmtArr(a.jeux_activites));
+    if(a.jeux_activites_autres) loisirsOmf.push(a.jeux_activites_autres);
+    if(loisirsOmf.length) map[trameId+".anamnese.loisirs"]=loisirsOmf.join(', ');
+
+    let alimentationOmf=[];
+    if(a.alim_bebe) alimentationOmf.push("Alimentation b\u00e9b\u00e9 : "+a.alim_bebe);
+    if(a.alimentation && a.alimentation.length) alimentationOmf.push("Alimentation actuelle : "+fmtArr(a.alimentation));
+    if(a.alimentation_oralite && a.alimentation_oralite.length) alimentationOmf.push("Comportement alimentaire : "+fmtArr(a.alimentation_oralite));
+    if(alimentationOmf.length) map[trameId+".anamnese.alimentation_anam"]=alimentationOmf.join('\n');
+
+    let sommeilOmf=[];
+    if(a.lieu_sommeil) sommeilOmf.push("Lieu de sommeil : "+a.lieu_sommeil);
+    if(a.troubles_sommeil && a.troubles_sommeil.length) sommeilOmf.push("Troubles du sommeil : "+fmtArr(a.troubles_sommeil));
+    if(sommeilOmf.length) map[trameId+".anamnese.sommeil_anam"]=sommeilOmf.join('\n');
+
+    if(a.succion && a.succion.length){
+      const succMap={'Pouce/doigt':'Pouce','T\u00e9tine':'T\u00e9tine — pr\u00e9ciser l\'\u00e2ge actuel','Doudou/v\u00eatement':'Autre'};
+      const mapped = a.succion.map(s=>succMap[s]||s).filter((v,i,arr)=>arr.indexOf(v)===i);
+      if(mapped.length) map[trameId+".anamnese.succion_habits"]=mapped;
+    }
+
+    if(a.symptomes_omf && a.symptomes_omf.length) map[trameId+".anamnese.symptomes_osm"]=a.symptomes_omf.slice();
+
+    if(a.description_patient) map[trameId+".anamnese.personnalite"]=a.description_patient;
+  }
 
   if(trameId==='communication-precoce'){
     // ── Éléments administratifs ──
