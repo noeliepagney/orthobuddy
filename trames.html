@@ -9219,6 +9219,102 @@ function prefillFromPatient(p){
     if(a.attentes_lo) map[trameId+".anamnese.attentes_famille"]=a.attentes_lo;
   }
 
+  if(trameId==='huntington'){
+    // ── Éléments administratifs ──
+    let situationHunt=[];
+    if(a.situation_familiale) situationHunt.push(a.situation_familiale);
+    if(a.lieu_vie_neuro && a.lieu_vie_neuro.length) situationHunt.push(fmtArr(a.lieu_vie_neuro));
+    if(situationHunt.length) map[trameId+".administratif.situation"]=situationHunt.join(' \u2014 ');
+    if(a.lateralite_neuro){
+      var latMapHunt={'Droitier(e)':'Droitier','Gaucher(e)':'Gaucher','Ambidextre':'Ambidextre'};
+      map[trameId+".administratif.lateralite"]=latMapHunt[a.lateralite_neuro]||a.lateralite_neuro;
+    }
+
+    // ── Demande / plainte ──
+    if(a.demandeur_neuro) map[trameId+".demande.qui_adresse"]=a.demandeur_neuro;
+    if(a.plainte_actuelle_neuro) map[trameId+".demande.plainte_patient"]=a.plainte_actuelle_neuro;
+    if(a.plainte_entourage_neuro) map[trameId+".demande.plainte_entourage"]=a.plainte_entourage_neuro;
+    if(a.impact_vie_quotidienne_neuro) map[trameId+".demande.impact_qv"]=a.impact_vie_quotidienne_neuro;
+
+    // ── Anamnèse ──
+    if(a.antecedents_neuro && a.antecedents_neuro.length) map[trameId+".anamnese.atcd_familiaux"]=fmtArr(a.antecedents_neuro);
+    if(a.traitements_neuro) map[trameId+".anamnese.traitements"]=a.traitements_neuro;
+    if(a.autres_soins_neuro) map[trameId+".anamnese.autres_soins"]=a.autres_soins_neuro;
+    if(a.modif_comportement && a.modif_comportement.length) map[trameId+".anamnese.contexte_psych"]=fmtArr(a.modif_comportement);
+
+    if(a.regime || a.retentissement_alim){
+      let alimHunt=[];
+      if(a.regime) alimHunt.push(a.regime);
+      if(a.retentissement_alim && a.retentissement_alim.length) alimHunt.push("Retentissement alimentaire : "+fmtArr(a.retentissement_alim));
+      map[trameId+".anamnese.alimentation_anam"]=alimHunt.join('\n');
+    }
+
+    let autonomieHunt=[];
+    if(a.conduite) autonomieHunt.push("Conduite : "+a.conduite);
+    if(a.gestion_finances) autonomieHunt.push("Gestion des finances : "+a.gestion_finances);
+    if(a.occupations) autonomieHunt.push("Occupations : "+a.occupations);
+    if(a.aidant) autonomieHunt.push("Aidant principal : "+a.aidant);
+    if(autonomieHunt.length) map[trameId+".anamnese.autonomie"]=autonomieHunt.join('\n');
+  }
+
+  if(trameId==='sep'){
+    // ── Éléments administratifs ──
+    let situationSep=[];
+    if(a.vie_pro_neuro) situationSep.push(a.vie_pro_neuro);
+    if(a.situation_familiale) situationSep.push(a.situation_familiale);
+    if(situationSep.length) map[trameId+".administratif.situation"]=situationSep.join(' \u2014 ');
+    if(a.lateralite_neuro){
+      var latMapSep={'Droitier(e)':'Droitier','Gaucher(e)':'Gaucher','Ambidextre':'Ambidextre'};
+      map[trameId+".administratif.lateralite"]=latMapSep[a.lateralite_neuro]||a.lateralite_neuro;
+    }
+
+    // ── Demande / plainte ──
+    if(a.demandeur_neuro) map[trameId+".demande.qui_adresse"]=a.demandeur_neuro;
+    if(a.plainte_actuelle_neuro) map[trameId+".demande.plainte_patient"]=a.plainte_actuelle_neuro;
+    if(a.impact_vie_quotidienne_neuro) map[trameId+".demande.impact_qv"]=a.impact_vie_quotidienne_neuro;
+
+    // ── Anamnèse ──
+    if(a.traitements_neuro) map[trameId+".anamnese.traitements"]=a.traitements_neuro;
+    if(a.autres_soins_neuro) map[trameId+".anamnese.autres_soins"]=a.autres_soins_neuro;
+
+    if(a.antecedents_neuro && a.antecedents_neuro.length){
+      let moteurs=[];
+      if(a.antecedents_neuro.indexOf('Chutes fr\u00e9quentes')>=0) moteurs.push('Troubles de la marche / chutes');
+      if(moteurs.length) map[trameId+".anamnese.symptomes_moteurs"]=moteurs;
+    }
+
+    if(a.modif_comportement && a.modif_comportement.length){
+      const humeurMap={
+        'D\u00e9pression':'D\u00e9pression',
+        'Anxi\u00e9t\u00e9':'Anxi\u00e9t\u00e9',
+        'Col\u00e8res / agressivit\u00e9':'Labilit\u00e9 \u00e9motionnelle (rires/pleurs pathologiques)',
+        'D\u00e9sinhibition':'Euphorie'
+      };
+      let humeur=[];
+      a.modif_comportement.forEach(function(v){ if(humeurMap[v] && humeur.indexOf(humeurMap[v])<0) humeur.push(humeurMap[v]); });
+      if(humeur.length) map[trameId+".anamnese.humeur_sep"]=humeur;
+    }
+  }
+
+  if(trameId==='surdite-adulte'){
+    // ── Éléments administratifs ──
+    let situationSurdA=[];
+    if(a.vie_pro_neuro) situationSurdA.push(a.vie_pro_neuro);
+    if(a.situation_familiale) situationSurdA.push(a.situation_familiale);
+    if(situationSurdA.length) map[trameId+".administratif.situation"]=situationSurdA.join(' \u2014 ');
+    if(a.lateralite_neuro){
+      var latMapSurdA={'Droitier(e)':'Droitier','Gaucher(e)':'Gaucher','Ambidextre':'Ambidextre'};
+      map[trameId+".administratif.lateralite"]=latMapSurdA[a.lateralite_neuro]||a.lateralite_neuro;
+    }
+
+    // ── Anamnèse ──
+    let motifSurdA=[];
+    if(a.demandeur_neuro) motifSurdA.push("Demandeur : "+a.demandeur_neuro);
+    if(a.plainte_actuelle_neuro) motifSurdA.push(a.plainte_actuelle_neuro);
+    if(motifSurdA.length) map[trameId+".anamnese.motif_adulte"]=motifSurdA.join('\n');
+    if(a.audiogramme_resultats) map[trameId+".anamnese.audiogramme_tonal"]=a.audiogramme_resultats;
+  }
+
   if(trameId==='deglutition-dysfonctionnelle'){
     // ── Éléments administratifs ──
     if(p.classe) map[trameId+".administratif.classe"]=p.classe;
