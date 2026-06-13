@@ -2231,7 +2231,7 @@ function switchEnv(env){
   updateEnvButtons();
   showToast(env === 'test' ? '🧪 Mode TEST activé' : '🟢 Mode PRODUCTION activé');
   // Recharger les données depuis la bonne base Supabase
-  sbLoad().then(()=>{ renderAll(); checkQuestionnairesRecus(); });
+  sbLoad().then(()=>{ renderAll(); setTimeout(checkQuestionnairesRecus, 300); });
 }
 function updateEnvButtons(){
   const env = localStorage.getItem('sb_env') || 'prod';
@@ -3894,6 +3894,18 @@ function renderPatients(){
   document.getElementById('nav-count-termine').textContent = DB.patients.filter(p=>p.statut==='termine').length || '';
   var attenteList = DB.attente||[];
   document.getElementById('nav-count-attente').textContent = attenteList.length || '';
+  // Mettre à jour le badge "Questionnaires reçus" si les données sont déjà connues
+  var _btnQR = document.getElementById('btn-questionnaires-recus');
+  if(_btnQR){
+    var _nQR = Object.keys(QUESTIONNAIRES_RECUS||{}).length;
+    if(_nQR>0){
+      _btnQR.style.display='inline-flex';
+      _btnQR.textContent = '☁️ Questionnaires reçus ('+_nQR+')';
+    } else {
+      _btnQR.style.display='none';
+      _btnQR.textContent = '☁️ Questionnaires reçus';
+    }
+  }
   var attenteAlert = document.getElementById('nav-attente-alert');
   var attenteUrgents = attenteList.filter(function(a){return a.urgence==='urgent'||(a.dateEntree&&(Date.now()-new Date(a.dateEntree+'T00:00:00'))/(1000*60*60*24*30)>=3);});
   if(attenteAlert) attenteAlert.style.display = attenteUrgents.length ? 'inline' : 'none';
