@@ -124,6 +124,10 @@ const SECTIONS = {
   base_adulte: {
     label: "Anamnèse base — adulte",
     questions: [
+      { id:"demandeur_neuro", label:"Qui est à l'origine de cette demande de bilan ?", type:"select", options:["Le patient lui-même","L'entourage","Le médecin traitant","Un médecin spécialiste"] },
+      { id:"plainte_actuelle_neuro", label:"Quelle est la difficulté actuelle ?", type:"textarea" },
+      { id:"plainte_entourage_neuro", label:"Qu'observe votre entourage ?", type:"textarea" },
+      { id:"impact_vie_quotidienne_neuro", label:"Quel est l'impact sur la vie quotidienne ?", type:"textarea" },
       { id:"niveau_scolaire", label:"Niveau scolaire atteint", type:"select", options:["Certificat d'études","CAP/BEP","Bac","Bac+2","Bac+3","Bac+5 et plus"] },
       { id:"niveau_eleve", label:"Parcours scolaire", type:"select", options:["Bon(ne) élève","Élève moyen(ne)","En difficulté"] },
       { id:"lateralite_neuro", label:"Êtes-vous droitier, gaucher ou ambidextre ?", type:"select", options:["Droitier(e)","Gaucher(e)","Ambidextre"] },
@@ -137,6 +141,23 @@ const SECTIONS = {
       { id:"gestion_finances", label:"Gère ses finances", type:"select", options:["Oui","Non","Avec aide"] },
       { id:"loisirs_neuro", label:"Lecture / loisirs", type:"textarea" },
       { id:"vie_sociale", label:"Vie sociale", type:"textarea" },
+      { id:"date_premiers_symptomes", label:"Date d'apparition des premiers signes", type:"text" },
+      { id:"mode_installation", label:"Comment ces difficultés sont-elles apparues ?", type:"select", options:["Petit à petit, de façon progressive","Brutalement (suite à un AVC ou un malaise)","Par étapes, avec des périodes d'aggravation"] },
+      { id:"plainte_cognitive", label:"Quels changements avez-vous remarqués ?", type:"checkboxes", options:["Mémoire (rendez-vous, événements récents)","Trouver ses mots","Comprendre ce qu'on lui dit","Gestes du quotidien (s'habiller, utiliser des objets…)","Organiser, planifier, s'adapter aux changements","Se repérer dans l'espace","Reconnaître des visages ou des lieux familiers","Calcul"] },
+      { id:"caractere_evolutif", label:"Comment ces difficultés évoluent-elles ?", type:"select", options:["Stables","Elles s'aggravent progressivement","Par étapes (périodes stables puis aggravation)","Cela varie selon les jours ou les moments"] },
+      { id:"anosognosie", label:"La personne est-elle consciente de ses difficultés ?", type:"select", options:["Oui, tout à fait","Partiellement","Peu ou pas consciente"] },
+      { id:"modif_comportement", label:"Avez-vous remarqué des changements de comportement ?", type:"checkboxes", options:["Moins d'initiative, de motivation","Ralentissement général","A arrêté certaines activités","Dort beaucoup plus qu'avant","Comportements inhabituels, moins de retenue","Colères, agressivité","Anxiété","Tristesse, moral en baisse","Troubles du sommeil"] },
+      { id:"antecedents_neuro", label:"Antécédents médicaux", type:"checkboxes", options:["Diabète","Hypertension","Cholestérol élevé","Hallucinations visuelles","Chutes fréquentes","Incontinence","Dépression","AVC ou accident vasculaire cérébral transitoire (AIT)","Traumatisme crânien","Maladie de Parkinson"] },
+      { id:"traitements_neuro", label:"Traitements médicamenteux actuels", type:"textarea" },
+      { id:"reaction_antidep", label:"Si un traitement pour le moral a été prescrit, a-t-il eu un effet sur les troubles observés ?", type:"select", options:["Oui","Non","Ne sait pas / non concerné"] },
+      { id:"vision_neuro", label:"Concernant la vue", type:"checkboxes", options:["Cataracte","Glaucome","DMLA (dégénérescence maculaire liée à l'âge)","Porte des lunettes"] },
+      { id:"audition_neuro", label:"Concernant l'audition", type:"checkboxes", options:["Baisse d'audition liée à l'âge","Porte des appareils auditifs","Surdité","Ne porte pas ses appareils auditifs"] },
+      { id:"gout_odorat", label:"Le goût et l'odorat sont-ils conservés ?", type:"select", options:["Conservés","Un peu modifiés","Très modifiés"] },
+      { id:"examens_neuro", label:"Quels examens ont déjà été réalisés ?", type:"checkboxes", options:["IRM","Scanner","Scintigraphie cérébrale","Analyses de sang","Bilan neuropsychologique (tests de mémoire et de raisonnement)","Évaluation gériatrique"] },
+      { id:"atcd_fam_neuro", label:"Y a-t-il eu, dans la famille, des cas de maladies comme Alzheimer, Parkinson ou autres maladies neurodégénératives ?", type:"textarea" },
+      { id:"evenements_vie", label:"Des événements de vie marquants se sont-ils produits récemment (deuil, déménagement, hospitalisation…) ?", type:"textarea" },
+      { id:"info_langagiere", label:"Informations utiles sur le langage (avant ou après l'apparition des troubles)", type:"textarea" },
+      { id:"commentaires_neuro", label:"Commentaires", type:"textarea" },
     ]
   },
   lo: {
@@ -332,6 +353,47 @@ const SECTIONS = {
       { id:"traitement_voix_e", label:"Traitements en cours", type:"text" },
     ]
   },
+  begaiement: {
+    label: "Bégaiement",
+    questions: [
+      { id:"debut_begaiement", label:"À quel âge le bégaiement est-il apparu ?", type:"text" },
+      { id:"evolution_begaiement", label:"Comment a-t-il évolué depuis le début ?", type:"textarea" },
+      { id:"description_begaiement", label:"Pouvez-vous décrire ce que vous observez quand votre enfant bégaie ?", type:"textarea" },
+      { id:"variations_situationnelles_begaiement", label:"Cela varie-t-il selon les situations (à la maison, à l'école, avec certaines personnes…) ?", type:"textarea" },
+      { id:"signes_lutte_begaiement", label:"Avez-vous remarqué des tensions, grimaces ou efforts quand votre enfant bégaie ?", type:"textarea" },
+      { id:"reaction_enfant_begaiement", label:"Comment réagit votre enfant quand il/elle bégaie ?", type:"textarea" },
+      { id:"evitements_begaiement", label:"Votre enfant évite-t-il/elle certains mots, sons ou situations de parole ?", type:"textarea" },
+      { id:"impact_scolaire_begaiement", label:"Cela a-t-il un impact à l'école (participation orale, lecture à voix haute…) ?", type:"textarea" },
+      { id:"impact_social_begaiement", label:"Cela a-t-il un impact sur ses relations avec les autres enfants ?", type:"textarea" },
+      { id:"ressenti_parents_begaiement", label:"Comment vous sentez-vous, vous, quand votre enfant bégaie ?", type:"textarea" },
+      { id:"aide_parents_begaiement", label:"Comment l'aidez-vous habituellement dans ces moments ?", type:"textarea" },
+      { id:"atcd_perso_begaiement_parent", label:"Un parent a-t-il déjà bégayé ?", type:"select", options:["Oui","Non"] },
+      { id:"atcd_perso_begaiement_detail", label:"Si oui, précisez (qui, comment cela a évolué)", type:"text" },
+    ]
+  },
+  bpa: {
+    label: "Repérage des difficultés (BPA)",
+    questions: [
+      { id:"origine_bpa", label:"Qui est à l'origine de cette demande de bilan ?", type:"checkboxes", options:["La famille","Médecin / pédiatre","Enseignant","Infirmière scolaire","Initiative personnelle","Autre"] },
+      { id:"depuis_bpa", label:"Depuis quand observez-vous ces difficultés ?", type:"text" },
+      { id:"plainte_items_bpa", label:"Quelles difficultés observez-vous ?", type:"checkboxes", options:["Absence ou retard de langage","Difficile à comprendre quand il/elle parle","Ne fait pas encore de phrases","Difficultés de prononciation","Difficultés à comprendre les consignes","Lecture lente ou difficile","Difficultés à déchiffrer les mots","Difficultés en orthographe","Écriture difficile ou peu lisible","Difficultés en calcul ou en raisonnement","Difficultés d'attention","Difficultés à communiquer avec les autres","Problème de voix","Difficultés liées à la bouche (tétine, respiration par la bouche, déglutition…)","Autre"] },
+      { id:"plainte_libre_bpa", label:"Pouvez-vous préciser ce qui vous inquiète ?", type:"textarea" },
+    ]
+  },
+  communication_precoce: {
+    label: "Communication précoce",
+    questions: [
+      { id:"diagnostic_cp", label:"Un diagnostic médical a-t-il été posé (ou est-il en cours) ?", type:"textarea" },
+    ]
+  },
+  omf: {
+    label: "Oralité — fonctions de la bouche (OMF)",
+    questions: [
+      { id:"adresse_par_omf", label:"Qui vous a orienté(e) vers ce bilan ?", type:"checkboxes", options:["Médecin traitant","Pédiatre","ORL","Orthodontiste","Chirurgien-dentiste","Gastro-pédiatre","Autre"] },
+      { id:"motifs_omf", label:"Quels sont les motifs de la consultation ?", type:"checkboxes", options:["Otites à répétition","Pose d'aérateurs (\"yoyos\")","Surdité de transmission","Respiration par la bouche","Ronflements / pauses respiratoires pendant le sommeil","Bavage","Difficultés à prononcer certains sons","Difficile à comprendre quand il/elle parle","Avale de façon atypique","Difficultés alimentaires","Difficultés de sommeil liées à la respiration","Autre"] },
+      { id:"symptomes_omf", label:"Avez-vous remarqué l'un de ces éléments ?", type:"checkboxes", options:["Sensation d'oreille bouchée","S'entend parler de façon différente (voix qui résonne)","Acouphènes (bruits dans l'oreille)","Vertiges","Douleur à l'oreille","Entend moins bien","Parle fort","Demande souvent de répéter","Difficultés de concentration","Agitation","Repli sur soi"] },
+    ]
+  },
   anosmie: {
     label: "Anosmie",
     questions: [
@@ -346,28 +408,6 @@ const SECTIONS = {
       { id:"commentaires_anos", label:"Commentaires", type:"textarea" },
     ]
   },
-  base_adulte_neuro: {
-    label: "Neurologie",
-    questions: [
-      { id:"date_premiers_symptomes", label:"Date d'apparition des premiers signes", type:"text" },
-      { id:"mode_installation", label:"Comment ces difficultés sont-elles apparues ?", type:"select", options:["Petit à petit, de façon progressive","Brutalement (suite à un AVC ou un malaise)","Par étapes, avec des périodes d'aggravation"] },
-      { id:"plainte_cognitive", label:"Quels changements avez-vous remarqués ?", type:"checkboxes", options:["Mémoire (rendez-vous, événements récents)","Trouver ses mots","Comprendre ce qu'on lui dit","Gestes du quotidien (s'habiller, utiliser des objets…)","Organiser, planifier, s'adapter aux changements","Se repérer dans l'espace","Reconnaître des visages ou des lieux familiers","Calcul"] },
-      { id:"caractere_evolutif", label:"Comment ces difficultés évoluent-elles ?", type:"select", options:["Stables","Elles s'aggravent progressivement","Par étapes (périodes stables puis aggravation)","Cela varie selon les jours ou les moments"] },
-      { id:"anosognosie", label:"La personne est-elle consciente de ses difficultés ?", type:"select", options:["Oui, tout à fait","Partiellement","Peu ou pas consciente"] },
-      { id:"modif_comportement", label:"Avez-vous remarqué des changements de comportement ?", type:"checkboxes", options:["Moins d'initiative, de motivation","Ralentissement général","A arrêté certaines activités","Dort beaucoup plus qu'avant","Comportements inhabituels, moins de retenue","Colères, agressivité","Anxiété","Tristesse, moral en baisse","Troubles du sommeil"] },
-      { id:"antecedents_neuro", label:"Antécédents médicaux", type:"checkboxes", options:["Diabète","Hypertension","Cholestérol élevé","Hallucinations visuelles","Chutes fréquentes","Incontinence","Dépression","AVC ou accident vasculaire cérébral transitoire (AIT)","Traumatisme crânien","Maladie de Parkinson"] },
-      { id:"traitements_neuro", label:"Traitements médicamenteux actuels", type:"textarea" },
-      { id:"reaction_antidep", label:"Si un traitement pour le moral a été prescrit, a-t-il eu un effet sur les troubles observés ?", type:"select", options:["Oui","Non","Ne sait pas / non concerné"] },
-      { id:"vision_neuro", label:"Concernant la vue", type:"checkboxes", options:["Cataracte","Glaucome","DMLA (dégénérescence maculaire liée à l'âge)","Porte des lunettes"] },
-      { id:"audition_neuro", label:"Concernant l'audition", type:"checkboxes", options:["Baisse d'audition liée à l'âge","Porte des appareils auditifs","Surdité","Ne porte pas ses appareils auditifs"] },
-      { id:"gout_odorat", label:"Le goût et l'odorat sont-ils conservés ?", type:"select", options:["Conservés","Un peu modifiés","Très modifiés"] },
-      { id:"examens_neuro", label:"Quels examens ont déjà été réalisés ?", type:"checkboxes", options:["IRM","Scanner","Scintigraphie cérébrale","Analyses de sang","Bilan neuropsychologique (tests de mémoire et de raisonnement)","Évaluation gériatrique"] },
-      { id:"atcd_fam_neuro", label:"Y a-t-il eu, dans la famille, des cas de maladies comme Alzheimer, Parkinson ou autres maladies neurodégénératives ?", type:"textarea" },
-      { id:"evenements_vie", label:"Des événements de vie marquants se sont-ils produits récemment (deuil, déménagement, hospitalisation…) ?", type:"textarea" },
-      { id:"info_langagiere", label:"Informations utiles sur le langage (avant ou après l'apparition des troubles)", type:"textarea" },
-      { id:"commentaires_neuro", label:"Commentaires", type:"textarea" },
-    ]
-  }
 };
 
 let qaData = null;
@@ -448,7 +488,7 @@ function renderForm(sections) {
   </div>`;
 
   // Sections sélectionnées — base toujours en premier
-  const BASE_ORDER = ['base_enfant','base_adulte','base_adulte_neuro'];
+  const BASE_ORDER = ['base_enfant','base_adulte'];
   const allIds = Array.isArray(sections) ? sections : Object.keys(sections || {}).filter(k => sections[k]);
   const baseIds = BASE_ORDER.filter(id => allIds.includes(id));
   const otherIds = allIds.filter(id => !BASE_ORDER.includes(id));

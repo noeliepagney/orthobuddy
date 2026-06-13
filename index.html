@@ -15945,7 +15945,6 @@ async function integrerQuestionnaire(pid, token){
 var QA_SECTIONS = {
   base_enfant: {
     label: 'Anamnèse base — enfant',
-    base: true,
     questions: [
       {id:'lieu_vie', label:'Lieu de vie'},
       {id:'prof_pere', label:'Profession du père'},
@@ -15999,21 +15998,41 @@ var QA_SECTIONS = {
   },
   base_adulte: {
     label: 'Anamnèse base — adulte',
-    base: true,
     questions: [
+      {id:'demandeur_neuro', label:'Qui est à l\'origine de la demande de consultation'},
+      {id:'plainte_actuelle_neuro', label:'Plainte actuelle'},
+      {id:'plainte_entourage_neuro', label:'Plainte de l\'entourage'},
+      {id:'impact_vie_quotidienne_neuro', label:'Impact sur la vie quotidienne'},
       {id:'niveau_scolaire', label:'Niveau scolaire atteint'},
       {id:'niveau_eleve', label:'Parcours scolaire'},
-      {id:'lateralite_neuro', label:'Latéralité'},
+      {id:'lateralite_neuro', label:'Êtes-vous droitier, gaucher ou ambidextre ?'},
       {id:'vie_pro_neuro', label:'Vie professionnelle (dernier poste)'},
       {id:'date_retraite', label:'Date de retraite'},
       {id:'situation_familiale', label:'Situation familiale'},
       {id:'lieu_vie_neuro', label:'Lieu de vie actuel'},
-      {id:'aidant', label:'Aidant principal'},
+      {id:'aidant', label:'Qui vous accompagne au quotidien'},
       {id:'occupations', label:'Occupations quotidiennes'},
       {id:'conduite', label:'Conduit un véhicule'},
       {id:'gestion_finances', label:'Gère ses finances'},
       {id:'loisirs_neuro', label:'Lecture / loisirs'},
       {id:'vie_sociale', label:'Vie sociale'},
+      {id:'date_premiers_symptomes', label:'Date d\'apparition des premiers signes'},
+      {id:'mode_installation', label:'Comment ces difficultés sont-elles apparues ?'},
+      {id:'plainte_cognitive', label:'Quels changements avez-vous remarqués ?'},
+      {id:'caractere_evolutif', label:'Comment ces difficultés évoluent-elles ?'},
+      {id:'anosognosie', label:'La personne est-elle consciente de ses difficultés ?'},
+      {id:'modif_comportement', label:'Changements de comportement'},
+      {id:'antecedents_neuro', label:'Antécédents médicaux'},
+      {id:'traitements_neuro', label:'Traitements médicamenteux actuels'},
+      {id:'reaction_antidep', label:'Effet d\'un traitement pour le moral'},
+      {id:'vision_neuro', label:'Concernant la vue'},
+      {id:'audition_neuro', label:'Concernant l\'audition'},
+      {id:'gout_odorat', label:'Goût et odorat'},
+      {id:'examens_neuro', label:'Examens déjà réalisés'},
+      {id:'atcd_fam_neuro', label:'Antécédents familiaux de maladies neurodégénératives'},
+      {id:'evenements_vie', label:'Événements de vie marquants'},
+      {id:'info_langagiere', label:'Informations utiles sur le langage'},
+      {id:'commentaires_neuro', label:'Commentaires'},
     ]
   },
   lo: {
@@ -16204,6 +16223,47 @@ var QA_SECTIONS = {
       {id:'traitement_voix_e', label:'Traitements en cours'},
     ]
   },
+  begaiement: {
+    label: 'Bégaiement',
+    questions: [
+      {id:'debut_begaiement', label:'Début du bégaiement'},
+      {id:'evolution_begaiement', label:'Évolution du bégaiement'},
+      {id:'description_begaiement', label:'Description du bégaiement'},
+      {id:'variations_situationnelles_begaiement', label:'Variations selon les situations'},
+      {id:'signes_lutte_begaiement', label:'Signes observés par la famille'},
+      {id:'reaction_enfant_begaiement', label:"Réaction de l'enfant quand il bégaie"},
+      {id:'evitements_begaiement', label:"Stratégies d'évitement identifiées"},
+      {id:'impact_scolaire_begaiement', label:'Impact scolaire'},
+      {id:'impact_social_begaiement', label:'Impact social et comportement relationnel'},
+      {id:'ressenti_parents_begaiement', label:"Ressenti des parents quand l'enfant bégaie"},
+      {id:'aide_parents_begaiement', label:"Comment les parents aident-ils l'enfant ?"},
+      {id:'atcd_perso_begaiement_parent', label:'Antécédent de bégaiement chez un parent'},
+      {id:'atcd_perso_begaiement_detail', label:'Précisions (lequel, évolution)'},
+    ]
+  },
+  bpa: {
+    label: 'BPA',
+    questions: [
+      {id:'origine_bpa', label:'Origine de la demande'},
+      {id:'depuis_bpa', label:'Depuis quand'},
+      {id:'plainte_items_bpa', label:'Plainte exprimée'},
+      {id:'plainte_libre_bpa', label:'Précisions sur la plainte'},
+    ]
+  },
+  communication_precoce: {
+    label: 'Communication précoce',
+    questions: [
+      {id:'diagnostic_cp', label:'Diagnostic médical posé (ou en cours)'},
+    ]
+  },
+  omf: {
+    label: 'OMF',
+    questions: [
+      {id:'adresse_par_omf', label:'Adressé par'},
+      {id:'motifs_omf', label:'Motifs de consultation'},
+      {id:'symptomes_omf', label:'Symptômes rapportés'},
+    ]
+  },
   anosmie: {
     label: 'Anosmie',
     questions: [
@@ -16217,28 +16277,6 @@ var QA_SECTIONS = {
       {id:'allergies', label:'Allergies'},
       {id:'commentaires_anos', label:'Commentaires'},
     ]
-  },
-  base_adulte_neuro: {
-    label: 'Neurologie',
-    questions: [
-      {id:'date_premiers_symptomes', label:'Date apparition premiers symptômes'},
-      {id:'mode_installation', label:"Mode d'installation"},
-      {id:'plainte_cognitive', label:'Nature de la plainte cognitive'},
-      {id:'caractere_evolutif', label:'Caractère évolutif'},
-      {id:'anosognosie', label:'Conscience des troubles'},
-      {id:'modif_comportement', label:'Modifications comportementales'},
-      {id:'antecedents_neuro', label:'Antécédents médicaux spécifiques'},
-      {id:'traitements_neuro', label:'Traitements médicamenteux actuels'},
-      {id:'reaction_antidep', label:'Réaction aux antidépresseurs'},
-      {id:'vision_neuro', label:'Vision'},
-      {id:'audition_neuro', label:'Audition'},
-      {id:'gout_odorat', label:'Goût et odorat'},
-      {id:'examens_neuro', label:'Examens réalisés'},
-      {id:'atcd_fam_neuro', label:'Antécédents familiaux neuro-dégénératifs'},
-      {id:'evenements_vie', label:'Événements de vie marquants'},
-      {id:'info_langagiere', label:'Informations langagières'},
-      {id:'commentaires_neuro', label:'Commentaires'},
-    ]
   }
 };
 
@@ -16246,15 +16284,6 @@ function ouvrirEnvoiQuestionnaire(pid){
   var p=DB.patients.find(function(x){return x.id===pid;});
   if(!p){showToast('Patient introuvable','red');return;}
   var emailPatient=p.email||p.emailParent||p.emailContact||'';
-
-  // Détecter enfant ou adulte
-  var isEnfant = false;
-  if(p.ddn){
-    var ddn = new Date(p.ddn);
-    var age = (new Date() - ddn) / (1000*60*60*24*365.25);
-    isEnfant = age < 18;
-  }
-  var defaultBase = isEnfant ? 'base_enfant' : 'base_adulte';
 
   var html='<div style="padding:4px;max-height:70vh;overflow-y:auto;">';
 
@@ -16267,33 +16296,21 @@ function ouvrirEnvoiQuestionnaire(pid){
   // Sections et questions
   Object.keys(QA_SECTIONS).forEach(function(secId){
     var sec = QA_SECTIONS[secId];
-    var isActiveBase = (secId === defaultBase);
-    var isOtherBase = (sec.base && !isActiveBase);
-    var bgColor = isActiveBase ? 'var(--green-ll,#e8f5e9)' : 'var(--bg)';
-    var borderColor = isActiveBase ? 'var(--green,#1D9E75)' : 'var(--border)';
 
-    // Masquer l'autre base
-    if(isOtherBase) return;
-
-    html+='<div style="margin-bottom:10px;border:1px solid '+borderColor+';border-radius:var(--radius-sm);overflow:hidden;">';
+    html+='<div style="margin-bottom:10px;border:1px solid var(--border);border-radius:var(--radius-sm);overflow:hidden;">';
 
     // Header section avec checkbox globale
-    html+='<div style="display:flex;align-items:center;gap:8px;padding:8px 10px;background:'+bgColor+';cursor:pointer;" data-secid="'+secId+'" onclick="toggleQASection(this.dataset.secid)">';
-    if(!isActiveBase){
-      html+='<input type="checkbox" id="qp-sec-'+secId+'" data-secid="'+secId+'" onchange="toggleQASectionCheck(this.dataset.secid)" onclick="event.stopPropagation()" style="width:14px;height:14px;accent-color:var(--green,#1D9E75);">';
-    } else {
-      html+='<input type="checkbox" id="qp-sec-'+secId+'" checked disabled style="width:14px;height:14px;">';
-    }
-    html+='<span style="font-size:12px;font-weight:700;flex:1;">'+_esc(sec.label)+(isActiveBase?' <span style="font-size:10px;color:var(--green,#1D9E75);">obligatoire</span>':'')+'</span>';
-    html+='<span id="qp-chev-'+secId+'" style="font-size:10px;color:var(--text-soft);">▼</span>';
+    html+='<div style="display:flex;align-items:center;gap:8px;padding:8px 10px;background:var(--bg);cursor:pointer;" data-secid="'+secId+'" onclick="toggleQASection(this.dataset.secid)">';
+    html+='<input type="checkbox" id="qp-sec-'+secId+'" data-secid="'+secId+'" onchange="toggleQASectionCheck(this.dataset.secid)" onclick="event.stopPropagation()" style="width:14px;height:14px;accent-color:var(--green,#1D9E75);">';
+    html+='<span style="font-size:12px;font-weight:700;flex:1;">'+_esc(sec.label)+'</span>';
+    html+='<span id="qp-chev-'+secId+'" style="font-size:10px;color:var(--text-soft);">▶</span>';
     html+='</div>';
 
-    // Questions (cachées par défaut sauf base)
-    html+='<div id="qp-qs-'+secId+'" style="display:'+(isActiveBase?'block':'none')+';padding:6px 10px;border-top:1px solid var(--border);">';
+    // Questions (repliées par défaut, décochées)
+    html+='<div id="qp-qs-'+secId+'" style="display:none;padding:6px 10px;border-top:1px solid var(--border);">';
     sec.questions.forEach(function(q){
-      var checkedAttr = isActiveBase ? 'checked' : '';
       html+='<label style="display:flex;align-items:center;gap:6px;padding:4px 0;font-size:12px;cursor:pointer;border-bottom:1px solid var(--border-soft,#f0f0f0);">';
-      html+='<input type="checkbox" id="qp-q-'+secId+'-'+q.id+'" '+checkedAttr+' style="width:13px;height:13px;accent-color:var(--green,#1D9E75);"> '+_esc(q.label);
+      html+='<input type="checkbox" id="qp-q-'+secId+'-'+q.id+'" style="width:13px;height:13px;accent-color:var(--green,#1D9E75);"> '+_esc(q.label);
       html+='</label>';
     });
     html+='</div>';
@@ -16319,9 +16336,11 @@ function toggleQASection(secId){
 function toggleQASectionCheck(secId){
   var cb=document.getElementById('qp-sec-'+secId);
   var el=document.getElementById('qp-qs-'+secId);
+  var chev=document.getElementById('qp-chev-'+secId);
   if(!cb||!el) return;
   var checked=cb.checked;
   el.style.display=checked?'block':'none';
+  if(chev) chev.textContent=checked?'▼':'▶';
   // Cocher/décocher toutes les questions
   el.querySelectorAll('input[type=checkbox]').forEach(function(q){ q.checked=checked; });
 }
