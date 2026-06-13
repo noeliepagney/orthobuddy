@@ -558,10 +558,13 @@ html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);colo
         <div id="bday-banner"></div>
         <div class="patients-header">
           <div style="font-size:13px;color:var(--text-soft);" id="patients-count"></div>
-          <button class="btn btn-green" onclick="openPatientModal()">
-            <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-            Nouveau patient
-          </button>
+          <div style="display:flex;gap:6px;">
+            <button class="btn btn-sm" id="btn-questionnaires-recus" style="background:#EDE9FE;color:#6D28D9;border:none;display:none;" onclick="importerQuestionnairesRecus()">☁️ Questionnaires reçus</button>
+            <button class="btn btn-green" onclick="openPatientModal()">
+              <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              Nouveau patient
+            </button>
+          </div>
         </div>
         <div class="patients-search-bar"><input type="text" id="search-patients" placeholder="🔍  Rechercher…" oninput="renderPatients()"></div>
         <div id="patients-filter-bar" style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:12px;">
@@ -15093,10 +15096,6 @@ function applyStatsCabinetPeriod(){
 function renderAnamneseTab(pid){
   var el = document.getElementById('ptab-'+pid+'-anamnese');
   if(!el) return;
-  // Vérifier s'il y a un questionnaire pré-bilan reçu en attente (debounce 3s)
-  if(Date.now() - _lastCheckQuestionnaires > 3000){
-    checkQuestionnairesRecus(pid);
-  }
   var p = DB.patients.find(function(x){ return x.id===pid; });
   if(!p) return;
   if(!p.anamnese) p.anamnese = {};
@@ -15836,7 +15835,7 @@ function _esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/"/g,
 var QUESTIONNAIRES_RECUS = {}; // patient_id -> [{token, reponses, anamnese_existante}]
 var _lastCheckQuestionnaires = 0;
 
-async function checkQuestionnairesRecus(skipPid){
+async function checkQuestionnairesRecus(){
   try{
     _lastCheckQuestionnaires = Date.now();
     var res = await fetch('https://xiznicrburryfmdfbjxk.supabase.co/rest/v1/pre_anamnese?statut=eq.complete&integre=eq.false&select=token,patient_id,reponses,anamnese_existante,submitted_at', {
@@ -15849,17 +15848,49 @@ async function checkQuestionnairesRecus(skipPid){
       if(!QUESTIONNAIRES_RECUS[row.patient_id]) QUESTIONNAIRES_RECUS[row.patient_id] = [];
       QUESTIONNAIRES_RECUS[row.patient_id].push(row);
     });
-    // Rafraîchir l'affichage des patients si une liste est déjà rendue
-    // (sauf si on a été déclenché depuis renderAnamneseTab, pour ne pas fermer la fiche ouverte)
-    if(!skipPid && typeof renderPatients === 'function') renderPatients();
-    // Rafraîchir l'onglet anamnèse actuellement ouvert (s'il y en a un), sauf celui qui a déclenché l'appel
-    Object.keys(QUESTIONNAIRES_RECUS).forEach(function(pid){
-      if(pid===skipPid) return;
-      if(document.getElementById('ptab-'+pid+'-anamnese') && typeof renderAnamneseTab === 'function'){
-        renderAnamneseTab(pid);
+    // Mettre à jour le badge du bouton "Questionnaires reçus"
+    var btn = document.getElementById('btn-questionnaires-recus');
+    if(btn){
+      var n = Object.keys(QUESTIONNAIRES_RECUS).length;
+      if(n>0){
+        btn.style.display='inline-flex';
+        btn.textContent = '☁️ Questionnaires reçus ('+n+')';
+      } else {
+        btn.style.display='none';
+        btn.textContent = '☁️ Questionnaires reçus';
       }
-    });
+    }
   }catch(e){ console.error('checkQuestionnairesRecus', e); }
+}
+
+// Bouton "Questionnaires reçus" : liste les patients avec un questionnaire en attente, ouvre l'intégration au clic
+async function importerQuestionnairesRecus(){
+  var btn = document.getElementById('btn-questionnaires-recus');
+  if(btn){ btn.disabled=true; btn.textContent='☁️ Chargement…'; }
+  await checkQuestionnairesRecus();
+  if(btn){ btn.disabled=false; }
+
+  var pids = Object.keys(QUESTIONNAIRES_RECUS);
+  if(!pids.length){ showToast('Aucun nouveau questionnaire reçu'); return; }
+
+  var html = '<div style="padding:4px;max-height:60vh;overflow-y:auto;">';
+  html += '<p style="font-size:13px;color:var(--text-soft);margin-bottom:12px;">Questionnaires pré-bilan complétés en attente d\'intégration :</p>';
+  pids.forEach(function(pid){
+    var p = DB.patients.find(function(x){return x.id===pid;});
+    var items = QUESTIONNAIRES_RECUS[pid];
+    var nom = p ? (p.prenom+' '+p.nom) : (items[0].reponses && items[0].reponses._prenom ? items[0].reponses._prenom+' '+(items[0].reponses._nom||'') : pid);
+    var date = items[0].submitted_at ? new Date(items[0].submitted_at).toLocaleDateString('fr-FR',{day:'numeric',month:'long',year:'numeric',hour:'2-digit',minute:'2-digit'}) : '';
+    html += '<div style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 14px;border:1px solid var(--border);border-radius:var(--radius-sm);margin-bottom:8px;">';
+    html += '<div><div style="font-weight:600;font-size:13px;">'+_esc(nom)+'</div><div style="font-size:11px;color:var(--text-soft);">Reçu le '+date+'</div></div>';
+    if(p){
+      html += '<button class="btn btn-sm btn-green" onclick="closeModal(\'modal-generic\');ouvrirIntegrationQuestionnaire(\''+pid+'\')">Voir et intégrer</button>';
+    } else {
+      html += '<span style="font-size:11px;color:var(--red);">Patient introuvable</span>';
+    }
+    html += '</div>';
+  });
+  html += '</div>';
+  showModal('Questionnaires pré-bilan reçus', html);
 }
 
 function _qaFmtVal(v){
