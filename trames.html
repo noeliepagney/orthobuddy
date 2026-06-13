@@ -8207,6 +8207,15 @@ function prefillFromPatient(p){
     if(a.symptomes_omf && a.symptomes_omf.length) map[trameId+".anamnese.symptomes_osm"]=a.symptomes_omf.slice();
 
     if(a.description_patient) map[trameId+".anamnese.personnalite"]=a.description_patient;
+
+    if(a.hygiene_nasale_omf){
+      const hygMap={'Oui, efficacement':'Oui, efficace','Oui, mais insuffisamment':'Oui, insuffisante','Non':'Non'};
+      map[trameId+".anamnese.hygiene_nasale"]=hygMap[a.hygiene_nasale_omf]||a.hygiene_nasale_omf;
+    }
+    if(a.mouchage_omf){
+      const mchMap={'Oui':'Oui','Non':'Non','Partiellement':'Partiel'};
+      map[trameId+".anamnese.mouchage_anam"]=mchMap[a.mouchage_omf]||a.mouchage_omf;
+    }
   }
 
   if(trameId==='communication-precoce'){

@@ -94,7 +94,7 @@ const SECTIONS = {
       { id:"vision", label:"Vision", type:"checkboxes", options:["Port de lunettes","Myopie","Astigmatisme","Strabisme"] },
       { id:"traumatismes", label:"Traumatismes / accidents", type:"text" },
       { id:"traitements", label:"Traitements médicamenteux", type:"text" },
-      { id:"operations_chirurgicales", label:"Votre enfant a-t-il déjà subi une opération chirurgicale ?", type:"textarea" },
+      { id:"operations", label:"Votre enfant a-t-il déjà subi une opération chirurgicale ?", type:"textarea" },
       { id:"bilans", label:"Bilans déjà réalisés", type:"checkboxes", options:["Bilan psychologique","Tests de QI (psychométrique)","Bilan neuropsychologique","Bilan orthophonique","Bilan en ergothérapie","Bilan psychomoteur","Bilan ophtalmologique (yeux)","Bilan neurologique","Bilan orthoptique (vision)"] },
       { id:"suivis", label:"Suivis en cours", type:"checkboxes", options:["Orthophonie","Psychologie","Ergothérapie","Neuropsychologie","Psychomotricité","Orthoptie"] },
       { id:"diagnostics", label:"Diagnostics posés", type:"textarea" },
@@ -212,7 +212,7 @@ const SECTIONS = {
   bpa: {
     label: "Repérage des difficultés (BPA)",
     questions: [
-      { id:"origine_bpa", label:"Qui est à l'origine de cette demande de bilan ?", type:"checkboxes", options:["La famille","Médecin / pédiatre","Enseignant","Infirmière scolaire","Initiative personnelle","Autre"] },
+      { id:"origine_bpa", label:"Qui est à l'origine de cette demande de bilan ?", type:"checkboxes", options:["Famille","Médecin / pédiatre","Enseignant","Infirmière scolaire","Accès direct","Autre"] },
       { id:"depuis_bpa", label:"Depuis quand observez-vous ces difficultés ?", type:"text" },
       { id:"plainte_items_bpa", label:"Quelles difficultés observez-vous ?", type:"checkboxes", options:["Absence ou retard de langage","Difficile à comprendre quand il/elle parle","Ne fait pas encore de phrases","Difficultés de prononciation","Difficultés à comprendre les consignes","Lecture lente ou difficile","Difficultés à déchiffrer les mots","Difficultés en orthographe","Écriture difficile ou peu lisible","Difficultés en calcul ou en raisonnement","Difficultés d'attention","Difficultés à communiquer avec les autres","Problème de voix","Difficultés liées à la bouche (tétine, respiration par la bouche, déglutition…)","Autre"] },
       { id:"plainte_libre_bpa", label:"Pouvez-vous préciser ce qui vous inquiète ?", type:"textarea" },
@@ -359,6 +359,8 @@ const SECTIONS = {
       { id:"adresse_par_omf", label:"Qui vous a orienté(e) vers ce bilan ?", type:"checkboxes", options:["Médecin traitant","Pédiatre","ORL","Orthodontiste","Chirurgien-dentiste","Gastro-pédiatre","Autre"] },
       { id:"motifs_omf", label:"Quels sont les motifs de la consultation ?", type:"checkboxes", options:["Otites à répétition","Pose d'aérateurs (\"yoyos\")","Surdité de transmission","Respiration par la bouche","Ronflements / pauses respiratoires pendant le sommeil","Bavage","Difficultés à prononcer certains sons","Difficile à comprendre quand il/elle parle","Avale de façon atypique","Difficultés alimentaires","Difficultés de sommeil liées à la respiration","Autre"] },
       { id:"symptomes_omf", label:"Avez-vous remarqué l'un de ces éléments ?", type:"checkboxes", options:["Sensation d'oreille bouchée","S'entend parler de façon différente (voix qui résonne)","Acouphènes (bruits dans l'oreille)","Vertiges","Douleur à l'oreille","Entend moins bien","Parle fort","Demande souvent de répéter","Difficultés de concentration","Agitation","Repli sur soi"] },
+      { id:"hygiene_nasale_omf", label:"Le nez est-il nettoyé/mouché régulièrement chaque jour ?", type:"select", options:["Oui, efficacement","Oui, mais insuffisamment","Non"] },
+      { id:"mouchage_omf", label:"Se moucher seul(e) est-il possible ?", type:"select", options:["Oui","Non","Partiellement"] },
     ]
   },
   oralite: {
