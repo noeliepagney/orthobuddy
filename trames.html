@@ -8797,7 +8797,12 @@ function prefillFromPatient(p){
     if(a.antecedents_neuro && a.antecedents_neuro.length) contexteDiagNcl.push("Ant\u00e9c\u00e9dents : "+fmtArr(a.antecedents_neuro));
     if(a.examens_neuro && a.examens_neuro.length) contexteDiagNcl.push("Examens r\u00e9alis\u00e9s : "+fmtArr(a.examens_neuro));
     if(a.resultats_examens) contexteDiagNcl.push("R\u00e9sultats : "+a.resultats_examens);
+    if(a.diagnostic_neuro) contexteDiagNcl.push("Diagnostic rapport\u00e9 : "+a.diagnostic_neuro);
+    if(a.premiers_symptomes_neuro) contexteDiagNcl.push("Premiers sympt\u00f4mes : "+a.premiers_symptomes_neuro);
+    if(a.evolution_maladie_neuro) contexteDiagNcl.push("\u00c9volution : "+a.evolution_maladie_neuro);
     if(contexteDiagNcl.length) map[trameId+".demande.contexte_diag"]=contexteDiagNcl.join('\n');
+
+    if(a.traitements_neuro) map[trameId+".demande.traitements_oncologiques"]=a.traitements_neuro;
 
     // ── Anamnèse ──
     if(a.niveau_scolaire) map[trameId+".anamnese.niveau_scolaire"]=a.niveau_scolaire;
@@ -9021,6 +9026,11 @@ function prefillFromPatient(p){
     if(a.date_diag_sla) map[trameId+".anamnese_generale.date_diag"]=a.date_diag_sla;
     if(a.symptomes_inaug_sla) map[trameId+".anamnese_generale.symptomes_inaug"]=a.symptomes_inaug_sla;
     if(a.atteinte_initiale_sla && a.atteinte_initiale_sla.length) map[trameId+".anamnese_generale.atteinte_initiale"]=a.atteinte_initiale_sla.slice();
+    if(a.etat_fatigue_sla) map[trameId+".anamnese_generale.etat_fatigue"]=a.etat_fatigue_sla;
+    if(a.vigilance_sla) map[trameId+".anamnese_generale.vigilance"]=a.vigilance_sla;
+    if(a.appareillage_resp_precisions_sla) map[trameId+".anamnese_generale.appareillage_resp_com"]=a.appareillage_resp_precisions_sla;
+    if(a.nutrition_art_precisions_sla) map[trameId+".anamnese_generale.nutrition_art_com"]=a.nutrition_art_precisions_sla;
+    if(a.plainte_cog_precisions_sla) map[trameId+".anamnese_generale.cognitif_com"]=a.plainte_cog_precisions_sla;
     if(a.centre_ref_sla) map[trameId+".anamnese_generale.centre_ref"]=a.centre_ref_sla;
     if(a.appareillage_resp_sla && a.appareillage_resp_sla.length) map[trameId+".anamnese_generale.appareillage_resp"]=a.appareillage_resp_sla.slice();
     if(a.nutrition_art_sla && a.nutrition_art_sla.length){
@@ -9038,6 +9048,7 @@ function prefillFromPatient(p){
 
     if(a.atcd_fam_neuro) map[trameId+".anamnese_generale.atcd_fam"]=a.atcd_fam_neuro;
     if(a.antecedents_neuro && a.antecedents_neuro.length) map[trameId+".anamnese_generale.atcd_perso"]=a.antecedents_neuro.slice();
+    if(a.atcd_perso_precisions_sla) map[trameId+".anamnese_generale.atcd_perso_com"]=a.atcd_perso_precisions_sla;
 
     let modeVieSla=[];
     if(a.mode_vie_sla) modeVieSla.push(a.mode_vie_sla);
@@ -9189,9 +9200,14 @@ function prefillFromPatient(p){
     if(a.impact_vie_quotidienne_neuro) map[trameId+".demande.impact_qv"]=a.impact_vie_quotidienne_neuro;
 
     // ── Anamnèse ──
+    if(a.premiers_symptomes_neuro) map[trameId+".anamnese.premiers_signes"]=a.premiers_symptomes_neuro;
+    if(a.evolution_maladie_neuro) map[trameId+".anamnese.evolution"]=a.evolution_maladie_neuro;
     if(a.traitements_neuro) map[trameId+".anamnese.traitements"]=a.traitements_neuro;
     if(a.autres_soins_neuro) map[trameId+".anamnese.autres_soins"]=a.autres_soins_neuro;
-    if(a.antecedents_neuro && a.antecedents_neuro.length) map[trameId+".anamnese.atcd_med"]=fmtArr(a.antecedents_neuro);
+    let atcdMedPark=[];
+    if(a.diagnostic_neuro) atcdMedPark.push("Diagnostic rapport\u00e9 : "+a.diagnostic_neuro);
+    if(a.antecedents_neuro && a.antecedents_neuro.length) atcdMedPark.push(fmtArr(a.antecedents_neuro));
+    if(atcdMedPark.length) map[trameId+".anamnese.atcd_med"]=atcdMedPark.join('\n');
 
     let sensorielPark=[];
     if(a.vision_neuro && a.vision_neuro.length) sensorielPark.push("Vision : "+fmtArr(a.vision_neuro));
@@ -9266,6 +9282,7 @@ function prefillFromPatient(p){
     if(a.impact_vie_quotidienne_neuro) map[trameId+".demande.impact_qv"]=a.impact_vie_quotidienne_neuro;
 
     // ── Anamnèse ──
+    if(a.premiers_symptomes_neuro) map[trameId+".anamnese.age_debut"]=a.premiers_symptomes_neuro;
     if(a.antecedents_neuro && a.antecedents_neuro.length) map[trameId+".anamnese.atcd_familiaux"]=fmtArr(a.antecedents_neuro);
     if(a.traitements_neuro) map[trameId+".anamnese.traitements"]=a.traitements_neuro;
     if(a.autres_soins_neuro) map[trameId+".anamnese.autres_soins"]=a.autres_soins_neuro;
