@@ -8196,7 +8196,7 @@ function prefillFromPatient(p){
     if(sommeilOmf.length) map[trameId+".anamnese.sommeil_anam"]=sommeilOmf.join('\n');
 
     if(a.succion && a.succion.length){
-      const succMap={'Pouce/doigt':'Pouce','T\u00e9tine':'T\u00e9tine — pr\u00e9ciser l\'\u00e2ge actuel','Doudou/v\u00eatement':'Autre'};
+      const succMap={'Pouce ou doigt':'Pouce','T\u00e9tine':'T\u00e9tine — pr\u00e9ciser l\'\u00e2ge actuel','Doudou / v\u00eatement':'Autre'};
       const mapped = a.succion.map(s=>succMap[s]||s).filter((v,i,arr)=>arr.indexOf(v)===i);
       if(mapped.length) map[trameId+".anamnese.succion_habits"]=mapped;
     }
@@ -9114,11 +9114,11 @@ function prefillFromPatient(p){
     if(grossesseSaosE.length) map[trameId+".anam_enf_saos.grossesse_naiss"]=grossesseSaosE.join('\n');
 
     if(a.alim_bebe){
-      const allMapSaosE={'Allaitement exclusif':'Allaitement maternel prolong\u00e9','Allaitement mixte':'Allaitement maternel court','Biberon':'Biberon'};
+      const allMapSaosE={'Allaitement exclusif':'Allaitement maternel prolong\u00e9','Allaitement et biberon':'Allaitement maternel court','Biberon':'Biberon'};
       map[trameId+".anam_enf_saos.allaitement"]=allMapSaosE[a.alim_bebe]||a.alim_bebe;
     }
     if(a.succion && a.succion.length){
-      const parafonctionsMap={'Pouce/doigt':'Succion du pouce (pass\u00e9 ou pr\u00e9sent \u2014 pr\u00e9ciser \u00e2ge d\'arr\u00eat)','T\u00e9tine':'T\u00e9tine (pass\u00e9 ou pr\u00e9sent)'};
+      const parafonctionsMap={'Pouce ou doigt':'Succion du pouce (pass\u00e9 ou pr\u00e9sent \u2014 pr\u00e9ciser \u00e2ge d\'arr\u00eat)','T\u00e9tine':'T\u00e9tine (pass\u00e9 ou pr\u00e9sent)'};
       let parafonctions=[];
       a.succion.forEach(function(v){ if(parafonctionsMap[v]) parafonctions.push(parafonctionsMap[v]); });
       if(parafonctions.length) map[trameId+".anam_enf_saos.parafonctions"]=parafonctions;
@@ -9285,10 +9285,10 @@ function prefillFromPatient(p){
 
     if(a.modif_comportement && a.modif_comportement.length){
       const humeurMap={
-        'D\u00e9pression':'D\u00e9pression',
+        'Tristesse, moral en baisse':'D\u00e9pression',
         'Anxi\u00e9t\u00e9':'Anxi\u00e9t\u00e9',
-        'Col\u00e8res / agressivit\u00e9':'Labilit\u00e9 \u00e9motionnelle (rires/pleurs pathologiques)',
-        'D\u00e9sinhibition':'Euphorie'
+        'Col\u00e8res, agressivit\u00e9':'Labilit\u00e9 \u00e9motionnelle (rires/pleurs pathologiques)',
+        'Comportements inhabituels, moins de retenue':'Euphorie'
       };
       let humeur=[];
       a.modif_comportement.forEach(function(v){ if(humeurMap[v] && humeur.indexOf(humeurMap[v])<0) humeur.push(humeurMap[v]); });
