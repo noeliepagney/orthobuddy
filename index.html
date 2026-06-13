@@ -16033,14 +16033,23 @@ var QA_SECTIONS = {
   anosmie: {
     label: 'Anosmie',
     questions: [
-      {id:'etiologie_anos', label:'Étiologie'},
+      {id:'etiologie_anos', label:'Cause (si elle est connue)'},
       {id:'type_anos', label:"Type d'anosmie"},
+      {id:'atcd_orl_anos', label:'Antécédents ORL'},
       {id:'odeurs_aimees_apres', label:'Odeurs aimées actuellement'},
       {id:'odeurs_aimees_avant', label:"Odeurs aimées avant l'anosmie"},
+      {id:'odeurs_non_aimees_apres', label:'Odeurs non aimées actuellement'},
+      {id:'date_premiers_symptomes_anos', label:'Date apparition premiers symptômes'},
       {id:'retentissement_alim', label:'Retentissement alimentaire'},
       {id:'tabagisme', label:'Tabagisme'},
       {id:'regime', label:'Régime alimentaire particulier'},
       {id:'allergies', label:'Allergies'},
+      {id:'plat_prefere', label:'Plat préféré'},
+      {id:'boisson_preferee', label:'Boisson préférée'},
+      {id:'plat_deteste', label:'Plat détesté'},
+      {id:'boisson_detestee', label:'Boisson détestée'},
+      {id:'poids_neuro', label:'Poids (kg)'},
+      {id:'taille_neuro', label:'Taille (m)'},
       {id:'commentaires_anos', label:'Commentaires'},
     ]
   },
@@ -16200,6 +16209,8 @@ var QA_SECTIONS = {
   oralite: {
     label: 'Oralité',
     questions: [
+      {id:'alim_bebe', label:'Alimentation bébé'},
+      {id:'succion', label:'Succion'},
       {id:'respiration_jour', label:'Respiration en journée'},
       {id:'respiration_nuit', label:'Respiration la nuit'},
       {id:'porte_en_bouche', label:'Porte objets/doigts en bouche'},
@@ -16208,6 +16219,9 @@ var QA_SECTIONS = {
       {id:'evitement_repas', label:"Comportements d'évitement au repas"},
       {id:'meme_repas', label:'Mange la même chose que la famille'},
       {id:'difficultes_lieux', label:'Difficultés selon les lieux'},
+      {id:'atcd_alim_mere', label:'Antécédents alimentaires — mère'},
+      {id:'atcd_alim_pere', label:'Antécédents alimentaires — père'},
+      {id:'atcd_alim_fratrie', label:'Antécédents alimentaires — fratrie'},
       {id:'antecedents_ortho', label:'Antécédents orthodontiques'},
       {id:'prescripteur_oralite', label:'Adress\u00e9 par (prescripteur)'},
       {id:'prescripteur_tap', label:'Prescripteur / \u00e9metteur de la demande (TAP)'},
