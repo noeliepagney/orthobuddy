@@ -8482,6 +8482,7 @@ function prefillFromPatient(p){
   if(trameId==='oralite-alimentaire'){
     // ── Demande / motif / plainte ──
     if(a.origine_plainte) map[trameId+".demande.motif"]=a.origine_plainte;
+    if(a.plainte_oralite) map[trameId+".demande.plainte"]=a.plainte_oralite;
     if(a.prescripteur_oralite && a.prescripteur_oralite.length) map[trameId+".demande.prescripteur"]=a.prescripteur_oralite.slice();
 
     // ── Anamnèse médicale (nouveaux champs spécifiques) ──
@@ -8491,7 +8492,10 @@ function prefillFromPatient(p){
     if(a.poids_courbe_oralite) map[trameId+".anamnese.poids"]=a.poids_courbe_oralite;
     if(a.nutrition_artificielle_oralite) map[trameId+".anamnese.nutrition_artificielle"]=a.nutrition_artificielle_oralite;
     if(a.pathologies_oralite && a.pathologies_oralite.length) map[trameId+".anamnese.pathologies"]=a.pathologies_oralite.slice();
-    if(a.pathologies_oralite_autres) map[trameId+".anamnese.pathologies_autres"]=a.pathologies_oralite_autres;
+    let pathAutresOr=[];
+    if(a.sante_generale_tap && a.sante_generale_tap.length) pathAutresOr.push("\u00c9tat de sant\u00e9 g\u00e9n\u00e9ral : "+fmtArr(a.sante_generale_tap));
+    if(a.pathologies_oralite_autres) pathAutresOr.push(a.pathologies_oralite_autres);
+    if(pathAutresOr.length) map[trameId+".anamnese.pathologies_autres"]=pathAutresOr.join('\n');
 
     // ── Habitudes alimentaires (historique) — anamnèse ──
     let habitudesOr=[];
@@ -8499,6 +8503,18 @@ function prefillFromPatient(p){
     if(a.alimentation_oralite && a.alimentation_oralite.length) habitudesOr.push("Alimentation actuelle : "+fmtArr(a.alimentation_oralite));
     if(a.succion && a.succion.length) habitudesOr.push("Succion : "+fmtArr(a.succion));
     if(habitudesOr.length) map[trameId+".anamnese.habitudes_alim"]=habitudesOr.join('\n');
+
+    // ── Histoire de l'alimentation ──
+    if(a.alim_bebe){
+      const modNeoMap={'Allaitement exclusif':['Allaitement maternel'],'Allaitement et biberon':['Allaitement maternel','Biberon'],'Biberon':['Biberon']};
+      if(modNeoMap[a.alim_bebe]) map[trameId+".anamnese_alimentaire.modalite_neonatal"]=modNeoMap[a.alim_bebe];
+    }
+    if(a.age_diversification) map[trameId+".anamnese_alimentaire.diversif_age"]=a.age_diversification;
+    if(a.diversification_difficultes) map[trameId+".anamnese_alimentaire.diversif_difficultes"]=a.diversification_difficultes;
+    if(a.age_cuillere) map[trameId+".anamnese_alimentaire.cuillere_age"]=a.age_cuillere;
+    if(a.cuillere_difficultes) map[trameId+".anamnese_alimentaire.cuillere_difficultes"]=a.cuillere_difficultes;
+    if(a.age_morceaux) map[trameId+".anamnese_alimentaire.morceaux_age"]=a.age_morceaux;
+    if(a.morceaux_difficultes) map[trameId+".anamnese_alimentaire.morceaux_difficultes"]=a.morceaux_difficultes;
 
     // ── Anamnèse médicale ──
     let grossesseOr=[];
@@ -8581,13 +8597,15 @@ function prefillFromPatient(p){
 
     // ── Contexte de l'évaluation & plainte ──
     if(a.origine_plainte){
-      const adrMap={'Parent':"Les parents",'\u00c9cole':"L'\u00e9cole",'M\u00e9decin':"Le m\u00e9decin traitant",'Autre':null};
+      const adrMap={'Un parent':"Les parents",'L\u2019\u00e9cole':"L'\u00e9cole","L'\u00e9cole":"L'\u00e9cole",'Le m\u00e9decin':"Le m\u00e9decin traitant",'Autre':null};
       const mapped = adrMap[a.origine_plainte];
       if(mapped) map[trameId+".contexte.adresse_par"]=[mapped];
     }
     if(a.plainte_le) map[trameId+".contexte.motif"]=a.plainte_le;
     if(a.plainte_le) map[trameId+".contexte.plainte_parents"]=a.plainte_le;
     if(a.difficultes_langagieres_lo && a.difficultes_langagieres_lo.length) map[trameId+".contexte.plainte_enfant"]=fmtArr(a.difficultes_langagieres_lo);
+    if(a.obs_enseignant_le) map[trameId+".contexte.plainte_ecole"]=a.obs_enseignant_le;
+    else if(a.obs_enseignant) map[trameId+".contexte.plainte_ecole"]=a.obs_enseignant;
 
     // ── Anamnèse ──
     let langues=[];
