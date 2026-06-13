@@ -2862,7 +2862,7 @@ async function doLogin(){
       const loaded = await sbLoad();
       setSyncStatus(loaded?'ok':'error');
       if(loaded) setTimeout(()=>setSyncStatus('idle'),3000);
-      renderAll();checkBackupReminder();updateEnvBanner();updateEnvButtons();setTimeout(notifSeancesAujourdhui, 2000);
+      renderAll();checkBackupReminder();updateEnvBanner();updateEnvButtons();setTimeout(notifSeancesAujourdhui, 2000);setTimeout(checkQuestionnairesRecus, 300);
       setInterval(checkServicesHealth, 5*60*1000);
       setInterval(checkNouvellesReservations, 2*60*1000);
       return;
@@ -2916,7 +2916,7 @@ async function doLogin(){
       sbSave().then(()=>{setSyncStatus('ok');setTimeout(()=>setSyncStatus('idle'),2000);}).catch(()=>setSyncStatus('error'));
       await syncPortailReservations();
       await syncSeancesRappel();
-      renderAll();checkBackupReminder();updateEnvBanner();updateEnvButtons();setTimeout(notifSeancesAujourdhui, 2000);
+      renderAll();checkBackupReminder();updateEnvBanner();updateEnvButtons();setTimeout(notifSeancesAujourdhui, 2000);setTimeout(checkQuestionnairesRecus, 300);
       setInterval(checkServicesHealth, 5*60*1000);
       setInterval(checkNouvellesReservations, 2*60*1000);
     } else {
@@ -2926,7 +2926,7 @@ async function doLogin(){
       const loaded = await sbLoad();
       setSyncStatus(loaded?'ok':'error');
       if(loaded) setTimeout(()=>setSyncStatus('idle'),3000);
-      renderAll();checkBackupReminder();updateEnvBanner();updateEnvButtons();setTimeout(notifSeancesAujourdhui, 2000);
+      renderAll();checkBackupReminder();updateEnvBanner();updateEnvButtons();setTimeout(notifSeancesAujourdhui, 2000);setTimeout(checkQuestionnairesRecus, 300);
       setInterval(checkServicesHealth, 5*60*1000);
       setInterval(checkNouvellesReservations, 2*60*1000);
     }
@@ -18330,7 +18330,7 @@ load().then(function(){
         sbLoad().then(loaded=>{
           setSyncStatus(loaded?'ok':'error');
           if(loaded) setTimeout(()=>setSyncStatus('idle'),3000);
-          loadObjectifsBibliotheque(); renderAll(); checkBackupReminder();
+          loadObjectifsBibliotheque(); renderAll(); checkBackupReminder(); setTimeout(checkQuestionnairesRecus, 300);
         });
       }); // fin _restoreToken
     }
