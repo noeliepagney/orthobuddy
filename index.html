@@ -8277,7 +8277,11 @@ function renderDossierTab(p){
     +'</div></div>';
 
   return '<div class="perm-zone"><div class="perm-zone-label">\uD83D\uDCCC Notes permanentes</div>'
-    +(creneauxStr?'<div style="font-size:11px;color:var(--text-soft);margin-bottom:6px;">🕐 Créneaux souhaités : '+escHtml(creneauxStr)+'</div>':'')
+    +'<div style="margin-bottom:6px;"><label style="font-size:11px;color:var(--text-soft);display:block;margin-bottom:3px;">\uD83D\uDD50 Cr\u00e9neaux souhait\u00e9s</label>'
+    +'<input type="text" style="width:100%;padding:5px 8px;font-size:12px;font-family:\'DM Sans\',sans-serif;border:1px solid #FAC775;border-radius:var(--radius-sm);background:white;color:var(--text);" '
+    +'placeholder="ex: lundi matin, mercredi apr\u00e8s-midi\u2026" '
+    +'value="'+escHtml(p.permCreneaux||creneauxStr)+'" '
+    +'onchange="updatePF(\''+p.id+'\',\'permCreneaux\',this.value)"></div>'
     +'<textarea placeholder="Informations importantes\u2026" onchange="updatePF(\'' + p.id + '\',\'permNotes\',this.value)">'+(p.permNotes||'')+'</textarea></div>'
     + suiviHtml
     +'<div style="margin-top:12px;display:flex;flex-direction:column;gap:8px;">'
@@ -9288,6 +9292,7 @@ function savePatient(){
         professionnelsSuivi: a.professionnelsSuivi||[],
         profAutreDetail: a.profAutreDetail||'',
         creneaux: a.creneaux||{},
+        permCreneaux: a.permCreneaux || (Array.isArray(a.horaires_preferes) ? a.horaires_preferes.join(', ') : '') || '',
         permNotes: data.permNotes||'',
         ordonnances: ordonnancesInit,
       };
@@ -9298,6 +9303,11 @@ function savePatient(){
       _promouvoirAttenteId = null;
     }
     DB.patients.push({id:newPid,...data,...extraData,permNotes:extraData.permNotes||data.permNotes||'',isNew:!!attenteId});
+    // Forcer le rechargement de l'onglet AMO pour que le parcours s'affiche
+    setTimeout(function(){
+      var amoTab = document.getElementById('ptab-'+newPid+'-amo');
+      if(amoTab){ delete amoTab.dataset.loaded; }
+    }, 50);
   }
   save();closeModal('modal-patient');
   if(pid){
