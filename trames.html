@@ -8285,8 +8285,7 @@ function prefillFromPatient(p){
     if(a.grossesse && a.grossesse.length) grossesseTap.push(fmtArr(a.grossesse));
     if(a.naissance_mode) grossesseTap.push("Mode d'accouchement : "+a.naissance_mode);
     if(a.naissance_terme) grossesseTap.push("Terme : "+a.naissance_terme);
-    if(a.prematurite_oralite && a.prematurite_oralite!=='Non') grossesseTap.push("Pr\u00e9maturit\u00e9 : "+a.prematurite_oralite);
-    if(a.reanimation_oralite && a.reanimation_oralite!=='Non') grossesseTap.push("R\u00e9animation n\u00e9onatale : "+a.reanimation_oralite);
+    if(a.reanimation_oralite && a.reanimation_oralite!=='Non') grossesseTap.push("Réanimation néonatale : "+a.reanimation_oralite);
     if(grossesseTap.length) map[trameId+".anamnese_medicale.grossesse_naissance"]=grossesseTap.join('\n');
 
     if(a.atcd_fam_mere || a.atcd_fam_pere || a.atcd_fam_fratrie){
@@ -8474,7 +8473,7 @@ function prefillFromPatient(p){
     if(a.prescripteur_oralite && a.prescripteur_oralite.length) map[trameId+".demande.prescripteur"]=a.prescripteur_oralite.slice();
 
     // ── Anamnèse médicale (nouveaux champs spécifiques) ──
-    if(a.prematurite_oralite) map[trameId+".anamnese.prematurite"]=a.prematurite_oralite;
+    if(a.naissance_terme) map[trameId+".anamnese.prematurite"]=a.naissance_terme;
     if(a.reanimation_oralite) map[trameId+".anamnese.reanimation"]=a.reanimation_oralite;
     if(a.hospitalisation_oralite) map[trameId+".anamnese.hospitalisation"]=a.hospitalisation_oralite;
     if(a.poids_courbe_oralite) map[trameId+".anamnese.poids"]=a.poids_courbe_oralite;

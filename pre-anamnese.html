@@ -69,7 +69,7 @@ const token = new URLSearchParams(window.location.search).get('token');
 // Définition des sections et questions — alignées sur les clés OrthoBuddy
 const SECTIONS = {
   base_enfant: {
-    label: "Anamnèse base — enfant",
+    label: "Informations générales (enfant)",
     questions: [
       { id:"lieu_vie", label:"Avec qui votre enfant vit-il/elle actuellement ?", type:"select", options:["Avec ses deux parents","En garde alternée","Chez son père","Chez sa mère","En famille d'accueil / foyer"] },
       { id:"fratrie", label:"Place de votre enfant dans la fratrie", type:"select", options:["Enfant unique","Aîné(e)","Cadet(te)","Benjamin/Benjamine"] },
@@ -79,7 +79,6 @@ const SECTIONS = {
       { id:"prof_pere", label:"Profession du père", type:"text" },
       { id:"prof_mere", label:"Profession de la mère", type:"text" },
       { id:"origine_plainte", label:"Qui s'inquiète le plus de ces difficultés ?", type:"select", options:["Un parent","L'école","Le médecin","Autre"] },
-      { id:"rythme_famille", label:"Comment se déroule le quotidien de la famille (rythme, disponibilités) ?", type:"textarea" },
       { id:"atcd_fam_mere", label:"Difficultés présentes ou passées chez la mère", type:"checkboxes", options:["Difficultés de lecture","Difficultés d'orthographe","Difficultés en mathématiques","Difficultés de concentration","Difficultés de langage"] },
       { id:"atcd_fam_pere", label:"Difficultés présentes ou passées chez le père", type:"checkboxes", options:["Difficultés de lecture","Difficultés d'orthographe","Difficultés en mathématiques","Difficultés de concentration","Difficultés de langage"] },
       { id:"atcd_fam_fratrie", label:"Difficultés présentes ou passées dans la fratrie", type:"checkboxes", options:["Difficultés de lecture","Difficultés d'orthographe","Difficultés en mathématiques","Difficultés de concentration","Difficultés de langage"] },
@@ -96,6 +95,7 @@ const SECTIONS = {
       { id:"suivis", label:"Suivis en cours", type:"checkboxes", options:["Orthophonie","Psychologie","Ergothérapie","Neuropsychologie","Psychomotricité","Orthoptie"] },
       { id:"diagnostics", label:"Diagnostics posés", type:"textarea" },
       { id:"age_marche", label:"Âge acquisition marche", type:"text" },
+      { id:"age_velo", label:"Âge d'apprentissage du vélo (sans roulettes)", type:"text" },
       { id:"age_babillage", label:"Âge des premiers \"sons-mots\" répétés (ex: papa, mama)", type:"text" },
       { id:"age_premiers_mots", label:"Âge premiers mots", type:"text" },
       { id:"age_phrases", label:"Âge premières phrases", type:"text" },
@@ -109,6 +109,7 @@ const SECTIONS = {
       { id:"sensorialite", label:"Sensibilités particulières", type:"checkboxes", options:["Bruit","Textiles / étiquettes qui grattent","Lumière","Odeurs","Température","Ne supporte pas d'avoir les mains sales","Marche difficilement pieds nus"] },
       { id:"attention", label:"Attention et concentration", type:"checkboxes", options:["Oublie souvent ses affaires","Se déconcentre facilement","A du mal à être ordonné(e) dans son travail","A besoin de bouger beaucoup","A du mal à attendre son tour","A du mal à se faire des ami(e)s","N'avait pas toujours conscience du danger plus jeune","Résultats scolaires irréguliers selon les jours","A tendance à agir sans réfléchir"] },
       { id:"jeux_activites", label:"Jeux / activités", type:"checkboxes", options:["Jeux de construction","Bricolage","Dessin","Activités physiques","Lecture"] },
+      { id:"jeux_activites_autres", label:"Autres jeux / activités", type:"text" },
       { id:"ecrans_semaine", label:"Temps d'écran par jour en semaine", type:"select", options:["0h","1h","2h","3h","4h","5h","6h","Plus de 6h"] },
       { id:"ecrans_weekend", label:"Temps d'écran par jour le week-end", type:"select", options:["0h","1h","2h","3h","4h","5h","6h","Plus de 6h"] },
       { id:"classe", label:"Classe actuelle", type:"select", options:["TPS","PS","MS","GS","CP","CE1","CE2","CM1","CM2","6ème","5ème","4ème","3ème","Seconde","Première","Terminale"] },
@@ -121,7 +122,7 @@ const SECTIONS = {
     ]
   },
   base_adulte: {
-    label: "Anamnèse base — adulte",
+    label: "Informations générales (adulte)",
     questions: [
       { id:"demandeur_neuro", label:"Qui est à l'origine de cette demande de bilan ?", type:"select", options:["Le patient lui-même","L'entourage","Le médecin traitant","Un médecin spécialiste"] },
       { id:"plainte_actuelle_neuro", label:"Quelle est la difficulté actuelle ?", type:"textarea" },
@@ -139,7 +140,7 @@ const SECTIONS = {
       { id:"antecedents_neuro", label:"Antécédents médicaux", type:"checkboxes", options:["Diabète","Hypertension","Cholestérol élevé","Hallucinations visuelles","Chutes fréquentes","Incontinence","Dépression","AVC ou accident vasculaire cérébral transitoire (AIT)","Traumatisme crânien","Maladie de Parkinson"] },
       { id:"commentaires_neuro", label:"Autres / commentaires", type:"textarea" },
       { id:"traitements_neuro", label:"Traitements médicamenteux actuels", type:"textarea" },
-      { id:"reaction_antidep", label:"Si un traitement pour le moral a été prescrit, a-t-il eu un effet sur les troubles observés ?", type:"select", options:["Oui","Non","Ne sait pas"] },
+      { id:"reaction_antidep", label:"Si un traitement antidépresseur a été prescrit, a-t-il eu un effet sur les troubles observés ?", type:"select", options:["Oui","Non","Ne sait pas"] },
       { id:"vision_neuro", label:"Concernant la vue", type:"checkboxes", options:["Cataracte","Glaucome","DMLA (dégénérescence maculaire liée à l'âge)","Porte des lunettes"] },
       { id:"audition_neuro", label:"Concernant l'audition", type:"checkboxes", options:["Baisse d'audition liée à l'âge","Porte des appareils auditifs","Surdité","Ne porte pas ses appareils auditifs"] },
       { id:"gout_odorat", label:"Le goût et l'odorat sont-ils conservés ?", type:"select", options:["Conservés","Un peu modifiés","Très modifiés"] },
@@ -248,14 +249,14 @@ const SECTIONS = {
     questions: [
       { id:"qui_adresse_deg", label:"Qui vous a orienté(e) vers ce bilan ?", type:"select", options:["Le patient lui-même","L'entourage","Le médecin traitant","Orthodontiste / dentiste","ORL","Autre médecin spécialiste"] },
       { id:"motif_deg", label:"Motif de la consultation / plainte", type:"textarea" },
-      { id:"appareillage_deg", label:"Portez-vous (ou votre enfant) un appareil dentaire actuellement ?", type:"select", options:["Oui","Non"] },
+      { id:"appareillage_deg", label:"Le patient porte-t-il un appareil dentaire actuellement ?", type:"select", options:["Oui","Non"] },
       { id:"appareillage_detail_deg", label:"Si oui, précisez le type d'appareil", type:"textarea" },
       { id:"succion_contexte", label:"En cas de succion du pouce, du doigt ou d'une tétine, dans quel contexte (école, nuit, journée) ?", type:"textarea" },
-      { id:"age_cuillere", label:"À quel âge avez-vous (ou votre enfant) commencé à manger à la cuillère ?", type:"text" },
-      { id:"age_morceaux", label:"À quel âge avez-vous (ou votre enfant) commencé à manger des morceaux ?", type:"text" },
-      { id:"liquides_age", label:"Jusqu'à quel âge avez-vous (ou votre enfant) bu au biberon ou à la tétine ?", type:"text" },
-      { id:"bruxisme_deg", label:"Grincez-vous (ou votre enfant) des dents ?", type:"select", options:["Non","La journée","La nuit","Le jour et la nuit"] },
-      { id:"appareil_nuit_deg", label:"Portez-vous (ou votre enfant) un appareil dentaire la nuit ?", type:"select", options:["Aucun","Appareil dentaire","Appareil d'avancée mandibulaire","Autre"] },
+      { id:"age_cuillere", label:"À quel âge le patient a-t-il commencé à manger à la cuillère ?", type:"text" },
+      { id:"age_morceaux", label:"À quel âge le patient a-t-il commencé à manger des morceaux ?", type:"text" },
+      { id:"liquides_age", label:"Jusqu'à quel âge le patient a-t-il bu au biberon ou à la tétine ?", type:"text" },
+      { id:"bruxisme_deg", label:"Le patient grince-t-il des dents ?", type:"select", options:["Non","La journée","La nuit","Le jour et la nuit"] },
+      { id:"appareil_nuit_deg", label:"Le patient porte-t-il un appareil dentaire la nuit ?", type:"select", options:["Aucun","Appareil dentaire","Appareil d'avancée mandibulaire","Autre"] },
       { id:"scoliose_deg", label:"Y a-t-il une scoliose ou le port d'un corset ?", type:"select", options:["Non","Scoliose suivie","Port d'un corset"] },
       { id:"orthodontie_deg", label:"Suivi orthodontique en cours ?", type:"select", options:["Oui","Non"] },
       { id:"orthodontie_detail_deg", label:"Si oui, précisez", type:"textarea" },
@@ -273,7 +274,7 @@ const SECTIONS = {
     ]
   },
   dysphagie: {
-    label: "Difficultés pour avaler (dysphagie)",
+    label: "Dysphagie",
     questions: [
       { id:"personne_demande_dyph", label:"Qui est à l'origine de la demande de bilan ?", type:"text" },
       { id:"pathologie_dyph", label:"Quelle est la pathologie / le diagnostic en cours ?", type:"textarea" },
@@ -301,7 +302,7 @@ const SECTIONS = {
       { id:"plainte_le", label:"Quelles sont vos inquiétudes concernant la lecture et l'écriture ?", type:"textarea" },
       { id:"trouble_phono_le", label:"Avez-vous remarqué l'un de ces éléments ?", type:"checkboxes", options:["A du mal à dire les mots longs, encore aujourd'hui","A du mal à apprendre une langue étrangère","Confond certains sons"] },
       { id:"visuo_attentionnel_le", label:"Avez-vous remarqué l'un de ces éléments ?", type:"checkboxes", options:["A tendance à sauter des lignes en lisant","A du mal à recopier un texte (s'y retrouver)","A mal à la tête après avoir lu","A tendance à se cogner / mal évaluer les distances","A des difficultés en géométrie"] },
-      { id:"le_avec_lo", label:"Depuis l'apprentissage de la lecture/écriture, les difficultés de langage oral ont-elles évolué ?", type:"select", options:["Amélioration","Stable","Aggravation","Non concerné"] },
+      { id:"le_avec_lo", label:"Depuis l'apprentissage de la lecture/écriture, si des difficultés de langage oral étaient présentes, ont-elles évolué ?", type:"select", options:["Amélioration","Stable","Aggravation","Non concerné"] },
       { id:"difficultes_retention_le", label:"A-t-il/elle du mal à retenir certaines choses ?", type:"checkboxes", options:["Comptines","Poésies","Informations dites à l'oral","Listes"] },
       { id:"temps_lecture_le", label:"Temps de lecture par jour", type:"select", options:["5 min","10 min","15 min","30 min","45 min","1h","Plus d'1h"] },
       { id:"obs_enseignant_le", label:"Observations enseignant", type:"textarea" },
@@ -323,7 +324,7 @@ const SECTIONS = {
     ]
   },
   omf: {
-    label: "Oralité — fonctions de la bouche (OMF)",
+    label: "Oralité - fonction oromyofaciales",
     questions: [
       { id:"adresse_par_omf", label:"Qui vous a orienté(e) vers ce bilan ?", type:"checkboxes", options:["Médecin traitant","Pédiatre","ORL","Orthodontiste","Chirurgien-dentiste","Gastro-pédiatre","Autre"] },
       { id:"motifs_omf", label:"Quels sont les motifs de la consultation ?", type:"checkboxes", options:["Otites à répétition","Pose d'aérateurs (\"yoyos\")","Surdité de transmission","Respiration par la bouche","Ronflements / pauses respiratoires pendant le sommeil","Bavage","Difficultés à prononcer certains sons","Difficile à comprendre quand il/elle parle","Avale de façon atypique","Difficultés alimentaires","Difficultés de sommeil liées à la respiration","Autre"] },
@@ -331,7 +332,7 @@ const SECTIONS = {
     ]
   },
   oralite: {
-    label: "Oralité",
+    label: "Alimentation - déglutition",
     questions: [
       { id:"alim_bebe", label:"Comment votre enfant a-t-il/elle été alimenté(e) bébé ?", type:"select", options:["Allaitement exclusif","Allaitement et biberon","Biberon"] },
       { id:"succion", label:"Votre enfant a-t-il/elle (ou a-t-il/elle eu) l'une de ces habitudes ?", type:"checkboxes", options:["Pouce ou doigt","Tétine","Doudou / vêtement"] },
@@ -349,7 +350,6 @@ const SECTIONS = {
       { id:"antecedents_ortho", label:"Antécédents orthodontiques", type:"select", options:["Oui","Non"] },
       { id:"prescripteur_oralite", label:"Qui vous a orienté(e) vers ce bilan ?", type:"checkboxes", options:["Pédiatre","ORL","Gastro-pédiatre","Neuropédiatre","Diététicien / nutritionniste","Médecin PMI","Hôpital","Autre"] },
       { id:"prescripteur_tap", label:"Quel professionnel a fait la demande de bilan ?", type:"checkboxes", options:["Gastro-pédiatre","Neuropédiatre","Sortie de néonatologie","Pédiatre","Médecin PMI","SESSAD / IME","Autre"] },
-      { id:"prematurite_oralite", label:"Votre enfant est-il né(e) prématurément ?", type:"select", options:["Non","Oui — préciser le nombre de semaines de grossesse au moment de la naissance"] },
       { id:"reanimation_oralite", label:"Votre enfant a-t-il eu besoin d'aide pour respirer à la naissance ?", type:"select", options:["Non","Oui — préciser la durée"] },
       { id:"hospitalisation_oralite", label:"Hospitalisations (motifs, durée)", type:"textarea" },
       { id:"poids_courbe_oralite", label:"Comment évolue la courbe de poids de votre enfant ?", type:"select", options:["Normale","Difficultés / ralentissement — préciser"] },

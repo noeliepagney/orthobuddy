@@ -15215,7 +15215,7 @@ function renderAnamneseTab(pid){
   html+='<div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px 14px;margin-bottom:14px;">';
   html+='<div style="font-size:11px;font-weight:700;color:var(--text-soft);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px;">Sections \u00e0 afficher</div>';
   html+='<div style="display:flex;flex-wrap:wrap;gap:8px;">';
-  [{key:'base_enfant',label:'Anamn\u00e8se enfant',icon:'ti-baby'},{key:'base_adulte',label:'Anamn\u00e8se adulte',icon:'ti-brain'},{key:'anosmie',label:'Anosmie',icon:'ti-wind'},{key:'aphasie',label:'Aphasie',icon:'ti-brain-2'},{key:'bpa',label:'BPA',icon:'ti-shield-check'},{key:'begaiement',label:'B\u00e9gaiement',icon:'ti-message-circle-2'},{key:'cm',label:'Cognition math\u00e9matique',icon:'ti-calculator'},{key:'commprecoce',label:'Communication pr\u00e9coce',icon:'ti-baby-carriage'},{key:'deglutition',label:'D\u00e9glutition dysfonctionnelle',icon:'ti-droplet-half-2'},{key:'dysarthrie',label:'Dysarthrie',icon:'ti-activity'},{key:'dysphagie',label:'Dysphagie',icon:'ti-soup'},{key:'le',label:'Langage \u00e9crit',icon:'ti-pencil'},{key:'lo',label:'Langage oral',icon:'ti-message-circle'},{key:'omf',label:'OMF',icon:'ti-mood-smile'},{key:'oralite',label:'Oralit\u00e9',icon:'ti-droplet'},{key:'sla',label:'SLA',icon:'ti-pulse'},{key:'voix_adulte',label:'Voix (adulte)',icon:'ti-microphone'},{key:'voix_enfant',label:'Voix (enfant)',icon:'ti-microphone-2'}].forEach(function(s){
+  [{key:'base_enfant',label:'Informations générales (enfant)',icon:'ti-baby'},{key:'base_adulte',label:'Informations générales (adulte)',icon:'ti-brain'},{key:'anosmie',label:'Anosmie',icon:'ti-wind'},{key:'aphasie',label:'Aphasie',icon:'ti-brain-2'},{key:'bpa',label:'BPA',icon:'ti-shield-check'},{key:'begaiement',label:'B\u00e9gaiement',icon:'ti-message-circle-2'},{key:'cm',label:'Cognition math\u00e9matique',icon:'ti-calculator'},{key:'commprecoce',label:'Communication pr\u00e9coce',icon:'ti-baby-carriage'},{key:'deglutition',label:'D\u00e9glutition dysfonctionnelle',icon:'ti-droplet-half-2'},{key:'dysarthrie',label:'Dysarthrie',icon:'ti-activity'},{key:'dysphagie',label:'Dysphagie',icon:'ti-soup'},{key:'le',label:'Langage \u00e9crit',icon:'ti-pencil'},{key:'lo',label:'Langage oral',icon:'ti-message-circle'},{key:'omf',label:'Oralité - fonction oromyofaciales',icon:'ti-mood-smile'},{key:'oralite',label:'Alimentation - déglutition',icon:'ti-droplet'},{key:'sla',label:'SLA',icon:'ti-pulse'},{key:'voix_adulte',label:'Voix (adulte)',icon:'ti-microphone'},{key:'voix_enfant',label:'Voix (enfant)',icon:'ti-microphone-2'}].forEach(function(s){
     var isCh=sec[s.key]?' checked':'';
     html+='<label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer;background:var(--bg);border:1px solid var(--border);border-radius:20px;padding:4px 12px;"><input type="checkbox" data-section="'+s.key+'" onchange="toggleAnamneseSection(this,\''+pid+'\')"'+(sec[s.key]?' checked':'')+'>  <i class="ti '+s.icon+'"></i> '+s.label+'</label>';
   });
@@ -15431,7 +15431,6 @@ function renderAnamneseTab(pid){
     sOr+='<div style="margin-bottom:10px;"><div style="font-size:11px;font-weight:600;color:var(--text-soft);text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px;">Anamn\u00e8se m\u00e9dicale (oralit\u00e9)</div></div>';
     sOr+=multiSelect('Adress\u00e9 par (prescripteur)','prescripteur_oralite',['P\u00e9diatre','ORL','Gastro-p\u00e9diatre','Neurop\u00e9diatre','Di\u00e9t\u00e9ticien / nutritionniste','M\u00e9decin PMI','H\u00f4pital','Autre']);
     sOr+=multiSelect('Prescripteur / \u00e9metteur de la demande (TAP)','prescripteur_tap',['Gastro-p\u00e9diatre','Neurop\u00e9diatre','Sortie de n\u00e9onatologie','P\u00e9diatre','M\u00e9decin PMI','SESSAD / IME','Autre']);
-    sOr+=inlineField('Pr\u00e9maturit\u00e9','prematurite_oralite','select1',['Non','Oui \u2014 pr\u00e9ciser les semaines d\u2019am\u00e9norrh\u00e9e']);
     sOr+=inlineField('R\u00e9animation / mise sous O\u2082 n\u00e9onatale','reanimation_oralite','select1',['Non','Oui \u2014 pr\u00e9ciser la dur\u00e9e']);
     sOr+=textArea('Hospitalisations (motifs, dur\u00e9e)','hospitalisation_oralite');
     sOr+=inlineField('Courbe de poids / croissance staturo-pond\u00e9rale','poids_courbe_oralite','select1',['Normale','Difficult\u00e9s / cassure \u2014 pr\u00e9ciser']);
@@ -16035,7 +16034,7 @@ async function integrerQuestionnaire(pid, token){
 // Les id correspondent EXACTEMENT aux clés data-ana de l'anamnèse OrthoBuddy
 var QA_SECTIONS = {
   base_enfant: {
-    label: 'Anamnèse base — enfant',
+    label: 'Informations générales (enfant)',
     questions: [
       {id:'lieu_vie', label:'Lieu de vie'},
       {id:'prof_pere', label:'Profession du père'},
@@ -16048,7 +16047,6 @@ var QA_SECTIONS = {
       {id:'atcd_fam_pere', label:'Antécédents familiaux — père'},
       {id:'atcd_fam_fratrie', label:'Antécédents familiaux — fratrie'},
       {id:'origine_plainte', label:'De qui vient la plainte'},
-      {id:'rythme_famille', label:'Rythme familial / disponibilité'},
       {id:'grossesse', label:'Grossesse'},
       {id:'naissance_mode', label:"Mode d'accouchement"},
       {id:'naissance_terme', label:'Terme / prématurité'},
@@ -16062,6 +16060,7 @@ var QA_SECTIONS = {
       {id:'suivis', label:'Suivis en cours'},
       {id:'diagnostics', label:'Diagnostics posés'},
       {id:'age_marche', label:'Âge acquisition marche'},
+      {id:'age_velo', label:"Âge apprentissage vélo"},
       {id:'age_babillage', label:'Âge babillage canonique'},
       {id:'age_premiers_mots', label:'Âge premiers mots'},
       {id:'age_phrases', label:'Âge premières phrases'},
@@ -16075,6 +16074,7 @@ var QA_SECTIONS = {
       {id:'sensorialite', label:'Particularités sensorielles'},
       {id:'attention', label:'Éléments attentionnels'},
       {id:'jeux_activites', label:'Jeux / activités'},
+      {id:'jeux_activites_autres', label:'Autres jeux / activités'},
       {id:'ecrans_semaine', label:"Temps d'écran par jour en semaine"},
       {id:'ecrans_weekend', label:"Temps d'écran par jour le week-end"},
       {id:'classe', label:'Classe / niveau scolaire'},
@@ -16087,7 +16087,7 @@ var QA_SECTIONS = {
     ]
   },
   base_adulte: {
-    label: 'Anamnèse base — adulte',
+    label: 'Informations générales (adulte)',
     questions: [
       {id:'demandeur_neuro', label:'Qui est à l\'origine de la demande de consultation'},
       {id:'plainte_actuelle_neuro', label:'Plainte actuelle'},
@@ -16289,7 +16289,7 @@ var QA_SECTIONS = {
     ]
   },
   omf: {
-    label: 'OMF',
+    label: 'Oralité - fonction oromyofaciales',
     questions: [
       {id:'adresse_par_omf', label:'Adressé par'},
       {id:'motifs_omf', label:'Motifs de consultation'},
@@ -16297,7 +16297,7 @@ var QA_SECTIONS = {
     ]
   },
   oralite: {
-    label: 'Oralité',
+    label: 'Alimentation - déglutition',
     questions: [
       {id:'alim_bebe', label:'Alimentation bébé'},
       {id:'succion', label:'Succion'},
@@ -16315,7 +16315,6 @@ var QA_SECTIONS = {
       {id:'antecedents_ortho', label:'Antécédents orthodontiques'},
       {id:'prescripteur_oralite', label:'Adress\u00e9 par (prescripteur)'},
       {id:'prescripteur_tap', label:'Prescripteur / \u00e9metteur de la demande (TAP)'},
-      {id:'prematurite_oralite', label:'Pr\u00e9maturit\u00e9'},
       {id:'reanimation_oralite', label:'R\u00e9animation / mise sous O\u2082 n\u00e9onatale'},
       {id:'hospitalisation_oralite', label:'Hospitalisations (motifs, dur\u00e9e)'},
       {id:'poids_courbe_oralite', label:'Courbe de poids / croissance staturo-pond\u00e9rale'},
@@ -16539,7 +16538,6 @@ function genererAnamnese(pid, mode){
     if(a.lieu_vie) texte += Le+' '+prenom+(isEnfant?' vit ':' vit ')+a.lieu_vie.toLowerCase()+'.\n';
     if(a.prof_pere||a.prof_mere) texte += 'Le père exerce une profession de type "'+( a.prof_pere||'—')+'" et la mère de type "'+(a.prof_mere||'—')+'".\n';
     if(a.fratrie) texte += prenom+' est '+ a.fratrie.toLowerCase()+( a.fratrie_detail?' ('+a.fratrie_detail+')':'')+'.\n';
-    if(a.rythme_famille) texte += 'Concernant le rythme familial : '+a.rythme_famille+'\n';
     if(a.bilinguisme==='Oui') texte += 'La famille est bilingue'+(a.langue_maison?', langue parlée à la maison : '+a.langue_maison:'')+'.\n';
     if((a.antecedents_familiaux||[]).length>0) texte += 'On note des antécédents familiaux de difficultés scolaires : '+(a.antecedents_familiaux||[]).join(', ')+'.\n';
     texte += '\n';
