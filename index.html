@@ -15850,7 +15850,8 @@ async function checkQuestionnairesRecus(skipPid){
       QUESTIONNAIRES_RECUS[row.patient_id].push(row);
     });
     // Rafraîchir l'affichage des patients si une liste est déjà rendue
-    if(typeof renderPatients === 'function') renderPatients();
+    // (sauf si on a été déclenché depuis renderAnamneseTab, pour ne pas fermer la fiche ouverte)
+    if(!skipPid && typeof renderPatients === 'function') renderPatients();
     // Rafraîchir l'onglet anamnèse actuellement ouvert (s'il y en a un), sauf celui qui a déclenché l'appel
     Object.keys(QUESTIONNAIRES_RECUS).forEach(function(pid){
       if(pid===skipPid) return;
