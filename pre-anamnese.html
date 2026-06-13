@@ -195,6 +195,8 @@ const SECTIONS = {
       { id:"poids_neuro", label:"Poids (kg)", type:"text" },
       { id:"taille_neuro", label:"Taille (m)", type:"text" },
       { id:"commentaires_anos", label:"Commentaires", type:"textarea" },
+      { id:"modif_alim_anos", label:"Ces troubles ont-ils modifié votre alimentation (plats évités, changement de texture, perte de plaisir à manger…) ?", type:"textarea" },
+      { id:"histoire_maladie_anos", label:"Pouvez-vous décrire l'histoire de ces troubles (comment c'est apparu, ce qui a changé depuis, les traitements essayés…) ?", type:"textarea" },
     ]
   },
   aphasie: {
@@ -272,6 +274,7 @@ const SECTIONS = {
       { id:"appareillage_deg", label:"Le patient porte-t-il un appareil dentaire actuellement ?", type:"select", options:["Oui","Non"] },
       { id:"appareillage_detail_deg", label:"Si oui, précisez le type d'appareil", type:"textarea" },
       { id:"succion_contexte", label:"En cas de succion du pouce, du doigt ou d'une tétine, dans quel contexte (école, nuit, journée) ?", type:"textarea" },
+      { id:"orl_precisions_deg", label:"Antécédents ORL — précisions (traitements, interventions, suivi ORL en cours…)", type:"textarea" },
       { id:"age_cuillere", label:"À quel âge le patient a-t-il commencé à manger à la cuillère ?", type:"text" },
       { id:"age_morceaux", label:"À quel âge le patient a-t-il commencé à manger des morceaux ?", type:"text" },
       { id:"liquides_age", label:"Jusqu'à quel âge le patient a-t-il bu au biberon ou à la tétine ?", type:"text" },
@@ -416,6 +419,33 @@ const SECTIONS = {
       { id:"commentaires_oralite", label:"Commentaires", type:"textarea" },
     ]
   },
+  saos_adulte: {
+    label: "SAOS / Apnées du sommeil",
+    questions: [
+      { id:"adresse_par_saos", label:"Qui vous a orienté(e) vers ce bilan ?", type:"checkboxes", options:["ORL","Pneumologue / médecin du sommeil","Médecin traitant","Dentiste / orthodontiste","Cardiologue","Neurologue","Auto-référence"] },
+      { id:"plainte_principale_saos", label:"Quelle est votre plainte principale concernant le sommeil ou la respiration nocturne ?", type:"textarea" },
+      { id:"diagnostic_saos", label:"Un diagnostic de SAOS a-t-il été posé ? Si oui, lequel ?", type:"textarea" },
+      { id:"traitement_saos", label:"Avez-vous un traitement en cours pour les apnées du sommeil ?", type:"checkboxes", options:["PPC / CPAP","Orthèse d'avancée mandibulaire (appareil dentaire nocturne)","Chirurgie ORL (passée ou programmée)","Prise en charge diététique (perte de poids)","Rééducation (kiné)","Aucun traitement"] },
+      { id:"tolerance_ppc_saos", label:"Si vous portez la PPC (masque), comment la tolérez-vous ?", type:"select", options:["Je ne porte pas la PPC","Portée mais mal tolérée","Portée correctement","Portée parfaitement"] },
+      { id:"contexte_med_saos", label:"Avez-vous l'une de ces conditions médicales associées ?", type:"checkboxes", options:["Hypertension artérielle","Maladie cardiaque","Diabète","Surpoids / obésité","TDAH","Maladie neurologique","COVID long / fatigue chronique","Aucune"] },
+      { id:"sympt_nocturnes_saos", label:"Avez-vous l'un de ces symptômes la nuit ?", type:"checkboxes", options:["Ronflements","Bavage nocturne","Pauses respiratoires (observées par quelqu'un)","Sensation d'étouffement ou d'apnée ressentie","Sommeil agité / nombreux réveils","Besoin fréquent d'uriner la nuit","Transpiration excessive","Réveils avec maux de tête","Respiration par la bouche la nuit","Bruxisme nocturne (grincement des dents)"] },
+      { id:"sympt_diurnes_saos", label:"Avez-vous l'un de ces symptômes en journée ?", type:"checkboxes", options:["Somnolence excessive dans la journée","Fatigue dès le réveil / sommeil non réparateur","Difficultés à me réveiller le matin","Maux de tête au réveil","Troubles de la mémoire","Troubles de la concentration","Troubles de l'humeur / irritabilité","Baisse de la libido","Performances au travail altérées"] },
+      { id:"qualite_sommeil_saos", label:"Comment décrivez-vous la qualité de votre sommeil (durée, heure d'endormissement, réveils nocturnes, qualité ressentie au réveil…) ?", type:"textarea" },
+    ]
+  },
+  sep: {
+    label: "SEP — Sclérose en plaques",
+    questions: [
+      { id:"date_diagnostic_sep", label:"Date du diagnostic SEP (si connue)", type:"text" },
+      { id:"forme_sep", label:"Forme de SEP (si connue)", type:"select", options:["Rémittente (poussées + rémissions)","Secondairement progressive","Progressive d'emblée","Syndrome cliniquement isolé (1 seule poussée)","Je ne sais pas"] },
+      { id:"premiers_signes_sep", label:"Quels ont été les premiers symptômes ou signes ayant conduit au diagnostic ?", type:"textarea" },
+      { id:"evolution_sep", label:"Comment la maladie a-t-elle évolué depuis le début (poussées récentes, récupération, aggravation…) ?", type:"textarea" },
+      { id:"symptomes_visuels_sep", label:"Avez-vous des troubles visuels actuellement ?", type:"checkboxes", options:["Vision trouble ou floue","Double vision (diplopie)","Mouvements involontaires des yeux","Aucun trouble visuel"] },
+      { id:"symptomes_sensitifs_sep", label:"Avez-vous des troubles sensitifs ou des douleurs ?", type:"checkboxes", options:["Fourmillements / engourdissements","Sensation de décharge électrique dans la nuque (signe de Lhermitte)","Douleurs neuropathiques","Troubles du toucher ou de la sensibilité","Aucun trouble sensitif"] },
+      { id:"fatigue_sep", label:"Comment évalueriez-vous votre fatigabilité ?", type:"select", options:["Absente ou légère","Modérée (impact sur mes activités)","Sévère (impact majeur sur ma qualité de vie)"] },
+      { id:"humeur_sep", label:"Avez-vous remarqué des changements sur le plan émotionnel ou psychologique ?", type:"checkboxes", options:["Tristesse, dépression","Anxiété","Rires ou pleurs incontrôlables","Aucun changement particulier"] },
+    ]
+  },
   sla: {
     label: "SLA — éléments généraux",
     questions: [
@@ -455,6 +485,12 @@ const SECTIONS = {
       { id:"gene_respi_voix_a", label:"Avez-vous une gêne respiratoire ?", type:"checkboxes", options:["Essoufflement","Bruit en respirant (à l'inspiration)","Bruit en respirant (à l'expiration)"] },
       { id:"gene_phagique_voix_a", label:"Avez-vous une gêne pour avaler ?", type:"checkboxes", options:["Sensation de blocage","Fausses routes","Renvois / éructations","Vomissements"] },
       { id:"retentissement_voix_a", label:"Quel est l'impact de ces difficultés sur votre vie professionnelle et sociale ?", type:"textarea" },
+      { id:"antecedents_med_voix_a", label:"Avez-vous des antécédents médicaux ou chirurgicaux en lien avec la voix ou la gorge (ORL, thyroïde, reflux, intubation…) ?", type:"textarea" },
+      { id:"traitements_voix_a", label:"Prenez-vous des médicaments pouvant affecter la voix (corticoïdes inhalés, anti-hypertenseurs, antihistaminiques, hormones…) ?", type:"textarea" },
+      { id:"type_activite_voix_a", label:"Avez-vous une activité vocale artistique ou professionnelle élargie (chant, théâtre, cours, conférences…) ?", type:"checkboxes", options:["Chant amateur","Chant professionnel","Comédien(ne) / théâtre","Animateur(rice) / conférencier(ière)","Enseignant(e)","Autre usage vocal intensif","Aucun"] },
+      { id:"formation_voix_a", label:"Avez-vous reçu une formation vocale ?", type:"checkboxes", options:["Cours de chant","Cours de théâtre / diction","Formation professionnelle","Aucune formation vocale"] },
+      { id:"echauffement_voix_a", label:"Pratiquez-vous un échauffement vocal avant d'utiliser votre voix ?", type:"select", options:["Oui, systématiquement","Parfois","Non"] },
+      { id:"quantite_activite_voix_a", label:"Quelle est la régularité et la quantité de votre activité vocale artistique (heures par semaine, fréquence des représentations…) ?", type:"textarea" },
     ]
   },
   voix_enfant: {

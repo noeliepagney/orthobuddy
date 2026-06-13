@@ -16172,6 +16172,8 @@ var QA_SECTIONS = {
       {id:'poids_neuro', label:'Poids (kg)'},
       {id:'taille_neuro', label:'Taille (m)'},
       {id:'commentaires_anos', label:'Commentaires'},
+      {id:'modif_alim_anos', label:'Modification de l\'alimentation'},
+      {id:'histoire_maladie_anos', label:'Histoire de la maladie'},
     ]
   },
   aphasie: {
@@ -16249,6 +16251,7 @@ var QA_SECTIONS = {
       {id:'appareillage_deg', label:'Appareillage orthodontique en cours'},
       {id:'appareillage_detail_deg', label:'Appareillage \u2014 pr\u00e9cisions'},
       {id:'succion_contexte', label:'Contexte de succion'},
+      {id:'orl_precisions_deg', label:'ORL — précisions'},
       {id:'age_cuillere', label:"\u00c2ge d'alimentation \u00e0 la cuill\u00e8re"},
       {id:'age_morceaux', label:'\u00c2ge de passage aux morceaux'},
       {id:'liquides_age', label:"\u00c2ge limite liquides au biberon / t\u00e9tine"},
@@ -16393,6 +16396,33 @@ var QA_SECTIONS = {
       {id:'commentaires_oralite', label:'Commentaires'},
     ]
   },
+  saos_adulte: {
+    label: 'SAOS / Apnées du sommeil',
+    questions: [
+      {id:'adresse_par_saos', label:'Adressé par'},
+      {id:'plainte_principale_saos', label:'Plainte principale'},
+      {id:'diagnostic_saos', label:'Diagnostic posé'},
+      {id:'traitement_saos', label:'Traitement en cours'},
+      {id:'tolerance_ppc_saos', label:'Tolérance PPC'},
+      {id:'contexte_med_saos', label:'Contexte médical associé'},
+      {id:'sympt_nocturnes_saos', label:'Symptômes nocturnes'},
+      {id:'sympt_diurnes_saos', label:'Symptômes diurnes'},
+      {id:'qualite_sommeil_saos', label:'Qualité du sommeil'},
+    ]
+  },
+  sep: {
+    label: 'SEP — Sclérose en plaques',
+    questions: [
+      {id:'date_diagnostic_sep', label:'Date du diagnostic'},
+      {id:'forme_sep', label:'Forme de SEP'},
+      {id:'premiers_signes_sep', label:'Premiers signes / symptômes inauguraux'},
+      {id:'evolution_sep', label:'Évolution et poussées récentes'},
+      {id:'symptomes_visuels_sep', label:'Troubles visuels'},
+      {id:'symptomes_sensitifs_sep', label:'Troubles sensitifs / douleurs'},
+      {id:'fatigue_sep', label:'Fatigabilité'},
+      {id:'humeur_sep', label:'Humeur et psychiatrie'},
+    ]
+  },
   sla: {
     label: 'SLA',
     questions: [
@@ -16432,6 +16462,12 @@ var QA_SECTIONS = {
       {id:'gene_respi_voix_a', label:'G\u00eane respiratoire'},
       {id:'gene_phagique_voix_a', label:'G\u00eane phagique'},
       {id:'retentissement_voix_a', label:'Retentissement professionnel et social'},
+      {id:'antecedents_med_voix_a', label:'Antécédents médicaux / chirurgicaux voix'},
+      {id:'traitements_voix_a', label:'Traitements médicamenteux voix'},
+      {id:'type_activite_voix_a', label:'Activité vocale artistique / professionnelle'},
+      {id:'formation_voix_a', label:'Formation vocale'},
+      {id:'echauffement_voix_a', label:'Échauffement vocal'},
+      {id:'quantite_activite_voix_a', label:'Quantité / régularité activité vocale'},
     ]
   },
   voix_enfant: {

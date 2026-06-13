@@ -8954,10 +8954,21 @@ function prefillFromPatient(p){
     // ── Anamnèse médicale ──
     let atcdVA=[];
     if(a.antecedents_neuro && a.antecedents_neuro.length) atcdVA.push("Ant\u00e9c\u00e9dents : "+fmtArr(a.antecedents_neuro));
+    if(a.antecedents_med_voix_a) atcdVA.push(a.antecedents_med_voix_a);
     if(a.audition_neuro && a.audition_neuro.length) atcdVA.push("Audition : "+fmtArr(a.audition_neuro));
     if(a.vision_neuro && a.vision_neuro.length) atcdVA.push("Vision : "+fmtArr(a.vision_neuro));
     if(atcdVA.length) map[trameId+".anamnese_medicale.atcd_chir"]=atcdVA.join('\n');
-    if(a.traitements_neuro) map[trameId+".anamnese_medicale.traitements_com"]=a.traitements_neuro;
+    const traitsVA = a.traitements_voix_a || a.traitements_neuro;
+    if(traitsVA) map[trameId+".anamnese_medicale.traitements_com"]=traitsVA;
+
+    // ── Anamnèse artistique ──
+    if(a.type_activite_voix_a && a.type_activite_voix_a.length) map[trameId+".anamnese_artistique.type_activite"]=a.type_activite_voix_a.slice();
+    if(a.formation_voix_a && a.formation_voix_a.length) map[trameId+".anamnese_artistique.formation"]=a.formation_voix_a.slice();
+    if(a.echauffement_voix_a){
+      const echMap={'Oui, syst\u00e9matiquement':'Syst\u00e9matiquement','Parfois':'Parfois','Non':'Non'};
+      if(echMap[a.echauffement_voix_a]) map[trameId+".anamnese_artistique.echauffement"]=echMap[a.echauffement_voix_a];
+    }
+    if(a.quantite_activite_voix_a) map[trameId+".anamnese_artistique.quantite_activite"]=a.quantite_activite_voix_a;
   }
 
   if(trameId==='dysarthrie'){
@@ -9103,6 +9114,36 @@ function prefillFromPatient(p){
     // ── Éléments administratifs ──
     if(a.vie_pro_neuro) map[trameId+".administratif.profession"]=a.vie_pro_neuro;
 
+    // ── Contexte & plainte ──
+    if(a.adresse_par_saos && a.adresse_par_saos.length) map[trameId+".contexte_saos.adresse_par"]=a.adresse_par_saos.slice();
+    if(a.plainte_principale_saos) map[trameId+".contexte_saos.plainte_princ"]=a.plainte_principale_saos;
+    if(a.diagnostic_saos) map[trameId+".contexte_saos.diagnostic_pose"]=a.diagnostic_saos;
+    if(a.traitement_saos && a.traitement_saos.length){
+      const tttMap={
+        'PPC / CPAP':'PPC / CPAP',
+        'Orth\u00e8se d\'avanc\u00e9e mandibulaire (appareil dentaire nocturne)':'Orth\u00e8se d\'avanc\u00e9e mandibulaire (OAM)',
+        'Chirurgie ORL (pass\u00e9e ou programm\u00e9e)':'Chirurgie ORL (pass\u00e9e ou programm\u00e9e)',
+        'Prise en charge di\u00e9t\u00e9tique (perte de poids)':'Prise en charge di\u00e9t\u00e9tique (perte de poids)',
+        'R\u00e9\u00e9ducation (kin\u00e9)':'R\u00e9\u00e9ducation (kin\u00e9 maxillo-facial)',
+        'Aucun traitement':'Aucun'
+      };
+      const mapped=a.traitement_saos.map(v=>tttMap[v]||v).filter(Boolean);
+      if(mapped.length) map[trameId+".contexte_saos.traitement_en_cours"]=mapped;
+    }
+    if(a.tolerance_ppc_saos){
+      const ppcMap={
+        'Je ne porte pas la PPC':'Non port\u00e9e',
+        'Port\u00e9e mais mal tol\u00e9r\u00e9e':'Port\u00e9e mal tol\u00e9r\u00e9e',
+        'Port\u00e9e correctement':'Port\u00e9e correctement',
+        'Port\u00e9e parfaitement':'Port\u00e9e parfaitement'
+      };
+      if(ppcMap[a.tolerance_ppc_saos]) map[trameId+".contexte_saos.tolerance_ppc"]=ppcMap[a.tolerance_ppc_saos];
+    }
+    if(a.contexte_med_saos && a.contexte_med_saos.length){
+      const ctx=a.contexte_med_saos.filter(v=>v!=='Aucune').join(', ');
+      if(ctx) map[trameId+".contexte_saos.contexte_med"]=ctx;
+    }
+
     // ── Anamnèse — spécificités SAOS ──
     if(a.atcd_fam_neuro) map[trameId+".anam_saos.atcd_fam"]=a.atcd_fam_neuro;
     if(a.antecedents_neuro && a.antecedents_neuro.length) map[trameId+".anam_saos.atcd_med"]=fmtArr(a.antecedents_neuro);
@@ -9113,21 +9154,50 @@ function prefillFromPatient(p){
 
     if(a.lieu_sommeil) map[trameId+".anam_saos.posture_sommeil"]="Lieu de sommeil : "+a.lieu_sommeil;
 
-    if(a.troubles_sommeil && a.troubles_sommeil.length){
+    if(a.sympt_nocturnes_saos && a.sympt_nocturnes_saos.length){
+      const nMap={
+        'Ronflements':'Ronflements (ronchopathie)',
+        'Bavage nocturne':'Bavage nocturne',
+        'Pauses respiratoires (observ\u00e9es par quelqu\'un)':"Pauses respiratoires observ\u00e9es par l'entourage",
+        'Sensation d\'\u00e9touffement ou d\'apn\u00e9e ressentie':'Sensation d\'\u00e9touffement / apn\u00e9e ressentie',
+        'Sommeil agit\u00e9 / nombreux r\u00e9veils':'Sommeil agit\u00e9 / nombreux r\u00e9veils',
+        'Besoin fr\u00e9quent d\'uriner la nuit':'Nycturie (envie fr\u00e9quente d\'uriner la nuit)',
+        'Transpiration excessive':'Transpiration excessive',
+        'R\u00e9veils avec maux de t\u00eate':'R\u00e9veils avec maux de t\u00eate',
+        'Respiration par la bouche la nuit':'Respiration buccale nocturne',
+        'Bruxisme nocturne (grincement des dents)':'Bruxisme nocturne'
+      };
+      const nMapped=a.sympt_nocturnes_saos.map(v=>nMap[v]).filter(Boolean);
+      if(nMapped.length) map[trameId+".anam_saos.sympt_nocturnes"]=nMapped;
+    } else if(a.troubles_sommeil && a.troubles_sommeil.length){
       const nocturneMap={
         'Ronflements':'Ronflements (ronchopathie)',
         'Bavage':'Bavage nocturne',
         'Apn\u00e9es':"Pauses respiratoires observ\u00e9es par l'entourage",
-        'R\u00e9veils nocturnes':'Sommeil agit\u00e9 / nombreux r\u00e9veils',
-        'Grince des dents':null
-      };
-      const diurneMap={
-        'Difficult\u00e9 \u00e0 s\'endormir':null
+        'R\u00e9veils nocturnes':'Sommeil agit\u00e9 / nombreux r\u00e9veils'
       };
       let nocturnes=[];
       a.troubles_sommeil.forEach(function(v){ if(nocturneMap[v]) nocturnes.push(nocturneMap[v]); });
       if(nocturnes.length) map[trameId+".anam_saos.sympt_nocturnes"]=nocturnes;
     }
+
+    if(a.sympt_diurnes_saos && a.sympt_diurnes_saos.length){
+      const dMap={
+        'Somnolence excessive dans la journ\u00e9e':'Somnolence diurne excessive',
+        'Fatigue d\u00e8s le r\u00e9veil / sommeil non r\u00e9parateur':'Fatigue d\u00e8s le r\u00e9veil / sommeil non r\u00e9parateur',
+        'Difficult\u00e9s \u00e0 me r\u00e9veiller le matin':'R\u00e9veils difficiles',
+        'Maux de t\u00eate au r\u00e9veil':'Maux de t\u00eate matinaux',
+        'Troubles de la m\u00e9moire':'Troubles de m\u00e9moire',
+        'Troubles de la concentration':'Troubles de concentration',
+        'Troubles de l\'humeur / irritabilit\u00e9':'Troubles de l\'humeur / irritabilit\u00e9',
+        'Baisse de la libido':'Troubles de la libido',
+        'Performances au travail alt\u00e9r\u00e9es':'Performances professionnelles alt\u00e9r\u00e9es'
+      };
+      const dMapped=a.sympt_diurnes_saos.map(v=>dMap[v]).filter(Boolean);
+      if(dMapped.length) map[trameId+".anam_saos.sympt_diurnes"]=dMapped;
+    }
+
+    if(a.qualite_sommeil_saos) map[trameId+".anam_saos.qualite_sommeil"]=a.qualite_sommeil_saos;
   }
 
   if(trameId==='saos-enfant'){
@@ -9320,16 +9390,63 @@ function prefillFromPatient(p){
     if(a.impact_vie_quotidienne_neuro) map[trameId+".demande.impact_qv"]=a.impact_vie_quotidienne_neuro;
 
     // ── Anamnèse ──
+    if(a.date_diagnostic_sep) map[trameId+".anamnese.date_diagnostic"]=a.date_diagnostic_sep;
+    if(a.forme_sep){
+      const formeMap={
+        'R\u00e9mittente (pous\u00e9es + r\u00e9missions)':"R\u00e9mittente (85% \u2014 pous\u00e9es + r\u00e9missions)",
+        'Secondairement progressive':"Secondairement progressive (aggravation apr\u00e8s p\u00e9riode r\u00e9mittente)",
+        'Progressive d\'\u00e9mbl\u00e9e':"Progressive d'\u00e9mbl\u00e9e (15% \u2014 aggravation lente continue d\u00e8s le d\u00e9but)",
+        'Syndrome cliniquement isol\u00e9 (1 seule pous\u00e9e)':"Syndrome cliniquement isol\u00e9 (1 seule pous\u00e9e)",
+        'Je ne sais pas':null
+      };
+      const mapped=formeMap[a.forme_sep];
+      if(mapped) map[trameId+".anamnese.forme_sep"]=mapped;
+    }
+    if(a.premiers_signes_sep) map[trameId+".anamnese.premiers_signes"]=a.premiers_signes_sep;
+    if(a.evolution_sep) map[trameId+".anamnese.evolution_sep"]=a.evolution_sep;
     if(a.traitements_neuro) map[trameId+".anamnese.traitements"]=a.traitements_neuro;
     if(a.autres_soins_neuro) map[trameId+".anamnese.autres_soins"]=a.autres_soins_neuro;
 
-    if(a.antecedents_neuro && a.antecedents_neuro.length){
-      let moteurs=[];
-      if(a.antecedents_neuro.indexOf('Chutes fr\u00e9quentes')>=0) moteurs.push('Troubles de la marche / chutes');
-      if(moteurs.length) map[trameId+".anamnese.symptomes_moteurs"]=moteurs;
+    if(a.symptomes_visuels_sep && a.symptomes_visuels_sep.length){
+      const visMap={
+        'Vision trouble ou floue':'N\u00e9vrite optique r\u00e9trobulbaire',
+        'Double vision (diplopie)':'Diplopie',
+        'Mouvements involontaires des yeux':'Nystagmus'
+      };
+      const visMapped=a.symptomes_visuels_sep.map(v=>visMap[v]).filter(Boolean);
+      if(visMapped.length) map[trameId+".anamnese.symptomes_visuels"]=visMapped;
     }
 
-    if(a.modif_comportement && a.modif_comportement.length){
+    if(a.symptomes_sensitifs_sep && a.symptomes_sensitifs_sep.length){
+      const sensMap={
+        'Fourmillements / engourdissements':'Paresthésies',
+        'Sensation de décharge électrique dans la nuque (signe de Lhermitte)':'Signe de Lhermitte',
+        'Douleurs neuropathiques':'Douleurs neuropathiques',
+        'Troubles du toucher ou de la sensibilité':'Troubles sensibilit\u00e9 tactile/positionnelle'
+      };
+      const sensMapped=a.symptomes_sensitifs_sep.map(v=>sensMap[v]).filter(Boolean);
+      if(sensMapped.length) map[trameId+".anamnese.symptomes_sensitifs"]=sensMapped;
+    }
+
+    if(a.fatigue_sep){
+      const fatMap={
+        'Absente ou l\u00e9g\u00e8re':'Absente ou l\u00e9g\u00e8re',
+        'Mod\u00e9r\u00e9e (impact sur mes activit\u00e9s)':'Mod\u00e9r\u00e9e (impact sur les activit\u00e9s)',
+        'S\u00e9v\u00e8re (impact majeur sur ma qualit\u00e9 de vie)':'S\u00e9v\u00e8re (impact majeur sur la QV)'
+      };
+      if(fatMap[a.fatigue_sep]) map[trameId+".anamnese.fatigue_sep"]=fatMap[a.fatigue_sep];
+    }
+
+    if(a.humeur_sep && a.humeur_sep.length){
+      const humMap={
+        'Tristesse, d\u00e9pression':'D\u00e9pression',
+        'Anxi\u00e9t\u00e9':'Anxi\u00e9t\u00e9',
+        'Rires ou pleurs incontr\u00f4lables':'Labilit\u00e9 \u00e9motionnelle (rires/pleurs pathologiques)',
+        'Aucun changement particulier':null
+      };
+      const humMapped=a.humeur_sep.map(v=>humMap[v]).filter(Boolean);
+      if(humMapped.length) map[trameId+".anamnese.humeur_sep"]=humMapped;
+    } else if(a.modif_comportement && a.modif_comportement.length){
       const humeurMap={
         'Tristesse, moral en baisse':'D\u00e9pression',
         'Anxi\u00e9t\u00e9':'Anxi\u00e9t\u00e9',
@@ -9339,6 +9456,12 @@ function prefillFromPatient(p){
       let humeur=[];
       a.modif_comportement.forEach(function(v){ if(humeurMap[v] && humeur.indexOf(humeurMap[v])<0) humeur.push(humeurMap[v]); });
       if(humeur.length) map[trameId+".anamnese.humeur_sep"]=humeur;
+    }
+
+    if(a.antecedents_neuro && a.antecedents_neuro.length){
+      let moteurs=[];
+      if(a.antecedents_neuro.indexOf('Chutes fr\u00e9quentes')>=0) moteurs.push('Troubles de la marche / chutes');
+      if(moteurs.length) map[trameId+".anamnese.symptomes_moteurs"]=moteurs;
     }
   }
 
@@ -9400,7 +9523,8 @@ function prefillFromPatient(p){
     if(a.orl && a.orl.length) orlDeg.push(fmtArr(a.orl));
     if(a.atcd_orl_anos && a.atcd_orl_anos.length) orlDeg.push(fmtArr(a.atcd_orl_anos));
     if(orlDeg.length) map[trameId+".anamnese.orl_items"]=orlDeg.join(', ');
-    if(a.audiogramme_resultats) map[trameId+".anamnese.orl_com"]=a.audiogramme_resultats;
+    if(a.orl_precisions_deg) map[trameId+".anamnese.orl_com"]=a.orl_precisions_deg;
+    else if(a.audiogramme_resultats) map[trameId+".anamnese.orl_com"]=a.audiogramme_resultats;
 
     if(a.troubles_sommeil && a.troubles_sommeil.length) map[trameId+".anamnese.sommeil_items"]=fmtArr(a.troubles_sommeil);
 
@@ -9554,7 +9678,9 @@ function prefillFromPatient(p){
     if(a.poids_neuro) map[trameId+".anamnese.poids"]=a.poids_neuro;
     if(a.taille_neuro) map[trameId+".anamnese.taille"]=a.taille_neuro;
     if(a.regime) map[trameId+".anamnese.regime"]=a.regime;
+    if(a.modif_alim_anos) map[trameId+".anamnese.modif_alim"]=a.modif_alim_anos;
     if(a.retentissement_alim && a.retentissement_alim.length) map[trameId+".anamnese.retentissement_alim"]=fmtArr(a.retentissement_alim);
+    if(a.histoire_maladie_anos) map[trameId+".anamnese.histoire"]=a.histoire_maladie_anos;
     if(a.tabagisme) map[trameId+".anamnese.tabagisme"]=a.tabagisme;
     if(a.allergies) map[trameId+".anamnese.allergies"]=a.allergies;
     if(a.modif_comportement && a.modif_comportement.length) map[trameId+".anamnese.modif_comportement"]=fmtArr(a.modif_comportement);
