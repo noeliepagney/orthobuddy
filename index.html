@@ -15978,9 +15978,21 @@ async function integrerQuestionnaire(pid, token){
   delete QUESTIONNAIRES_RECUS[pid];
   closeModal('modal-generic');
   showToast(nbIntegres+' réponse(s) intégrée(s) à l\'anamnèse','green');
-  // Rafraîchir l'onglet anamnèse si ouvert
-  if(typeof renderAnamneseTab==='function') renderAnamneseTab(pid);
+  // Rester sur la fiche patient, onglet anamnèse, après intégration
   if(typeof renderPatients==='function') renderPatients();
+  setTimeout(function(){
+    var card = document.getElementById('pcard-'+pid);
+    if(card && !card.classList.contains('expanded')) togglePatient(pid);
+    var allBtns = document.querySelectorAll('#pbody-'+pid+' .patient-tab');
+    for(var bi=0; bi<allBtns.length; bi++){
+      var oc = allBtns[bi].getAttribute('onclick')||'';
+      if(oc.indexOf("switchPTab('"+pid+"','anamnese'")===0){
+        allBtns[bi].click();
+        break;
+      }
+    }
+    if(typeof renderAnamneseTab==='function') renderAnamneseTab(pid);
+  }, 0);
 }
 
 // Définition des sections/questions pour le questionnaire pré-bilan
