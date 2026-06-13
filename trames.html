@@ -9841,7 +9841,14 @@ async function deleteSaved(bilanId){
       method:"DELETE",
       headers:{"apikey":SB_ANON,"Authorization":"Bearer "+SB_ANON}
     });
-    if(currentBilanId===bilanId){ currentBilanId=null; data={}; renderForm(); }
+    if(currentBilanId===bilanId){
+      currentBilanId=null; data={}; renderForm();
+      if(currentPatientId){
+        const p=allPatients.find(x=>x.id===currentPatientId);
+        if(p) setTimeout(()=>prefillFromPatient(p),100);
+        else setTimeout(()=>{ const p2=getPatientFallback(currentPatientId); if(p2) prefillFromPatient(p2); },400);
+      }
+    }
     refreshSaved();
     $("#btnDeleteSaved").disabled=true;
     $("#savedSel").value="";
@@ -10286,7 +10293,12 @@ function init(){
 
   $("#btnReset").addEventListener("click",()=>{
     if(!trameId||!currentPatientId) return;
-    if(confirm("Effacer toutes les données saisies pour ce bilan ?")){ data={}; renderForm(); scheduleSave(); }
+    if(confirm("Effacer toutes les données saisies pour ce bilan ?")){
+      data={}; renderForm(); scheduleSave();
+      const p=allPatients.find(x=>x.id===currentPatientId);
+      if(p) setTimeout(()=>prefillFromPatient(p),100);
+      else setTimeout(()=>{ const p2=getPatientFallback(currentPatientId); if(p2) prefillFromPatient(p2); },400);
+    }
   });
 
   $("#saveState").textContent="Prêt";
