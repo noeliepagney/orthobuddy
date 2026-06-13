@@ -9280,10 +9280,39 @@ function savePatient(){
     DB.patients.push({id:newPid,...data,...extraData,permNotes:extraData.permNotes||data.permNotes||'',isNew:!!attenteId});
   }
   save();closeModal('modal-patient');
-  if(data.statut !== _patientStatutFilter){
-    showPage('patients', data.statut);
+  if(pid){
+    // Patient existant modifié : rester sur sa fiche, dans le même onglet
+    var _activeTabBtn = document.querySelector('#pbody-'+pid+' .patient-tab.active');
+    var _activeTabName = null;
+    if(_activeTabBtn){
+      var m = (_activeTabBtn.getAttribute('onclick')||'').match(/switchPTab\('[^']*','([^']*)'/);
+      if(m) _activeTabName = m[1];
+    }
+    if(data.statut !== _patientStatutFilter){
+      showPage('patients', data.statut);
+    } else {
+      renderPatients();
+    }
+    setTimeout(function(){
+      var card = document.getElementById('pcard-'+pid);
+      if(card && !card.classList.contains('expanded')) togglePatient(pid);
+      if(_activeTabName){
+        var allBtns = document.querySelectorAll('#pbody-'+pid+' .patient-tab');
+        for(var bi=0; bi<allBtns.length; bi++){
+          var oc = allBtns[bi].getAttribute('onclick')||'';
+          if(oc.indexOf("switchPTab('"+pid+"','"+_activeTabName+"'")===0){
+            allBtns[bi].click();
+            break;
+          }
+        }
+      }
+    }, 0);
   } else {
-    renderPatients();
+    if(data.statut !== _patientStatutFilter){
+      showPage('patients', data.statut);
+    } else {
+      renderPatients();
+    }
   }
   if(document.getElementById('page-agenda').classList.contains('active'))renderAgenda();
   showToast(pid?'✓ Patient modifié':'✓ Patient ajouté');
@@ -16272,7 +16301,7 @@ var QA_SECTIONS = {
   voix_adulte: {
     label: 'Voix (adulte)',
     questions: [
-      {id:'profession_voix_a', label:'Profession / usage vocal professionnel'},
+      {id:'profession_voix_a', label:'Quelle est votre profession, et comment utilisez-vous votre voix au travail ?'},
       {id:'motif_voix_a', label:'Motif de consultation'},
       {id:'historique_voix_a', label:'Historique de la dysphonie'},
       {id:'plainte_intensite_voix_a', label:'Intensit\u00e9 \u2014 difficult\u00e9s rapport\u00e9es'},
@@ -16397,7 +16426,7 @@ async function envoyerQuestionnaire(pid){
   try{
     var res=await fetch('https://xiznicrburryfmdfbjxk.supabase.co/functions/v1/rapid-service',{
       method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({action:'envoyer',patient_id:pid,patient_prenom:p.prenom||'',patient_nom:p.nom||'',patient_ddn:p.ddn||'',patient_email_existant:p.email||p.emailParent||p.emailContact||'',patient_tel:p.tel||'',patient_email:email,sections:sections,anamnese_existante:p.anamnese||{}})
+      body:JSON.stringify({action:'envoyer',patient_id:pid,patient_prenom:p.prenom||'',patient_nom:p.nom||'',patient_ddn:p.ddn||'',patient_email_existant:p.email||p.emailParent||p.emailContact||'',patient_tel:p.tel||'',patient_email:email,sections:sections,anamnese_existante:p.anamnese||{},signature_email:'Noëlie Lainé, orthophoniste à Pagney-derrière-Barine'})
     });
     var json=await res.json();
     if(json.success){closeModal('modal-generic');showToast('Questionnaire envoye a '+email,'green');}
