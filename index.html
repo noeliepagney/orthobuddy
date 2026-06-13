@@ -4610,7 +4610,7 @@ function openPatientModalFromAttente(a){
   toggleDistanceField(!!(a.domicile));
   document.getElementById('p-distance').value='';
   var memeAggloEl=document.getElementById('p-meme-agglo'); if(memeAggloEl){memeAggloEl.checked=false;toggleMemeAgglo(false);}
-  var hospiEl=document.getElementById('p-hospi'); if(hospiEl){hospiEl.checked=false;toggleHospiField(false);}
+  var hospiEl=document.getElementById('p-hospi'); if(hospiEl){hospiEl.checked=!!(a.sortieHospit);toggleHospiField(!!(a.sortieHospit));}
   createDatePicker('dp-hospi-sortie-wrap','');
   createDatePicker('dp-ddn-wrap',a.ddn||'');
 

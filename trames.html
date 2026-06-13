@@ -135,6 +135,7 @@
     <div class="topbar-inner">
       <div class="brand"><div class="logo"><i class="ti ti-leaf"></i></div><div>OrthoBuddy<small>Trames de bilans</small></div></div>
       <div class="spacer"></div>
+      <button id="btnSaveBilan" onclick="forceSaveBilan()" style="display:flex;align-items:center;gap:6px;background:var(--green,#1D9E75);color:white;border:none;border-radius:8px;padding:8px 16px;font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;margin-right:10px;"><i class="ti ti-device-floppy"></i> Enregistrer</button>
       <div class="save-state" id="saveState"></div>
     </div>
   </div>
@@ -8020,8 +8021,10 @@ function fillSub(catName, selectTrame){ const sub=$("#subSel"); sub.innerHTML=""
 function currentLeaf(){ const c=$("#catSel").value; const i=Number($("#subSel").value||0); return (CATEGORIES[c]||[])[i]||null; }
 function findCatForTrame(tid){ for(const c of Object.keys(CATEGORIES)){ const i=CATEGORIES[c].findIndex(l=>l.trame===tid); if(i>=0) return {cat:c,idx:i}; } return null; }
 function renderPlaceholder(label){ $("#lead").innerHTML=""; $("#form").innerHTML="<div class='note'><span class='gt'>À venir</span>La trame « "+esc(label)+" » n'est pas encore créée. Dis-moi quand tu veux qu'on la construise.</div>"; $("#saveState").className="save-state"; $("#saveState").textContent=""; }
-function selectFromSub(){
+async function selectFromSub(){
   const leaf=currentLeaf(); if(!leaf) return;
+  // Flush toute sauvegarde en attente avant de changer de bilan
+  if(saveTimer){ clearTimeout(saveTimer); await saveNow(); }
   if(leaf.trame){
     trameId=leaf.trame; loadData(); renderForm(); markSaved();
     if(currentPatientId){
@@ -9573,6 +9576,24 @@ function markSaved(){
   $("#saveState").className="save-state dot";
   $("#saveState").textContent="Enregistré à "+t;
 }
+
+// Bouton "Enregistrer" manuel : flush immédiat de toute saisie en attente
+async function forceSaveBilan(){
+  if(!currentPatientId){ alert("Sélectionnez d'abord un patient"); return; }
+  clearTimeout(saveTimer);
+  const btn=$("#btnSaveBilan");
+  if(btn){ btn.disabled=true; }
+  await saveNow();
+  if(btn){ btn.disabled=false; }
+}
+
+// Avertir avant fermeture/rechargement si une sauvegarde est en attente
+window.addEventListener("beforeunload", function(e){
+  if(saveTimer){
+    e.preventDefault();
+    e.returnValue = "";
+  }
+});
 
 // ── Historique ───────────────────────────────────────────────────────────────
 async function refreshSaved(){
