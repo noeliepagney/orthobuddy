@@ -128,50 +128,158 @@ const SECTIONS = {
       { id:"plainte_actuelle_neuro", label:"Quelle est la difficulté actuelle ?", type:"textarea" },
       { id:"plainte_entourage_neuro", label:"Qu'observe votre entourage ?", type:"textarea" },
       { id:"impact_vie_quotidienne_neuro", label:"Quel est l'impact sur la vie quotidienne ?", type:"textarea" },
+      { id:"situation_familiale", label:"Situation familiale", type:"select", options:["Marié(e)","En couple","Veuf/Veuve","Divorcé(e)","Célibataire"] },
+      { id:"aidant", label:"Qui vous accompagne au quotidien (famille, proche aidant…) ?", type:"text" },
       { id:"niveau_scolaire", label:"Niveau scolaire atteint", type:"select", options:["Certificat d'études","CAP/BEP","Bac","Bac+2","Bac+3","Bac+5 et plus"] },
       { id:"niveau_eleve", label:"Parcours scolaire", type:"select", options:["Bon(ne) élève","Élève moyen(ne)","En difficulté"] },
-      { id:"lateralite_neuro", label:"Êtes-vous droitier, gaucher ou ambidextre ?", type:"select", options:["Droitier(e)","Gaucher(e)","Ambidextre"] },
       { id:"vie_pro_neuro", label:"Vie professionnelle (dernier poste)", type:"textarea" },
       { id:"date_retraite", label:"Date de retraite", type:"text" },
-      { id:"situation_familiale", label:"Situation familiale", type:"select", options:["Marié(e)","En couple","Veuf/Veuve","Divorcé(e)","Célibataire"] },
-      { id:"lieu_vie_neuro", label:"Lieu de vie actuel", type:"checkboxes", options:["Domicile, seul(e)","Domicile, avec conjoint(e)","Domicile, avec famille","EHPAD (maison de retraite médicalisée)","Résidence senior","Autre"] },
-      { id:"aidant", label:"Qui vous accompagne au quotidien (famille, proche aidant…) ?", type:"text" },
-      { id:"occupations", label:"Occupations quotidiennes", type:"textarea" },
-      { id:"conduite", label:"Conduit un véhicule", type:"select", options:["Oui","Non","A arrêté récemment"] },
-      { id:"gestion_finances", label:"Gère ses finances", type:"select", options:["Oui","Non","Avec aide"] },
-      { id:"loisirs_neuro", label:"Lecture / loisirs", type:"textarea" },
-      { id:"vie_sociale", label:"Vie sociale", type:"textarea" },
-      { id:"date_premiers_symptomes", label:"Date d'apparition des premiers signes", type:"text" },
-      { id:"mode_installation", label:"Comment ces difficultés sont-elles apparues ?", type:"select", options:["Petit à petit, de façon progressive","Brutalement (suite à un AVC ou un malaise)","Par étapes, avec des périodes d'aggravation"] },
-      { id:"plainte_cognitive", label:"Quels changements avez-vous remarqués ?", type:"checkboxes", options:["Mémoire (rendez-vous, événements récents)","Trouver ses mots","Comprendre ce qu'on lui dit","Gestes du quotidien (s'habiller, utiliser des objets…)","Organiser, planifier, s'adapter aux changements","Se repérer dans l'espace","Reconnaître des visages ou des lieux familiers","Calcul"] },
-      { id:"caractere_evolutif", label:"Comment ces difficultés évoluent-elles ?", type:"select", options:["Stables","Elles s'aggravent progressivement","Par étapes (périodes stables puis aggravation)","Cela varie selon les jours ou les moments"] },
+      { id:"lateralite_neuro", label:"Êtes-vous droitier, gaucher ou ambidextre ?", type:"select", options:["Droitier(e)","Gaucher(e)","Ambidextre"] },
+      { id:"evenements_vie", label:"Des événements de vie marquants se sont-ils produits récemment (deuil, déménagement, hospitalisation…) ?", type:"textarea" },
       { id:"anosognosie", label:"La personne est-elle consciente de ses difficultés ?", type:"select", options:["Oui, tout à fait","Partiellement","Peu ou pas consciente"] },
-      { id:"modif_comportement", label:"Avez-vous remarqué des changements de comportement ?", type:"checkboxes", options:["Moins d'initiative, de motivation","Ralentissement général","A arrêté certaines activités","Dort beaucoup plus qu'avant","Comportements inhabituels, moins de retenue","Colères, agressivité","Anxiété","Tristesse, moral en baisse","Troubles du sommeil"] },
       { id:"antecedents_neuro", label:"Antécédents médicaux", type:"checkboxes", options:["Diabète","Hypertension","Cholestérol élevé","Hallucinations visuelles","Chutes fréquentes","Incontinence","Dépression","AVC ou accident vasculaire cérébral transitoire (AIT)","Traumatisme crânien","Maladie de Parkinson"] },
+      { id:"commentaires_neuro", label:"Autres / commentaires", type:"textarea" },
       { id:"traitements_neuro", label:"Traitements médicamenteux actuels", type:"textarea" },
-      { id:"reaction_antidep", label:"Si un traitement pour le moral a été prescrit, a-t-il eu un effet sur les troubles observés ?", type:"select", options:["Oui","Non","Ne sait pas / non concerné"] },
+      { id:"reaction_antidep", label:"Si un traitement pour le moral a été prescrit, a-t-il eu un effet sur les troubles observés ?", type:"select", options:["Oui","Non","Ne sait pas"] },
       { id:"vision_neuro", label:"Concernant la vue", type:"checkboxes", options:["Cataracte","Glaucome","DMLA (dégénérescence maculaire liée à l'âge)","Porte des lunettes"] },
       { id:"audition_neuro", label:"Concernant l'audition", type:"checkboxes", options:["Baisse d'audition liée à l'âge","Porte des appareils auditifs","Surdité","Ne porte pas ses appareils auditifs"] },
       { id:"gout_odorat", label:"Le goût et l'odorat sont-ils conservés ?", type:"select", options:["Conservés","Un peu modifiés","Très modifiés"] },
-      { id:"examens_neuro", label:"Quels examens ont déjà été réalisés ?", type:"checkboxes", options:["IRM","Scanner","Scintigraphie cérébrale","Analyses de sang","Bilan neuropsychologique (tests de mémoire et de raisonnement)","Évaluation gériatrique"] },
       { id:"atcd_fam_neuro", label:"Y a-t-il eu, dans la famille, des cas de maladies comme Alzheimer, Parkinson ou autres maladies neurodégénératives ?", type:"textarea" },
-      { id:"evenements_vie", label:"Des événements de vie marquants se sont-ils produits récemment (deuil, déménagement, hospitalisation…) ?", type:"textarea" },
+      { id:"autres_soins_neuro", label:"Autres prises en soins en cours (kinésithérapie, ergothérapie, suivi psychologique…)", type:"textarea" },
+      { id:"examens_neuro", label:"Quels examens ont déjà été réalisés ?", type:"checkboxes", options:["IRM","Scanner","Scintigraphie cérébrale","Analyses de sang","Bilan neuropsychologique (tests de mémoire et de raisonnement)","Évaluation gériatrique"] },
+      { id:"resultats_examens", label:"Si vous connaissez les résultats de ces examens, pouvez-vous les préciser ?", type:"textarea" },
       { id:"info_langagiere", label:"Informations utiles sur le langage (avant ou après l'apparition des troubles)", type:"textarea" },
-      { id:"commentaires_neuro", label:"Commentaires", type:"textarea" },
+      { id:"conduite", label:"Conduit un véhicule", type:"select", options:["Oui","Non","A arrêté récemment"] },
+      { id:"gestion_finances", label:"Gère ses finances", type:"select", options:["Oui","Non","Avec aide"] },
+      { id:"lieu_vie_neuro", label:"Lieu de vie actuel", type:"checkboxes", options:["Domicile, seul(e)","Domicile, avec conjoint(e)","Domicile, avec famille","EHPAD (maison de retraite médicalisée)","Résidence senior","Autre"] },
+      { id:"occupations", label:"Occupations quotidiennes / loisirs", type:"textarea" },
     ]
   },
-  lo: {
-    label: "Langage oral",
+  anosmie: {
+    label: "Anosmie",
     questions: [
-      { id:"articulation_lo", label:"Comment prononce-t-il/elle les mots ?", type:"checkboxes", options:["Déforme certains mots","A du mal à se faire comprendre","Certains sons sont mal prononcés"] },
-      { id:"elements_langagiers", label:"Avez-vous remarqué l'un de ces éléments ?", type:"checkboxes", options:["A du mal à se faire comprendre","A du mal à comprendre ce qu'on lui dit","Cherche ses mots","A du mal à exprimer ses idées","S'énerve quand on ne le/la comprend pas","Utilise beaucoup les gestes pour se faire comprendre","Construit des phrases incomplètes (oublie des petits mots comme \"le\", \"de\"…)"] },
-      { id:"intelligibilite_interlocuteur", label:"Avec qui se fait-il/elle le mieux comprendre ?", type:"checkboxes", options:["Parents","Maître/maîtresse","Camarades de classe","Grands-parents","Au téléphone"] },
-      { id:"trouble_phono", label:"Difficultés de prononciation ou de mémorisation", type:"checkboxes", options:["A du mal à dire les mots longs","A du mal à retenir les poésies / comptines","Confond certains sons","A du mal à apprendre une langue étrangère"] },
-      { id:"aime_parler", label:"Aime parler", type:"select", options:["Oui","Non","Selon les personnes"] },
-      { id:"difficultes_retention_lo", label:"Difficultés à retenir", type:"checkboxes", options:["Comptines","Poésies","Informations verbales","Listes"] },
-      { id:"temps_lecture_lo", label:"Temps de lecture par jour", type:"select", options:["5 min","10 min","15 min","30 min","45 min","1h","Plus d'1h"] },
-      { id:"trouble_va_lo", label:"Avez-vous remarqué l'un de ces éléments ?", type:"checkboxes", options:["A tendance à sauter des lignes en lisant","A du mal à recopier un texte (s'y retrouver)","A mal à la tête après avoir lu","A tendance à se cogner / mal évaluer les distances","A des difficultés en géométrie"] },
-      { id:"commentaires_lo", label:"Commentaires", type:"textarea" },
+      { id:"etiologie_anos", label:"Cause (si elle est connue)", type:"checkboxes", options:["Après une rhinite virale (gros rhume)","Traumatisme crânien","Cause inconnue","Polypes dans le nez","Maladie neurodégénérative (Parkinson, Alzheimer…)","Effet d'un médicament","Suite au Covid"] },
+      { id:"type_anos", label:"Type d'anosmie", type:"checkboxes", options:["Anosmie (ne sent plus rien)","Hyposmie (sent moins bien)","Hyperosmie (sent trop fort)","Cacosmie (mauvaises odeurs persistantes)","Parosmie (confond des odeurs)","Fantosmie (hallucinations olfactives)"] },
+      { id:"odeurs_aimees_apres", label:"Odeurs aimées actuellement", type:"text" },
+      { id:"odeurs_aimees_avant", label:"Odeurs aimées avant l'anosmie", type:"text" },
+      { id:"retentissement_alim", label:"Cela a-t-il changé votre façon de manger ?", type:"checkboxes", options:["Je mange moins","Je mange plus","Je mange différemment","Pas de changement"] },
+      { id:"tabagisme", label:"Tabagisme", type:"select", options:["Oui","Non"] },
+      { id:"regime", label:"Régime alimentaire particulier", type:"text" },
+      { id:"allergies", label:"Allergies", type:"text" },
+      { id:"commentaires_anos", label:"Commentaires", type:"textarea" },
+    ]
+  },
+  aphasie: {
+    label: "Aphasie",
+    questions: [
+      { id:"etiologie_neuro", label:"Quelle est la cause médicale identifiée (si elle est connue) ?", type:"select", options:["AVC ischémique","AVC hémorragique","Traumatisme crânien","Tumeur","Maladie neurodégénérative","Autre"] },
+      { id:"date_accident_aphasie", label:"Date de l'accident ou de la lésion", type:"text" },
+      { id:"localisation_lesion_aphasie", label:"Localisation de la lésion (si elle est connue)", type:"textarea" },
+      { id:"date_premiers_symptomes", label:"Date d'apparition des premiers signes", type:"text" },
+      { id:"mode_installation", label:"Comment ces difficultés sont-elles apparues ?", type:"select", options:["Petit à petit, de façon progressive","Brutalement (suite à un AVC ou un malaise)","Par étapes, avec des périodes d'aggravation"] },
+      { id:"caractere_evolutif", label:"Comment ces difficultés évoluent-elles ?", type:"select", options:["Stables","Elles s'aggravent progressivement","Par étapes (périodes stables puis aggravation)","Cela varie selon les jours ou les moments"] },
+      { id:"plainte_cognitive", label:"Quels changements avez-vous remarqués ?", type:"checkboxes", options:["Mémoire (rendez-vous, événements récents)","Trouver ses mots","Comprendre ce qu'on lui dit","Gestes du quotidien (s'habiller, utiliser des objets…)","Organiser, planifier, s'adapter aux changements","Se repérer dans l'espace","Reconnaître des visages ou des lieux familiers","Calcul"] },
+      { id:"modif_comportement", label:"Avez-vous remarqué des changements de comportement ?", type:"checkboxes", options:["Moins d'initiative, de motivation","Ralentissement général","A arrêté certaines activités","Dort beaucoup plus qu'avant","Comportements inhabituels, moins de retenue","Colères, agressivité","Anxiété","Tristesse, moral en baisse","Troubles du sommeil"] },
+      { id:"troubles_associes_aphasie", label:"Avez-vous remarqué l'un de ces éléments associés ?", type:"checkboxes", options:["Difficultés à articuler les sons (apraxie de la parole)","Difficultés de prononciation (dysarthrie)","Paralysie ou faiblesse d'un côté du corps","Difficultés à voir d'un côté (champ visuel)","Autres troubles de la vision","Difficultés à réaliser certains gestes","Autres difficultés cognitives (mémoire, attention, organisation)","Épilepsie","Troubles de la déglutition (avaler)","Difficultés sur le plan émotionnel ou psychologique"] },
+      { id:"troubles_associes_texte_aphasie", label:"Précisions sur ces éléments associés", type:"textarea" },
+    ]
+  },
+  bpa: {
+    label: "Repérage des difficultés (BPA)",
+    questions: [
+      { id:"origine_bpa", label:"Qui est à l'origine de cette demande de bilan ?", type:"checkboxes", options:["La famille","Médecin / pédiatre","Enseignant","Infirmière scolaire","Initiative personnelle","Autre"] },
+      { id:"depuis_bpa", label:"Depuis quand observez-vous ces difficultés ?", type:"text" },
+      { id:"plainte_items_bpa", label:"Quelles difficultés observez-vous ?", type:"checkboxes", options:["Absence ou retard de langage","Difficile à comprendre quand il/elle parle","Ne fait pas encore de phrases","Difficultés de prononciation","Difficultés à comprendre les consignes","Lecture lente ou difficile","Difficultés à déchiffrer les mots","Difficultés en orthographe","Écriture difficile ou peu lisible","Difficultés en calcul ou en raisonnement","Difficultés d'attention","Difficultés à communiquer avec les autres","Problème de voix","Difficultés liées à la bouche (tétine, respiration par la bouche, déglutition…)","Autre"] },
+      { id:"plainte_libre_bpa", label:"Pouvez-vous préciser ce qui vous inquiète ?", type:"textarea" },
+    ]
+  },
+  begaiement: {
+    label: "Bégaiement",
+    questions: [
+      { id:"debut_begaiement", label:"À quel âge le bégaiement est-il apparu ?", type:"text" },
+      { id:"evolution_begaiement", label:"Comment a-t-il évolué depuis le début ?", type:"textarea" },
+      { id:"description_begaiement", label:"Pouvez-vous décrire ce que vous observez quand votre enfant bégaie ?", type:"textarea" },
+      { id:"variations_situationnelles_begaiement", label:"Cela varie-t-il selon les situations (à la maison, à l'école, avec certaines personnes…) ?", type:"textarea" },
+      { id:"signes_lutte_begaiement", label:"Avez-vous remarqué des tensions, grimaces ou efforts quand votre enfant bégaie ?", type:"textarea" },
+      { id:"reaction_enfant_begaiement", label:"Comment réagit votre enfant quand il/elle bégaie ?", type:"textarea" },
+      { id:"evitements_begaiement", label:"Votre enfant évite-t-il/elle certains mots, sons ou situations de parole ?", type:"textarea" },
+      { id:"impact_scolaire_begaiement", label:"Cela a-t-il un impact à l'école (participation orale, lecture à voix haute…) ?", type:"textarea" },
+      { id:"impact_social_begaiement", label:"Cela a-t-il un impact sur ses relations avec les autres enfants ?", type:"textarea" },
+      { id:"ressenti_parents_begaiement", label:"Comment vous sentez-vous, vous, quand votre enfant bégaie ?", type:"textarea" },
+      { id:"aide_parents_begaiement", label:"Comment l'aidez-vous habituellement dans ces moments ?", type:"textarea" },
+      { id:"atcd_perso_begaiement_parent", label:"Un parent a-t-il déjà bégayé ?", type:"select", options:["Oui","Non"] },
+      { id:"atcd_perso_begaiement_detail", label:"Si oui, précisez (qui, comment cela a évolué)", type:"text" },
+    ]
+  },
+  cm: {
+    label: "Cognition mathématique",
+    questions: [
+      { id:"appetence_maths", label:"Aime les maths (de 0 à 10)", type:"select", options:["0","1","2","3","4","5","6","7","8","9","10"] },
+      { id:"appetence_lecture", label:"Aime lire (de 0 à 10)", type:"select", options:["0","1","2","3","4","5","6","7","8","9","10"] },
+      { id:"retard_langage_cm", label:"Retard de langage ou de parole plus jeune", type:"select", options:["Oui","Non","Ne sait pas"] },
+      { id:"confusions_auditives_cm", label:"Avez-vous remarqué l'un de ces éléments ?", type:"checkboxes", options:["Confond des mots qui se ressemblent à l'oral","A du mal à apprendre une langue étrangère"] },
+      { id:"trouble_phono_cm", label:"Avez-vous remarqué l'un de ces éléments ?", type:"checkboxes", options:["A du mal à dire les mots longs, encore aujourd'hui","Confond certains sons"] },
+      { id:"visuo_attentionnel_cm", label:"Avez-vous remarqué l'un de ces éléments ?", type:"checkboxes", options:["A tendance à sauter des lignes en lisant","A du mal à recopier un texte (s'y retrouver)","A mal à la tête après avoir lu","A tendance à se cogner / mal évaluer les distances","A des difficultés en géométrie"] },
+      { id:"difficultes_maths", label:"Types de difficultés", type:"checkboxes", options:["Résolution de problèmes","Erreurs de calcul","Poser des opérations","Calcul mental","Difficultés à compter","Lecture des nombres","Difficultés de transcription des chiffres / nombres à l'écrit","Erreurs en copie de nombres","Écriture des chiffres sur la ligne difficile","Mauvaise gestion de l'espace sur la feuille","Compte sur ses doigts en grandissant","Ne reconnaît pas les quantités sans compter (ex : sur un dé)","Continue à compter sur ses doigts ou un à un","Méthodes de calcul peu efficaces pour son âge"] },
+      { id:"difficultes_retention_cm", label:"Difficultés à retenir", type:"checkboxes", options:["Tables de multiplication","Termes irréguliers (quatre-vingt, soixante-dix…)","Comptines numériques"] },
+      { id:"tables_multi", label:"Tables de multiplication", type:"select", options:["Maîtrisées","En cours d'apprentissage","Non maîtrisées"] },
+      { id:"description_difficultes_cm", label:"Pouvez-vous décrire les difficultés que vous observez ?", type:"textarea" },
+      { id:"attentes_cm", label:"Quelles sont vos attentes pour ce bilan ?", type:"textarea" },
+      { id:"obs_enseignant_maths", label:"Observations enseignant", type:"textarea" },
+      { id:"autres_difficultes_maths", label:"Autres difficultés", type:"textarea" },
+    ]
+  },
+  communication_precoce: {
+    label: "Communication précoce",
+    questions: [
+      { id:"diagnostic_cp", label:"Un diagnostic médical a-t-il été posé (ou est-il en cours) ?", type:"textarea" },
+    ]
+  },
+  deglutition: {
+    label: "Déglutition dysfonctionnelle",
+    questions: [
+      { id:"qui_adresse_deg", label:"Qui vous a orienté(e) vers ce bilan ?", type:"select", options:["Le patient lui-même","L'entourage","Le médecin traitant","Orthodontiste / dentiste","ORL","Autre médecin spécialiste"] },
+      { id:"motif_deg", label:"Motif de la consultation / plainte", type:"textarea" },
+      { id:"appareillage_deg", label:"Portez-vous un appareil dentaire actuellement ?", type:"select", options:["Oui","Non"] },
+      { id:"appareillage_detail_deg", label:"Si oui, précisez le type d'appareil", type:"textarea" },
+      { id:"succion_contexte", label:"Si succion du pouce/doigt/tétine : dans quel contexte (école, nuit, journée) ?", type:"textarea" },
+      { id:"age_cuillere", label:"À quel âge a-t-il/elle commencé à manger à la cuillère ?", type:"text" },
+      { id:"age_morceaux", label:"À quel âge a-t-il/elle commencé à manger des morceaux ?", type:"text" },
+      { id:"liquides_age", label:"Jusqu'à quel âge a-t-il/elle bu au biberon ou à la tétine ?", type:"text" },
+      { id:"bruxisme_deg", label:"Grince-t-il/elle des dents ?", type:"select", options:["Non","La journée","La nuit","Le jour et la nuit"] },
+      { id:"appareil_nuit_deg", label:"Porte-t-il/elle un appareil dentaire la nuit ?", type:"select", options:["Aucun","Appareil dentaire","Appareil d'avancée mandibulaire","Autre"] },
+      { id:"scoliose_deg", label:"Y a-t-il une scoliose ou le port d'un corset ?", type:"select", options:["Non","Scoliose suivie","Port d'un corset"] },
+      { id:"orthodontie_deg", label:"Suivi orthodontique en cours ?", type:"select", options:["Oui","Non"] },
+      { id:"orthodontie_detail_deg", label:"Si oui, précisez", type:"textarea" },
+    ]
+  },
+  dysarthrie: {
+    label: "Dysarthrie",
+    questions: [
+      { id:"qui_adresse_dysa", label:"Qui vous a orienté(e) vers ce bilan ?", type:"select", options:["Le patient lui-même","L'entourage","Le médecin traitant","Un médecin spécialiste"] },
+      { id:"etiologie_dysa", label:"Cause médicale identifiée (si connue)", type:"select", options:["AVC ischémique","AVC hémorragique","Traumatisme crânien","Tumeur","Maladie neurodégénérative (Parkinson, SLA, SEP…)","Autre"] },
+      { id:"date_debut_dysa", label:"Date d'apparition des premiers symptômes", type:"text" },
+      { id:"mode_installation_dysa", label:"Comment les troubles sont-ils apparus ?", type:"select", options:["Progressivement","Brutalement (AVC/AIT)","Par étapes successives"] },
+      { id:"plainte_parole_dysa", label:"Décrivez les difficultés concernant la parole", type:"textarea" },
+      { id:"impact_dysa", label:"Quel est l'impact sur la vie quotidienne ?", type:"textarea" },
+    ]
+  },
+  dysphagie: {
+    label: "Difficultés pour avaler (dysphagie)",
+    questions: [
+      { id:"personne_demande_dyph", label:"Qui est à l'origine de la demande de bilan ?", type:"text" },
+      { id:"pathologie_dyph", label:"Quelle est la pathologie / le diagnostic en cours ?", type:"textarea" },
+      { id:"histoire_dyph", label:"Comment les difficultés ont-elles évolué dans le temps ?", type:"textarea" },
+      { id:"domaines_plainte_dyph", label:"Quelles difficultés rencontrez-vous au moment des repas ?", type:"checkboxes", options:["Toux pendant les repas","Fausses routes avec les aliments solides","Fausses routes avec les liquides","Sensation de blocage","Voix qui change après avoir avalé","Perte de poids","Repas plus longs qu'avant","Refus de manger"] },
+      { id:"plainte_detaillee_dyph", label:"Pouvez-vous décrire plus précisément ces difficultés ?", type:"textarea" },
+      { id:"alimentation_dyph", label:"Comment vous alimentez-vous actuellement ?", type:"select", options:["Uniquement par la bouche","Par la bouche, avec un complément","Mixte (bouche + sonde)","Uniquement par sonde"] },
+      { id:"textures_dyph", label:"Quelles textures consommez-vous ?", type:"checkboxes", options:["Normale","Tendre","Haché / mouillé","Mouliné / lisse","Liquide épais","Liquide nature"] },
+      { id:"evolution_poids_dyph", label:"Comment évolue votre poids ?", type:"select", options:["Stable","Perte de poids","Prise de poids"] },
+      { id:"episodes_febriles_dyph", label:"Avez-vous eu des épisodes de fièvre ou des infections pulmonaires inexpliquées ?", type:"select", options:["Oui","Non"] },
+      { id:"atcd_chir_dyph", label:"Avez-vous déjà eu une opération ORL ou digestive ?", type:"textarea" },
+      { id:"traitements_dyph", label:"Prenez-vous des traitements pouvant affecter la déglutition ?", type:"textarea" },
+      { id:"autres_soins_dyph", label:"Suivez-vous d'autres prises en charge (kiné respiratoire, diététicien…) ?", type:"textarea" },
+      { id:"qualite_vie_dyph", label:"Quel est l'impact sur votre vie quotidienne ?", type:"textarea" },
     ]
   },
   le: {
@@ -192,22 +300,26 @@ const SECTIONS = {
       { id:"commentaires_le", label:"Commentaires", type:"textarea" },
     ]
   },
-  cm: {
-    label: "Cognition mathématique",
+  lo: {
+    label: "Langage oral",
     questions: [
-      { id:"appetence_maths", label:"Aime les maths (de 0 à 10)", type:"select", options:["0","1","2","3","4","5","6","7","8","9","10"] },
-      { id:"appetence_lecture", label:"Aime lire (de 0 à 10)", type:"select", options:["0","1","2","3","4","5","6","7","8","9","10"] },
-      { id:"retard_langage_cm", label:"Retard de langage ou de parole plus jeune", type:"select", options:["Oui","Non","Ne sait pas"] },
-      { id:"confusions_auditives_cm", label:"Avez-vous remarqué l'un de ces éléments ?", type:"checkboxes", options:["Confond des mots qui se ressemblent à l'oral","A du mal à apprendre une langue étrangère"] },
-      { id:"trouble_phono_cm", label:"Avez-vous remarqué l'un de ces éléments ?", type:"checkboxes", options:["A du mal à dire les mots longs, encore aujourd'hui","Confond certains sons"] },
-      { id:"visuo_attentionnel_cm", label:"Avez-vous remarqué l'un de ces éléments ?", type:"checkboxes", options:["A tendance à sauter des lignes en lisant","A du mal à recopier un texte (s'y retrouver)","A mal à la tête après avoir lu","A tendance à se cogner / mal évaluer les distances","A des difficultés en géométrie"] },
-      { id:"difficultes_maths", label:"Types de difficultés", type:"checkboxes", options:["Résolution de problèmes","Erreurs de calcul","Poser des opérations","Calcul mental","Difficultés à compter","Lecture des nombres","Difficultés de transcription des chiffres / nombres à l'écrit","Erreurs en copie de nombres","Écriture des chiffres sur la ligne difficile","Mauvaise gestion de l'espace sur la feuille","Compte sur ses doigts en grandissant","Ne reconnaît pas les quantités sans compter (ex : sur un dé)","Continue à compter sur ses doigts ou un à un","Méthodes de calcul peu efficaces pour son âge"] },
-      { id:"difficultes_retention_cm", label:"Difficultés à retenir", type:"checkboxes", options:["Tables de multiplication","Termes irréguliers (quatre-vingt, soixante-dix…)","Comptines numériques"] },
-      { id:"tables_multi", label:"Tables de multiplication", type:"select", options:["Maîtrisées","En cours d'apprentissage","Non maîtrisées"] },
-      { id:"description_difficultes_cm", label:"Pouvez-vous décrire les difficultés que vous observez ?", type:"textarea" },
-      { id:"attentes_cm", label:"Quelles sont vos attentes pour ce bilan ?", type:"textarea" },
-      { id:"obs_enseignant_maths", label:"Observations enseignant", type:"textarea" },
-      { id:"autres_difficultes_maths", label:"Autres difficultés", type:"textarea" },
+      { id:"articulation_lo", label:"Comment prononce-t-il/elle les mots ?", type:"checkboxes", options:["Déforme certains mots","A du mal à se faire comprendre","Certains sons sont mal prononcés"] },
+      { id:"elements_langagiers", label:"Avez-vous remarqué l'un de ces éléments ?", type:"checkboxes", options:["A du mal à se faire comprendre","A du mal à comprendre ce qu'on lui dit","Cherche ses mots","A du mal à exprimer ses idées","S'énerve quand on ne le/la comprend pas","Utilise beaucoup les gestes pour se faire comprendre","Construit des phrases incomplètes (oublie des petits mots comme \"le\", \"de\"…)"] },
+      { id:"intelligibilite_interlocuteur", label:"Avec qui se fait-il/elle le mieux comprendre ?", type:"checkboxes", options:["Parents","Maître/maîtresse","Camarades de classe","Grands-parents","Au téléphone"] },
+      { id:"trouble_phono", label:"Difficultés de prononciation ou de mémorisation", type:"checkboxes", options:["A du mal à dire les mots longs","A du mal à retenir les poésies / comptines","Confond certains sons","A du mal à apprendre une langue étrangère"] },
+      { id:"aime_parler", label:"Aime parler", type:"select", options:["Oui","Non","Selon les personnes"] },
+      { id:"difficultes_retention_lo", label:"Difficultés à retenir", type:"checkboxes", options:["Comptines","Poésies","Informations verbales","Listes"] },
+      { id:"temps_lecture_lo", label:"Temps de lecture par jour", type:"select", options:["5 min","10 min","15 min","30 min","45 min","1h","Plus d'1h"] },
+      { id:"trouble_va_lo", label:"Avez-vous remarqué l'un de ces éléments ?", type:"checkboxes", options:["A tendance à sauter des lignes en lisant","A du mal à recopier un texte (s'y retrouver)","A mal à la tête après avoir lu","A tendance à se cogner / mal évaluer les distances","A des difficultés en géométrie"] },
+      { id:"commentaires_lo", label:"Commentaires", type:"textarea" },
+    ]
+  },
+  omf: {
+    label: "Oralité — fonctions de la bouche (OMF)",
+    questions: [
+      { id:"adresse_par_omf", label:"Qui vous a orienté(e) vers ce bilan ?", type:"checkboxes", options:["Médecin traitant","Pédiatre","ORL","Orthodontiste","Chirurgien-dentiste","Gastro-pédiatre","Autre"] },
+      { id:"motifs_omf", label:"Quels sont les motifs de la consultation ?", type:"checkboxes", options:["Otites à répétition","Pose d'aérateurs (\"yoyos\")","Surdité de transmission","Respiration par la bouche","Ronflements / pauses respiratoires pendant le sommeil","Bavage","Difficultés à prononcer certains sons","Difficile à comprendre quand il/elle parle","Avale de façon atypique","Difficultés alimentaires","Difficultés de sommeil liées à la respiration","Autre"] },
+      { id:"symptomes_omf", label:"Avez-vous remarqué l'un de ces éléments ?", type:"checkboxes", options:["Sensation d'oreille bouchée","S'entend parler de façon différente (voix qui résonne)","Acouphènes (bruits dans l'oreille)","Vertiges","Douleur à l'oreille","Entend moins bien","Parle fort","Demande souvent de répéter","Difficultés de concentration","Agitation","Repli sur soi"] },
     ]
   },
   oralite: {
@@ -254,35 +366,6 @@ const SECTIONS = {
       { id:"commentaires_oralite", label:"Commentaires", type:"textarea" },
     ]
   },
-  dysarthrie: {
-    label: "Dysarthrie",
-    questions: [
-      { id:"qui_adresse_dysa", label:"Qui vous a orienté(e) vers ce bilan ?", type:"select", options:["Le patient lui-même","L'entourage","Le médecin traitant","Un médecin spécialiste"] },
-      { id:"etiologie_dysa", label:"Cause médicale identifiée (si connue)", type:"select", options:["AVC ischémique","AVC hémorragique","Traumatisme crânien","Tumeur","Maladie neurodégénérative (Parkinson, SLA, SEP…)","Autre"] },
-      { id:"date_debut_dysa", label:"Date d'apparition des premiers symptômes", type:"text" },
-      { id:"mode_installation_dysa", label:"Comment les troubles sont-ils apparus ?", type:"select", options:["Progressivement","Brutalement (AVC/AIT)","Par étapes successives"] },
-      { id:"plainte_parole_dysa", label:"Décrivez les difficultés concernant la parole", type:"textarea" },
-      { id:"impact_dysa", label:"Quel est l'impact sur la vie quotidienne ?", type:"textarea" },
-    ]
-  },
-  deglutition: {
-    label: "Déglutition dysfonctionnelle",
-    questions: [
-      { id:"qui_adresse_deg", label:"Qui vous a orienté(e) vers ce bilan ?", type:"select", options:["Le patient lui-même","L'entourage","Le médecin traitant","Orthodontiste / dentiste","ORL","Autre médecin spécialiste"] },
-      { id:"motif_deg", label:"Motif de la consultation / plainte", type:"textarea" },
-      { id:"appareillage_deg", label:"Portez-vous un appareil dentaire actuellement ?", type:"select", options:["Oui","Non"] },
-      { id:"appareillage_detail_deg", label:"Si oui, précisez le type d'appareil", type:"textarea" },
-      { id:"succion_contexte", label:"Si succion du pouce/doigt/tétine : dans quel contexte (école, nuit, journée) ?", type:"textarea" },
-      { id:"age_cuillere", label:"À quel âge a-t-il/elle commencé à manger à la cuillère ?", type:"text" },
-      { id:"age_morceaux", label:"À quel âge a-t-il/elle commencé à manger des morceaux ?", type:"text" },
-      { id:"liquides_age", label:"Jusqu'à quel âge a-t-il/elle bu au biberon ou à la tétine ?", type:"text" },
-      { id:"bruxisme_deg", label:"Grince-t-il/elle des dents ?", type:"select", options:["Non","La journée","La nuit","Le jour et la nuit"] },
-      { id:"appareil_nuit_deg", label:"Porte-t-il/elle un appareil dentaire la nuit ?", type:"select", options:["Aucun","Appareil dentaire","Appareil d'avancée mandibulaire","Autre"] },
-      { id:"scoliose_deg", label:"Y a-t-il une scoliose ou le port d'un corset ?", type:"select", options:["Non","Scoliose suivie","Port d'un corset"] },
-      { id:"orthodontie_deg", label:"Suivi orthodontique en cours ?", type:"select", options:["Oui","Non"] },
-      { id:"orthodontie_detail_deg", label:"Si oui, précisez", type:"textarea" },
-    ]
-  },
   sla: {
     label: "SLA — éléments généraux",
     questions: [
@@ -295,24 +378,6 @@ const SECTIONS = {
       { id:"plainte_cog_sla", label:"Remarquez-vous des changements dans la mémoire, l'attention ou le comportement ?", type:"checkboxes", options:["Difficultés à trouver les mots","Difficultés d'attention","Difficultés d'organisation","Changements de comportement","Aucun changement"] },
       { id:"mode_vie_sla", label:"Comment se passe le quotidien (entourage, aide à domicile…) ?", type:"textarea" },
       { id:"etat_emot_sla", label:"Comment vous sentez-vous moralement ces dernières semaines ?", type:"textarea" },
-    ]
-  },
-  dysphagie: {
-    label: "Difficultés pour avaler (dysphagie)",
-    questions: [
-      { id:"personne_demande_dyph", label:"Qui est à l'origine de la demande de bilan ?", type:"text" },
-      { id:"pathologie_dyph", label:"Quelle est la pathologie / le diagnostic en cours ?", type:"textarea" },
-      { id:"histoire_dyph", label:"Comment les difficultés ont-elles évolué dans le temps ?", type:"textarea" },
-      { id:"domaines_plainte_dyph", label:"Quelles difficultés rencontrez-vous au moment des repas ?", type:"checkboxes", options:["Toux pendant les repas","Fausses routes avec les aliments solides","Fausses routes avec les liquides","Sensation de blocage","Voix qui change après avoir avalé","Perte de poids","Repas plus longs qu'avant","Refus de manger"] },
-      { id:"plainte_detaillee_dyph", label:"Pouvez-vous décrire plus précisément ces difficultés ?", type:"textarea" },
-      { id:"alimentation_dyph", label:"Comment vous alimentez-vous actuellement ?", type:"select", options:["Uniquement par la bouche","Par la bouche, avec un complément","Mixte (bouche + sonde)","Uniquement par sonde"] },
-      { id:"textures_dyph", label:"Quelles textures consommez-vous ?", type:"checkboxes", options:["Normale","Tendre","Haché / mouillé","Mouliné / lisse","Liquide épais","Liquide nature"] },
-      { id:"evolution_poids_dyph", label:"Comment évolue votre poids ?", type:"select", options:["Stable","Perte de poids","Prise de poids"] },
-      { id:"episodes_febriles_dyph", label:"Avez-vous eu des épisodes de fièvre ou des infections pulmonaires inexpliquées ?", type:"select", options:["Oui","Non"] },
-      { id:"atcd_chir_dyph", label:"Avez-vous déjà eu une opération ORL ou digestive ?", type:"textarea" },
-      { id:"traitements_dyph", label:"Prenez-vous des traitements pouvant affecter la déglutition ?", type:"textarea" },
-      { id:"autres_soins_dyph", label:"Suivez-vous d'autres prises en charge (kiné respiratoire, diététicien…) ?", type:"textarea" },
-      { id:"qualite_vie_dyph", label:"Quel est l'impact sur votre vie quotidienne ?", type:"textarea" },
     ]
   },
   voix_adulte: {
@@ -351,61 +416,6 @@ const SECTIONS = {
       { id:"sensations_voix_e", label:"Votre enfant se plaint-il/elle de l'une de ces sensations ?", type:"checkboxes", options:["Boule ou gêne dans la gorge","Sensation de serrement","Fatigue de la voix","Douleurs au niveau de la gorge","Sa voix s'éteint parfois","Sa voix change au cours de la journée"] },
       { id:"atcd_med_voix_e", label:"Antécédents médicaux (rhinites, allergies, asthme, reflux…)", type:"textarea" },
       { id:"traitement_voix_e", label:"Traitements en cours", type:"text" },
-    ]
-  },
-  begaiement: {
-    label: "Bégaiement",
-    questions: [
-      { id:"debut_begaiement", label:"À quel âge le bégaiement est-il apparu ?", type:"text" },
-      { id:"evolution_begaiement", label:"Comment a-t-il évolué depuis le début ?", type:"textarea" },
-      { id:"description_begaiement", label:"Pouvez-vous décrire ce que vous observez quand votre enfant bégaie ?", type:"textarea" },
-      { id:"variations_situationnelles_begaiement", label:"Cela varie-t-il selon les situations (à la maison, à l'école, avec certaines personnes…) ?", type:"textarea" },
-      { id:"signes_lutte_begaiement", label:"Avez-vous remarqué des tensions, grimaces ou efforts quand votre enfant bégaie ?", type:"textarea" },
-      { id:"reaction_enfant_begaiement", label:"Comment réagit votre enfant quand il/elle bégaie ?", type:"textarea" },
-      { id:"evitements_begaiement", label:"Votre enfant évite-t-il/elle certains mots, sons ou situations de parole ?", type:"textarea" },
-      { id:"impact_scolaire_begaiement", label:"Cela a-t-il un impact à l'école (participation orale, lecture à voix haute…) ?", type:"textarea" },
-      { id:"impact_social_begaiement", label:"Cela a-t-il un impact sur ses relations avec les autres enfants ?", type:"textarea" },
-      { id:"ressenti_parents_begaiement", label:"Comment vous sentez-vous, vous, quand votre enfant bégaie ?", type:"textarea" },
-      { id:"aide_parents_begaiement", label:"Comment l'aidez-vous habituellement dans ces moments ?", type:"textarea" },
-      { id:"atcd_perso_begaiement_parent", label:"Un parent a-t-il déjà bégayé ?", type:"select", options:["Oui","Non"] },
-      { id:"atcd_perso_begaiement_detail", label:"Si oui, précisez (qui, comment cela a évolué)", type:"text" },
-    ]
-  },
-  bpa: {
-    label: "Repérage des difficultés (BPA)",
-    questions: [
-      { id:"origine_bpa", label:"Qui est à l'origine de cette demande de bilan ?", type:"checkboxes", options:["La famille","Médecin / pédiatre","Enseignant","Infirmière scolaire","Initiative personnelle","Autre"] },
-      { id:"depuis_bpa", label:"Depuis quand observez-vous ces difficultés ?", type:"text" },
-      { id:"plainte_items_bpa", label:"Quelles difficultés observez-vous ?", type:"checkboxes", options:["Absence ou retard de langage","Difficile à comprendre quand il/elle parle","Ne fait pas encore de phrases","Difficultés de prononciation","Difficultés à comprendre les consignes","Lecture lente ou difficile","Difficultés à déchiffrer les mots","Difficultés en orthographe","Écriture difficile ou peu lisible","Difficultés en calcul ou en raisonnement","Difficultés d'attention","Difficultés à communiquer avec les autres","Problème de voix","Difficultés liées à la bouche (tétine, respiration par la bouche, déglutition…)","Autre"] },
-      { id:"plainte_libre_bpa", label:"Pouvez-vous préciser ce qui vous inquiète ?", type:"textarea" },
-    ]
-  },
-  communication_precoce: {
-    label: "Communication précoce",
-    questions: [
-      { id:"diagnostic_cp", label:"Un diagnostic médical a-t-il été posé (ou est-il en cours) ?", type:"textarea" },
-    ]
-  },
-  omf: {
-    label: "Oralité — fonctions de la bouche (OMF)",
-    questions: [
-      { id:"adresse_par_omf", label:"Qui vous a orienté(e) vers ce bilan ?", type:"checkboxes", options:["Médecin traitant","Pédiatre","ORL","Orthodontiste","Chirurgien-dentiste","Gastro-pédiatre","Autre"] },
-      { id:"motifs_omf", label:"Quels sont les motifs de la consultation ?", type:"checkboxes", options:["Otites à répétition","Pose d'aérateurs (\"yoyos\")","Surdité de transmission","Respiration par la bouche","Ronflements / pauses respiratoires pendant le sommeil","Bavage","Difficultés à prononcer certains sons","Difficile à comprendre quand il/elle parle","Avale de façon atypique","Difficultés alimentaires","Difficultés de sommeil liées à la respiration","Autre"] },
-      { id:"symptomes_omf", label:"Avez-vous remarqué l'un de ces éléments ?", type:"checkboxes", options:["Sensation d'oreille bouchée","S'entend parler de façon différente (voix qui résonne)","Acouphènes (bruits dans l'oreille)","Vertiges","Douleur à l'oreille","Entend moins bien","Parle fort","Demande souvent de répéter","Difficultés de concentration","Agitation","Repli sur soi"] },
-    ]
-  },
-  anosmie: {
-    label: "Anosmie",
-    questions: [
-      { id:"etiologie_anos", label:"Cause (si elle est connue)", type:"checkboxes", options:["Après une rhinite virale (gros rhume)","Traumatisme crânien","Cause inconnue","Polypes dans le nez","Maladie neurodégénérative (Parkinson, Alzheimer…)","Effet d'un médicament","Suite au Covid"] },
-      { id:"type_anos", label:"Type d'anosmie", type:"checkboxes", options:["Anosmie (ne sent plus rien)","Hyposmie (sent moins bien)","Hyperosmie (sent trop fort)","Cacosmie (mauvaises odeurs persistantes)","Parosmie (confond des odeurs)","Fantosmie (hallucinations olfactives)"] },
-      { id:"odeurs_aimees_apres", label:"Odeurs aimées actuellement", type:"text" },
-      { id:"odeurs_aimees_avant", label:"Odeurs aimées avant l'anosmie", type:"text" },
-      { id:"retentissement_alim", label:"Cela a-t-il changé votre façon de manger ?", type:"checkboxes", options:["Je mange moins","Je mange plus","Je mange différemment","Pas de changement"] },
-      { id:"tabagisme", label:"Tabagisme", type:"select", options:["Oui","Non"] },
-      { id:"regime", label:"Régime alimentaire particulier", type:"text" },
-      { id:"allergies", label:"Allergies", type:"text" },
-      { id:"commentaires_anos", label:"Commentaires", type:"textarea" },
     ]
   },
 };

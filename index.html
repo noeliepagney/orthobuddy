@@ -15178,7 +15178,7 @@ function renderAnamneseTab(pid){
   html+='<div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px 14px;margin-bottom:14px;">';
   html+='<div style="font-size:11px;font-weight:700;color:var(--text-soft);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px;">Sections \u00e0 afficher</div>';
   html+='<div style="display:flex;flex-wrap:wrap;gap:8px;">';
-  [{key:'base_enfant',label:'Anamn\u00e8se enfant',icon:'ti-baby'},{key:'base_adulte',label:'Anamn\u00e8se adulte',icon:'ti-brain'},{key:'aphasie',label:'Aphasie',icon:'ti-brain-2'},{key:'lo',label:'Langage oral',icon:'ti-message-circle'},{key:'le',label:'Langage \u00e9crit',icon:'ti-pencil'},{key:'cm',label:'Cognition math\u00e9matique',icon:'ti-calculator'},{key:'oralite',label:'Oralit\u00e9',icon:'ti-droplet'},{key:'anosmie',label:'Anosmie',icon:'ti-wind'},{key:'begaiement',label:'B\u00e9gaiement',icon:'ti-message-circle-2'},{key:'bpa',label:'BPA',icon:'ti-shield-check'},{key:'commprecoce',label:'Communication pr\u00e9coce',icon:'ti-baby-carriage'},{key:'omf',label:'OMF',icon:'ti-mood-smile'},{key:'dysarthrie',label:'Dysarthrie',icon:'ti-activity'},{key:'deglutition',label:'D\u00e9glutition dysfonctionnelle',icon:'ti-droplet-half-2'},{key:'sla',label:'SLA',icon:'ti-pulse'},{key:'dysphagie',label:'Dysphagie',icon:'ti-soup'},{key:'voix_adulte',label:'Voix (adulte)',icon:'ti-microphone'},{key:'voix_enfant',label:'Voix (enfant)',icon:'ti-microphone-2'}].forEach(function(s){
+  [{key:'base_enfant',label:'Anamn\u00e8se enfant',icon:'ti-baby'},{key:'base_adulte',label:'Anamn\u00e8se adulte',icon:'ti-brain'},{key:'anosmie',label:'Anosmie',icon:'ti-wind'},{key:'aphasie',label:'Aphasie',icon:'ti-brain-2'},{key:'bpa',label:'BPA',icon:'ti-shield-check'},{key:'begaiement',label:'B\u00e9gaiement',icon:'ti-message-circle-2'},{key:'cm',label:'Cognition math\u00e9matique',icon:'ti-calculator'},{key:'commprecoce',label:'Communication pr\u00e9coce',icon:'ti-baby-carriage'},{key:'deglutition',label:'D\u00e9glutition dysfonctionnelle',icon:'ti-droplet-half-2'},{key:'dysarthrie',label:'Dysarthrie',icon:'ti-activity'},{key:'dysphagie',label:'Dysphagie',icon:'ti-soup'},{key:'le',label:'Langage \u00e9crit',icon:'ti-pencil'},{key:'lo',label:'Langage oral',icon:'ti-message-circle'},{key:'omf',label:'OMF',icon:'ti-mood-smile'},{key:'oralite',label:'Oralit\u00e9',icon:'ti-droplet'},{key:'sla',label:'SLA',icon:'ti-pulse'},{key:'voix_adulte',label:'Voix (adulte)',icon:'ti-microphone'},{key:'voix_enfant',label:'Voix (enfant)',icon:'ti-microphone-2'}].forEach(function(s){
     var isCh=sec[s.key]?' checked':'';
     html+='<label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer;background:var(--bg);border:1px solid var(--border);border-radius:20px;padding:4px 12px;"><input type="checkbox" data-section="'+s.key+'" onchange="toggleAnamneseSection(this,\''+pid+'\')"'+(sec[s.key]?' checked':'')+'>  <i class="ti '+s.icon+'"></i> '+s.label+'</label>';
   });
@@ -16003,50 +16003,158 @@ var QA_SECTIONS = {
       {id:'plainte_actuelle_neuro', label:'Plainte actuelle'},
       {id:'plainte_entourage_neuro', label:'Plainte de l\'entourage'},
       {id:'impact_vie_quotidienne_neuro', label:'Impact sur la vie quotidienne'},
+      {id:'situation_familiale', label:'Situation familiale'},
+      {id:'aidant', label:'Aidant principal'},
       {id:'niveau_scolaire', label:'Niveau scolaire atteint'},
       {id:'niveau_eleve', label:'Parcours scolaire'},
-      {id:'lateralite_neuro', label:'Êtes-vous droitier, gaucher ou ambidextre ?'},
       {id:'vie_pro_neuro', label:'Vie professionnelle (dernier poste)'},
       {id:'date_retraite', label:'Date de retraite'},
-      {id:'situation_familiale', label:'Situation familiale'},
-      {id:'lieu_vie_neuro', label:'Lieu de vie actuel'},
-      {id:'aidant', label:'Qui vous accompagne au quotidien'},
-      {id:'occupations', label:'Occupations quotidiennes'},
-      {id:'conduite', label:'Conduit un véhicule'},
-      {id:'gestion_finances', label:'Gère ses finances'},
-      {id:'loisirs_neuro', label:'Lecture / loisirs'},
-      {id:'vie_sociale', label:'Vie sociale'},
-      {id:'date_premiers_symptomes', label:'Date d\'apparition des premiers signes'},
-      {id:'mode_installation', label:'Comment ces difficultés sont-elles apparues ?'},
-      {id:'plainte_cognitive', label:'Quels changements avez-vous remarqués ?'},
-      {id:'caractere_evolutif', label:'Comment ces difficultés évoluent-elles ?'},
+      {id:'lateralite_neuro', label:'Êtes-vous droitier, gaucher ou ambidextre ?'},
+      {id:'evenements_vie', label:'Événements de vie marquants'},
       {id:'anosognosie', label:'La personne est-elle consciente de ses difficultés ?'},
-      {id:'modif_comportement', label:'Changements de comportement'},
       {id:'antecedents_neuro', label:'Antécédents médicaux'},
+      {id:'commentaires_neuro', label:'Autres / commentaires'},
       {id:'traitements_neuro', label:'Traitements médicamenteux actuels'},
-      {id:'reaction_antidep', label:'Effet d\'un traitement pour le moral'},
+      {id:'reaction_antidep', label:'Réaction aux antidépresseurs'},
       {id:'vision_neuro', label:'Concernant la vue'},
       {id:'audition_neuro', label:'Concernant l\'audition'},
       {id:'gout_odorat', label:'Goût et odorat'},
-      {id:'examens_neuro', label:'Examens déjà réalisés'},
       {id:'atcd_fam_neuro', label:'Antécédents familiaux de maladies neurodégénératives'},
-      {id:'evenements_vie', label:'Événements de vie marquants'},
-      {id:'info_langagiere', label:'Informations utiles sur le langage'},
-      {id:'commentaires_neuro', label:'Commentaires'},
+      {id:'autres_soins_neuro', label:'Autres prises en soins en cours'},
+      {id:'examens_neuro', label:'Examens déjà réalisés'},
+      {id:'resultats_examens', label:'Résultats / conclusions des examens'},
+      {id:'info_langagiere', label:'Informations langagières'},
+      {id:'conduite', label:'Conduit un véhicule'},
+      {id:'gestion_finances', label:'Gère ses finances'},
+      {id:'lieu_vie_neuro', label:'Lieu de vie actuel'},
+      {id:'occupations', label:'Occupations quotidiennes / loisirs'},
     ]
   },
-  lo: {
-    label: 'Langage oral',
+  anosmie: {
+    label: 'Anosmie',
     questions: [
-      {id:'articulation_lo', label:'Articulation'},
-      {id:'elements_langagiers', label:'Éléments langagiers'},
-      {id:'intelligibilite_interlocuteur', label:'Intelligibilité selon interlocuteur'},
-      {id:'trouble_phono', label:'Trouble phonologique'},
-      {id:'trouble_va_lo', label:'Trouble visuo-attentionnel'},
-      {id:'aime_parler', label:'Aime parler'},
-      {id:'difficultes_retention_lo', label:'Difficultés à retenir'},
-      {id:'temps_lecture_lo', label:'Temps de lecture/jour'},
-      {id:'commentaires_lo', label:'Commentaires'},
+      {id:'etiologie_anos', label:'Étiologie'},
+      {id:'type_anos', label:"Type d'anosmie"},
+      {id:'odeurs_aimees_apres', label:'Odeurs aimées actuellement'},
+      {id:'odeurs_aimees_avant', label:"Odeurs aimées avant l'anosmie"},
+      {id:'retentissement_alim', label:'Retentissement alimentaire'},
+      {id:'tabagisme', label:'Tabagisme'},
+      {id:'regime', label:'Régime alimentaire particulier'},
+      {id:'allergies', label:'Allergies'},
+      {id:'commentaires_anos', label:'Commentaires'},
+    ]
+  },
+  aphasie: {
+    label: 'Aphasie',
+    questions: [
+      {id:'etiologie_neuro', label:'Étiologie neurologique'},
+      {id:'date_accident_aphasie', label:'Date accident / lésion'},
+      {id:'localisation_lesion_aphasie', label:'Localisation lésionnelle (si connue)'},
+      {id:'date_premiers_symptomes', label:'Date d\'apparition des premiers signes'},
+      {id:'mode_installation', label:'Comment ces difficultés sont-elles apparues ?'},
+      {id:'caractere_evolutif', label:'Comment ces difficultés évoluent-elles ?'},
+      {id:'plainte_cognitive', label:'Quels changements avez-vous remarqués ?'},
+      {id:'modif_comportement', label:'Changements de comportement'},
+      {id:'troubles_associes_aphasie', label:'Troubles associés'},
+      {id:'troubles_associes_texte_aphasie', label:'Précisions sur les troubles associés'},
+    ]
+  },
+  bpa: {
+    label: 'BPA',
+    questions: [
+      {id:'origine_bpa', label:'Origine de la demande'},
+      {id:'depuis_bpa', label:'Depuis quand'},
+      {id:'plainte_items_bpa', label:'Plainte exprimée'},
+      {id:'plainte_libre_bpa', label:'Précisions sur la plainte'},
+    ]
+  },
+  begaiement: {
+    label: 'Bégaiement',
+    questions: [
+      {id:'debut_begaiement', label:'Début du bégaiement'},
+      {id:'evolution_begaiement', label:'Évolution du bégaiement'},
+      {id:'description_begaiement', label:'Description du bégaiement'},
+      {id:'variations_situationnelles_begaiement', label:'Variations selon les situations'},
+      {id:'signes_lutte_begaiement', label:'Signes observés par la famille'},
+      {id:'reaction_enfant_begaiement', label:"Réaction de l'enfant quand il bégaie"},
+      {id:'evitements_begaiement', label:"Stratégies d'évitement identifiées"},
+      {id:'impact_scolaire_begaiement', label:'Impact scolaire'},
+      {id:'impact_social_begaiement', label:'Impact social et comportement relationnel'},
+      {id:'ressenti_parents_begaiement', label:"Ressenti des parents quand l'enfant bégaie"},
+      {id:'aide_parents_begaiement', label:"Comment les parents aident-ils l'enfant ?"},
+      {id:'atcd_perso_begaiement_parent', label:'Antécédent de bégaiement chez un parent'},
+      {id:'atcd_perso_begaiement_detail', label:'Précisions (lequel, évolution)'},
+    ]
+  },
+  cm: {
+    label: 'Cognition mathématique',
+    questions: [
+      {id:'retard_langage_cm', label:'Retard de langage ou de parole plus jeune'},
+      {id:'confusions_auditives_cm', label:'Confusions auditives'},
+      {id:'trouble_phono_cm', label:'Trouble phonologique'},
+      {id:'visuo_attentionnel_cm', label:'Visuo-attentionnel'},
+      {id:'appetence_maths', label:'Appétence aux maths (0-10)'},
+      {id:'appetence_lecture', label:'Appétence à la lecture (0-10)'},
+      {id:'difficultes_maths', label:'Types de difficultés'},
+      {id:'difficultes_retention_cm', label:'Difficultés à retenir'},
+      {id:'tables_multi', label:'Tables de multiplication'},
+      {id:'description_difficultes_cm', label:'Description des difficult\u00e9s rapport\u00e9es'},
+      {id:'attentes_cm', label:'Attentes de la famille / de l\u2019\u00e9quipe \u00e9ducative'},
+      {id:'obs_enseignant_maths', label:"Observations enseignant"},
+      {id:'autres_difficultes_maths', label:'Autres difficultés'},
+    ]
+  },
+  communication_precoce: {
+    label: 'Communication précoce',
+    questions: [
+      {id:'diagnostic_cp', label:'Diagnostic médical posé (ou en cours)'},
+    ]
+  },
+  deglutition: {
+    label: 'D\u00e9glutition dysfonctionnelle',
+    questions: [
+      {id:'qui_adresse_deg', label:'Qui adresse le patient'},
+      {id:'motif_deg', label:'Motif de consultation / plainte'},
+      {id:'appareillage_deg', label:'Appareillage orthodontique en cours'},
+      {id:'appareillage_detail_deg', label:'Appareillage \u2014 pr\u00e9cisions'},
+      {id:'succion_contexte', label:'Contexte de succion'},
+      {id:'age_cuillere', label:"\u00c2ge d'alimentation \u00e0 la cuill\u00e8re"},
+      {id:'age_morceaux', label:'\u00c2ge de passage aux morceaux'},
+      {id:'liquides_age', label:"\u00c2ge limite liquides au biberon / t\u00e9tine"},
+      {id:'bruxisme_deg', label:'Bruxisme'},
+      {id:'appareil_nuit_deg', label:'Appareil de nuit'},
+      {id:'scoliose_deg', label:'Scoliose / port de corset'},
+      {id:'orthodontie_deg', label:'Suivi orthodontique'},
+      {id:'orthodontie_detail_deg', label:'Suivi orthodontique \u2014 pr\u00e9cisions'},
+    ]
+  },
+  dysarthrie: {
+    label: 'Dysarthrie',
+    questions: [
+      {id:'qui_adresse_dysa', label:'Qui adresse le patient'},
+      {id:'etiologie_dysa', label:'\u00c9tiologie neurologique'},
+      {id:'date_debut_dysa', label:'Date de d\u00e9but des sympt\u00f4mes'},
+      {id:'mode_installation_dysa', label:"Mode d'installation"},
+      {id:'plainte_parole_dysa', label:'Plainte concernant la parole'},
+      {id:'impact_dysa', label:'Impact sur la vie quotidienne'},
+    ]
+  },
+  dysphagie: {
+    label: 'Dysphagie',
+    questions: [
+      {id:'personne_demande_dyph', label:"Personne \u00e0 l'origine de la demande"},
+      {id:'pathologie_dyph', label:'Pathologie / diagnostic neurologique'},
+      {id:'histoire_dyph', label:'Histoire de la maladie et \u00e9volution'},
+      {id:'domaines_plainte_dyph', label:'Plaintes rapport\u00e9es'},
+      {id:'plainte_detaillee_dyph', label:'Plainte d\u00e9taill\u00e9e'},
+      {id:'alimentation_dyph', label:"Mode d'alimentation actuel"},
+      {id:'textures_dyph', label:'Textures consomm\u00e9es (IDDSI)'},
+      {id:'evolution_poids_dyph', label:'\u00c9volution du poids'},
+      {id:'episodes_febriles_dyph', label:'\u00c9pisodes f\u00e9briles / pneumopathies inexpliqu\u00e9es'},
+      {id:'atcd_chir_dyph', label:'Ant\u00e9c\u00e9dents chirurgicaux ORL/digestifs'},
+      {id:'traitements_dyph', label:'Traitements pouvant impacter la d\u00e9glutition'},
+      {id:'autres_soins_dyph', label:'Autres prises en soins'},
+      {id:'qualite_vie_dyph', label:'R\u00e9percussions sur la qualit\u00e9 de vie'},
     ]
   },
   le: {
@@ -16067,22 +16175,26 @@ var QA_SECTIONS = {
       {id:'commentaires_le', label:'Commentaires'},
     ]
   },
-  cm: {
-    label: 'Cognition mathématique',
+  lo: {
+    label: 'Langage oral',
     questions: [
-      {id:'retard_langage_cm', label:'Retard de langage ou de parole plus jeune'},
-      {id:'confusions_auditives_cm', label:'Confusions auditives'},
-      {id:'trouble_phono_cm', label:'Trouble phonologique'},
-      {id:'visuo_attentionnel_cm', label:'Visuo-attentionnel'},
-      {id:'appetence_maths', label:'Appétence aux maths (0-10)'},
-      {id:'appetence_lecture', label:'Appétence à la lecture (0-10)'},
-      {id:'difficultes_maths', label:'Types de difficultés'},
-      {id:'difficultes_retention_cm', label:'Difficultés à retenir'},
-      {id:'tables_multi', label:'Tables de multiplication'},
-      {id:'description_difficultes_cm', label:'Description des difficult\u00e9s rapport\u00e9es'},
-      {id:'attentes_cm', label:'Attentes de la famille / de l\u2019\u00e9quipe \u00e9ducative'},
-      {id:'obs_enseignant_maths', label:"Observations enseignant"},
-      {id:'autres_difficultes_maths', label:'Autres difficultés'},
+      {id:'articulation_lo', label:'Articulation'},
+      {id:'elements_langagiers', label:'Éléments langagiers'},
+      {id:'intelligibilite_interlocuteur', label:'Intelligibilité selon interlocuteur'},
+      {id:'trouble_phono', label:'Trouble phonologique'},
+      {id:'trouble_va_lo', label:'Trouble visuo-attentionnel'},
+      {id:'aime_parler', label:'Aime parler'},
+      {id:'difficultes_retention_lo', label:'Difficultés à retenir'},
+      {id:'temps_lecture_lo', label:'Temps de lecture/jour'},
+      {id:'commentaires_lo', label:'Commentaires'},
+    ]
+  },
+  omf: {
+    label: 'OMF',
+    questions: [
+      {id:'adresse_par_omf', label:'Adressé par'},
+      {id:'motifs_omf', label:'Motifs de consultation'},
+      {id:'symptomes_omf', label:'Symptômes rapportés'},
     ]
   },
   oralite: {
@@ -16124,35 +16236,6 @@ var QA_SECTIONS = {
       {id:'commentaires_oralite', label:'Commentaires'},
     ]
   },
-  dysarthrie: {
-    label: 'Dysarthrie',
-    questions: [
-      {id:'qui_adresse_dysa', label:'Qui adresse le patient'},
-      {id:'etiologie_dysa', label:'\u00c9tiologie neurologique'},
-      {id:'date_debut_dysa', label:'Date de d\u00e9but des sympt\u00f4mes'},
-      {id:'mode_installation_dysa', label:"Mode d'installation"},
-      {id:'plainte_parole_dysa', label:'Plainte concernant la parole'},
-      {id:'impact_dysa', label:'Impact sur la vie quotidienne'},
-    ]
-  },
-  deglutition: {
-    label: 'D\u00e9glutition dysfonctionnelle',
-    questions: [
-      {id:'qui_adresse_deg', label:'Qui adresse le patient'},
-      {id:'motif_deg', label:'Motif de consultation / plainte'},
-      {id:'appareillage_deg', label:'Appareillage orthodontique en cours'},
-      {id:'appareillage_detail_deg', label:'Appareillage \u2014 pr\u00e9cisions'},
-      {id:'succion_contexte', label:'Contexte de succion'},
-      {id:'age_cuillere', label:"\u00c2ge d'alimentation \u00e0 la cuill\u00e8re"},
-      {id:'age_morceaux', label:'\u00c2ge de passage aux morceaux'},
-      {id:'liquides_age', label:"\u00c2ge limite liquides au biberon / t\u00e9tine"},
-      {id:'bruxisme_deg', label:'Bruxisme'},
-      {id:'appareil_nuit_deg', label:'Appareil de nuit'},
-      {id:'scoliose_deg', label:'Scoliose / port de corset'},
-      {id:'orthodontie_deg', label:'Suivi orthodontique'},
-      {id:'orthodontie_detail_deg', label:'Suivi orthodontique \u2014 pr\u00e9cisions'},
-    ]
-  },
   sla: {
     label: 'SLA',
     questions: [
@@ -16165,24 +16248,6 @@ var QA_SECTIONS = {
       {id:'plainte_cog_sla', label:'Plaintes cognitivo-langagi\u00e8res rapport\u00e9es'},
       {id:'mode_vie_sla', label:'Mode de vie / entourage / aidants'},
       {id:'etat_emot_sla', label:'\u00c9tat \u00e9motionnel sur les derni\u00e8res semaines'},
-    ]
-  },
-  dysphagie: {
-    label: 'Dysphagie',
-    questions: [
-      {id:'personne_demande_dyph', label:"Personne \u00e0 l'origine de la demande"},
-      {id:'pathologie_dyph', label:'Pathologie / diagnostic neurologique'},
-      {id:'histoire_dyph', label:'Histoire de la maladie et \u00e9volution'},
-      {id:'domaines_plainte_dyph', label:'Plaintes rapport\u00e9es'},
-      {id:'plainte_detaillee_dyph', label:'Plainte d\u00e9taill\u00e9e'},
-      {id:'alimentation_dyph', label:"Mode d'alimentation actuel"},
-      {id:'textures_dyph', label:'Textures consomm\u00e9es (IDDSI)'},
-      {id:'evolution_poids_dyph', label:'\u00c9volution du poids'},
-      {id:'episodes_febriles_dyph', label:'\u00c9pisodes f\u00e9briles / pneumopathies inexpliqu\u00e9es'},
-      {id:'atcd_chir_dyph', label:'Ant\u00e9c\u00e9dents chirurgicaux ORL/digestifs'},
-      {id:'traitements_dyph', label:'Traitements pouvant impacter la d\u00e9glutition'},
-      {id:'autres_soins_dyph', label:'Autres prises en soins'},
-      {id:'qualite_vie_dyph', label:'R\u00e9percussions sur la qualit\u00e9 de vie'},
     ]
   },
   voix_adulte: {
@@ -16223,61 +16288,6 @@ var QA_SECTIONS = {
       {id:'traitement_voix_e', label:'Traitements en cours'},
     ]
   },
-  begaiement: {
-    label: 'Bégaiement',
-    questions: [
-      {id:'debut_begaiement', label:'Début du bégaiement'},
-      {id:'evolution_begaiement', label:'Évolution du bégaiement'},
-      {id:'description_begaiement', label:'Description du bégaiement'},
-      {id:'variations_situationnelles_begaiement', label:'Variations selon les situations'},
-      {id:'signes_lutte_begaiement', label:'Signes observés par la famille'},
-      {id:'reaction_enfant_begaiement', label:"Réaction de l'enfant quand il bégaie"},
-      {id:'evitements_begaiement', label:"Stratégies d'évitement identifiées"},
-      {id:'impact_scolaire_begaiement', label:'Impact scolaire'},
-      {id:'impact_social_begaiement', label:'Impact social et comportement relationnel'},
-      {id:'ressenti_parents_begaiement', label:"Ressenti des parents quand l'enfant bégaie"},
-      {id:'aide_parents_begaiement', label:"Comment les parents aident-ils l'enfant ?"},
-      {id:'atcd_perso_begaiement_parent', label:'Antécédent de bégaiement chez un parent'},
-      {id:'atcd_perso_begaiement_detail', label:'Précisions (lequel, évolution)'},
-    ]
-  },
-  bpa: {
-    label: 'BPA',
-    questions: [
-      {id:'origine_bpa', label:'Origine de la demande'},
-      {id:'depuis_bpa', label:'Depuis quand'},
-      {id:'plainte_items_bpa', label:'Plainte exprimée'},
-      {id:'plainte_libre_bpa', label:'Précisions sur la plainte'},
-    ]
-  },
-  communication_precoce: {
-    label: 'Communication précoce',
-    questions: [
-      {id:'diagnostic_cp', label:'Diagnostic médical posé (ou en cours)'},
-    ]
-  },
-  omf: {
-    label: 'OMF',
-    questions: [
-      {id:'adresse_par_omf', label:'Adressé par'},
-      {id:'motifs_omf', label:'Motifs de consultation'},
-      {id:'symptomes_omf', label:'Symptômes rapportés'},
-    ]
-  },
-  anosmie: {
-    label: 'Anosmie',
-    questions: [
-      {id:'etiologie_anos', label:'Étiologie'},
-      {id:'type_anos', label:"Type d'anosmie"},
-      {id:'odeurs_aimees_apres', label:'Odeurs aimées actuellement'},
-      {id:'odeurs_aimees_avant', label:"Odeurs aimées avant l'anosmie"},
-      {id:'retentissement_alim', label:'Retentissement alimentaire'},
-      {id:'tabagisme', label:'Tabagisme'},
-      {id:'regime', label:'Régime alimentaire particulier'},
-      {id:'allergies', label:'Allergies'},
-      {id:'commentaires_anos', label:'Commentaires'},
-    ]
-  }
 };
 
 function ouvrirEnvoiQuestionnaire(pid){
