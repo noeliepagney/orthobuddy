@@ -15286,7 +15286,7 @@ function renderAnamneseTab(pid){
 
     // PSYCHODYNAMIQUE
     var sPsy='';
-    sPsy+=textArea('Comment d\u00e9cririez-vous votre enfant ?','description_patient');
+    sPsy+=textArea("Description de l'enfant par ses parents (ou par les personnes qui vivent avec lui)",'description_patient');
     sPsy+=textArea('Centres d\'int\u00e9r\u00eat / activit\u00e9s extra-scolaires','centres_interet');
 
     html+=sCard('Informations psychodynamiques','ti-heart',sPsy);
@@ -15990,15 +15990,14 @@ var QA_SECTIONS = {
       {id:'sensorialite', label:'Particularités sensorielles'},
       {id:'attention', label:'Éléments attentionnels'},
       {id:'jeux_activites', label:'Jeux / activités'},
-      {id:'ecrans_semaine', label:"Temps d'écran semaine"},
-      {id:'ecrans_weekend', label:"Temps d'écran weekend"},
+      {id:'ecrans_semaine', label:"Temps d'écran par jour en semaine"},
+      {id:'ecrans_weekend', label:"Temps d'écran par jour le week-end"},
       {id:'classe', label:'Classe / niveau scolaire'},
       {id:'ecole', label:'\u00c9cole / \u00e9tablissement'},
       {id:'aime_ecole', label:"Aime l'école"},
       {id:'obs_enseignant', label:"Observations de l'enseignant"},
       {id:'temps_devoirs', label:'Temps de devoirs'},
-      {id:'bien_etre', label:'Bien-être général'},
-      {id:'description_patient', label:'Description du patient par les parents'},
+      {id:'description_patient', label:"Description de l'enfant par ses parents (ou par les personnes qui vivent avec lui)"},
       {id:'centres_interet', label:"Centres d'intérêt"},
     ]
   },
