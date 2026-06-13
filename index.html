@@ -15816,6 +15816,12 @@ async function checkQuestionnairesRecus(){
     });
     // Rafraîchir l'affichage des patients si une liste est déjà rendue
     if(typeof renderPatients === 'function') renderPatients();
+    // Rafraîchir l'onglet anamnèse actuellement ouvert (s'il y en a un)
+    Object.keys(QUESTIONNAIRES_RECUS).forEach(function(pid){
+      if(document.getElementById('ptab-'+pid+'-anamnese') && typeof renderAnamneseTab === 'function'){
+        renderAnamneseTab(pid);
+      }
+    });
   }catch(e){ console.error('checkQuestionnairesRecus', e); }
 }
 
