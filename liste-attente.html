@@ -245,9 +245,9 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
       <div class="field">
         <label>Avez-vous une ordonnance de moins d'un an ? <span class="req">*</span></label>
         <div class="radio-group">
-          <label class="radio-item"><input type="radio" name="ordonnance" value="oui" onchange="checkOrdonnance(this)"><span>Oui, j'ai une ordonnance de moins d'un an</span></label>
-          <label class="radio-item"><input type="radio" name="ordonnance" value="non" onchange="checkOrdonnance(this)"><span>Non, je n'en ai pas encore</span></label>
-          <label class="radio-item"><input type="radio" name="ordonnance" value="en_cours" onchange="checkOrdonnance(this)"><span>En cours d'obtention</span></label>
+          <label class="radio-item" onclick="setTimeout(function(){var r=document.querySelector('[name=ordonnance]:checked');if(r)checkOrdonnance(r);},10)"><input type="radio" name="ordonnance" value="oui" onchange="checkOrdonnance(this)"><span>Oui, j'ai une ordonnance de moins d'un an</span></label>
+          <label class="radio-item" onclick="setTimeout(function(){var r=document.querySelector('[name=ordonnance]:checked');if(r)checkOrdonnance(r);},10)"><input type="radio" name="ordonnance" value="non" onchange="checkOrdonnance(this)"><span>Non, je n'en ai pas encore</span></label>
+          <label class="radio-item" onclick="setTimeout(function(){var r=document.querySelector('[name=ordonnance]:checked');if(r)checkOrdonnance(r);},10)"><input type="radio" name="ordonnance" value="en_cours" onchange="checkOrdonnance(this)"><span>En cours d'obtention</span></label>
         </div>
         <div class="alert-orange" id="ordonnance-alert">
           <div class="title">ℹ️ Une ordonnance médicale est nécessaire</div>
@@ -278,8 +278,8 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
       <div class="field">
         <label>S'agit-il d'un premier suivi orthophonique ? <span class="req">*</span></label>
         <div class="radio-group">
-          <label class="radio-item"><input type="radio" name="premier_suivi" value="oui" onchange="toggleSuiviPrecedent(this)"><span>Oui, c'est un premier suivi</span></label>
-          <label class="radio-item"><input type="radio" name="premier_suivi" value="non" onchange="toggleSuiviPrecedent(this)"><span>Non, un suivi orthophonique a déjà été réalisé</span></label>
+          <label class="radio-item" onclick="setTimeout(function(){var r=document.querySelector('[name=premier_suivi]:checked');if(r)toggleSuiviPrecedent(r);},10)"><input type="radio" name="premier_suivi" value="oui" onchange="toggleSuiviPrecedent(this)"><span>Oui, c'est un premier suivi</span></label>
+          <label class="radio-item" onclick="setTimeout(function(){var r=document.querySelector('[name=premier_suivi]:checked');if(r)toggleSuiviPrecedent(r);},10)"><input type="radio" name="premier_suivi" value="non" onchange="toggleSuiviPrecedent(this)"><span>Non, un suivi orthophonique a déjà été réalisé</span></label>
         </div>
       </div>
       <div class="suivi-prec-zone" id="zone-suivi-precedent">
