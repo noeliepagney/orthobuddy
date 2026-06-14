@@ -155,6 +155,522 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 
 @media print { body{background:white;padding:0;} .card{box-shadow:none;border-radius:0;} .header button,.btn-submit{display:none;} }
 @media (max-width:480px) { .field-row{grid-template-columns:1fr;} .form-body{padding:20px;} .header{padding:24px 20px 20px;} }
+
+/* Animation shake bouton erreur */
+@keyframes shake {
+  0%,100%{transform:translateX(0);}
+  15%{transform:translateX(-8px);}
+  30%{transform:translateX(8px);}
+  45%{transform:translateX(-6px);}
+  60%{transform:translateX(6px);}
+  75%{transform:translateX(-4px);}
+  90%{transform:translateX(4px);}
+}
+.shake { animation: shake .5s ease; }
+
+/* Bandeau erreur en haut */
+.error-banner {
+  display:none; position:sticky; top:0; z-index:50;
+  background:#FAF0EB; border-bottom:2px solid var(--brique);
+  padding:12px 20px; font-size:13px; color:var(--brique);
+  font-weight:600; line-height:1.5;
+}
+.error-banner ul { margin:6px 0 0 16px; font-weight:400; font-size:12.5px; }
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="error-banner" id="error-banner"><span id="error-banner-text"></span><ul id="error-banner-list"></ul></div>
+  <div class="header">
+    <div class="header-logo">🌿 Orthophonie</div>
+    <h1 id="form-cabinet-title">Cabinet de Noëlie Lainé</h1>
+    <p>Formulaire de demande de prise en soins</p>
+    <button class="btn-pdf" onclick="ouvrirRecapPDF()">🖨️ Télécharger ma demande en PDF</button>
+  </div>
+
+  <div class="intro" id="form-intro-text">
+    <p>Orthophoniste diplômée d'État, j'ouvrirai mon cabinet au <strong>285 rue de la Croix de Mission, 54200 Pagney-derrière-Barine</strong> en <strong>août 2026</strong>.</p>
+    <p>Je reçois enfants, adolescents et adultes notamment pour des bilans et des prises en soins dans les domaines du langage oral et écrit, de la cognition mathématique et de la neurologie.</p>
+    <p>Ce formulaire me permet de mieux connaître votre situation avant de vous recontacter. Je vous contacterai dès qu'un créneau de rendez-vous sera disponible.</p>
+    <p>Toutes les informations renseignées restent strictement confidentielles et ne seront pas transmises à des tiers.</p>
+  </div>
+
+  <div id="form-container">
+    <div class="form-body">
+
+      <div class="section-title">👤 Informations sur le patient</div>
+      <div class="field-row">
+        <div class="field"><label>Nom <span class="req">*</span></label><input type="text" id="nom" placeholder="Dupont" required></div>
+        <div class="field"><label>Prénom <span class="req">*</span></label><input type="text" id="prenom" placeholder="Marie" required></div>
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label>Date de naissance <span class="req">*</span></label>
+          <div class="date-row">
+            <select id="ddn_jour" onchange="updateDdn()"><option value="">Jour</option><option value="01">01</option><option value="02">02</option><option value="03">03</option><option value="04">04</option><option value="05">05</option><option value="06">06</option><option value="07">07</option><option value="08">08</option><option value="09">09</option><option value="10">10</option><option value="11">11</option><option value="12">12</option><option value="13">13</option><option value="14">14</option><option value="15">15</option><option value="16">16</option><option value="17">17</option><option value="18">18</option><option value="19">19</option><option value="20">20</option><option value="21">21</option><option value="22">22</option><option value="23">23</option><option value="24">24</option><option value="25">25</option><option value="26">26</option><option value="27">27</option><option value="28">28</option><option value="29">29</option><option value="30">30</option><option value="31">31</option></select>
+            <select id="ddn_mois" onchange="updateDdn()"><option value="">Mois</option><option value="01">Janvier</option><option value="02">Février</option><option value="03">Mars</option><option value="04">Avril</option><option value="05">Mai</option><option value="06">Juin</option><option value="07">Juillet</option><option value="08">Août</option><option value="09">Septembre</option><option value="10">Octobre</option><option value="11">Novembre</option><option value="12">Décembre</option></select>
+            <select id="ddn_annee" onchange="updateDdn()"><option value="">Année</option><option value="2026">2026</option><option value="2025">2025</option><option value="2024">2024</option><option value="2023">2023</option><option value="2022">2022</option><option value="2021">2021</option><option value="2020">2020</option><option value="2019">2019</option><option value="2018">2018</option><option value="2017">2017</option><option value="2016">2016</option><option value="2015">2015</option><option value="2014">2014</option><option value="2013">2013</option><option value="2012">2012</option><option value="2011">2011</option><option value="2010">2010</option><option value="2009">2009</option><option value="2008">2008</option><option value="2007">2007</option><option value="2006">2006</option><option value="2005">2005</option><option value="2004">2004</option><option value="2003">2003</option><option value="2002">2002</option><option value="2001">2001</option><option value="2000">2000</option><option value="1999">1999</option><option value="1998">1998</option><option value="1997">1997</option><option value="1996">1996</option><option value="1995">1995</option><option value="1994">1994</option><option value="1993">1993</option><option value="1992">1992</option><option value="1991">1991</option><option value="1990">1990</option><option value="1989">1989</option><option value="1988">1988</option><option value="1987">1987</option><option value="1986">1986</option><option value="1985">1985</option><option value="1984">1984</option><option value="1983">1983</option><option value="1982">1982</option><option value="1981">1981</option><option value="1980">1980</option><option value="1979">1979</option><option value="1978">1978</option><option value="1977">1977</option><option value="1976">1976</option><option value="1975">1975</option><option value="1974">1974</option><option value="1973">1973</option><option value="1972">1972</option><option value="1971">1971</option><option value="1970">1970</option><option value="1969">1969</option><option value="1968">1968</option><option value="1967">1967</option><option value="1966">1966</option><option value="1965">1965</option><option value="1964">1964</option><option value="1963">1963</option><option value="1962">1962</option><option value="1961">1961</option><option value="1960">1960</option><option value="1959">1959</option><option value="1958">1958</option><option value="1957">1957</option><option value="1956">1956</option><option value="1955">1955</option><option value="1954">1954</option><option value="1953">1953</option><option value="1952">1952</option><option value="1951">1951</option><option value="1950">1950</option><option value="1949">1949</option><option value="1948">1948</option><option value="1947">1947</option><option value="1946">1946</option><option value="1945">1945</option><option value="1944">1944</option><option value="1943">1943</option><option value="1942">1942</option><option value="1941">1941</option><option value="1940">1940</option><option value="1939">1939</option><option value="1938">1938</option><option value="1937">1937</option><option value="1936">1936</option><option value="1935">1935</option><option value="1934">1934</option><option value="1933">1933</option><option value="1932">1932</option><option value="1931">1931</option><option value="1930">1930</option><option value="1929">1929</option><option value="1928">1928</option><option value="1927">1927</option><option value="1926">1926</option><option value="1925">1925</option><option value="1924">1924</option><option value="1923">1923</option><option value="1922">1922</option><option value="1921">1921</option><option value="1920">1920</option></select>
+          </div>
+          <input type="hidden" id="ddn">
+        </div>
+        <div class="field"><label>Sexe</label><select id="sexe"><option value="">— Choisir —</option><option value="F">Féminin</option><option value="M">Masculin</option><option value="autre">Autre / Non précisé</option></select></div>
+      </div>
+      <div class="field"><label>Adresse</label><input type="text" id="adresse" placeholder="12 rue de la Paix, 54200 Pagney-derrière-Barine"></div>
+
+      <div class="section-title">📞 Coordonnées</div>
+      <div class="field-row">
+        <div class="field"><label>Email <span class="req">*</span></label><input type="email" id="email" placeholder="marie.dupont@email.fr" required></div>
+        <div class="field"><label>Téléphone <span class="req">*</span></label><input type="tel" id="telephone" placeholder="06 12 34 56 78" required></div>
+      </div>
+      <div class="field"><label>Vous êtes</label><select id="demandeur" onchange="toggleContactZone(this)"><option value="patient">Le patient lui-même</option><option value="parent">Parent / tuteur légal</option><option value="autre">Autre (aidant, proche…)</option></select></div>
+      <div class="field"><label>Numéro de sécurité sociale <span style="font-size:11px;font-weight:400;color:var(--text-muted);">(optionnel — ouvrant droit)</span></label><input type="text" id="nir" placeholder="ex : 2 85 03 75 112 034 42" maxlength="21" style="font-family:monospace;letter-spacing:.06em;" oninput="formatNIR(this)"></div>
+      <div class="parent-zone" id="zone-parent">
+        <div class="zone-label">👨‍👩‍👦 Informations sur le contact</div>
+        <div class="field-row">
+          <div class="field" style="margin-bottom:8px;"><label>Votre prénom <span class="req">*</span></label><input type="text" id="prenom_contact" placeholder="ex: Marie"></div>
+          <div class="field" style="margin-bottom:8px;"><label>Votre nom <span class="req">*</span></label><input type="text" id="nom_contact" placeholder="ex: Dupont"></div>
+        </div>
+        <div class="field-row">
+          <div class="field" style="margin-bottom:0;"><label>Profession du père</label><input type="text" id="profession_pere" placeholder="ex: enseignant, infirmier…"></div>
+          <div class="field" style="margin-bottom:0;"><label>Profession de la mère</label><input type="text" id="profession_mere" placeholder="ex: comptable, médecin…"></div>
+        </div>
+      </div>
+      <div class="parent-zone" id="zone-autre">
+        <div class="zone-label">🤝 Vos informations</div>
+        <div class="field-row">
+          <div class="field" style="margin-bottom:0;"><label>Votre prénom <span class="req">*</span></label><input type="text" id="prenom_contact_autre" placeholder="ex: Jean"></div>
+          <div class="field" style="margin-bottom:0;"><label>Votre nom <span class="req">*</span></label><input type="text" id="nom_contact_autre" placeholder="ex: Dupont"></div>
+        </div>
+        <div class="field" style="margin-top:8px;margin-bottom:0;"><label>Votre lien avec le patient</label><input type="text" id="lien_contact_autre" placeholder="ex: conjoint, aidant, frère/sœur…"></div>
+      </div>
+
+      <div class="section-title">🎯 Motif de consultation</div>
+      <div class="field">
+        <label>Motif(s) de consultation <span class="req">*</span></label>
+        <div class="checkbox-group">
+          <label class="checkbox-item"><input type="checkbox" name="parcours" value="Langage oral"><span><strong>Langage oral</strong><small>Retard de parole ou de langage, trouble de l'articulation, TDL (ex-dysphasie), retard de communication</small></span></label>
+          <label class="checkbox-item"><input type="checkbox" name="parcours" value="Langage écrit"><span><strong>Langage écrit</strong><small>TSLE (ex-dyslexie-dysorthographie), retard d'acquisition de la lecture ou de l'écriture, difficultés de compréhension écrite</small></span></label>
+          <label class="checkbox-item"><input type="checkbox" name="parcours" value="Difficultés de cognition mathématique"><span><strong>Difficultés de cognition mathématique</strong><small>Dyscalculie, retard des habiletés numériques, difficultés de raisonnement logique ou de résolution de problèmes</small></span></label>
+          <label class="checkbox-item"><input type="checkbox" name="parcours" value="Neurologie"><span><strong>Pathologies neurologiques et troubles cognitifs</strong><small>AVC, traumatisme crânien, pathologies neuro-évolutives (Parkinson, SLA, SEP…), troubles cognitifs (mémoire, fonctions exécutives, attention), paralysie faciale</small></span></label>
+          <label class="checkbox-item"><input type="checkbox" name="parcours" value="Déglutition"><span><strong>Déglutition</strong><small>Déglutition dysfonctionnelle, dysphagie (fausses-routes), rééducation vélo-tubo-tympanique</small></span></label>
+          <label class="checkbox-item"><input type="checkbox" name="parcours" value="Bégaiement"><span><strong>Bégaiement et troubles de la fluence</strong><small>Bégaiement, bredouillement, disfluences</small></span></label>
+          <label class="checkbox-item"><input type="checkbox" name="parcours" value="Surdité"><span><strong>Surdité et troubles auditifs</strong><small>Rééducation auditive, réadaptation après appareillage ou implant cochléaire</small></span></label>
+          <label class="checkbox-item"><input type="checkbox" name="parcours" value="TSA / Handicap"><span><strong>TSA / Handicap / TND</strong><small>Trouble du spectre autistique, troubles du neurodéveloppement, handicap sensoriel</small></span></label>
+          <label class="checkbox-item"><input type="checkbox" name="parcours" value="Prévention"><span><strong>Bilan de prévention et accompagnement parental</strong><small>Bilan préventif du développement du langage — ce bilan n'est pas suivi d'une prise en soins orthophonique</small></span></label>
+          <label class="checkbox-item"><input type="checkbox" name="parcours" value="Phonation"><span><strong>Troubles de la voix et de la phonation</strong><small>Dysphonie, troubles de la voix fonctionnels ou organiques, post-cancérologie (laryngectomie)</small></span></label>
+          <label class="checkbox-item"><input type="checkbox" name="parcours" value="Oralité / OMF"><span><strong>Oralité et fonctions oro-myo-faciales</strong><small>Troubles de l'oralité alimentaire, difficultés alimentaires chez l'enfant, anomalies des fonctions oro-myo-faciales (ventilation buccale, succion…)</small></span></label>
+        </div>
+      </div>
+      <div class="field"><label>Description des difficultés <span class="req">*</span></label><textarea id="motif" placeholder="Décrivez brièvement les difficultés observées, depuis combien de temps, dans quel contexte…" required></textarea></div>
+
+      <div class="section-title">📋 Prescription médicale</div>
+      <div class="field">
+        <label>Avez-vous une ordonnance de moins d'un an ? <span class="req">*</span></label>
+        <div class="radio-group" id="rg-ordonnance">
+            <div class="radio-item" onclick="selOrdo('oui',this)"><input type="radio" name="ordonnance" id="ordo_oui" value="oui"><span>Oui, j'ai une ordonnance de moins d'un an</span></div>
+            <div class="radio-item" onclick="selOrdo('non',this)"><input type="radio" name="ordonnance" id="ordo_non" value="non"><span>Non, je n'en ai pas encore</span></div>
+            <div class="radio-item" onclick="selOrdo('en_cours',this)"><input type="radio" name="ordonnance" id="ordo_en_cours" value="en_cours"><span>En cours d'obtention</span></div>
+          </div>
+        <div class="alert-orange" id="ordonnance-alert">
+          <div class="title">ℹ️ Une ordonnance médicale est nécessaire</div>
+          <div class="body">Pour votre premier rendez-vous, une ordonnance valide (de moins d'un an) est obligatoire pour la prise en charge par l'Assurance Maladie. Je vous invite à consulter votre médecin traitant ou pédiatre afin d'obtenir une prescription orthophonique avant votre premier rendez-vous.<br><br><strong>Vous pouvez tout de même remplir ce formulaire</strong> — votre demande sera enregistrée et je vous contacterai dès qu'un créneau sera disponible. 🙂</div>
+        </div>
+      </div>
+      <div class="field" id="field-date-ordonnance" style="display:none;">
+        <label>Date de l'ordonnance</label>
+        <div class="date-row">
+          <select id="ordo_jour" onchange="updateOrdoDate()"><option value="">Jour</option><option value="01">01</option><option value="02">02</option><option value="03">03</option><option value="04">04</option><option value="05">05</option><option value="06">06</option><option value="07">07</option><option value="08">08</option><option value="09">09</option><option value="10">10</option><option value="11">11</option><option value="12">12</option><option value="13">13</option><option value="14">14</option><option value="15">15</option><option value="16">16</option><option value="17">17</option><option value="18">18</option><option value="19">19</option><option value="20">20</option><option value="21">21</option><option value="22">22</option><option value="23">23</option><option value="24">24</option><option value="25">25</option><option value="26">26</option><option value="27">27</option><option value="28">28</option><option value="29">29</option><option value="30">30</option><option value="31">31</option></select>
+          <select id="ordo_mois" onchange="updateOrdoDate()"><option value="">Mois</option><option value="01">Janvier</option><option value="02">Février</option><option value="03">Mars</option><option value="04">Avril</option><option value="05">Mai</option><option value="06">Juin</option><option value="07">Juillet</option><option value="08">Août</option><option value="09">Septembre</option><option value="10">Octobre</option><option value="11">Novembre</option><option value="12">Décembre</option></select>
+          <select id="ordo_annee" onchange="updateOrdoDate()"><option value="">Année</option><option value="2026">2026</option><option value="2025">2025</option><option value="2024">2024</option><option value="2023">2023</option><option value="2022">2022</option><option value="2021">2021</option><option value="2020">2020</option><option value="2019">2019</option><option value="2018">2018</option><option value="2017">2017</option><option value="2016">2016</option><option value="2015">2015</option></select>
+        </div>
+        <input type="hidden" id="date_ordonnance">
+        <div id="ordonnance-expiry" style="display:none;margin-top:6px;font-size:11px;border-radius:8px;padding:7px 10px;"></div>
+      </div>
+      <div id="field-ordo-details" style="display:none;">
+        <div class="field"><label>Intitulé de l'ordonnance</label><input type="text" id="intitule_ordonnance" placeholder="Ex: bilan orthophonique, rééducation langage écrit…"></div>
+        <div class="field"><label>Nom du médecin prescripteur</label><input type="text" id="medecin" placeholder="Dr Martin"></div>
+      </div>
+
+      <div class="section-title">🏫 Scolarité</div>
+      <div class="field"><label>Classe actuelle</label>
+        <select id="classe"><option value="">— Choisir —</option><option value="TPS">TPS</option><option value="PS">PS</option><option value="MS">MS</option><option value="GS">GS</option><option value="CP">CP</option><option value="CE1">CE1</option><option value="CE2">CE2</option><option value="CM1">CM1</option><option value="CM2">CM2</option><option value="6e">6ème</option><option value="5e">5ème</option><option value="4e">4ème</option><option value="3e">3ème</option><option value="seconde">Seconde</option><option value="premiere">Première</option><option value="terminale">Terminale</option><option value="superieur">Études supérieures</option><option value="adulte">Adulte / Non scolarisé</option></select>
+      </div>
+
+      <div class="section-title">📋 Suivi orthophonique</div>
+      <div class="field">
+        <label>S'agit-il d'un premier suivi orthophonique ? <span class="req">*</span></label>
+        <div class="radio-group">
+          <label class="radio-item"><input type="radio" name="premier_suivi" value="oui" onchange="toggleSuiviPrecedent(this)" onclick="toggleSuiviPrecedent(this)"><span>Oui, c'est un premier suivi</span></label>
+          <label class="radio-item"><input type="radio" name="premier_suivi" value="non" onchange="toggleSuiviPrecedent(this)" onclick="toggleSuiviPrecedent(this)"><span>Non, un suivi orthophonique a déjà été réalisé</span></label>
+        </div>
+      </div>
+      <div class="suivi-prec-zone" id="zone-suivi-precedent">
+        <div class="title">Détails du suivi précédent</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+          <div class="field" style="margin-bottom:0;"><label>Nom de l'orthophoniste</label><input type="text" id="ortho_prec" placeholder="Nom de l'orthophoniste précédent"></div>
+          <div class="field" style="margin-bottom:0;"><label>Durée du suivi</label><input type="text" id="duree_suivi" placeholder="ex: 2 ans, 6 mois"></div>
+          <div class="field" style="margin-bottom:0;"><label>Motif du suivi précédent</label><input type="text" id="raison_suivi" placeholder="ex: retard de parole"></div>
+          <div class="field" style="margin-bottom:0;"><label>Raison de l'arrêt</label><input type="text" id="raison_arret" placeholder="ex: objectifs atteints, déménagement"></div>
+        </div>
+      </div>
+
+      <div class="section-title">🏥 Situation particulière</div>
+      <div class="field">
+        <div style="background:#FAF5EE;border:1.5px solid #E8D5B8;border-radius:10px;padding:12px 16px;">
+          <label class="checkbox-item">
+            <input type="checkbox" id="sortie_hospit" name="sortie_hospit" value="oui">
+            <span style="font-weight:500;">Patient en sortie d'hospitalisation <span style="color:#8C6A3F;font-size:12px;">(demande traitée en priorité)</span></span>
+          </label>
+        </div>
+      </div>
+
+      <div class="section-title">🏥 Suivis en cours</div>
+      <div class="field">
+        <label>La personne est-elle suivie par une structure spécialisée ?</label>
+        <div class="checkbox-group">
+          <label class="checkbox-item"><input type="checkbox" name="structures" value="CMP"><span>CMP (Centre Médico-Psychologique)</span></label>
+          <label class="checkbox-item"><input type="checkbox" name="structures" value="CMPP"><span>CMPP (Centre Médico-Psycho-Pédagogique)</span></label>
+          <label class="checkbox-item"><input type="checkbox" name="structures" value="CAMSP"><span>CAMSP (Centre d'Action Médico-Sociale Précoce)</span></label>
+          <label class="checkbox-item"><input type="checkbox" name="structures" value="IME"><span>IME (Institut Médico-Éducatif)</span></label>
+          <label class="checkbox-item"><input type="checkbox" name="structures" value="Hôpital de jour"><span>Hôpital de jour</span></label>
+          <label class="checkbox-item"><input type="checkbox" name="structures" value="SESSAD"><span>SESSAD</span></label>
+          <label class="checkbox-item"><input type="checkbox" name="structures" value="Autre" onchange="toggleAutreStructure(this)"><span>Autre</span></label>
+        </div>
+        <input type="text" id="structure_autre_detail" placeholder="Précisez…" style="display:none;margin-top:8px;width:100%;padding:10px 12px;border:1.5px solid #E7E0D3;border-radius:10px;font-size:14px;color:#3C3A33;font-family:inherit;">
+      </div>
+      <div class="field">
+        <label>Autres professionnels suivant la personne</label>
+        <div class="checkbox-group">
+          <label class="checkbox-item"><input type="checkbox" name="professionnels" value="Psychologue"><span>Psychologue</span></label>
+          <label class="checkbox-item"><input type="checkbox" name="professionnels" value="Ergothérapeute"><span>Ergothérapeute</span></label>
+          <label class="checkbox-item"><input type="checkbox" name="professionnels" value="Psychomotricien"><span>Psychomotricien·ne</span></label>
+          <label class="checkbox-item"><input type="checkbox" name="professionnels" value="Psychiatre"><span>Psychiatre</span></label>
+          <label class="checkbox-item"><input type="checkbox" name="professionnels" value="Pédopsychiatre"><span>Pédopsychiatre</span></label>
+          <label class="checkbox-item"><input type="checkbox" name="professionnels" value="Orthophoniste"><span>Orthophoniste (autre suivi en cours)</span></label>
+          <label class="checkbox-item"><input type="checkbox" name="professionnels" value="Autre" onchange="toggleAutreProf(this)"><span>Autre</span></label>
+        </div>
+        <input type="text" id="prof_autre_detail" placeholder="Précisez…" style="display:none;margin-top:8px;width:100%;padding:10px 12px;border:1.5px solid #E7E0D3;border-radius:10px;font-size:14px;color:#3C3A33;font-family:inherit;">
+      </div>
+      <div class="field"><label>Des bilans ont-ils déjà été réalisés ?</label><textarea id="antecedents" placeholder="Ex: bilan orthophonique en 2022, bilan psychologique…" style="min-height:60px;"></textarea></div>
+
+      <div class="section-title">🏠 Lieu des séances</div>
+      <div class="field">
+        <label>Lieu des séances</label>
+        <p style="font-size:12px;color:#666;margin:-4px 0 10px;">Les séances ont lieu au cabinet. Les séances à domicile sont réservées aux personnes dans l'impossibilité de se déplacer (mobilité réduite, dépendance, hospitalisation à domicile…).</p>
+        <div class="radio-group">
+          <label class="radio-item"><input type="radio" name="domicile" value="non" checked><span>Au cabinet</span></label>
+          <label class="radio-item"><input type="radio" name="domicile" value="oui"><span>À domicile <span style="color:#666;font-size:12px;">(mobilité réduite, dépendance, hospitalisation à domicile)</span></span></label>
+        </div>
+      </div>
+
+      <div class="section-title">📅 Disponibilités</div>
+      <div class="field">
+        <label>Disponibilités préférées</label>
+        <p style="font-size:12px;color:#56714F;background:#EFF3ED;border:1px solid #B8D4B4;border-radius:8px;padding:8px 12px;margin-bottom:10px;">💡 Les créneaux du mercredi sont très demandés. Pour diminuer votre délai d'attente, n'hésitez pas à sélectionner d'autres plages horaires.</p>
+        <label class="checkbox-item" style="margin-bottom:10px;">
+          <input type="checkbox" id="dispo_aucune" onchange="toggleDispoTable(this)">
+          <span>Pas de préférence particulière</span>
+        </label>
+        <div id="dispo-table" style="overflow-x:auto;">
+          <table style="width:100%;border-collapse:collapse;font-size:13px;">
+            <thead>
+              <tr>
+                <th style="padding:6px;border:1px solid #E7E0D3;background:#FAFAF7;"></th>
+                <th style="padding:6px;border:1px solid #E7E0D3;background:#FAFAF7;text-align:center;">Matin<br><small style="color:#6E695C;">8h-12h</small></th>
+                <th style="padding:6px;border:1px solid #E7E0D3;background:#FAFAF7;text-align:center;">Midi<br><small style="color:#6E695C;">12h-14h</small></th>
+                <th style="padding:6px;border:1px solid #E7E0D3;background:#FAFAF7;text-align:center;">Après-midi<br><small style="color:#6E695C;">14h-17h</small></th>
+                <th style="padding:6px;border:1px solid #E7E0D3;background:#FAFAF7;text-align:center;">Fin de journée<br><small style="color:#6E695C;">17h+</small></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td style="padding:6px;border:1px solid #E7E0D3;font-weight:500;">Lundi</td><td style="text-align:center;border:1px solid #E7E0D3;"><input type="checkbox" name="horaires" value="Lundi matin"></td><td style="text-align:center;border:1px solid #E7E0D3;"><input type="checkbox" name="horaires" value="Lundi midi"></td><td style="text-align:center;border:1px solid #E7E0D3;"><input type="checkbox" name="horaires" value="Lundi après-midi"></td><td style="text-align:center;border:1px solid #E7E0D3;"><input type="checkbox" name="horaires" value="Lundi fin journée"></td></tr>
+              <tr><td style="padding:6px;border:1px solid #E7E0D3;font-weight:500;">Mardi</td><td style="text-align:center;border:1px solid #E7E0D3;"><input type="checkbox" name="horaires" value="Mardi matin"></td><td style="text-align:center;border:1px solid #E7E0D3;"><input type="checkbox" name="horaires" value="Mardi midi"></td><td style="text-align:center;border:1px solid #E7E0D3;"><input type="checkbox" name="horaires" value="Mardi après-midi"></td><td style="text-align:center;border:1px solid #E7E0D3;"><input type="checkbox" name="horaires" value="Mardi fin journée"></td></tr>
+              <tr><td style="padding:6px;border:1px solid #E7E0D3;font-weight:500;">Mercredi</td><td style="text-align:center;border:1px solid #E7E0D3;"><input type="checkbox" name="horaires" value="Mercredi matin"></td><td style="text-align:center;border:1px solid #E7E0D3;"><input type="checkbox" name="horaires" value="Mercredi midi"></td><td style="text-align:center;border:1px solid #E7E0D3;"><input type="checkbox" name="horaires" value="Mercredi après-midi"></td><td style="text-align:center;border:1px solid #E7E0D3;"><input type="checkbox" name="horaires" value="Mercredi fin journée"></td></tr>
+              <tr><td style="padding:6px;border:1px solid #E7E0D3;font-weight:500;">Jeudi</td><td style="text-align:center;border:1px solid #E7E0D3;"><input type="checkbox" name="horaires" value="Jeudi matin"></td><td style="text-align:center;border:1px solid #E7E0D3;"><input type="checkbox" name="horaires" value="Jeudi midi"></td><td style="text-align:center;border:1px solid #E7E0D3;"><input type="checkbox" name="horaires" value="Jeudi après-midi"></td><td style="text-align:center;border:1px solid #E7E0D3;"><input type="checkbox" name="horaires" value="Jeudi fin journée"></td></tr>
+              <tr><td style="padding:6px;border:1px solid #E7E0D3;font-weight:500;">Vendredi</td><td style="text-align:center;border:1px solid #E7E0D3;"><input type="checkbox" name="horaires" value="Vendredi matin"></td><td style="text-align:center;border:1px solid #E7E0D3;"><input type="checkbox" name="horaires" value="Vendredi midi"></td><td style="text-align:center;border:1px solid #E7E0D3;"><input type="checkbox" name="horaires" value="Vendredi après-midi"></td><td style="text-align:center;border:1px solid #E7E0D3;"><input type="checkbox" name="horaires" value="Vendredi fin journée"></td></tr>
+              <tr><td style="padding:6px;border:1px solid #E7E0D3;font-weight:500;">Samedi</td><td style="text-align:center;border:1px solid #E7E0D3;"><input type="checkbox" name="horaires" value="Samedi matin"></td><td style="text-align:center;border:1px solid #E7E0D3;"><input type="checkbox" name="horaires" value="Samedi midi"></td><td style="text-align:center;border:1px solid #E7E0D3;"><input type="checkbox" name="horaires" value="Samedi après-midi"></td><td style="text-align:center;border:1px solid #E7E0D3;"><input type="checkbox" name="horaires" value="Samedi fin journée"></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <script>
+        function toggleDispoTable(cb){
+          document.getElementById('dispo-table').style.opacity = cb.checked ? '0.4' : '1';
+          document.getElementById('dispo-table').style.pointerEvents = cb.checked ? 'none' : 'auto';
+          if(cb.checked) document.querySelectorAll('[name="horaires"]').forEach(function(c){c.checked=false;});
+        }
+        </script>
+      </div>
+      <div class="field"><label>Informations complémentaires</label><textarea id="infos_supp" placeholder="Contraintes particulières, informations utiles à me communiquer…" style="min-height:60px;"></textarea></div>
+
+      <div class="rgpd">
+        <label>
+          <input type="checkbox" id="rgpd_consent" required>
+          <span>J'accepte que mes données personnelles soient collectées et traitées par le cabinet d'orthophonie de Noëlie Lainé dans le cadre de ma demande de prise en soins. Ces données sont confidentielles et ne seront pas transmises à des tiers. Conformément au RGPD, vous disposez d'un droit d'accès, de rectification et de suppression de vos données.</span>
+        </label>
+      </div>
+
+      <div id="error-global" style="display:none;color:#C17B5A;font-size:13px;margin-top:10px;text-align:center;"></div>
+      <button class="btn-submit" id="btn-submit" onclick="submitForm()">Envoyer ma demande →</button>
+    </div>
+  </div>
+
+  <div class="success" id="success-screen">
+    <div class="icon">✅</div>
+    <h2>Demande envoyée !</h2>
+    <p id="success-message">Merci, votre demande a bien été reçue.<br><br>Je vous contacterai dès qu'un créneau de rendez-vous sera disponible.<br><br><span style="color:#6F8C6A;font-weight:600;">Vous recevrez une confirmation par email.</span></p>
+  </div>
+</div>
+
+<script>
+function ouvrirRecapPDF(){
+  // Build a clean recap in a new window using a data URI to avoid quote issues
+  var nom=document.getElementById('nom').value.trim()||'—';
+  var prenom=document.getElementById('prenom').value.trim()||'—';
+  var ddn=document.getElementById('ddn').value||'';
+  var ddnStr=ddn?(function(d){var p=d.split('-');return p[2]+'/'+p[1]+'/'+p[0];})(ddn):'—';
+  var sexeMap={F:'Féminin',M:'Masculin',autre:'Autre'}; var sexe=sexeMap[document.getElementById('sexe').value]||'—';
+  var adresse=document.getElementById('adresse').value.trim()||'—';
+  var email=document.getElementById('email').value.trim()||'—';
+  var tel=document.getElementById('telephone').value.trim()||'—';
+  var demandeurVal=document.getElementById('demandeur').value;
+  var demandeurMap={patient:'Le patient lui-même',parent:'Parent / tuteur légal',autre:'Autre (aidant, proche…)'};
+  var demandeurStr=demandeurMap[demandeurVal]||'—';
+  var nomContact='', profPere='', profMere='', lienAutre='';
+  if(demandeurVal==='parent'){
+    var pc=document.getElementById('prenom_contact'); var nc=document.getElementById('nom_contact');
+    nomContact=((pc?pc.value.trim():'')+' '+(nc?nc.value.trim():'')).trim();
+    var pp=document.getElementById('profession_pere'); var pm=document.getElementById('profession_mere');
+    profPere=pp?pp.value.trim():''; profMere=pm?pm.value.trim():'';
+  } else if(demandeurVal==='autre'){
+    var pca=document.getElementById('prenom_contact_autre'); var nca=document.getElementById('nom_contact_autre');
+    nomContact=((pca?pca.value.trim():'')+' '+(nca?nca.value.trim():'')).trim();
+    var la=document.getElementById('lien_contact_autre'); lienAutre=la?la.value.trim():'';
+  }
+  var parcours=getChecked('parcours').join(', ')||'—';
+  var motif=document.getElementById('motif').value.trim()||'—';
+  var ordMap={oui:'Oui',non:'Non',en_cours:'En cours d\'obtention'};
+  var ordonnance=ordMap[getRadio('ordonnance')]||'—';
+  var dateOrdoRaw=document.getElementById('date_ordonnance').value||'';
+  var dateOrdoStr=dateOrdoRaw?(function(d){var p=d.split('-');return p[2]+'/'+p[1]+'/'+p[0];})(dateOrdoRaw):'';
+  var medecin=getRadio('ordonnance')==='oui'?document.getElementById('medecin').value.trim():'';
+  var intituleOrdo=getRadio('ordonnance')==='oui'?document.getElementById('intitule_ordonnance').value.trim():'';
+  var classe=document.getElementById('classe').value||'—';
+  var psMap={oui:'Oui — premier suivi',non:'Non — suivi antérieur'};
+  var premierSuivi=psMap[getRadio('premier_suivi')]||'—';
+  var orthoPrec=getRadio('premier_suivi')==='non'&&document.getElementById('ortho_prec')?document.getElementById('ortho_prec').value.trim():'';
+  var dureeSuivi=getRadio('premier_suivi')==='non'&&document.getElementById('duree_suivi')?document.getElementById('duree_suivi').value.trim():'';
+  var structures=getChecked('structures').join(', ')||'Aucune';
+  var profs=getChecked('professionnels').join(', ')||'Aucun';
+  var domMap={oui:'À domicile',non:'Au cabinet'};
+  var domicile=domMap[getRadio('domicile')]||'—';
+  var jours=getChecked('jours').join(', ')||'—';
+  var horaires=getChecked('horaires').join(', ')||'—';
+  var infosSupp=document.getElementById('infos_supp').value.trim();
+  var today=new Date().toLocaleDateString('fr-FR',{day:'2-digit',month:'long',year:'numeric'});
+
+  function esc(s){return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+  function lignes(rows){return rows.filter(function(r){return r[1]&&r[1]!=='—'&&r[1]!=='';}).map(function(r){
+    return '<tr><td style="width:42%;color:#5F5E5A;font-weight:600;font-size:11px;padding:5px 8px;border-bottom:1px solid #F0EDE6;vertical-align:top;">'+esc(r[0])+'</td>'
+      +'<td style="padding:5px 8px;font-size:12px;border-bottom:1px solid #F0EDE6;vertical-align:top;">'+esc(r[1])+'</td></tr>';
+  }).join('');}
+  function section(titre,rows){var l=lignes(rows);if(!l)return '';
+    return '<div style="font-size:10px;font-weight:700;color:#6F8C6A;text-transform:uppercase;letter-spacing:.08em;margin:16px 0 5px;padding-bottom:4px;border-bottom:1.5px solid #B8D4B4;">'+esc(titre)+'</div>'
+      +'<table style="width:100%;border-collapse:collapse;">'+l+'</table>';}
+
+  var parts = [
+    section('👤 Patient',[['Nom',nom],['Prénom',prenom],['Date de naissance',ddnStr],['Sexe',sexe],['Adresse',adresse]]),
+    section('📞 Contact',[['Email',email],['Téléphone',tel],['Demandeur',demandeurStr],['Contact',nomContact],['Lien',lienAutre],['Profession du père',profPere],['Profession de la mère',profMere]]),
+    section('🎯 Motif',[['Parcours',parcours]]),
+    '<div style="background:#F8F9FA;border:1px solid #E7E0D3;border-radius:8px;padding:10px 12px;font-size:12px;line-height:1.7;white-space:pre-wrap;margin:4px 0 8px;">'+esc(motif)+'</div>',
+    section('📋 Ordonnance',[['Ordonnance',ordonnance],['Date',dateOrdoStr],['Intitulé',intituleOrdo],['Médecin',medecin]]),
+    section('🏫 Scolarité',[['Classe',classe]]),
+    section('🔄 Suivi antérieur',[['Premier suivi',premierSuivi],['Orthophoniste précédent',orthoPrec],['Durée',dureeSuivi]]),
+    section('🏥 Suivis en cours',[['Structures',structures],['Professionnels',profs]]),
+    section('🏠 Disponibilités',[['Lieu',domicile],['Jours',jours],['Horaires',horaires],['Infos complémentaires',infosSupp]])
+  ].join('');
+
+  var w=window.open('','_blank','width=760,height=900');
+  if(!w){alert("Veuillez autoriser les popups pour ce site.");return;}
+  w.document.open();
+  w.document.write('<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8"><title>Recapitulatif '+prenom+' '+nom+'</title>');
+   html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Liste d'attente — Cabinet d'orthophonie de Noëlie Lainé</title>
+<style>
+:root{
+  --sage:#6F8C6A;--sage-d:#56714F;--sage-l:#EFF3ED;--sage-xl:#F7FAF6;--sage-b:#C8DCC5;
+  --brique:#B87355;--brique-l:#FAF0EB;--brique-b:#E8C4B0;
+  --cream:#FDFCF9;--bg:#F5F2ED;--border:#E8E1D8;--border-soft:#F0EAE1;
+  --text:#3C3A33;--text-soft:#6E695C;--text-muted:#9E9990;
+  --warn:#8C6A3F;--warn-l:#FAF5EE;--warn-b:#E8D5B8;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg); min-height: 100vh; padding: 24px 16px 48px; color: var(--text); font-size: 14px; line-height: 1.5; }
+.card { background: var(--cream); border-radius: 20px; max-width: 620px; margin: 0 auto; box-shadow: 0 2px 20px rgba(60,55,45,.07); overflow: hidden; border: 1px solid var(--border); }
+
+/* Header : fond crème avec un subtil soulignement sauge */
+.header { background: linear-gradient(160deg, var(--sage-l) 0%, #E8F0E6 100%); border-bottom: 2px solid var(--sage-b); padding: 36px 32px 28px; text-align: center; position: relative; }
+.header::before { content:''; position:absolute; top:0; left:0; right:0; height:5px; background: linear-gradient(90deg, var(--brique-b), var(--brique), var(--sage), var(--sage-d)); }
+.header-logo { font-size:13px; font-weight:600; color:var(--sage); letter-spacing:.06em; text-transform:uppercase; margin-bottom:14px; }
+.header h1 { color: var(--sage-d); font-size: 23px; font-weight: 700; margin-bottom: 8px; letter-spacing:-.02em; }
+.header p { color: var(--text-soft); font-size: 14px; line-height:1.6; }
+.header button { display:inline-block; margin-top:14px; background:var(--sage-l); color:var(--sage-d); padding:7px 16px; border-radius:20px; font-size:12px; font-weight:600; border:1px solid var(--sage-b); cursor:pointer; transition:background .15s; }
+.header button:hover { background:var(--sage-b); }
+
+/* Intro */
+.intro { background: #F9FCF8; border-bottom:1px solid var(--sage-b); padding:20px 32px; }
+.intro p { font-size:13.5px; color:var(--sage-d); line-height:1.75; margin-bottom:8px; }
+.intro p:last-child { font-size:12px; color:var(--text-muted); font-style:italic; margin-bottom:0; }
+
+/* Corps du formulaire */
+.form-body { padding: 32px; }
+
+/* Titres de section : lisibles, doux, pas crieurs */
+.section-title { 
+  font-size:13px; font-weight:600; color:var(--sage-d); 
+  margin:28px 0 14px; padding:8px 12px;
+  display:flex; align-items:center; gap:8px;
+  background:var(--sage-l); border-radius:8px;
+  border-left:3px solid var(--sage);
+}
+.section-title::after { display:none; }
+.section-title:first-child { margin-top:0; }
+
+/* Champs */
+.field { margin-bottom: 16px; }
+.field label { 
+  display:block; font-size:13px; font-weight:500; 
+  color:var(--text-soft); margin-bottom:6px; 
+}
+.field label .req { color:var(--brique); margin-left:2px; }
+.field input, .field select, .field textarea { 
+  width:100%; padding:11px 13px; 
+  border:1.5px solid var(--border); border-radius:10px; 
+  font-size:14px; font-family:inherit; color:var(--text); 
+  background:white; transition:border-color .15s, box-shadow .15s; outline:none; 
+}
+.field input:focus, .field select:focus, .field textarea:focus { 
+  border-color:var(--sage); background:white; 
+  box-shadow: 0 0 0 3px rgba(111,140,106,.1);
+}
+.field textarea { resize:vertical; min-height:80px; }
+.field-row { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+
+/* Checkboxes et radios : épurés, chaleureux */
+.checkbox-group { display:flex; flex-direction:column; gap:7px; margin-top:4px; }
+.checkbox-item { 
+  display:flex; align-items:flex-start; gap:12px; 
+  padding:11px 14px; border:1.5px solid var(--border); border-radius:10px; 
+  cursor:pointer; transition:border-color .15s, background .15s; background:white; 
+}
+.checkbox-item:hover { border-color:var(--sage); background:var(--sage-l); }
+.checkbox-item input[type=checkbox] { width:16px; height:16px; accent-color:var(--sage); cursor:pointer; flex-shrink:0; margin-top:2px; }
+.checkbox-item span { font-size:13.5px; color:var(--text); }
+.checkbox-item strong { display:block; font-size:13.5px; color:var(--text); font-weight:500; }
+.checkbox-item small { font-size:11.5px; color:var(--text-muted); line-height:1.4; margin-top:2px; display:block; }
+.radio-group { display:flex; flex-direction:column; gap:7px; margin-top:4px; }
+.radio-item { 
+  display:flex; align-items:center; gap:12px; 
+  padding:11px 14px; border:1.5px solid var(--border); border-radius:10px; 
+  cursor:pointer; transition:border-color .15s, background .15s; background:white; 
+}
+.radio-item:hover { border-color:var(--sage); background:var(--sage-l); }
+.radio-item input[type=radio] { width:16px; height:16px; accent-color:var(--sage); cursor:pointer; flex-shrink:0; }
+.radio-item span { font-size:13.5px; color:var(--text); }
+
+/* Alerte ordonnance : brique très pâle, sans jaune */
+.alert-orange { 
+  display:none; margin-top:10px; 
+  background:var(--warn-l); border:1.5px solid var(--warn-b); 
+  border-radius:10px; padding:13px 15px; 
+}
+.alert-orange .title { font-size:13px; font-weight:600; color:var(--warn); margin-bottom:4px; }
+.alert-orange .body { font-size:12.5px; color:var(--text-soft); line-height:1.55; }
+
+/* Zone suivi précédent */
+.suivi-prec-zone { 
+  display:none; margin-top:8px; padding:16px; 
+  background:white; border-radius:10px; border:1.5px solid var(--border); 
+}
+.suivi-prec-zone .title { font-size:12px; font-weight:600; color:var(--text-soft); margin-bottom:10px; }
+
+/* RGPD */
+.rgpd { 
+  background: var(--sage-xl); border:1px solid var(--sage-b); 
+  border-radius:10px; padding:13px 15px; font-size:12.5px; 
+  color:var(--text-soft); line-height:1.6; margin-top:20px; 
+}
+.rgpd label { display:flex; gap:10px; align-items:flex-start; cursor:pointer; }
+.rgpd input { width:16px; height:16px; accent-color:var(--sage); flex-shrink:0; margin-top:1px; }
+
+/* Bouton submit */
+.btn-submit { 
+  width:100%; padding:15px; 
+  background:var(--sage); color:white; 
+  border:none; border-radius:12px; font-size:15px; font-weight:600; 
+  cursor:pointer; margin-top:22px; 
+  transition:background .15s, transform .1s; 
+  box-shadow:0 3px 12px rgba(86,113,79,.25); font-family:inherit; 
+}
+.btn-submit:hover { background:var(--sage-d); transform:translateY(-1px); }
+.btn-submit:disabled { opacity:.5; cursor:not-allowed; transform:none; }
+
+/* Succès */
+.success { display:none; text-align:center; padding:48px 28px; }
+.success .icon { font-size:56px; margin-bottom:16px; }
+.success h2 { font-size:20px; font-weight:700; color:var(--sage-d); margin-bottom:8px; }
+.success p { font-size:13.5px; color:var(--text-soft); line-height:1.65; }
+
+/* Erreur */
+.error-msg { color:var(--brique); font-size:12px; margin-top:5px; display:none; }
+
+/* Date row */
+.date-row { display:flex; gap:8px; }
+.date-row select { flex:1; padding:11px 8px; border:1.5px solid var(--border); border-radius:10px; font-size:14px; color:var(--text); background:white; font-family:inherit; }
+.date-row select:focus { border-color:var(--sage); outline:none; box-shadow:0 0 0 3px rgba(111,140,106,.1); }
+
+/* Zone parent */
+.parent-zone { 
+  display:none; margin-top:12px; padding:16px; 
+  background:white; border:1.5px solid var(--border); border-radius:10px; 
+}
+.parent-zone .zone-label { font-size:12px; font-weight:600; color:var(--text-soft); margin-bottom:10px; }
+
+/* Bouton PDF dans header */
+.btn-pdf { 
+  display:inline-flex; align-items:center; gap:6px; margin-top:10px; 
+  background:var(--sage-l); color:var(--sage-d); 
+  padding:7px 16px; border-radius:20px; font-size:12px; font-weight:600; 
+  border:1px solid var(--sage-b); cursor:pointer; transition:background .15s; 
+}
+.btn-pdf:hover { background:var(--sage-b); }
+
+@media print { body{background:white;padding:0;} .card{box-shadow:none;border-radius:0;} .header button,.btn-submit{display:none;} }
+@media (max-width:480px) { .field-row{grid-template-columns:1fr;} .form-body{padding:20px;} .header{padding:24px 20px 20px;} }
+
+/* Animation shake bouton erreur */
+@keyframes shake {
+  0%,100%{transform:translateX(0);}
+  15%{transform:translateX(-8px);}
+  30%{transform:translateX(8px);}
+  45%{transform:translateX(-6px);}
+  60%{transform:translateX(6px);}
+  75%{transform:translateX(-4px);}
+  90%{transform:translateX(4px);}
+}
+.shake { animation: shake .5s ease; }
+
+/* Bandeau erreur en haut */
+.error-banner {
+  display:none; position:sticky; top:0; z-index:50;
+  background:#FAF0EB; border-bottom:2px solid var(--brique);
+  padding:12px 20px; font-size:13px; color:var(--brique);
+  font-weight:600; line-height:1.5;
+}
+.error-banner ul { margin:6px 0 0 16px; font-weight:400; font-size:12.5px; }
 </style>
 </head>
 <body>
@@ -603,19 +1119,84 @@ async function submitForm(){
   var errGlobal=document.getElementById('error-global');
   errGlobal.style.display='none';
   var valid=true;
-  ['nom','prenom','email','telephone','motif'].forEach(function(id){
-    var el=document.getElementById(id);
-    if(!el.value.trim()){el.style.borderColor='#C17B5A';valid=false;}
-    else el.style.borderColor='';
+  var erreurs=[];
+  var premierChampErreur=null;
+
+  var champsReq=[
+    {id:'nom', label:'Nom'},
+    {id:'prenom', label:'Prénom'},
+    {id:'email', label:'Email'},
+    {id:'telephone', label:'Téléphone'},
+    {id:'motif', label:'Description des difficultés'}
+  ];
+  champsReq.forEach(function(c){
+    var el=document.getElementById(c.id);
+    if(!el.value.trim()){
+      el.style.borderColor='var(--brique)';
+      el.style.boxShadow='0 0 0 3px rgba(184,115,85,.15)';
+      if(!premierChampErreur) premierChampErreur=el;
+      erreurs.push(c.label);
+      valid=false;
+    } else {
+      el.style.borderColor='';
+      el.style.boxShadow='';
+    }
   });
+
   if(!document.getElementById('ddn').value){
-    errGlobal.textContent='Veuillez renseigner la date de naissance (jour, mois et année).';
-    errGlobal.style.display='block';valid=false;
+    var ddnEl=document.getElementById('ddn_jour');
+    if(ddnEl&&!premierChampErreur) premierChampErreur=ddnEl;
+    erreurs.push('Date de naissance');
+    valid=false;
   }
+
   var parcours=getChecked('parcours');
-  if(!parcours.length){errGlobal.textContent='Veuillez sélectionner au moins un motif de consultation.';errGlobal.style.display='block';valid=false;}
-  if(!document.getElementById('rgpd_consent').checked){errGlobal.textContent='Veuillez accepter les conditions de traitement des données.';errGlobal.style.display='block';valid=false;}
-  if(!valid)return;
+  if(!parcours.length){
+    var parcoursEl=document.querySelector('[name="parcours"]');
+    if(parcoursEl&&!premierChampErreur) premierChampErreur=parcoursEl;
+    erreurs.push('Motif de consultation');
+    valid=false;
+  }
+
+  if(!document.getElementById('rgpd_consent').checked){
+    var rgpdEl=document.getElementById('rgpd_consent');
+    if(!premierChampErreur) premierChampErreur=rgpdEl;
+    erreurs.push('Consentement RGPD');
+    valid=false;
+  }
+
+  if(!valid){
+    // Afficher le bandeau erreur en haut
+    var banner=document.getElementById('error-banner');
+    var bannerText=document.getElementById('error-banner-text');
+    var bannerList=document.getElementById('error-banner-list');
+    bannerText.textContent='⚠️ Certains champs obligatoires sont incomplets :';
+    bannerList.innerHTML=erreurs.map(function(e){return '<li>'+e+'</li>';}).join('');
+    banner.style.display='block';
+
+    // Message en bas aussi
+    errGlobal.textContent="Veuillez compléter les champs indiqués en rouge avant d'envoyer.";
+    errGlobal.style.display='block';
+
+    // Shake du bouton
+    var btn2=document.getElementById('btn-submit');
+    btn2.classList.remove('shake');
+    void btn2.offsetWidth;
+    btn2.classList.add('shake');
+    setTimeout(function(){ btn2.classList.remove('shake'); }, 600);
+
+    // Scroll vers le premier champ en erreur
+    if(premierChampErreur){
+      premierChampErreur.scrollIntoView({behavior:'smooth', block:'center'});
+      setTimeout(function(){ premierChampErreur.focus(); }, 400);
+    } else {
+      banner.scrollIntoView({behavior:'smooth'});
+    }
+    return;
+  }
+
+  // Cacher le bandeau si tout est ok
+  document.getElementById('error-banner').style.display='none';
   btn.disabled=true;btn.textContent='Envoi en cours…';
   var prenom=document.getElementById('prenom').value.trim();
   var now=new Date().toISOString();
