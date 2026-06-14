@@ -6,76 +6,160 @@
 <title>Liste d'attente — Cabinet d'orthophonie de Noëlie Lainé</title>
 <style>
 :root{
-  --sage:#6F8C6A;--sage-d:#56714F;--sage-l:#EFF3ED;--sage-xl:#F7FAF6;--sage-b:#B8D4B4;
-  --brique:#C17B5A;--brique-l:#F5EDE8;--brique-b:#E8C4B0;--brique-d:#A0603E;
-  --cream:#FAFAF7;--border:#E7E0D3;--border-soft:#F0EAE1;
+  --sage:#6F8C6A;--sage-d:#56714F;--sage-l:#EFF3ED;--sage-xl:#F7FAF6;--sage-b:#C8DCC5;
+  --brique:#B87355;--brique-l:#FAF0EB;--brique-b:#E8C4B0;
+  --cream:#FDFCF9;--bg:#F5F2ED;--border:#E8E1D8;--border-soft:#F0EAE1;
   --text:#3C3A33;--text-soft:#6E695C;--text-muted:#9E9990;
-  --amber:#C9890A;--amber-l:#FDF4E3;--amber-b:#F0D290;
-  --info:#4A7A9B;--info-l:#EBF4FA;--info-b:#BDD8EA;
+  --warn:#8C6A3F;--warn-l:#FAF5EE;--warn-b:#E8D5B8;
 }
 * { box-sizing: border-box; margin: 0; padding: 0; }
-body { font-family: -apple-system, BlinkMacSystemFont, 'DM Sans', sans-serif; background: var(--cream); min-height: 100vh; padding: 24px 16px 48px; color: var(--text); }
-.card { background: white; border-radius: 20px; max-width: 620px; margin: 0 auto; box-shadow: 0 2px 16px rgba(60,58,51,.08); overflow: hidden; border: 1px solid var(--border); }
-.header { background: linear-gradient(135deg, var(--sage), var(--sage-d)); padding: 28px 28px 24px; text-align: center; }
-.header h1 { color: white; font-size: 18px; font-weight: 700; margin-bottom: 4px; letter-spacing: -.01em; }
-.header p { color: rgba(255,255,255,.82); font-size: 13px; }
-.header button { display:inline-block;margin-top:10px;background:rgba(255,255,255,.2);color:white;padding:6px 14px;border-radius:20px;font-size:12px;font-weight:600;border:1px solid rgba(255,255,255,.35);cursor:pointer; }
-.intro { background: var(--sage-xl); border-bottom:1px solid var(--sage-b); padding:20px 28px; }
-.intro p { font-size:13px; color:var(--sage-d); line-height:1.7; margin-bottom:10px; }
-.intro p:last-child { font-size:12px; color:var(--text-soft); font-style:italic; margin-bottom:0; }
-.form-body { padding: 28px; }
-.section-title { font-size:11px; font-weight:700; color:var(--sage); text-transform:uppercase; letter-spacing:.08em; margin:20px 0 12px; padding-bottom:6px; border-bottom:1.5px solid var(--sage-l); }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg); min-height: 100vh; padding: 24px 16px 48px; color: var(--text); font-size: 14px; line-height: 1.5; }
+.card { background: var(--cream); border-radius: 20px; max-width: 620px; margin: 0 auto; box-shadow: 0 2px 20px rgba(60,55,45,.07); overflow: hidden; border: 1px solid var(--border); }
+
+/* Header : fond crème avec un subtil soulignement sauge */
+.header { background: var(--cream); border-bottom: 3px solid var(--sage-l); padding: 32px 32px 26px; text-align: center; position: relative; }
+.header::before { content:''; position:absolute; top:0; left:0; right:0; height:4px; background: linear-gradient(90deg, var(--sage-b), var(--sage), var(--sage-b)); }
+.header-logo { font-size:13px; font-weight:600; color:var(--text-muted); letter-spacing:.06em; text-transform:uppercase; margin-bottom:14px; }
+.header h1 { color: var(--sage-d); font-size: 22px; font-weight: 700; margin-bottom: 6px; letter-spacing:-.02em; }
+.header p { color: var(--text-soft); font-size: 14px; line-height:1.6; }
+.header button { display:inline-block; margin-top:14px; background:var(--sage-l); color:var(--sage-d); padding:7px 16px; border-radius:20px; font-size:12px; font-weight:600; border:1px solid var(--sage-b); cursor:pointer; transition:background .15s; }
+.header button:hover { background:var(--sage-b); }
+
+/* Intro */
+.intro { background: white; border-bottom:1px solid var(--border); padding:20px 32px; }
+.intro p { font-size:13.5px; color:var(--text-soft); line-height:1.75; margin-bottom:8px; }
+.intro p:last-child { font-size:12px; color:var(--text-muted); font-style:italic; margin-bottom:0; }
+
+/* Corps du formulaire */
+.form-body { padding: 32px; }
+
+/* Titres de section : lisibles, doux, pas crieurs */
+.section-title { 
+  font-size:13px; font-weight:600; color:var(--sage-d); 
+  margin:28px 0 14px; 
+  display:flex; align-items:center; gap:8px;
+}
+.section-title::after { content:''; flex:1; height:1px; background:var(--border); }
 .section-title:first-child { margin-top:0; }
-.field { margin-bottom: 14px; }
-.field label { display:block; font-size:12px; font-weight:600; color:var(--text-soft); margin-bottom:5px; text-transform:uppercase; letter-spacing:.04em; }
+
+/* Champs */
+.field { margin-bottom: 16px; }
+.field label { 
+  display:block; font-size:13px; font-weight:500; 
+  color:var(--text-soft); margin-bottom:6px; 
+}
 .field label .req { color:var(--brique); margin-left:2px; }
-.field input, .field select, .field textarea { width:100%; padding:10px 12px; border:1.5px solid var(--border); border-radius:10px; font-size:14px; font-family:inherit; color:var(--text); background:var(--cream); transition:border-color .15s; outline:none; }
-.field input:focus, .field select:focus, .field textarea:focus { border-color:var(--sage); background:white; }
+.field input, .field select, .field textarea { 
+  width:100%; padding:11px 13px; 
+  border:1.5px solid var(--border); border-radius:10px; 
+  font-size:14px; font-family:inherit; color:var(--text); 
+  background:white; transition:border-color .15s, box-shadow .15s; outline:none; 
+}
+.field input:focus, .field select:focus, .field textarea:focus { 
+  border-color:var(--sage); background:white; 
+  box-shadow: 0 0 0 3px rgba(111,140,106,.1);
+}
 .field textarea { resize:vertical; min-height:80px; }
 .field-row { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
-.checkbox-group { display:flex; flex-direction:column; gap:8px; margin-top:4px; }
-.checkbox-item { display:flex; align-items:flex-start; gap:14px; padding:10px 12px; border:1.5px solid var(--border); border-radius:10px; cursor:pointer; transition:border-color .15s, background .15s; background:var(--cream); }
+
+/* Checkboxes et radios : épurés, chaleureux */
+.checkbox-group { display:flex; flex-direction:column; gap:7px; margin-top:4px; }
+.checkbox-item { 
+  display:flex; align-items:flex-start; gap:12px; 
+  padding:11px 14px; border:1.5px solid var(--border); border-radius:10px; 
+  cursor:pointer; transition:border-color .15s, background .15s; background:white; 
+}
 .checkbox-item:hover { border-color:var(--sage); background:var(--sage-xl); }
-.checkbox-item input[type=checkbox] { width:16px; height:16px; accent-color:var(--sage); cursor:pointer; flex-shrink:0; margin-top:2px; margin-right:2px; }
-.checkbox-item span { font-size:13px; color:var(--text); }
-.checkbox-item strong { display:block; font-size:13px; color:var(--text); }
-.checkbox-item small { font-size:11px; color:var(--text-soft); line-height:1.4; margin-top:2px; display:block; }
-.radio-group { display:flex; flex-direction:column; gap:8px; margin-top:4px; }
-.radio-item { display:flex; align-items:center; gap:14px; padding:10px 12px; border:1.5px solid var(--border); border-radius:10px; cursor:pointer; transition:border-color .15s, background .15s; background:var(--cream); }
+.checkbox-item input[type=checkbox] { width:16px; height:16px; accent-color:var(--sage); cursor:pointer; flex-shrink:0; margin-top:2px; }
+.checkbox-item span { font-size:13.5px; color:var(--text); }
+.checkbox-item strong { display:block; font-size:13.5px; color:var(--text); font-weight:500; }
+.checkbox-item small { font-size:11.5px; color:var(--text-muted); line-height:1.4; margin-top:2px; display:block; }
+.radio-group { display:flex; flex-direction:column; gap:7px; margin-top:4px; }
+.radio-item { 
+  display:flex; align-items:center; gap:12px; 
+  padding:11px 14px; border:1.5px solid var(--border); border-radius:10px; 
+  cursor:pointer; transition:border-color .15s, background .15s; background:white; 
+}
 .radio-item:hover { border-color:var(--sage); background:var(--sage-xl); }
-.radio-item input[type=radio] { width:16px; height:16px; accent-color:var(--sage); cursor:pointer; flex-shrink:0; margin-right:2px; }
-.radio-item span { font-size:13px; color:var(--text); }
-.alert-orange { display:none; margin-top:10px; background:var(--amber-l); border:1.5px solid var(--amber-b); border-radius:10px; padding:12px 14px; }
-.alert-orange .title { font-size:13px; font-weight:600; color:var(--amber); margin-bottom:4px; }
-.alert-orange .body { font-size:12px; color:var(--text-soft); line-height:1.5; }
-.suivi-prec-zone { display:none; margin-top:8px; padding:14px; background:var(--cream); border-radius:10px; border:1.5px solid var(--border); }
-.suivi-prec-zone .title { font-size:11px; font-weight:700; color:var(--text-soft); text-transform:uppercase; letter-spacing:.06em; margin-bottom:10px; }
-.rgpd { background:var(--info-l); border:1px solid var(--info-b); border-radius:10px; padding:12px 14px; font-size:11px; color:var(--info); line-height:1.5; margin-top:20px; }
+.radio-item input[type=radio] { width:16px; height:16px; accent-color:var(--sage); cursor:pointer; flex-shrink:0; }
+.radio-item span { font-size:13.5px; color:var(--text); }
+
+/* Alerte ordonnance : brique très pâle, sans jaune */
+.alert-orange { 
+  display:none; margin-top:10px; 
+  background:var(--warn-l); border:1.5px solid var(--warn-b); 
+  border-radius:10px; padding:13px 15px; 
+}
+.alert-orange .title { font-size:13px; font-weight:600; color:var(--warn); margin-bottom:4px; }
+.alert-orange .body { font-size:12.5px; color:var(--text-soft); line-height:1.55; }
+
+/* Zone suivi précédent */
+.suivi-prec-zone { 
+  display:none; margin-top:8px; padding:16px; 
+  background:white; border-radius:10px; border:1.5px solid var(--border); 
+}
+.suivi-prec-zone .title { font-size:12px; font-weight:600; color:var(--text-soft); margin-bottom:10px; }
+
+/* RGPD */
+.rgpd { 
+  background: var(--sage-xl); border:1px solid var(--sage-b); 
+  border-radius:10px; padding:13px 15px; font-size:12.5px; 
+  color:var(--text-soft); line-height:1.6; margin-top:20px; 
+}
 .rgpd label { display:flex; gap:10px; align-items:flex-start; cursor:pointer; }
-.rgpd input { width:16px; height:16px; accent-color:var(--info); flex-shrink:0; margin-top:1px; }
-.btn-submit { width:100%; padding:14px; background:linear-gradient(135deg, var(--sage), var(--sage-d)); color:white; border:none; border-radius:12px; font-size:15px; font-weight:700; cursor:pointer; margin-top:20px; transition:opacity .15s, transform .1s; box-shadow:0 4px 14px rgba(111,140,106,.30); font-family:inherit; }
-.btn-submit:hover { opacity:.92; transform:translateY(-1px); }
+.rgpd input { width:16px; height:16px; accent-color:var(--sage); flex-shrink:0; margin-top:1px; }
+
+/* Bouton submit */
+.btn-submit { 
+  width:100%; padding:15px; 
+  background:var(--sage); color:white; 
+  border:none; border-radius:12px; font-size:15px; font-weight:600; 
+  cursor:pointer; margin-top:22px; 
+  transition:background .15s, transform .1s; 
+  box-shadow:0 3px 12px rgba(86,113,79,.25); font-family:inherit; 
+}
+.btn-submit:hover { background:var(--sage-d); transform:translateY(-1px); }
 .btn-submit:disabled { opacity:.5; cursor:not-allowed; transform:none; }
-.success { display:none; text-align:center; padding:40px 28px; }
+
+/* Succès */
+.success { display:none; text-align:center; padding:48px 28px; }
 .success .icon { font-size:56px; margin-bottom:16px; }
 .success h2 { font-size:20px; font-weight:700; color:var(--sage-d); margin-bottom:8px; }
-.success p { font-size:13px; color:var(--text-soft); line-height:1.6; }
-.error-msg { color:var(--brique); font-size:11px; margin-top:4px; display:none; }
+.success p { font-size:13.5px; color:var(--text-soft); line-height:1.65; }
+
+/* Erreur */
+.error-msg { color:var(--brique); font-size:12px; margin-top:5px; display:none; }
+
+/* Date row */
 .date-row { display:flex; gap:8px; }
-.date-row select { flex:1; padding:10px 8px; border:1.5px solid var(--border); border-radius:10px; font-size:14px; color:var(--text); background:var(--cream); font-family:inherit; }
-.date-row select:focus { border-color:var(--sage); outline:none; }
+.date-row select { flex:1; padding:11px 8px; border:1.5px solid var(--border); border-radius:10px; font-size:14px; color:var(--text); background:white; font-family:inherit; }
+.date-row select:focus { border-color:var(--sage); outline:none; box-shadow:0 0 0 3px rgba(111,140,106,.1); }
+
+/* Zone parent */
+.parent-zone { 
+  display:none; margin-top:12px; padding:16px; 
+  background:white; border:1.5px solid var(--border); border-radius:10px; 
+}
+.parent-zone .zone-label { font-size:12px; font-weight:600; color:var(--text-soft); margin-bottom:10px; }
+
+/* Bouton PDF dans header */
+.btn-pdf { 
+  display:inline-flex; align-items:center; gap:6px; margin-top:10px; 
+  background:var(--sage-l); color:var(--sage-d); 
+  padding:7px 16px; border-radius:20px; font-size:12px; font-weight:600; 
+  border:1px solid var(--sage-b); cursor:pointer; transition:background .15s; 
+}
+.btn-pdf:hover { background:var(--sage-b); }
+
 @media print { body{background:white;padding:0;} .card{box-shadow:none;border-radius:0;} .header button,.btn-submit{display:none;} }
-.parent-zone { display:none; margin-top:12px; padding:14px; background:var(--info-l); border:1.5px solid var(--info-b); border-radius:10px; }
-.parent-zone .zone-label { font-size:11px; font-weight:700; color:var(--info); text-transform:uppercase; letter-spacing:.06em; margin-bottom:10px; }
-.btn-pdf { display:inline-flex; align-items:center; gap:6px; margin-top:10px; background:rgba(255,255,255,.25); color:white; padding:7px 16px; border-radius:20px; font-size:12px; font-weight:600; border:1.5px solid rgba(255,255,255,.4); cursor:pointer; transition:background .15s; }
-.btn-pdf:hover { background:rgba(255,255,255,.35); }
-@media (max-width:480px) { .field-row{grid-template-columns:1fr;} .form-body{padding:20px;} }
+@media (max-width:480px) { .field-row{grid-template-columns:1fr;} .form-body{padding:20px;} .header{padding:24px 20px 20px;} }
 </style>
 </head>
 <body>
 <div class="card">
   <div class="header">
-    <h1 id="form-cabinet-title">Cabinet d'orthophonie de Noëlie Lainé</h1>
+    <div class="header-logo">🌿 Orthophonie</div>
+    <h1 id="form-cabinet-title">Cabinet de Noëlie Lainé</h1>
     <p>Formulaire de demande de prise en soins</p>
     <button class="btn-pdf" onclick="ouvrirRecapPDF()">🖨️ Télécharger ma demande en PDF</button>
   </div>
@@ -143,7 +227,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'DM Sans', sans-serif; ba
           <label class="checkbox-item"><input type="checkbox" name="parcours" value="Langage écrit"><span><strong>Langage écrit</strong><small>TSLE (ex-dyslexie-dysorthographie), retard d'acquisition de la lecture ou de l'écriture, difficultés de compréhension écrite</small></span></label>
           <label class="checkbox-item"><input type="checkbox" name="parcours" value="Difficultés de cognition mathématique"><span><strong>Difficultés de cognition mathématique</strong><small>Dyscalculie, retard des habiletés numériques, difficultés de raisonnement logique ou de résolution de problèmes</small></span></label>
           <label class="checkbox-item"><input type="checkbox" name="parcours" value="Neurologie"><span><strong>Pathologies neurologiques et troubles cognitifs</strong><small>AVC, traumatisme crânien, pathologies neuro-évolutives (Parkinson, SLA, SEP…), troubles cognitifs (mémoire, fonctions exécutives, attention), paralysie faciale</small></span></label>
-          <label class="checkbox-item"><input type="checkbox" name="parcours" value="Déglutition"><span><strong>Déglutition et alimentation</strong><small>Déglutition dysfonctionnelle, dysphagie (fausses-routes), rééducation vélo-tubo-tympanique</small></span></label>
+          <label class="checkbox-item"><input type="checkbox" name="parcours" value="Déglutition"><span><strong>Déglutition</strong><small>Déglutition dysfonctionnelle, dysphagie (fausses-routes), rééducation vélo-tubo-tympanique</small></span></label>
           <label class="checkbox-item"><input type="checkbox" name="parcours" value="Bégaiement"><span><strong>Bégaiement et troubles de la fluence</strong><small>Bégaiement, bredouillement, disfluences</small></span></label>
           <label class="checkbox-item"><input type="checkbox" name="parcours" value="Surdité"><span><strong>Surdité et troubles auditifs</strong><small>Rééducation auditive, réadaptation après appareillage ou implant cochléaire</small></span></label>
           <label class="checkbox-item"><input type="checkbox" name="parcours" value="TSA / Handicap"><span><strong>TSA / Handicap / TND</strong><small>Trouble du spectre autistique, troubles du neurodéveloppement, handicap sensoriel</small></span></label>
@@ -207,10 +291,10 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'DM Sans', sans-serif; ba
 
       <div class="section-title">🏥 Situation particulière</div>
       <div class="field">
-        <div style="background:#FFF8E1;border:1.5px solid #F6AD55;border-radius:10px;padding:12px 16px;">
+        <div style="background:#FAF5EE;border:1.5px solid #E8D5B8;border-radius:10px;padding:12px 16px;">
           <label class="checkbox-item">
             <input type="checkbox" id="sortie_hospit" name="sortie_hospit" value="oui">
-            <span style="font-weight:500;">Patient en sortie d'hospitalisation <span style="color:#C05621;font-size:12px;">(demande traitée en priorité)</span></span>
+            <span style="font-weight:500;">Patient en sortie d'hospitalisation <span style="color:#8C6A3F;font-size:12px;">(demande traitée en priorité)</span></span>
           </label>
         </div>
       </div>
@@ -257,7 +341,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'DM Sans', sans-serif; ba
       <div class="section-title">📅 Disponibilités</div>
       <div class="field">
         <label>Disponibilités préférées</label>
-        <p style="font-size:12px;color:#744210;background:#FEFCBF;border:1px solid #F6E05E;border-radius:8px;padding:8px 12px;margin-bottom:10px;">💡 Les créneaux du mercredi sont très demandés. Pour diminuer votre délai d'attente, n'hésitez pas à sélectionner d'autres plages horaires.</p>
+        <p style="font-size:12px;color:#56714F;background:#EFF3ED;border:1px solid #B8D4B4;border-radius:8px;padding:8px 12px;margin-bottom:10px;">💡 Les créneaux du mercredi sont très demandés. Pour diminuer votre délai d'attente, n'hésitez pas à sélectionner d'autres plages horaires.</p>
         <label class="checkbox-item" style="margin-bottom:10px;">
           <input type="checkbox" id="dispo_aucune" onchange="toggleDispoTable(this)">
           <span>Pas de préférence particulière</span>
@@ -404,10 +488,11 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'DM Sans', sans-serif; ba
 .intro p { font-size:13px; color:var(--sage-d); line-height:1.7; margin-bottom:10px; }
 .intro p:last-child { font-size:12px; color:var(--text-soft); font-style:italic; margin-bottom:0; }
 .form-body { padding: 28px; }
-.section-title { font-size:11px; font-weight:700; color:var(--sage); text-transform:uppercase; letter-spacing:.08em; margin:20px 0 12px; padding-bottom:6px; border-bottom:1.5px solid var(--sage-l); }
+.section-title { font-size:13px; font-weight:600; color:var(--sage-d); margin:28px 0 14px; display:flex; align-items:center; gap:8px; }
+.section-title::after { content:""; flex:1; height:1px; background:var(--border); }
 .section-title:first-child { margin-top:0; }
 .field { margin-bottom: 14px; }
-.field label { display:block; font-size:12px; font-weight:600; color:var(--text-soft); margin-bottom:5px; text-transform:uppercase; letter-spacing:.04em; }
+.field label { display:block; font-size:13px; font-weight:500; color:var(--text-soft); margin-bottom:6px; }
 .field label .req { color:var(--brique); margin-left:2px; }
 .field input, .field select, .field textarea { width:100%; padding:10px 12px; border:1.5px solid var(--border); border-radius:10px; font-size:14px; font-family:inherit; color:var(--text); background:var(--cream); transition:border-color .15s; outline:none; }
 .field input:focus, .field select:focus, .field textarea:focus { border-color:var(--sage); background:white; }
@@ -429,7 +514,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'DM Sans', sans-serif; ba
 .alert-orange .title { font-size:13px; font-weight:600; color:var(--amber); margin-bottom:4px; }
 .alert-orange .body { font-size:12px; color:var(--text-soft); line-height:1.5; }
 .suivi-prec-zone { display:none; margin-top:8px; padding:14px; background:var(--cream); border-radius:10px; border:1.5px solid var(--border); }
-.suivi-prec-zone .title { font-size:11px; font-weight:700; color:var(--text-soft); text-transform:uppercase; letter-spacing:.06em; margin-bottom:10px; }
+.suivi-prec-zone .title { font-size:12px; font-weight:600; color:var(--text-soft); margin-bottom:10px; }
 .rgpd { background:var(--info-l); border:1px solid var(--info-b); border-radius:10px; padding:12px 14px; font-size:11px; color:var(--info); line-height:1.5; margin-top:20px; }
 .rgpd label { display:flex; gap:10px; align-items:flex-start; cursor:pointer; }
 .rgpd input { width:16px; height:16px; accent-color:var(--info); flex-shrink:0; margin-top:1px; }
@@ -446,17 +531,17 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'DM Sans', sans-serif; ba
 .date-row select:focus { border-color:var(--sage); outline:none; }
 @media print { body{background:white;padding:0;} .card{box-shadow:none;border-radius:0;} .header button,.btn-submit{display:none;} }
 .parent-zone { display:none; margin-top:12px; padding:14px; background:var(--info-l); border:1.5px solid var(--info-b); border-radius:10px; }
-.parent-zone .zone-label { font-size:11px; font-weight:700; color:var(--info); text-transform:uppercase; letter-spacing:.06em; margin-bottom:10px; }
+.parent-zone .zone-label { font-size:12px; font-weight:600; color:var(--text-soft); margin-bottom:10px; }
 .btn-pdf { display:inline-flex; align-items:center; gap:6px; margin-top:10px; background:rgba(255,255,255,.25); color:white; padding:7px 16px; border-radius:20px; font-size:12px; font-weight:600; border:1.5px solid rgba(255,255,255,.4); cursor:pointer; transition:background .15s; }
 .btn-pdf:hover { background:rgba(255,255,255,.35); }
 @media (max-width:480px) { .field-row{grid-template-columns:1fr;} .form-body{padding:20px;} }
 </style></head><body>');
   w.document.write('<div class="page">');
   w.document.write('<div class="hdr"><div><div style="font-size:16px;font-weight:600;margin-bottom:3px;">Cabinet d\'orthophonie de No\u00eblie Lain\u00e9</div><div style="font-size:11px;opacity:.85;">285 rue de la Croix de Mission, 54200 Pagney-derri\u00e8re-Barine</div></div><div style="text-align:right;font-size:11px;opacity:.85;">Demande du<br><strong>'+today+'</strong></div></div>');
-  w.document.write('<div style="background:#EFF3ED;border-bottom:2px solid #A7F3D0;padding:12px 28px;font-size:15px;font-weight:600;color:#6F8C6A;">📋 '+esc(prenom)+' '+esc(nom)+'</div>');
+  w.document.write('<div style="background:#EFF3ED;border-bottom:2px solid #B8D4B4;padding:12px 28px;font-size:15px;font-weight:600;color:#6F8C6A;">📋 '+esc(prenom)+' '+esc(nom)+'</div>');
   w.document.write('<div class="toolbar" style="display:flex;gap:10px;padding:10px 28px;border-bottom:1px solid #E7E0D3;">');
-  w.document.write('<button onclick="window.print()" style="padding:7px 18px;border:none;border-radius:8px;cursor:pointer;font-size:13px;font-weight:700;background:#EA580C;color:white;">🖨️ Imprimer</button>');
-  w.document.write('<button onclick="_dlPdfRecap()" style="padding:7px 18px;border:none;border-radius:8px;cursor:pointer;font-size:13px;font-weight:700;background:#7C3AED;color:white;">📥 Télécharger PDF</button>');
+  w.document.write('<button onclick="window.print()" style="padding:7px 18px;border:none;border-radius:8px;cursor:pointer;font-size:13px;font-weight:700;background:#6F8C6A;color:white;">🖨️ Imprimer</button>');
+  w.document.write('<button onclick="_dlPdfRecap()" style="padding:7px 18px;border:none;border-radius:8px;cursor:pointer;font-size:13px;font-weight:700;background:#56714F;color:white;">📥 Télécharger PDF</button>');
   w.document.write('</div>');
   w.document.write('<script src=\"https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js\"><\/script>');
   w.document.write('<script>function _dlPdfRecap(){ var el=document.querySelector(\".page\"); html2pdf().set({margin:0,filename:\"demande-ortho.pdf\",image:{type:\"jpeg\",quality:0.98},html2canvas:{scale:2,useCORS:true},jsPDF:{unit:\"mm\",format:\"a4\",orientation:\"portrait\"}}).from(el).save(); }<\/script>');
@@ -528,9 +613,9 @@ function checkOrdonnanceDate(){
   var date=new Date(val), now=new Date();
   var diffMonths=(now.getFullYear()-date.getFullYear())*12+(now.getMonth()-date.getMonth());
   info.style.display='block';
-  if(diffMonths<0){info.style.background='#FFF8E1';info.style.color='#92400E';info.style.border='1px solid #F59E0B';info.textContent='⚠️ Cette date est dans le futur — merci de vérifier.';}
-  else if(diffMonths<12){info.style.background='#E6F4EA';info.style.color='#166534';info.style.border='1px solid #86EFAC';info.textContent='✅ Ordonnance valide ('+diffMonths+' mois).';}
-  else{info.style.background='#FEF2F2';info.style.color='#991B1B';info.style.border='1px solid #FCA5A5';info.textContent='❌ Ordonnance expirée ('+diffMonths+' mois). Une nouvelle ordonnance sera nécessaire.';}
+  if(diffMonths<0){info.style.background='#FAF5EE';info.style.color='#8C6A3F';info.style.border='1px solid #E8D5B8';info.textContent='⚠️ Cette date est dans le futur — merci de vérifier.';}
+  else if(diffMonths<12){info.style.background='#EFF3ED';info.style.color='#56714F';info.style.border='1px solid #B8D4B4';info.textContent='✅ Ordonnance valide ('+diffMonths+' mois).';}
+  else{info.style.background='#FAF0EB';info.style.color='#B87355';info.style.border='1px solid #E8C4B0';info.textContent='❌ Ordonnance expirée ('+diffMonths+' mois). Une nouvelle ordonnance sera nécessaire.';}
 }
 function toggleSuiviPrecedent(radio){ document.getElementById('zone-suivi-precedent').style.display=radio.value==='non'?'block':'none'; }
 function toggleAutreStructure(cb){ document.getElementById('structure_autre_detail').style.display=cb.checked?'block':'none'; }
