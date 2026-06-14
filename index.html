@@ -9569,6 +9569,7 @@ async function confirmerImportSelection(){
         professionMere: d.profession_mere||'',
         domicile: !!(d.domicile),
         domicileVille: '',
+        nir: d.nir||'',
         creneaux: creneaux,
         dateEntree: (row.created_at||new Date().toISOString()).slice(0,10),
         sourceDemande: 'Formulaire web',
