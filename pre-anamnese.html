@@ -71,7 +71,6 @@ const SECTIONS = {
   base_enfant: {
     label: "Informations générales (enfant)",
     questions: [
-      { id:"nir", label:"Numéro de sécurité sociale (ouvrant droit)", type:"text", hint:"15 chiffres — de l'assuré ouvrant droit (parent ou enfant selon la situation)" },
       { id:"lieu_vie", label:"Avec qui votre enfant vit-il/elle actuellement ?", type:"select", options:["Avec ses deux parents","En garde alternée","Chez son père","Chez sa mère","En famille d'accueil / foyer"] },
       { id:"fratrie", label:"Place de votre enfant dans la fratrie", type:"select", options:["Enfant unique","Aîné(e)","Cadet(te)","Benjamin/Benjamine"] },
       { id:"fratrie_detail", label:"Prénom(s) et âge(s) de la fratrie", type:"text" },
@@ -141,7 +140,6 @@ const SECTIONS = {
   base_adulte: {
     label: "Informations générales (adulte)",
     questions: [
-      { id:"nir", label:"Numéro de sécurité sociale", type:"text", hint:"15 chiffres" },
       { id:"demandeur_neuro", label:"Qui est à l'origine de cette demande de bilan ?", type:"select", options:["Le patient lui-même","L'entourage","Le médecin traitant","Un médecin spécialiste"] },
       { id:"plainte_actuelle_neuro", label:"Quelle est la difficulté actuelle ?", type:"textarea" },
       { id:"premiers_symptomes_neuro", label:"À quel âge ou quelle date les premiers symptômes sont-ils apparus ?", type:"text" },
