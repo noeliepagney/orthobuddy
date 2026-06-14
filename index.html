@@ -15177,7 +15177,7 @@ function renderAnamneseTab(pid){
   var hasAphasie = !!sec.aphasie;
   var hasBegaiement = !!sec.begaiement;
   var hasBpa = !!sec.bpa;
-  var hasCommPrecoce = !!sec.commprecoce;
+  var hasCommPrecoce = !!sec.communication_precoce || !!sec.commprecoce;
   var hasOmf = !!sec.omf;
   var hasDysarthrie = !!sec.dysarthrie;
   var hasDeglutition = !!sec.deglutition;
@@ -15185,7 +15185,13 @@ function renderAnamneseTab(pid){
   var hasDysphagie = !!sec.dysphagie;
   var hasVoixAdulte = !!sec.voix_adulte;
   var hasVoixEnfant = !!sec.voix_enfant;
-  var hasAny   = isEnfant||hasLO||hasLE||hasMath||hasOralite||hasAnos||hasNeuro;
+  var hasSep = !!sec.sep;
+  var hasSaos = !!sec.saos_adulte;
+  var hasSurdite = !!sec.surdite;
+  var hasAny = isEnfant||hasLO||hasLE||hasMath||hasOralite||hasAnos||hasNeuro||
+    hasAphasie||hasBegaiement||hasBpa||hasCommPrecoce||hasOmf||hasDysarthrie||
+    hasDeglutition||hasSla||hasDysphagie||hasVoixAdulte||hasVoixEnfant||
+    hasSep||hasSaos||hasSurdite;
   var hasEnfantSection = isEnfant;
 
   function esc(s){ return (s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;'); }
@@ -15742,6 +15748,57 @@ function renderAnamneseTab(pid){
     html+=sCard('Sp\u00e9cifique \u2014 Anosmie','ti-wind',sAnos);
   }
 
+
+  if(hasSep){
+    var sSep='';
+    sSep+=inlineField('Date du diagnostic','date_diagnostic_sep','text',null,{width:'150px'});
+    sSep+=inlineField('Forme de SEP','forme_sep','select1',['Rémittente (poussées + rémissions)','Secondairement progressive','Progressive d\'emblée','Syndrome cliniquement isolé']);
+    sSep+=textArea('Premiers signes / symptômes inauguraux','premiers_signes_sep');
+    sSep+=textArea('Évolution et poussées récentes','evolution_sep');
+    sSep+=multiSelect('Symptômes visuels','symptomes_visuels_sep',['Névrite optique rétrobulbaire','Diplopie','Nystagmus']);
+    sSep+=multiSelect('Symptômes sensitifs','symptomes_sensitifs_sep',['Paresthésies','Signe de Lhermitte','Douleurs neuropathiques','Troubles sensibilité tactile/positionnelle']);
+    sSep+=inlineField('Fatigabilité','fatigue_sep','select1',['Absente ou légère','Modérée','Sévère']);
+    sSep+=multiSelect('Humeur / psychiatrie','humeur_sep',['Dépression','Anxiété','Labilité émotionnelle']);
+    html+=sCard('Spécifique — SEP','ti-activity',sSep);
+  }
+
+  if(hasSaos){
+    var sSaos='';
+    sSaos+=multiSelect('Adressé par','adresse_par_saos',['ORL','Pneumologue / médecin du sommeil','Médecin traitant','Dentiste / orthodontiste','Cardiologue','Neurologue']);
+    sSaos+=textArea('Plainte principale','plainte_principale_saos');
+    sSaos+=textArea('Diagnostic posé','diagnostic_saos');
+    sSaos+=multiSelect('Traitement en cours','traitement_saos',['PPC / CPAP','Orthèse d\'avancée mandibulaire','Chirurgie ORL','Prise en charge diététique','Rééducation (kiné)','Aucun traitement']);
+    sSaos+=inlineField('Tolérance PPC','tolerance_ppc_saos','select1',['Non portée','Portée mal tolérée','Portée correctement','Portée parfaitement']);
+    sSaos+=multiSelect('Contexte médical associé','contexte_med_saos',['Hypertension artérielle','Maladie cardiaque','Diabète','Surpoids / obésité','TDAH','Maladie neurologique','COVID long / fatigue chronique']);
+    sSaos+=multiSelect('Symptômes nocturnes','sympt_nocturnes_saos',['Ronflements','Bavage nocturne','Pauses respiratoires','Sensation d\'étouffement','Sommeil agité','Nycturie','Transpiration excessive','Réveils avec maux de tête','Respiration buccale nocturne','Bruxisme nocturne']);
+    sSaos+=multiSelect('Symptômes diurnes','sympt_diurnes_saos',['Somnolence excessive','Fatigue dès le réveil','Difficultés à se réveiller','Maux de tête au réveil','Troubles de la mémoire','Troubles de la concentration','Troubles de l\'humeur','Baisse de la libido','Performances altérées']);
+    sSaos+=textArea('Qualité du sommeil','qualite_sommeil_saos');
+    html+=sCard('Spécifique — SAOS / Apnées du sommeil','ti-zzz',sSaos);
+  }
+
+  if(hasSurdite){
+    var sSurd='';
+    sSurd+=multiSelect('Origine de la demande','origine_demande_surd',['ORL','Pédiatre','Médecin traitant','Audioprothésiste','CAMSP / SESSAD','Établissement scolaire','La famille elle-même']);
+    sSurd+=textArea('Plainte / alertes famille','plainte_famille_surd');
+    sSurd+=textArea('Attentes famille','attentes_famille_surd');
+    sSurd+=inlineField('Type de surdité','type_surdite_surd','select1',['Transmission','Perception (neurosensorielle)','Mixte']);
+    sSurd+=textArea('Étiologie','etiologie_surd');
+    sSurd+=textArea('Syndromes / troubles associés','syndromes_surd');
+    sSurd+=textArea('Résultats audiologiques (PEA, OEA, audiogramme)','audiogramme_resultats_surd');
+    sSurd+=inlineField('Acouphènes','acouphenes_surd','radio',['Oui','Non','Parfois']);
+    sSurd+=inlineField('Hyperacousie','hyperacousie_surd','radio',['Oui','Non','Parfois']);
+    sSurd+=multiSelect('Appareillage / implant','appareillage_surd',['Prothèse auditive droite','Prothèse auditive gauche','Implant cochléaire droit','Implant cochléaire gauche','BAA (Baha)','Pas d\'appareillage']);
+    sSurd+=inlineField('Appareillage depuis','appareillage_depuis_surd','text',null,{width:'150px'});
+    sSurd+=inlineField('Port de l\'appareillage','port_appareillage_surd','select1',['Port permanent','Port régulier','Port irrégulier','Refusé','Non applicable']);
+    sSurd+=inlineField('Date activation IC','ic_date_surd','text',null,{width:'150px'});
+    sSurd+=inlineField('Statut auditif des parents','statut_auditif_parents_surd','select1',['Entendants (les deux)','Un sourd / un entendant','Sourds (les deux)']);
+    sSurd+=inlineField('Langue(s) au domicile','langue_domicile_surd','text',null,{width:'200px'});
+    sSurd+=inlineField('Projet éducatif','projet_educ_surd','select1',['Oralisme pur','Approche bimodale (oral + LSF)','LSF / Langue des Signes','Bilingue (LSF + français écrit)','En cours de réflexion']);
+    sSurd+=inlineField('Contacts associations / sourds','contacts_assos_surd','radio',['Oui','Non','En cours']);
+    sSurd+=multiSelect('Répercussions quotidiennes','repercussions_surd',['Difficultés en réunion / groupe','Difficultés au téléphone','Difficultés en milieu bruyant','Fatigue d\'écoute','Isolement social','Retentissement professionnel','Retentissement familial','Anxiété / stress']);
+    sSurd+=inlineField('Âge de survenue','age_survenue_surd','select1',['Prélingual (avant 2 ans)','Périlingual (2-5 ans)','Postlingual (après 5 ans)','Congénital']);
+    html+=sCard('Spécifique — Surdité','ti-ear',sSurd);
+  }
 
   if(QUESTIONNAIRES_RECUS[pid] && QUESTIONNAIRES_RECUS[pid].length){
     html+='<div style="margin-bottom:10px;background:#FFF1EE;border:1px solid #E07856;border-radius:var(--radius-sm);padding:10px 14px;display:flex;align-items:center;gap:10px;justify-content:space-between;">';
