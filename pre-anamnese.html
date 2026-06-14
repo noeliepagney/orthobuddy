@@ -419,6 +419,41 @@ const SECTIONS = {
       { id:"commentaires_oralite", label:"Commentaires", type:"textarea" },
     ]
   },
+  surdite: {
+    label: "Surdité",
+    questions: [
+      // ── Motif et contexte ──
+      { id:"origine_demande_surd", label:"Qui est à l'origine de cette demande de bilan ?", type:"checkboxes", options:["ORL","Pédiatre","Médecin traitant","Audioprothésiste","CAMSP / SESSAD","Établissement scolaire","La famille elle-même","Autre"] },
+      { id:"plainte_famille_surd", label:"Quelles sont vos inquiétudes ou alertes concernant l'audition ?", type:"textarea" },
+      { id:"attentes_famille_surd", label:"Quelles sont vos attentes pour ce bilan ?", type:"textarea" },
+
+      // ── Données audiologiques connues ──
+      { id:"type_surdite_surd", label:"Un type de surdité a-t-il été précisé par le médecin ?", type:"select", options:["Surdité de transmission","Surdité de perception (neurosensorielle)","Surdité mixte","Je ne sais pas","Aucun diagnostic posé"] },
+      { id:"etiologie_surd", label:"La cause de la surdité est-elle connue ?", type:"textarea" },
+      { id:"syndromes_surd", label:"Y a-t-il des syndromes ou troubles associés ?", type:"textarea" },
+      { id:"audiogramme_resultats_surd", label:"Des bilans audiologiques ont-ils déjà été réalisés (PEA, OEA, audiogramme) ? Si oui, quels sont les résultats connus ?", type:"textarea" },
+      { id:"acouphenes_surd", label:"Y a-t-il des acouphènes (bruits dans les oreilles) ?", type:"select", options:["Oui","Non","Parfois"] },
+      { id:"hyperacousie_surd", label:"Y a-t-il une hyperacousie (sons trop forts, douloureux) ?", type:"select", options:["Oui","Non","Parfois"] },
+
+      // ── Appareillage ──
+      { id:"appareillage_surd", label:"Le patient est-il appareillé ou implanté ?", type:"checkboxes", options:["Prothèse auditive droite","Prothèse auditive gauche","Implant cochléaire droit","Implant cochléaire gauche","BAA (Baha / ancrage osseux)","Pas d'appareillage"] },
+      { id:"appareillage_depuis_surd", label:"Si appareillé(e), depuis quand ?", type:"text" },
+      { id:"port_appareillage_surd", label:"Comment se passe le port de l'appareillage ?", type:"select", options:["Porté en permanence","Porté régulièrement","Porté rarement","Refusé","Non applicable"] },
+      { id:"ic_date_surd", label:"Si implant cochléaire, date d'activation", type:"text" },
+
+      // ── Contexte familial (enfant) ──
+      { id:"statut_auditif_parents_surd", label:"Statut auditif des parents (si enfant)", type:"select", options:["Les deux parents entendants","Un parent sourd, un entendant","Les deux parents sourds","Non concerné / adulte"] },
+      { id:"langue_domicile_surd", label:"Quelle(s) langue(s) est/sont utilisée(s) au domicile ?", type:"text" },
+      { id:"projet_educ_surd", label:"Quel est le projet éducatif (si enfant) ?", type:"select", options:["Oral seul","Oral + LSF","LSF seul","Bilingue (LSF + français écrit)","En cours de réflexion","Non concerné / adulte"] },
+      { id:"contacts_assos_surd", label:"Avez-vous des contacts avec des associations ou des personnes sourdes ?", type:"select", options:["Oui","Non","En cours"] },
+
+      // ── Répercussions (adulte) ──
+      { id:"repercussions_surd", label:"Quelles sont les répercussions de la surdité dans votre quotidien ?", type:"checkboxes", options:["Difficultés en réunion / groupe","Difficultés au téléphone","Difficultés en environnement bruyant","Difficultés avec certaines voix","Fatigue liée à l'écoute","Isolement social","Retentissement professionnel","Retentissement familial","Anxiété / stress","Aucune répercussion notable"] },
+
+      // ── Développement (enfant) ──
+      { id:"age_survenue_surd", label:"Âge de survenue (si connu)", type:"select", options:["Prélingual (avant 2 ans)","Périlingual (2-5 ans)","Postlingual (après 5 ans)","Congénital","Je ne sais pas"] },
+    ]
+  },
   saos_adulte: {
     label: "SAOS / Apnées du sommeil",
     questions: [

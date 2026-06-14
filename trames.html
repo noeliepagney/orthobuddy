@@ -9306,10 +9306,58 @@ function prefillFromPatient(p){
     if(p.classe) map[trameId+".administratif.classe"]=p.classe;
 
     // ── Anamnèse ──
-    if(a.adresse_par_omf && a.adresse_par_omf.length) map[trameId+".anamnese.origine_demande"]=a.adresse_par_omf.slice();
-    if(a.plainte_lo) map[trameId+".anamnese.plainte_famille"]=a.plainte_lo;
-    if(a.audiogramme_resultats) map[trameId+".anamnese.audiogramme_resultats"]=a.audiogramme_resultats;
+    if(a.origine_demande_surd && a.origine_demande_surd.length) map[trameId+".anamnese.origine_demande"]=a.origine_demande_surd.slice();
+    else if(a.adresse_par_omf && a.adresse_par_omf.length) map[trameId+".anamnese.origine_demande"]=a.adresse_par_omf.slice();
 
+    if(a.plainte_famille_surd) map[trameId+".anamnese.plainte_famille"]=a.plainte_famille_surd;
+    else if(a.plainte_lo) map[trameId+".anamnese.plainte_famille"]=a.plainte_lo;
+
+    if(a.attentes_famille_surd) map[trameId+".anamnese.attentes_famille"]=a.attentes_famille_surd;
+    else if(a.attentes_lo) map[trameId+".anamnese.attentes_famille"]=a.attentes_lo;
+
+    // Données audiologiques
+    if(a.audiogramme_resultats_surd) map[trameId+".anamnese.audiogramme_resultats"]=a.audiogramme_resultats_surd;
+    else if(a.audiogramme_resultats) map[trameId+".anamnese.audiogramme_resultats"]=a.audiogramme_resultats;
+    if(a.etiologie_surd) map[trameId+".anamnese.etiologie"]=a.etiologie_surd;
+    if(a.syndromes_surd) map[trameId+".anamnese.syndromes_associes"]=a.syndromes_surd;
+    if(a.age_survenue_surd){
+      const ageSurvMap={
+        'Pr\u00e9lingual (avant 2 ans)':'Pr\u00e9lingual (avant 2 ans)',
+        'P\u00e9rilingual (2-5 ans)':'P\u00e9rilingual (2-5 ans)',
+        'Postlingual (apr\u00e8s 5 ans)':'Postlingual (apr\u00e8s 5 ans)',
+        'Cong\u00e9nital':'Pr\u00e9lingual (avant 2 ans)',
+        'Je ne sais pas':null
+      };
+      if(ageSurvMap[a.age_survenue_surd]) map[trameId+".anamnese.age_survenue"]=ageSurvMap[a.age_survenue_surd];
+    }
+
+    // Appareillage
+    if(a.appareillage_surd && a.appareillage_surd.length){
+      const appMap={
+        'Proth\u00e8se auditive droite':'Proth\u00e8se auditive droite',
+        'Proth\u00e8se auditive gauche':'Proth\u00e8se auditive gauche',
+        'Implant cochléaire droit':'Implant cochléaire droit',
+        'Implant cochléaire gauche':'Implant cochléaire gauche',
+        'BAA (Baha / ancrage osseux)':'BAA (Baha)',
+        'Pas d\'appareillage':'Aucun'
+      };
+      const mapped=a.appareillage_surd.map(v=>appMap[v]).filter(Boolean);
+      if(mapped.length) map[trameId+".anamnese.appareillage_type"]=mapped;
+    }
+    if(a.appareillage_depuis_surd) map[trameId+".anamnese.appareillage_depuis"]=a.appareillage_depuis_surd;
+    if(a.port_appareillage_surd){
+      const portMap={
+        'Port\u00e9 en permanence':'Port permanent',
+        'Port\u00e9 r\u00e9guli\u00e8rement':'Port r\u00e9gulier',
+        'Port\u00e9 rarement':'Port irr\u00e9gulier',
+        'Refus\u00e9':'Refus\u00e9',
+        'Non applicable':'Non applicable'
+      };
+      if(portMap[a.port_appareillage_surd]) map[trameId+".anamnese.port_appareillage"]=portMap[a.port_appareillage_surd];
+    }
+    if(a.ic_date_surd) map[trameId+".anamnese.ic_date"]=a.ic_date_surd;
+
+    // Grossesse / développement
     let grossesseSurdE=[];
     if(a.grossesse && a.grossesse.length) grossesseSurdE.push(fmtArr(a.grossesse));
     if(a.naissance_mode) grossesseSurdE.push("Mode d'accouchement : "+a.naissance_mode);
@@ -9330,8 +9378,28 @@ function prefillFromPatient(p){
     if(a.mode_garde && a.mode_garde.length) scolariteSurdE.push("Mode de garde : "+fmtArr(a.mode_garde));
     if(scolariteSurdE.length) map[trameId+".anamnese.scolarite"]=scolariteSurdE.join('\n');
 
-    if(a.langue_maison) map[trameId+".anamnese.langue_domicile"]=a.langue_maison;
-    if(a.attentes_lo) map[trameId+".anamnese.attentes_famille"]=a.attentes_lo;
+    // Contexte familial
+    if(a.statut_auditif_parents_surd){
+      const statMap={
+        'Les deux parents entendants':'Entendants (les deux)','Un parent sourd, un entendant':'Un sourd / un entendant',
+        'Les deux parents sourds':'Sourds (les deux)','Non concern\u00e9 / adulte':null
+      };
+      if(statMap[a.statut_auditif_parents_surd]) map[trameId+".anamnese.statut_auditif_parents"]=statMap[a.statut_auditif_parents_surd];
+    }
+    if(a.langue_domicile_surd) map[trameId+".anamnese.langue_domicile"]=a.langue_domicile_surd;
+    else if(a.langue_maison) map[trameId+".anamnese.langue_domicile"]=a.langue_maison;
+    if(a.projet_educ_surd){
+      const projMap={
+        'Oral seul':'Oralisme pur','Oral + LSF':'Approche bimodale (oral + LSF)',
+        'LSF seul':'LSF / Langue des Signes','Bilingue (LSF + fran\u00e7ais \u00e9crit)':'Bilingue (LSF + fran\u00e7ais \u00e9crit)',
+        'En cours de r\u00e9flexion':'En cours de r\u00e9flexion','Non concern\u00e9 / adulte':null
+      };
+      if(projMap[a.projet_educ_surd]) map[trameId+".anamnese.projet_educ"]=projMap[a.projet_educ_surd];
+    }
+    if(a.contacts_assos_surd){
+      const contMap={'Oui':'Oui','Non':'Non','En cours':'En cours (d\u00e9marches en cours)'};
+      if(contMap[a.contacts_assos_surd]) map[trameId+".anamnese.contacts_assos"]=contMap[a.contacts_assos_surd];
+    }
   }
 
   if(trameId==='huntington'){
@@ -9478,10 +9546,65 @@ function prefillFromPatient(p){
 
     // ── Anamnèse ──
     let motifSurdA=[];
-    if(a.demandeur_neuro) motifSurdA.push("Demandeur : "+a.demandeur_neuro);
-    if(a.plainte_actuelle_neuro) motifSurdA.push(a.plainte_actuelle_neuro);
+    if(a.plainte_famille_surd) motifSurdA.push(a.plainte_famille_surd);
+    else if(a.plainte_actuelle_neuro) motifSurdA.push(a.plainte_actuelle_neuro);
+    if(a.demandeur_neuro) motifSurdA.push("Adress\u00e9 par : "+a.demandeur_neuro);
     if(motifSurdA.length) map[trameId+".anamnese.motif_adulte"]=motifSurdA.join('\n');
-    if(a.audiogramme_resultats) map[trameId+".anamnese.audiogramme_tonal"]=a.audiogramme_resultats;
+
+    // Données audiologiques
+    if(a.audiogramme_resultats_surd) map[trameId+".anamnese.audiogramme_tonal"]=a.audiogramme_resultats_surd;
+    else if(a.audiogramme_resultats) map[trameId+".anamnese.audiogramme_tonal"]=a.audiogramme_resultats;
+    if(a.acouphenes_surd){
+      const acMap={'Oui':'Oui','Non':'Non','Parfois':'Intermittents'};
+      if(acMap[a.acouphenes_surd]) map[trameId+".anamnese.acouphenes"]=acMap[a.acouphenes_surd];
+    }
+    if(a.hyperacousie_surd){
+      const hyMap={'Oui':'Oui','Non':'Non','Parfois':'Intermittente'};
+      if(hyMap[a.hyperacousie_surd]) map[trameId+".anamnese.hyperacousie"]=hyMap[a.hyperacousie_surd];
+    }
+
+    // Appareillage
+    if(a.appareillage_surd && a.appareillage_surd.length){
+      const appMapA={
+        'Proth\u00e8se auditive droite':'Proth\u00e8se contour / intra droite',
+        'Proth\u00e8se auditive gauche':'Proth\u00e8se contour / intra gauche',
+        'Implant cochléaire droit':'Implant cochléaire droit',
+        'Implant cochléaire gauche':'Implant cochléaire gauche',
+        'BAA (Baha / ancrage osseux)':'BAA (Baha)',
+        'Pas d\'appareillage':'Aucun'
+      };
+      const mappedA=a.appareillage_surd.map(v=>appMapA[v]).filter(Boolean);
+      if(mappedA.length) map[trameId+".anamnese.appareillage_adulte"]=mappedA;
+    }
+    if(a.appareillage_depuis_surd) map[trameId+".anamnese.appareillage_depuis_adulte"]=a.appareillage_depuis_surd;
+    if(a.port_appareillage_surd){
+      const portMapA={
+        'Port\u00e9 en permanence':'Port\u00e9 en permanence (>8h/j)',
+        'Port\u00e9 r\u00e9guli\u00e8rement':'Port\u00e9 r\u00e9guli\u00e8rement (4-8h/j)',
+        'Port\u00e9 rarement':'Port\u00e9 rarement (<4h/j)',
+        'Refus\u00e9':'Refus\u00e9 ou tr\u00e8s mal tol\u00e9r\u00e9',
+        'Non applicable':'Non applicable'
+      };
+      if(portMapA[a.port_appareillage_surd]) map[trameId+".anamnese.appareillage_acceptation"]=portMapA[a.port_appareillage_surd];
+    }
+
+    // Répercussions
+    if(a.repercussions_surd && a.repercussions_surd.length){
+      const repMap={
+        'Difficult\u00e9s en r\u00e9union / groupe':'Difficult\u00e9s en r\u00e9union / groupe',
+        'Difficult\u00e9s au t\u00e9l\u00e9phone':'Difficult\u00e9s au t\u00e9l\u00e9phone',
+        'Difficult\u00e9s en environnement bruyant':'Difficult\u00e9s en milieu bruyant',
+        'Difficult\u00e9s avec certaines voix':'Difficult\u00e9s avec certaines voix (grave / aigu)',
+        'Fatigue li\u00e9e \u00e0 l\u2019\u00e9coute':'Fatigue d\u2019\u00e9coute',
+        'Isolement social':'Isolement social',
+        'Retentissement professionnel':'Retentissement professionnel',
+        'Retentissement familial':'Retentissement familial',
+        'Anxi\u00e9t\u00e9 / stress':'Anxi\u00e9t\u00e9 / stress',
+        'Aucune r\u00e9percussion notable':null
+      };
+      const repMapped=a.repercussions_surd.map(v=>repMap[v]).filter(Boolean);
+      if(repMapped.length) map[trameId+".anamnese.repercussions_items"]=repMapped;
+    }
   }
 
   if(trameId==='deglutition-dysfonctionnelle'){
