@@ -2271,7 +2271,7 @@ const SB_CONFIGS = {
 const _sbEnv = localStorage.getItem('sb_env') || 'prod';
 let SB_URL = SB_CONFIGS[_sbEnv].url;
 let SB_KEY = SB_CONFIGS[_sbEnv].key;
-const SB_USER = 'noelie'; // identifiant unique dans la table (legacy Tauri)
+const SB_USER = 'b443cde9-7186-4239-85ac-e48f1912e51a'; // identifiant unique dans la table
 function getSbUserId(){ return sessionStorage.getItem('sb_user_id')||localStorage.getItem('sb_user_id')|| SB_USER; }
 function getSbToken(){ return sessionStorage.getItem('sb_token') || localStorage.getItem('sb_token') || SB_KEY; }
 function isAdmin(){ return sessionStorage.getItem('sb_role') === 'admin'; }
