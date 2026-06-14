@@ -8527,7 +8527,22 @@ function prefillFromPatient(p){
 
     if(a.diagnostics) map[trameId+".anamnese.diagnostic"]=a.diagnostics;
     if(a.traitements) map[trameId+".anamnese.traitements"]=a.traitements;
-    if(a.suivis && a.suivis.length) map[trameId+".anamnese.autres_soins"]=fmtArr(a.suivis);
+    let autresSoinsOr=[];
+    if(a.suivis && a.suivis.length) autresSoinsOr.push(fmtArr(a.suivis));
+    if(a.antecedents_ortho) autresSoinsOr.push("Antécédents orthodontiques : "+a.antecedents_ortho);
+    if(autresSoinsOr.length) map[trameId+".anamnese.autres_soins"]=autresSoinsOr.join('\n');
+    // Antécédents alimentaires familiaux
+    let atcdAlimFam=[];
+    if(a.atcd_alim_mere) atcdAlimFam.push("Mère : "+a.atcd_alim_mere);
+    if(a.atcd_alim_pere) atcdAlimFam.push("Père : "+a.atcd_alim_pere);
+    if(a.atcd_alim_fratrie) atcdAlimFam.push("Fratrie : "+a.atcd_alim_fratrie);
+    if(atcdAlimFam.length) map[trameId+".anamnese.pathologies_autres"]=(map[trameId+".anamnese.pathologies_autres"]||'')+'\nAntécédents alimentaires familiaux :\n'+atcdAlimFam.join('\n');
+    // Respiration et exploration buccale
+    let oraliteItems=[];
+    if(a.porte_en_bouche) oraliteItems.push("Porte les objets en bouche : "+a.porte_en_bouche);
+    if(a.respiration_nuit) oraliteItems.push("Respiration nocturne : "+a.respiration_nuit);
+    if(oraliteItems.length) map[trameId+".anamnese_alimentaire.oralite_items"]=(map[trameId+".anamnese_alimentaire.oralite_items"]||'')+'\n'+oraliteItems.join('\n');
+    if(a.commentaires_oralite) map[trameId+".anamnese.pathologies_autres"]=(map[trameId+".anamnese.pathologies_autres"]||'')+'\n⚠️ Commentaires : '+a.commentaires_oralite;
   }
 
   if(trameId==='cognition-mathematique'){
@@ -8604,6 +8619,7 @@ function prefillFromPatient(p){
     if(a.plainte_le) map[trameId+".contexte.motif"]=a.plainte_le;
     if(a.plainte_le) map[trameId+".contexte.plainte_parents"]=a.plainte_le;
     if(a.difficultes_langagieres_lo && a.difficultes_langagieres_lo.length) map[trameId+".contexte.plainte_enfant"]=fmtArr(a.difficultes_langagieres_lo);
+    if(a.sons_detail) map[trameId+".contexte.plainte_enfant"]=(map[trameId+".contexte.plainte_enfant"]||'')+'\nSons concernés : '+a.sons_detail;
     if(a.obs_enseignant_le) map[trameId+".contexte.plainte_ecole"]=a.obs_enseignant_le;
     else if(a.obs_enseignant) map[trameId+".contexte.plainte_ecole"]=a.obs_enseignant;
 
@@ -8780,6 +8796,23 @@ function prefillFromPatient(p){
     if(a.ecrans_weekend) activites.push("\u00c9crans weekend : "+a.ecrans_weekend);
     if(a.commentaires_vie) activites.push(a.commentaires_vie);
     if(activites.length) map[trameId+".anamnese.activites"]=activites.join('\n');
+
+    // ── Anamnèse spécifique LO (plainte détaillée) ──
+    let plainte_lo_spec=[];
+    if(a.difficultes_langagieres_lo && a.difficultes_langagieres_lo.length) plainte_lo_spec.push("Difficultés rapportées : "+fmtArr(a.difficultes_langagieres_lo));
+    if(a.sons_detail) plainte_lo_spec.push("Sons concernés : "+a.sons_detail);
+    if(a.articulation_lo && a.articulation_lo.length) plainte_lo_spec.push("Articulation : "+fmtArr(a.articulation_lo));
+    if(a.elements_langagiers && a.elements_langagiers.length) plainte_lo_spec.push("Éléments langagiers : "+fmtArr(a.elements_langagiers));
+    if(a.intelligibilite_interlocuteur && a.intelligibilite_interlocuteur.length) plainte_lo_spec.push("Intelligibilité selon interlocuteur : "+fmtArr(a.intelligibilite_interlocuteur));
+    if(a.trouble_phono && a.trouble_phono.length) map[trameId+".phonologie.trouble_phono"]=a.trouble_phono.slice();
+    if(a.stereotypies) plainte_lo_spec.push("Comportements stéréotypés : "+a.stereotypies+(a.stereotypies_detail?' ('+a.stereotypies_detail+')':''));
+    if(a.aime_parler) plainte_lo_spec.push("Aime parler : "+a.aime_parler);
+    if(a.lo_avec_le) plainte_lo_spec.push("Évolution LO avec apprentissage LE : "+a.lo_avec_le);
+    if(a.difficultes_retention_lo && a.difficultes_retention_lo.length) plainte_lo_spec.push("Difficultés à retenir : "+fmtArr(a.difficultes_retention_lo));
+    if(a.temps_lecture_lo) plainte_lo_spec.push("Temps de lecture/jour : "+a.temps_lecture_lo);
+    if(a.trouble_va_lo && a.trouble_va_lo.length) plainte_lo_spec.push("Troubles visuo-attentionnels : "+fmtArr(a.trouble_va_lo));
+    if(a.commentaires_lo) plainte_lo_spec.push(a.commentaires_lo);
+    if(plainte_lo_spec.length) map[trameId+".anamnese.dev_langage"]+=(map[trameId+".anamnese.dev_langage"]?'\n':'')+plainte_lo_spec.join('\n');
   }
 
   if(trameId==='neuro-cognitivo-linguistique'){
@@ -8839,7 +8872,15 @@ function prefillFromPatient(p){
     let socioNcl=[];
     if(a.anosognosie) socioNcl.push("Conscience des troubles : "+a.anosognosie);
     if(a.modif_comportement && a.modif_comportement.length) socioNcl.push("Modifications comportementales : "+fmtArr(a.modif_comportement));
+    if(a.evenements_vie) socioNcl.push("Événements de vie récents : "+a.evenements_vie);
+    if(a.reaction_antidep) socioNcl.push("Réaction aux antidépresseurs : "+a.reaction_antidep);
     if(socioNcl.length) map[trameId+".anamnese.socio_affectif"]=socioNcl.join('\n');
+
+    let infosComplementairesNcl=[];
+    if(a.info_langagiere) infosComplementairesNcl.push("Informations langagières : "+a.info_langagiere);
+    if(a.niveau_eleve) infosComplementairesNcl.push("Niveau scolaire (élève) : "+a.niveau_eleve);
+    if(a.commentaires_neuro) infosComplementairesNcl.push("⚠️ Commentaires : "+a.commentaires_neuro);
+    if(infosComplementairesNcl.length) map[trameId+".anamnese.atcd"]+=(map[trameId+".anamnese.atcd"]?'\n':'')+infosComplementairesNcl.join('\n');
   }
 
   if(trameId==='neuro-parole-voix-deglutition'){
@@ -9106,6 +9147,7 @@ function prefillFromPatient(p){
     else if(a.impact_vie_quotidienne_neuro) map[trameId+".anamnese.qualite_vie"]=a.impact_vie_quotidienne_neuro;
 
     if(a.alimentation_dyph) map[trameId+".anamnese.alimentation"]=a.alimentation_dyph;
+    if(a.textures_dyph) map[trameId+".anamnese.textures"]=a.textures_dyph;
     if(a.evolution_poids_dyph) map[trameId+".anamnese.poids"]=a.evolution_poids_dyph;
     if(a.episodes_febriles_dyph) map[trameId+".anamnese.hyperthermie"]=a.episodes_febriles_dyph;
   }
@@ -9318,6 +9360,10 @@ function prefillFromPatient(p){
     // Données audiologiques
     if(a.audiogramme_resultats_surd) map[trameId+".anamnese.audiogramme_resultats"]=a.audiogramme_resultats_surd;
     else if(a.audiogramme_resultats) map[trameId+".anamnese.audiogramme_resultats"]=a.audiogramme_resultats;
+    if(a.type_surdite_surd && a.type_surdite_surd!=="Je ne sais pas" && a.type_surdite_surd!=="Aucun diagnostic posé"){
+      const typSurdMap={'Surdité de transmission':'Transmission','Surdité de perception (neurosensorielle)':'Perception (neurosensorielle)','Surdité mixte':'Mixte'};
+      if(typSurdMap[a.type_surdite_surd]) map[trameId+".anamnese.type_surdite"]=typSurdMap[a.type_surdite_surd];
+    }
     if(a.etiologie_surd) map[trameId+".anamnese.etiologie"]=a.etiologie_surd;
     if(a.syndromes_surd) map[trameId+".anamnese.syndromes_associes"]=a.syndromes_surd;
     if(a.age_survenue_surd){
@@ -9554,6 +9600,10 @@ function prefillFromPatient(p){
     // Données audiologiques
     if(a.audiogramme_resultats_surd) map[trameId+".anamnese.audiogramme_tonal"]=a.audiogramme_resultats_surd;
     else if(a.audiogramme_resultats) map[trameId+".anamnese.audiogramme_tonal"]=a.audiogramme_resultats;
+    if(a.type_surdite_surd && a.type_surdite_surd!=="Je ne sais pas" && a.type_surdite_surd!=="Aucun diagnostic posé"){
+      const typSurdMapA={'Surdité de transmission':'Transmission','Surdité de perception (neurosensorielle)':'Perception (neurosensorielle)','Surdité mixte':'Mixte'};
+      if(typSurdMapA[a.type_surdite_surd]) map[trameId+".anamnese.type_surdite_adulte"]=typSurdMapA[a.type_surdite_surd];
+    }
     if(a.acouphenes_surd){
       const acMap={'Oui':'Oui','Non':'Non','Parfois':'Intermittents'};
       if(acMap[a.acouphenes_surd]) map[trameId+".anamnese.acouphenes"]=acMap[a.acouphenes_surd];
@@ -9791,7 +9841,8 @@ function prefillFromPatient(p){
 
     // Anamnèse
     if(a.type_anos && a.type_anos.length) map[trameId+".anamnese.type_anosmie"]=fmtArr(a.type_anos);
-    if(a.date_premiers_symptomes) map[trameId+".anamnese.date_symptomes"]=a.date_premiers_symptomes;
+    if(a.date_premiers_symptomes_anos) map[trameId+".anamnese.date_symptomes"]=a.date_premiers_symptomes_anos;
+    else if(a.date_premiers_symptomes) map[trameId+".anamnese.date_symptomes"]=a.date_premiers_symptomes;
     if(a.mode_installation) map[trameId+".anamnese.mode_installation"]=a.mode_installation;
     if(a.caractere_evolutif) map[trameId+".anamnese.caractere_evolutif"]=a.caractere_evolutif;
     if(a.etiologie_anos && a.etiologie_anos.length) map[trameId+".anamnese.etiologie"]=fmtArr(a.etiologie_anos);
@@ -9816,6 +9867,11 @@ function prefillFromPatient(p){
     if(a.plat_deteste) detestes.push(a.plat_deteste);
     if(a.boisson_detestee) detestes.push(a.boisson_detestee);
     if(detestes.length) map[trameId+".profil.detestes"]=detestes.join(' / ');
+    let odeursAimees=[];
+    if(a.odeurs_aimees_avant && a.odeurs_aimees_avant.length) odeursAimees.push("Avant : "+fmtArr(a.odeurs_aimees_avant));
+    if(a.odeurs_aimees_apres && a.odeurs_aimees_apres.length) odeursAimees.push("Après : "+fmtArr(a.odeurs_aimees_apres));
+    if(odeursAimees.length) map[trameId+".profil.odeurs_aimees"]=odeursAimees.join('\n');
+    if(a.odeurs_non_aimees_apres && a.odeurs_non_aimees_apres.length) map[trameId+".profil.odeurs_non_aimees"]=fmtArr(a.odeurs_non_aimees_apres);
     if(a.tabagisme) map[trameId+".profil.tabac"]=a.tabagisme;
     if(a.allergies) map[trameId+".profil.allergies_profil"]=a.allergies;
     if(a.lieu_vie_neuro && a.lieu_vie_neuro.length) map[trameId+".profil.lieu_vie"]=fmtArr(a.lieu_vie_neuro);
@@ -9823,6 +9879,7 @@ function prefillFromPatient(p){
 
   Object.entries(map).forEach(([k,v])=>{ if(v&&!data[k]) data[k]=v; });
   renderForm();
+  setTimeout(updateSectionBadges, 100);
 }
 
 // ── Sauvegarde Supabase ─────────────────────────────────────────────────────
@@ -10026,8 +10083,8 @@ function renderForm(){
   form.innerHTML="";
 
   t.sections.forEach((sec,si)=>{
-    const det=document.createElement("details"); det.className="section";
-    det.innerHTML="<summary><span class='sec-icon'><i class='ti "+(sec.icon||"ti-folder")+"'></i></span>"+esc(sec.titre)+"<i class='ti ti-chevron-down chev'></i></summary><div class='sec-body'></div>";
+    const det=document.createElement("details"); det.className="section"; det.dataset.secId=sec.id;
+    det.innerHTML="<summary><span class='sec-icon'><i class='ti "+(sec.icon||"ti-folder")+"'></i></span>"+esc(sec.titre)+"<span class='sec-badge' style='margin-left:auto;margin-right:8px;font-size:11px;font-weight:700;padding:2px 8px;border-radius:12px;display:none;'></span><i class='ti ti-chevron-down chev'></i></summary><div class='sec-body'></div>";
     const body=$(".sec-body",det);
     let i=0;
     while(i<sec.champs.length){
@@ -10041,7 +10098,31 @@ function renderForm(){
     }
     form.appendChild(det);
   });
-  form.oninput=applyConditional; form.onchange=applyConditional; applyConditional();
+  form.oninput=()=>{ applyConditional(); updateSectionBadges(); };
+  form.onchange=()=>{ applyConditional(); updateSectionBadges(); };
+  applyConditional();
+  setTimeout(updateSectionBadges, 50);
+}
+
+function updateSectionBadges(){
+  const t=TRAMES[trameId]; if(!t) return;
+  t.sections.forEach(sec=>{
+    const det=document.querySelector('.section[data-sec-id="'+sec.id+'"]');
+    if(!det) return;
+    const badge=det.querySelector('.sec-badge');
+    if(!badge) return;
+    // Compter les champs éligibles (pas note, subhead, meta) et remplis
+    const champs=sec.champs.filter(c=>!c.meta && c.type!=='note' && c.type!=='subhead' && c.type!=='epreuves_list' && c.type!=='phoneme_grid' && c.type!=='presence_list');
+    if(!champs.length){ badge.style.display='none'; return; }
+    const filled=champs.filter(c=>{ const v=data[ck(sec.id,c.id)]; return v!==undefined && v!=='' && !(Array.isArray(v)&&!v.length); }).length;
+    const pct=Math.round(filled/champs.length*100);
+    badge.style.display='';
+    badge.textContent=pct+'%';
+    if(pct===100){ badge.style.background='#4CAF50'; badge.style.color='#fff'; badge.title='Section complète ✓'; }
+    else if(pct>=50){ badge.style.background='#FFC107'; badge.style.color='#333'; badge.title=filled+'/'+champs.length+' champs remplis'; }
+    else if(pct>0){ badge.style.background='#E0E0E0'; badge.style.color='#555'; badge.title=filled+'/'+champs.length+' champs remplis'; }
+    else{ badge.style.display='none'; }
+  });
 }
 
 function renderChamp(secId,c){
