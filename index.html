@@ -4582,7 +4582,7 @@ function openPatientModalFromAttente(a){
     memeAgglo: false,
     hospi: false,
     hospiSortie: '',
-    nir: '',
+    nir: a.nir||'',
     permNotes: notes,
   };
 
@@ -15939,15 +15939,16 @@ function ouvrirIntegrationQuestionnaire(pid){
   if(!p.anamnese) p.anamnese = {};
   var a = p.anamnese;
 
-  // Construire la liste des champs anamnèse (hors _xxx admin)
+  // Construire la liste des champs anamnèse (hors _xxx admin et hors nir traité séparément)
   var fields = [];
   Object.keys(reponses).forEach(function(key){
     if(key.indexOf('_')===0) return; // champs admin traités séparément
+    var parts = key.split('.');
+    var qid = parts[1] || parts[0];
+    if(qid === 'nir') return; // NIR traité séparément → p.nir
     var val = reponses[key];
     var fval = _qaFmtVal(val);
     if(fval==='') return;
-    var parts = key.split('.');
-    var qid = parts[1] || parts[0];
     var oldVal = a[qid];
     var oldFval = _qaFmtVal(oldVal);
     var modified = oldFval!=='' && oldFval!==fval;
@@ -15959,7 +15960,11 @@ function ouvrirIntegrationQuestionnaire(pid){
 
   // Champs admin (infos patient) — affichage informatif
   var adminLabels = {_ddn:'Date de naissance', _tel:'Téléphone', _email:'Email de contact', _qui:'Rempli par', _complement:'Complément'};
+  var nirVal = reponses['base_enfant.nir'] || reponses['base_adulte.nir'];
   var adminRows = '';
+  if(nirVal && !p.nir){
+    adminRows += '<div style="font-size:12px;padding:4px 0;border-bottom:1px solid var(--border-soft,#f0f0f0);"><b>N° sécurité sociale :</b> '+_esc(_qaFmtVal(nirVal))+'<span style="background:var(--green,#1D9E75);color:#fff;font-size:9px;font-weight:700;padding:1px 5px;border-radius:8px;margin-left:6px;">→ fiche patient</span></div>';
+  }
   Object.keys(adminLabels).forEach(function(k){
     var v = reponses[k];
     if(!v) return;
@@ -16012,9 +16017,15 @@ async function integrerQuestionnaire(pid, token){
     }
   });
 
-  // Compléter téléphone/email si vides dans la fiche patient
+  // Compléter téléphone/email/NIR si vides dans la fiche patient
   var reponses = window._qaPendingReponses || {};
   if(reponses._tel && !p.tel) p.tel = reponses._tel;
+  // NIR : champ racine p.nir (pas dans p.anamnese)
+  var nirFromQA = reponses['base_enfant.nir'] || reponses['base_adulte.nir'];
+  if(nirFromQA && !p.nir){
+    var nirClean = (nirFromQA+'').replace(/\s/g,'');
+    if(/^\d{15}$/.test(nirClean)) p.nir = nirClean.replace(/(\d{1})(\d{2})(\d{2})(\d{2})(\d{3})(\d{3})(\d{2})/,'$1 $2 $3 $4 $5 $6 $7');
+  }
 
   p.anamnese = a;
   save();
@@ -16058,6 +16069,7 @@ var QA_SECTIONS = {
   base_enfant: {
     label: 'Informations générales (enfant)',
     questions: [
+      {id:'nir', label:'Numéro de sécurité sociale (ouvrant droit)'},
       {id:'lieu_vie', label:'Lieu de vie'},
       {id:'prof_pere', label:'Profession du père'},
       {id:'prof_mere', label:'Profession de la mère'},
@@ -16127,6 +16139,7 @@ var QA_SECTIONS = {
   base_adulte: {
     label: 'Informations générales (adulte)',
     questions: [
+      {id:'nir', label:'Numéro de sécurité sociale'},
       {id:'demandeur_neuro', label:'Qui est à l\'origine de la demande de consultation'},
       {id:'plainte_actuelle_neuro', label:'Plainte actuelle'},
       {id:'premiers_symptomes_neuro', label:'Âge/date premiers symptômes'},

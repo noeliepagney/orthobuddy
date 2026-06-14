@@ -199,6 +199,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
         <div class="field"><label>Téléphone <span class="req">*</span></label><input type="tel" id="telephone" placeholder="06 12 34 56 78" required></div>
       </div>
       <div class="field"><label>Vous êtes</label><select id="demandeur" onchange="toggleContactZone(this)"><option value="patient">Le patient lui-même</option><option value="parent">Parent / tuteur légal</option><option value="autre">Autre (aidant, proche…)</option></select></div>
+      <div class="field"><label>Numéro de sécurité sociale <span style="font-size:11px;font-weight:400;color:var(--text-muted);">(optionnel — ouvrant droit)</span></label><input type="text" id="nir" placeholder="ex : 2 85 03 75 112 034 42" maxlength="21" style="font-family:monospace;letter-spacing:.06em;" oninput="formatNIR(this)"></div>
       <div class="parent-zone" id="zone-parent">
         <div class="zone-label">👨‍👩‍👦 Informations sur le contact</div>
         <div class="field-row">
@@ -488,11 +489,10 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'DM Sans', sans-serif; ba
 .intro p { font-size:13px; color:var(--sage-d); line-height:1.7; margin-bottom:10px; }
 .intro p:last-child { font-size:12px; color:var(--text-soft); font-style:italic; margin-bottom:0; }
 .form-body { padding: 28px; }
-.section-title { font-size:13px; font-weight:600; color:var(--sage-d); margin:28px 0 14px; display:flex; align-items:center; gap:8px; }
-.section-title::after { content:""; flex:1; height:1px; background:var(--border); }
+.section-title { font-size:11px; font-weight:700; color:var(--sage); text-transform:uppercase; letter-spacing:.08em; margin:20px 0 12px; padding-bottom:6px; border-bottom:1.5px solid var(--sage-l); }
 .section-title:first-child { margin-top:0; }
 .field { margin-bottom: 14px; }
-.field label { display:block; font-size:13px; font-weight:500; color:var(--text-soft); margin-bottom:6px; }
+.field label { display:block; font-size:12px; font-weight:600; color:var(--text-soft); margin-bottom:5px; text-transform:uppercase; letter-spacing:.04em; }
 .field label .req { color:var(--brique); margin-left:2px; }
 .field input, .field select, .field textarea { width:100%; padding:10px 12px; border:1.5px solid var(--border); border-radius:10px; font-size:14px; font-family:inherit; color:var(--text); background:var(--cream); transition:border-color .15s; outline:none; }
 .field input:focus, .field select:focus, .field textarea:focus { border-color:var(--sage); background:white; }
@@ -514,7 +514,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'DM Sans', sans-serif; ba
 .alert-orange .title { font-size:13px; font-weight:600; color:var(--amber); margin-bottom:4px; }
 .alert-orange .body { font-size:12px; color:var(--text-soft); line-height:1.5; }
 .suivi-prec-zone { display:none; margin-top:8px; padding:14px; background:var(--cream); border-radius:10px; border:1.5px solid var(--border); }
-.suivi-prec-zone .title { font-size:12px; font-weight:600; color:var(--text-soft); margin-bottom:10px; }
+.suivi-prec-zone .title { font-size:11px; font-weight:700; color:var(--text-soft); text-transform:uppercase; letter-spacing:.06em; margin-bottom:10px; }
 .rgpd { background:var(--info-l); border:1px solid var(--info-b); border-radius:10px; padding:12px 14px; font-size:11px; color:var(--info); line-height:1.5; margin-top:20px; }
 .rgpd label { display:flex; gap:10px; align-items:flex-start; cursor:pointer; }
 .rgpd input { width:16px; height:16px; accent-color:var(--info); flex-shrink:0; margin-top:1px; }
@@ -531,7 +531,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'DM Sans', sans-serif; ba
 .date-row select:focus { border-color:var(--sage); outline:none; }
 @media print { body{background:white;padding:0;} .card{box-shadow:none;border-radius:0;} .header button,.btn-submit{display:none;} }
 .parent-zone { display:none; margin-top:12px; padding:14px; background:var(--info-l); border:1.5px solid var(--info-b); border-radius:10px; }
-.parent-zone .zone-label { font-size:12px; font-weight:600; color:var(--text-soft); margin-bottom:10px; }
+.parent-zone .zone-label { font-size:11px; font-weight:700; color:var(--info); text-transform:uppercase; letter-spacing:.06em; margin-bottom:10px; }
 .btn-pdf { display:inline-flex; align-items:center; gap:6px; margin-top:10px; background:rgba(255,255,255,.25); color:white; padding:7px 16px; border-radius:20px; font-size:12px; font-weight:600; border:1.5px solid rgba(255,255,255,.4); cursor:pointer; transition:background .15s; }
 .btn-pdf:hover { background:rgba(255,255,255,.35); }
 @media (max-width:480px) { .field-row{grid-template-columns:1fr;} .form-body{padding:20px;} }
@@ -549,6 +549,20 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'DM Sans', sans-serif; ba
   w.document.write('<div class="footer"><span>Cabinet de Noëlie Lainé</span><span>Généré le '+today+'</span></div>');
   w.document.write('</div></body></html>');
   w.document.close();
+}
+
+function formatNIR(input){
+  var raw = input.value.replace(/\D/g,'').slice(0,15);
+  var parts = [];
+  if(raw.length>0) parts.push(raw.slice(0,1));
+  if(raw.length>1) parts.push(raw.slice(1,3));
+  if(raw.length>3) parts.push(raw.slice(3,5));
+  if(raw.length>5) parts.push(raw.slice(5,7));
+  if(raw.length>7) parts.push(raw.slice(7,10));
+  if(raw.length>10) parts.push(raw.slice(10,13));
+  if(raw.length>13) parts.push(raw.slice(13,15));
+  var pos = input.selectionStart;
+  input.value = parts.join(' ');
 }
 
 function toggleContactZone(sel){
@@ -647,6 +661,7 @@ async function submitForm(){
     ddn:document.getElementById('ddn').value, sexe:document.getElementById('sexe').value,
     adresse:document.getElementById('adresse').value.trim(),
     email:document.getElementById('email').value.trim(), telephone:document.getElementById('telephone').value.trim(),
+    nir:(document.getElementById('nir').value||'').replace(/\s/g,''),
     demandeur:document.getElementById('demandeur').value,
     parcours:parcours, motif:document.getElementById('motif').value.trim(),
     medecin:document.getElementById('medecin').value.trim(),
