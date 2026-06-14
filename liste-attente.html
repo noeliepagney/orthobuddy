@@ -5,60 +5,68 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Liste d'attente — Cabinet d'orthophonie de Noëlie Lainé</title>
 <style>
+:root{
+  --sage:#6F8C6A;--sage-d:#56714F;--sage-l:#EFF3ED;--sage-xl:#F7FAF6;--sage-b:#B8D4B4;
+  --brique:#C17B5A;--brique-l:#F5EDE8;--brique-b:#E8C4B0;--brique-d:#A0603E;
+  --cream:#FAFAF7;--border:#E7E0D3;--border-soft:#F0EAE1;
+  --text:#3C3A33;--text-soft:#6E695C;--text-muted:#9E9990;
+  --amber:#C9890A;--amber-l:#FDF4E3;--amber-b:#F0D290;
+  --info:#4A7A9B;--info-l:#EBF4FA;--info-b:#BDD8EA;
+}
 * { box-sizing: border-box; margin: 0; padding: 0; }
-body { font-family: -apple-system, BlinkMacSystemFont, 'DM Sans', sans-serif; background: #F0F4F0; min-height: 100vh; padding: 24px 16px 48px; color: #1A2A4A !important; }
-.card { background: white; border-radius: 18px; max-width: 620px; margin: 0 auto; box-shadow: 0 4px 24px rgba(0,0,0,.10); overflow: hidden; }
-.header { background: linear-gradient(135deg, #1D9E75, #185FA5); padding: 28px 28px 24px; text-align: center; }
-.header h1 { color: white; font-size: 18px; font-weight: 700; margin-bottom: 4px; }
-.header p { color: rgba(255,255,255,.85); font-size: 13px; }
-.header button { display:inline-block;margin-top:10px;background:rgba(255,255,255,.2);color:white;padding:6px 14px;border-radius:20px;font-size:12px;font-weight:600;border:none;cursor:pointer; }
-.intro { background:#F0FBF6; border-bottom:1px solid #D1EFE2; padding:20px 28px; }
-.intro p { font-size:13px; color:#1A3A2A; line-height:1.7; margin-bottom:10px; }
-.intro p:last-child { font-size:12px; color:#4A7A5A; font-style:italic; margin-bottom:0; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'DM Sans', sans-serif; background: var(--cream); min-height: 100vh; padding: 24px 16px 48px; color: var(--text); }
+.card { background: white; border-radius: 20px; max-width: 620px; margin: 0 auto; box-shadow: 0 2px 16px rgba(60,58,51,.08); overflow: hidden; border: 1px solid var(--border); }
+.header { background: linear-gradient(135deg, var(--sage), var(--sage-d)); padding: 28px 28px 24px; text-align: center; }
+.header h1 { color: white; font-size: 18px; font-weight: 700; margin-bottom: 4px; letter-spacing: -.01em; }
+.header p { color: rgba(255,255,255,.82); font-size: 13px; }
+.header button { display:inline-block;margin-top:10px;background:rgba(255,255,255,.2);color:white;padding:6px 14px;border-radius:20px;font-size:12px;font-weight:600;border:1px solid rgba(255,255,255,.35);cursor:pointer; }
+.intro { background: var(--sage-xl); border-bottom:1px solid var(--sage-b); padding:20px 28px; }
+.intro p { font-size:13px; color:var(--sage-d); line-height:1.7; margin-bottom:10px; }
+.intro p:last-child { font-size:12px; color:var(--text-soft); font-style:italic; margin-bottom:0; }
 .form-body { padding: 28px; }
-.section-title { font-size:11px; font-weight:700; color:#1D9E75; text-transform:uppercase; letter-spacing:.08em; margin:20px 0 12px; padding-bottom:6px; border-bottom:1.5px solid #E8F5EE; }
+.section-title { font-size:11px; font-weight:700; color:var(--sage); text-transform:uppercase; letter-spacing:.08em; margin:20px 0 12px; padding-bottom:6px; border-bottom:1.5px solid var(--sage-l); }
 .section-title:first-child { margin-top:0; }
 .field { margin-bottom: 14px; }
-.field label { display:block; font-size:12px; font-weight:600; color:#2A3F6A; margin-bottom:5px; }
-.field label .req { color:#E53E3E; margin-left:2px; }
-.field input, .field select, .field textarea { width:100%; padding:10px 12px; border:1.5px solid #E2E0D8; border-radius:10px; font-size:14px; font-family:inherit; color:#1A2A4A; background:#FAFAF8; transition:border-color .15s; outline:none; }
-.field input:focus, .field select:focus, .field textarea:focus { border-color:#1D9E75; background:white; }
+.field label { display:block; font-size:12px; font-weight:600; color:var(--text-soft); margin-bottom:5px; text-transform:uppercase; letter-spacing:.04em; }
+.field label .req { color:var(--brique); margin-left:2px; }
+.field input, .field select, .field textarea { width:100%; padding:10px 12px; border:1.5px solid var(--border); border-radius:10px; font-size:14px; font-family:inherit; color:var(--text); background:var(--cream); transition:border-color .15s; outline:none; }
+.field input:focus, .field select:focus, .field textarea:focus { border-color:var(--sage); background:white; }
 .field textarea { resize:vertical; min-height:80px; }
 .field-row { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
 .checkbox-group { display:flex; flex-direction:column; gap:8px; margin-top:4px; }
-.checkbox-item { display:flex; align-items:flex-start; gap:14px; padding:8px 12px; border:1.5px solid #E2E0D8; border-radius:10px; cursor:pointer; transition:border-color .15s, background .15s; background:#FAFAF8; }
-.checkbox-item:hover { border-color:#1D9E75; background:#F0FBF6; }
-.checkbox-item input[type=checkbox] { width:16px; height:16px; accent-color:#1D9E75; cursor:pointer; flex-shrink:0; margin-top:2px; margin-right:2px; }
-.checkbox-item span { font-size:13px; color:#1A2A4A; }
-.checkbox-item strong { display:block; font-size:13px; color:#1A2A4A; }
-.checkbox-item small { font-size:11px; color:#666; line-height:1.4; margin-top:2px; display:block; }
+.checkbox-item { display:flex; align-items:flex-start; gap:14px; padding:10px 12px; border:1.5px solid var(--border); border-radius:10px; cursor:pointer; transition:border-color .15s, background .15s; background:var(--cream); }
+.checkbox-item:hover { border-color:var(--sage); background:var(--sage-xl); }
+.checkbox-item input[type=checkbox] { width:16px; height:16px; accent-color:var(--sage); cursor:pointer; flex-shrink:0; margin-top:2px; margin-right:2px; }
+.checkbox-item span { font-size:13px; color:var(--text); }
+.checkbox-item strong { display:block; font-size:13px; color:var(--text); }
+.checkbox-item small { font-size:11px; color:var(--text-soft); line-height:1.4; margin-top:2px; display:block; }
 .radio-group { display:flex; flex-direction:column; gap:8px; margin-top:4px; }
-.radio-item { display:flex; align-items:center; gap:14px; padding:8px 12px; border:1.5px solid #E2E0D8; border-radius:10px; cursor:pointer; transition:border-color .15s, background .15s; background:#FAFAF8; }
-.radio-item:hover { border-color:#1D9E75; background:#F0FBF6; }
-.radio-item input[type=radio] { width:16px; height:16px; accent-color:#1D9E75; cursor:pointer; flex-shrink:0; margin-right:2px; }
-.radio-item span { font-size:13px; color:#1A2A4A; }
-.alert-orange { display:none; margin-top:10px; background:#FFF8E1; border:1.5px solid #F59E0B; border-radius:10px; padding:12px 14px; }
-.alert-orange .title { font-size:13px; font-weight:600; color:#92400E; margin-bottom:4px; }
-.alert-orange .body { font-size:12px; color:#78350F; line-height:1.5; }
-.suivi-prec-zone { display:none; margin-top:8px; padding:14px; background:#F8F9FA; border-radius:10px; border:1.5px solid #E2E0D8; }
-.suivi-prec-zone .title { font-size:11px; font-weight:700; color:#2A3F6A; text-transform:uppercase; letter-spacing:.06em; margin-bottom:10px; }
-.rgpd { background:#F0F9FF; border:1px solid #BEE3F8; border-radius:10px; padding:12px 14px; font-size:11px; color:#2B6CB0; line-height:1.5; margin-top:20px; }
+.radio-item { display:flex; align-items:center; gap:14px; padding:10px 12px; border:1.5px solid var(--border); border-radius:10px; cursor:pointer; transition:border-color .15s, background .15s; background:var(--cream); }
+.radio-item:hover { border-color:var(--sage); background:var(--sage-xl); }
+.radio-item input[type=radio] { width:16px; height:16px; accent-color:var(--sage); cursor:pointer; flex-shrink:0; margin-right:2px; }
+.radio-item span { font-size:13px; color:var(--text); }
+.alert-orange { display:none; margin-top:10px; background:var(--amber-l); border:1.5px solid var(--amber-b); border-radius:10px; padding:12px 14px; }
+.alert-orange .title { font-size:13px; font-weight:600; color:var(--amber); margin-bottom:4px; }
+.alert-orange .body { font-size:12px; color:var(--text-soft); line-height:1.5; }
+.suivi-prec-zone { display:none; margin-top:8px; padding:14px; background:var(--cream); border-radius:10px; border:1.5px solid var(--border); }
+.suivi-prec-zone .title { font-size:11px; font-weight:700; color:var(--text-soft); text-transform:uppercase; letter-spacing:.06em; margin-bottom:10px; }
+.rgpd { background:var(--info-l); border:1px solid var(--info-b); border-radius:10px; padding:12px 14px; font-size:11px; color:var(--info); line-height:1.5; margin-top:20px; }
 .rgpd label { display:flex; gap:10px; align-items:flex-start; cursor:pointer; }
-.rgpd input { width:16px; height:16px; accent-color:#185FA5; flex-shrink:0; margin-top:1px; }
-.btn-submit { width:100%; padding:14px; background:linear-gradient(135deg, #1D9E75, #185FA5); color:white; border:none; border-radius:12px; font-size:15px; font-weight:700; cursor:pointer; margin-top:20px; transition:opacity .15s, transform .1s; box-shadow:0 4px 14px rgba(29,158,117,.35); }
+.rgpd input { width:16px; height:16px; accent-color:var(--info); flex-shrink:0; margin-top:1px; }
+.btn-submit { width:100%; padding:14px; background:linear-gradient(135deg, var(--sage), var(--sage-d)); color:white; border:none; border-radius:12px; font-size:15px; font-weight:700; cursor:pointer; margin-top:20px; transition:opacity .15s, transform .1s; box-shadow:0 4px 14px rgba(111,140,106,.30); font-family:inherit; }
 .btn-submit:hover { opacity:.92; transform:translateY(-1px); }
 .btn-submit:disabled { opacity:.5; cursor:not-allowed; transform:none; }
 .success { display:none; text-align:center; padding:40px 28px; }
 .success .icon { font-size:56px; margin-bottom:16px; }
-.success h2 { font-size:20px; font-weight:700; color:#1D9E75; margin-bottom:8px; }
-.success p { font-size:13px; color:#666; line-height:1.6; }
-.error-msg { color:#E53E3E; font-size:11px; margin-top:4px; display:none; }
+.success h2 { font-size:20px; font-weight:700; color:var(--sage-d); margin-bottom:8px; }
+.success p { font-size:13px; color:var(--text-soft); line-height:1.6; }
+.error-msg { color:var(--brique); font-size:11px; margin-top:4px; display:none; }
 .date-row { display:flex; gap:8px; }
-.date-row select { flex:1; padding:10px 8px; border:1.5px solid #E2E0D8; border-radius:10px; font-size:14px; color:#1A2A4A; background:#FAFAF8; font-family:inherit; }
-.date-row select:focus { border-color:#1D9E75; outline:none; }
+.date-row select { flex:1; padding:10px 8px; border:1.5px solid var(--border); border-radius:10px; font-size:14px; color:var(--text); background:var(--cream); font-family:inherit; }
+.date-row select:focus { border-color:var(--sage); outline:none; }
 @media print { body{background:white;padding:0;} .card{box-shadow:none;border-radius:0;} .header button,.btn-submit{display:none;} }
-.parent-zone { display:none; margin-top:12px; padding:14px; background:#F0F9FF; border:1.5px solid #BEE3F8; border-radius:10px; }
-.parent-zone .zone-label { font-size:11px; font-weight:700; color:#2B6CB0; text-transform:uppercase; letter-spacing:.06em; margin-bottom:10px; }
+.parent-zone { display:none; margin-top:12px; padding:14px; background:var(--info-l); border:1.5px solid var(--info-b); border-radius:10px; }
+.parent-zone .zone-label { font-size:11px; font-weight:700; color:var(--info); text-transform:uppercase; letter-spacing:.06em; margin-bottom:10px; }
 .btn-pdf { display:inline-flex; align-items:center; gap:6px; margin-top:10px; background:rgba(255,255,255,.25); color:white; padding:7px 16px; border-radius:20px; font-size:12px; font-weight:600; border:1.5px solid rgba(255,255,255,.4); cursor:pointer; transition:background .15s; }
 .btn-pdf:hover { background:rgba(255,255,255,.35); }
 @media (max-width:480px) { .field-row{grid-template-columns:1fr;} .form-body{padding:20px;} }
@@ -219,7 +227,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'DM Sans', sans-serif; ba
           <label class="checkbox-item"><input type="checkbox" name="structures" value="SESSAD"><span>SESSAD</span></label>
           <label class="checkbox-item"><input type="checkbox" name="structures" value="Autre" onchange="toggleAutreStructure(this)"><span>Autre</span></label>
         </div>
-        <input type="text" id="structure_autre_detail" placeholder="Précisez…" style="display:none;margin-top:8px;width:100%;padding:10px 12px;border:1.5px solid #E2E0D8;border-radius:10px;font-size:14px;color:#1A2A4A;font-family:inherit;">
+        <input type="text" id="structure_autre_detail" placeholder="Précisez…" style="display:none;margin-top:8px;width:100%;padding:10px 12px;border:1.5px solid #E7E0D3;border-radius:10px;font-size:14px;color:#3C3A33;font-family:inherit;">
       </div>
       <div class="field">
         <label>Autres professionnels suivant la personne</label>
@@ -232,7 +240,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'DM Sans', sans-serif; ba
           <label class="checkbox-item"><input type="checkbox" name="professionnels" value="Orthophoniste"><span>Orthophoniste (autre suivi en cours)</span></label>
           <label class="checkbox-item"><input type="checkbox" name="professionnels" value="Autre" onchange="toggleAutreProf(this)"><span>Autre</span></label>
         </div>
-        <input type="text" id="prof_autre_detail" placeholder="Précisez…" style="display:none;margin-top:8px;width:100%;padding:10px 12px;border:1.5px solid #E2E0D8;border-radius:10px;font-size:14px;color:#1A2A4A;font-family:inherit;">
+        <input type="text" id="prof_autre_detail" placeholder="Précisez…" style="display:none;margin-top:8px;width:100%;padding:10px 12px;border:1.5px solid #E7E0D3;border-radius:10px;font-size:14px;color:#3C3A33;font-family:inherit;">
       </div>
       <div class="field"><label>Des bilans ont-ils déjà été réalisés ?</label><textarea id="antecedents" placeholder="Ex: bilan orthophonique en 2022, bilan psychologique…" style="min-height:60px;"></textarea></div>
 
@@ -258,20 +266,20 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'DM Sans', sans-serif; ba
           <table style="width:100%;border-collapse:collapse;font-size:13px;">
             <thead>
               <tr>
-                <th style="padding:6px;border:1px solid #e2e8f0;background:#f7fafc;"></th>
-                <th style="padding:6px;border:1px solid #e2e8f0;background:#f7fafc;text-align:center;">Matin<br><small style="color:#718096;">8h-12h</small></th>
-                <th style="padding:6px;border:1px solid #e2e8f0;background:#f7fafc;text-align:center;">Midi<br><small style="color:#718096;">12h-14h</small></th>
-                <th style="padding:6px;border:1px solid #e2e8f0;background:#f7fafc;text-align:center;">Après-midi<br><small style="color:#718096;">14h-17h</small></th>
-                <th style="padding:6px;border:1px solid #e2e8f0;background:#f7fafc;text-align:center;">Fin de journée<br><small style="color:#718096;">17h+</small></th>
+                <th style="padding:6px;border:1px solid #E7E0D3;background:#FAFAF7;"></th>
+                <th style="padding:6px;border:1px solid #E7E0D3;background:#FAFAF7;text-align:center;">Matin<br><small style="color:#6E695C;">8h-12h</small></th>
+                <th style="padding:6px;border:1px solid #E7E0D3;background:#FAFAF7;text-align:center;">Midi<br><small style="color:#6E695C;">12h-14h</small></th>
+                <th style="padding:6px;border:1px solid #E7E0D3;background:#FAFAF7;text-align:center;">Après-midi<br><small style="color:#6E695C;">14h-17h</small></th>
+                <th style="padding:6px;border:1px solid #E7E0D3;background:#FAFAF7;text-align:center;">Fin de journée<br><small style="color:#6E695C;">17h+</small></th>
               </tr>
             </thead>
             <tbody>
-              <tr><td style="padding:6px;border:1px solid #e2e8f0;font-weight:500;">Lundi</td><td style="text-align:center;border:1px solid #e2e8f0;"><input type="checkbox" name="horaires" value="Lundi matin"></td><td style="text-align:center;border:1px solid #e2e8f0;"><input type="checkbox" name="horaires" value="Lundi midi"></td><td style="text-align:center;border:1px solid #e2e8f0;"><input type="checkbox" name="horaires" value="Lundi après-midi"></td><td style="text-align:center;border:1px solid #e2e8f0;"><input type="checkbox" name="horaires" value="Lundi fin journée"></td></tr>
-              <tr><td style="padding:6px;border:1px solid #e2e8f0;font-weight:500;">Mardi</td><td style="text-align:center;border:1px solid #e2e8f0;"><input type="checkbox" name="horaires" value="Mardi matin"></td><td style="text-align:center;border:1px solid #e2e8f0;"><input type="checkbox" name="horaires" value="Mardi midi"></td><td style="text-align:center;border:1px solid #e2e8f0;"><input type="checkbox" name="horaires" value="Mardi après-midi"></td><td style="text-align:center;border:1px solid #e2e8f0;"><input type="checkbox" name="horaires" value="Mardi fin journée"></td></tr>
-              <tr><td style="padding:6px;border:1px solid #e2e8f0;font-weight:500;">Mercredi</td><td style="text-align:center;border:1px solid #e2e8f0;"><input type="checkbox" name="horaires" value="Mercredi matin"></td><td style="text-align:center;border:1px solid #e2e8f0;"><input type="checkbox" name="horaires" value="Mercredi midi"></td><td style="text-align:center;border:1px solid #e2e8f0;"><input type="checkbox" name="horaires" value="Mercredi après-midi"></td><td style="text-align:center;border:1px solid #e2e8f0;"><input type="checkbox" name="horaires" value="Mercredi fin journée"></td></tr>
-              <tr><td style="padding:6px;border:1px solid #e2e8f0;font-weight:500;">Jeudi</td><td style="text-align:center;border:1px solid #e2e8f0;"><input type="checkbox" name="horaires" value="Jeudi matin"></td><td style="text-align:center;border:1px solid #e2e8f0;"><input type="checkbox" name="horaires" value="Jeudi midi"></td><td style="text-align:center;border:1px solid #e2e8f0;"><input type="checkbox" name="horaires" value="Jeudi après-midi"></td><td style="text-align:center;border:1px solid #e2e8f0;"><input type="checkbox" name="horaires" value="Jeudi fin journée"></td></tr>
-              <tr><td style="padding:6px;border:1px solid #e2e8f0;font-weight:500;">Vendredi</td><td style="text-align:center;border:1px solid #e2e8f0;"><input type="checkbox" name="horaires" value="Vendredi matin"></td><td style="text-align:center;border:1px solid #e2e8f0;"><input type="checkbox" name="horaires" value="Vendredi midi"></td><td style="text-align:center;border:1px solid #e2e8f0;"><input type="checkbox" name="horaires" value="Vendredi après-midi"></td><td style="text-align:center;border:1px solid #e2e8f0;"><input type="checkbox" name="horaires" value="Vendredi fin journée"></td></tr>
-              <tr><td style="padding:6px;border:1px solid #e2e8f0;font-weight:500;">Samedi</td><td style="text-align:center;border:1px solid #e2e8f0;"><input type="checkbox" name="horaires" value="Samedi matin"></td><td style="text-align:center;border:1px solid #e2e8f0;"><input type="checkbox" name="horaires" value="Samedi midi"></td><td style="text-align:center;border:1px solid #e2e8f0;"><input type="checkbox" name="horaires" value="Samedi après-midi"></td><td style="text-align:center;border:1px solid #e2e8f0;"><input type="checkbox" name="horaires" value="Samedi fin journée"></td></tr>
+              <tr><td style="padding:6px;border:1px solid #E7E0D3;font-weight:500;">Lundi</td><td style="text-align:center;border:1px solid #E7E0D3;"><input type="checkbox" name="horaires" value="Lundi matin"></td><td style="text-align:center;border:1px solid #E7E0D3;"><input type="checkbox" name="horaires" value="Lundi midi"></td><td style="text-align:center;border:1px solid #E7E0D3;"><input type="checkbox" name="horaires" value="Lundi après-midi"></td><td style="text-align:center;border:1px solid #E7E0D3;"><input type="checkbox" name="horaires" value="Lundi fin journée"></td></tr>
+              <tr><td style="padding:6px;border:1px solid #E7E0D3;font-weight:500;">Mardi</td><td style="text-align:center;border:1px solid #E7E0D3;"><input type="checkbox" name="horaires" value="Mardi matin"></td><td style="text-align:center;border:1px solid #E7E0D3;"><input type="checkbox" name="horaires" value="Mardi midi"></td><td style="text-align:center;border:1px solid #E7E0D3;"><input type="checkbox" name="horaires" value="Mardi après-midi"></td><td style="text-align:center;border:1px solid #E7E0D3;"><input type="checkbox" name="horaires" value="Mardi fin journée"></td></tr>
+              <tr><td style="padding:6px;border:1px solid #E7E0D3;font-weight:500;">Mercredi</td><td style="text-align:center;border:1px solid #E7E0D3;"><input type="checkbox" name="horaires" value="Mercredi matin"></td><td style="text-align:center;border:1px solid #E7E0D3;"><input type="checkbox" name="horaires" value="Mercredi midi"></td><td style="text-align:center;border:1px solid #E7E0D3;"><input type="checkbox" name="horaires" value="Mercredi après-midi"></td><td style="text-align:center;border:1px solid #E7E0D3;"><input type="checkbox" name="horaires" value="Mercredi fin journée"></td></tr>
+              <tr><td style="padding:6px;border:1px solid #E7E0D3;font-weight:500;">Jeudi</td><td style="text-align:center;border:1px solid #E7E0D3;"><input type="checkbox" name="horaires" value="Jeudi matin"></td><td style="text-align:center;border:1px solid #E7E0D3;"><input type="checkbox" name="horaires" value="Jeudi midi"></td><td style="text-align:center;border:1px solid #E7E0D3;"><input type="checkbox" name="horaires" value="Jeudi après-midi"></td><td style="text-align:center;border:1px solid #E7E0D3;"><input type="checkbox" name="horaires" value="Jeudi fin journée"></td></tr>
+              <tr><td style="padding:6px;border:1px solid #E7E0D3;font-weight:500;">Vendredi</td><td style="text-align:center;border:1px solid #E7E0D3;"><input type="checkbox" name="horaires" value="Vendredi matin"></td><td style="text-align:center;border:1px solid #E7E0D3;"><input type="checkbox" name="horaires" value="Vendredi midi"></td><td style="text-align:center;border:1px solid #E7E0D3;"><input type="checkbox" name="horaires" value="Vendredi après-midi"></td><td style="text-align:center;border:1px solid #E7E0D3;"><input type="checkbox" name="horaires" value="Vendredi fin journée"></td></tr>
+              <tr><td style="padding:6px;border:1px solid #E7E0D3;font-weight:500;">Samedi</td><td style="text-align:center;border:1px solid #E7E0D3;"><input type="checkbox" name="horaires" value="Samedi matin"></td><td style="text-align:center;border:1px solid #E7E0D3;"><input type="checkbox" name="horaires" value="Samedi midi"></td><td style="text-align:center;border:1px solid #E7E0D3;"><input type="checkbox" name="horaires" value="Samedi après-midi"></td><td style="text-align:center;border:1px solid #E7E0D3;"><input type="checkbox" name="horaires" value="Samedi fin journée"></td></tr>
             </tbody>
           </table>
         </div>
@@ -292,7 +300,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'DM Sans', sans-serif; ba
         </label>
       </div>
 
-      <div id="error-global" style="display:none;color:#E53E3E;font-size:13px;margin-top:10px;text-align:center;"></div>
+      <div id="error-global" style="display:none;color:#C17B5A;font-size:13px;margin-top:10px;text-align:center;"></div>
       <button class="btn-submit" id="btn-submit" onclick="submitForm()">Envoyer ma demande →</button>
     </div>
   </div>
@@ -300,7 +308,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'DM Sans', sans-serif; ba
   <div class="success" id="success-screen">
     <div class="icon">✅</div>
     <h2>Demande envoyée !</h2>
-    <p id="success-message">Merci, votre demande a bien été reçue.<br><br>Je vous contacterai dès qu'un créneau de rendez-vous sera disponible.<br><br><span style="color:#1D9E75;font-weight:600;">Vous recevrez une confirmation par email.</span></p>
+    <p id="success-message">Merci, votre demande a bien été reçue.<br><br>Je vous contacterai dès qu'un créneau de rendez-vous sera disponible.<br><br><span style="color:#6F8C6A;font-weight:600;">Vous recevrez une confirmation par email.</span></p>
   </div>
 </div>
 
@@ -357,14 +365,14 @@ function ouvrirRecapPDF(){
       +'<td style="padding:5px 8px;font-size:12px;border-bottom:1px solid #F0EDE6;vertical-align:top;">'+esc(r[1])+'</td></tr>';
   }).join('');}
   function section(titre,rows){var l=lignes(rows);if(!l)return '';
-    return '<div style="font-size:10px;font-weight:700;color:#1D9E75;text-transform:uppercase;letter-spacing:.08em;margin:16px 0 5px;padding-bottom:4px;border-bottom:1.5px solid #D1EFE2;">'+esc(titre)+'</div>'
+    return '<div style="font-size:10px;font-weight:700;color:#6F8C6A;text-transform:uppercase;letter-spacing:.08em;margin:16px 0 5px;padding-bottom:4px;border-bottom:1.5px solid #B8D4B4;">'+esc(titre)+'</div>'
       +'<table style="width:100%;border-collapse:collapse;">'+l+'</table>';}
 
   var parts = [
     section('👤 Patient',[['Nom',nom],['Prénom',prenom],['Date de naissance',ddnStr],['Sexe',sexe],['Adresse',adresse]]),
     section('📞 Contact',[['Email',email],['Téléphone',tel],['Demandeur',demandeurStr],['Contact',nomContact],['Lien',lienAutre],['Profession du père',profPere],['Profession de la mère',profMere]]),
     section('🎯 Motif',[['Parcours',parcours]]),
-    '<div style="background:#F8F9FA;border:1px solid #E2E0D8;border-radius:8px;padding:10px 12px;font-size:12px;line-height:1.7;white-space:pre-wrap;margin:4px 0 8px;">'+esc(motif)+'</div>',
+    '<div style="background:#F8F9FA;border:1px solid #E7E0D3;border-radius:8px;padding:10px 12px;font-size:12px;line-height:1.7;white-space:pre-wrap;margin:4px 0 8px;">'+esc(motif)+'</div>',
     section('📋 Ordonnance',[['Ordonnance',ordonnance],['Date',dateOrdoStr],['Intitulé',intituleOrdo],['Médecin',medecin]]),
     section('🏫 Scolarité',[['Classe',classe]]),
     section('🔄 Suivi antérieur',[['Premier suivi',premierSuivi],['Orthophoniste précédent',orthoPrec],['Durée',dureeSuivi]]),
@@ -376,16 +384,82 @@ function ouvrirRecapPDF(){
   if(!w){alert("Veuillez autoriser les popups pour ce site.");return;}
   w.document.open();
   w.document.write('<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8"><title>Recapitulatif '+prenom+' '+nom+'</title>');
-  w.document.write('<style>body{font-family:Arial,sans-serif;font-size:12px;color:#1A2A4A;background:#F0F4F0;padding:24px 16px;}');
-  w.document.write('.page{max-width:700px;margin:0 auto;background:white;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,.1);overflow:hidden;}');
-  w.document.write('.hdr{background:linear-gradient(135deg,#1D9E75,#185FA5);color:white;padding:20px 28px;display:flex;justify-content:space-between;align-items:center;}');
-  w.document.write('.toolbar{padding:8px 28px;border-bottom:1px solid #E2E0D8;}.btn{padding:7px 16px;border:none;border-radius:8px;cursor:pointer;font-size:12px;font-weight:600;background:#1D9E75;color:white;}');
-  w.document.write('.body{padding:18px 28px 28px;}.footer{background:#F7F6F2;border-top:1px solid #E2E0D8;padding:10px 28px;display:flex;justify-content:space-between;font-size:10px;color:#9B9A95;}');
-  w.document.write('@media print{body{background:white;padding:0;}.page{margin:0;box-shadow:none;border-radius:0;}.toolbar{display:none;}}</style></head><body>');
+  w.document.write('<style>
+:root{
+  --sage:#6F8C6A;--sage-d:#56714F;--sage-l:#EFF3ED;--sage-xl:#F7FAF6;--sage-b:#B8D4B4;
+  --brique:#C17B5A;--brique-l:#F5EDE8;--brique-b:#E8C4B0;--brique-d:#A0603E;
+  --cream:#FAFAF7;--border:#E7E0D3;--border-soft:#F0EAE1;
+  --text:#3C3A33;--text-soft:#6E695C;--text-muted:#9E9990;
+  --amber:#C9890A;--amber-l:#FDF4E3;--amber-b:#F0D290;
+  --info:#4A7A9B;--info-l:#EBF4FA;--info-b:#BDD8EA;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'DM Sans', sans-serif; background: var(--cream); min-height: 100vh; padding: 24px 16px 48px; color: var(--text); }
+.card { background: white; border-radius: 20px; max-width: 620px; margin: 0 auto; box-shadow: 0 2px 16px rgba(60,58,51,.08); overflow: hidden; border: 1px solid var(--border); }
+.header { background: linear-gradient(135deg, var(--sage), var(--sage-d)); padding: 28px 28px 24px; text-align: center; }
+.header h1 { color: white; font-size: 18px; font-weight: 700; margin-bottom: 4px; letter-spacing: -.01em; }
+.header p { color: rgba(255,255,255,.82); font-size: 13px; }
+.header button { display:inline-block;margin-top:10px;background:rgba(255,255,255,.2);color:white;padding:6px 14px;border-radius:20px;font-size:12px;font-weight:600;border:1px solid rgba(255,255,255,.35);cursor:pointer; }
+.intro { background: var(--sage-xl); border-bottom:1px solid var(--sage-b); padding:20px 28px; }
+.intro p { font-size:13px; color:var(--sage-d); line-height:1.7; margin-bottom:10px; }
+.intro p:last-child { font-size:12px; color:var(--text-soft); font-style:italic; margin-bottom:0; }
+.form-body { padding: 28px; }
+.section-title { font-size:11px; font-weight:700; color:var(--sage); text-transform:uppercase; letter-spacing:.08em; margin:20px 0 12px; padding-bottom:6px; border-bottom:1.5px solid var(--sage-l); }
+.section-title:first-child { margin-top:0; }
+.field { margin-bottom: 14px; }
+.field label { display:block; font-size:12px; font-weight:600; color:var(--text-soft); margin-bottom:5px; text-transform:uppercase; letter-spacing:.04em; }
+.field label .req { color:var(--brique); margin-left:2px; }
+.field input, .field select, .field textarea { width:100%; padding:10px 12px; border:1.5px solid var(--border); border-radius:10px; font-size:14px; font-family:inherit; color:var(--text); background:var(--cream); transition:border-color .15s; outline:none; }
+.field input:focus, .field select:focus, .field textarea:focus { border-color:var(--sage); background:white; }
+.field textarea { resize:vertical; min-height:80px; }
+.field-row { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+.checkbox-group { display:flex; flex-direction:column; gap:8px; margin-top:4px; }
+.checkbox-item { display:flex; align-items:flex-start; gap:14px; padding:10px 12px; border:1.5px solid var(--border); border-radius:10px; cursor:pointer; transition:border-color .15s, background .15s; background:var(--cream); }
+.checkbox-item:hover { border-color:var(--sage); background:var(--sage-xl); }
+.checkbox-item input[type=checkbox] { width:16px; height:16px; accent-color:var(--sage); cursor:pointer; flex-shrink:0; margin-top:2px; margin-right:2px; }
+.checkbox-item span { font-size:13px; color:var(--text); }
+.checkbox-item strong { display:block; font-size:13px; color:var(--text); }
+.checkbox-item small { font-size:11px; color:var(--text-soft); line-height:1.4; margin-top:2px; display:block; }
+.radio-group { display:flex; flex-direction:column; gap:8px; margin-top:4px; }
+.radio-item { display:flex; align-items:center; gap:14px; padding:10px 12px; border:1.5px solid var(--border); border-radius:10px; cursor:pointer; transition:border-color .15s, background .15s; background:var(--cream); }
+.radio-item:hover { border-color:var(--sage); background:var(--sage-xl); }
+.radio-item input[type=radio] { width:16px; height:16px; accent-color:var(--sage); cursor:pointer; flex-shrink:0; margin-right:2px; }
+.radio-item span { font-size:13px; color:var(--text); }
+.alert-orange { display:none; margin-top:10px; background:var(--amber-l); border:1.5px solid var(--amber-b); border-radius:10px; padding:12px 14px; }
+.alert-orange .title { font-size:13px; font-weight:600; color:var(--amber); margin-bottom:4px; }
+.alert-orange .body { font-size:12px; color:var(--text-soft); line-height:1.5; }
+.suivi-prec-zone { display:none; margin-top:8px; padding:14px; background:var(--cream); border-radius:10px; border:1.5px solid var(--border); }
+.suivi-prec-zone .title { font-size:11px; font-weight:700; color:var(--text-soft); text-transform:uppercase; letter-spacing:.06em; margin-bottom:10px; }
+.rgpd { background:var(--info-l); border:1px solid var(--info-b); border-radius:10px; padding:12px 14px; font-size:11px; color:var(--info); line-height:1.5; margin-top:20px; }
+.rgpd label { display:flex; gap:10px; align-items:flex-start; cursor:pointer; }
+.rgpd input { width:16px; height:16px; accent-color:var(--info); flex-shrink:0; margin-top:1px; }
+.btn-submit { width:100%; padding:14px; background:linear-gradient(135deg, var(--sage), var(--sage-d)); color:white; border:none; border-radius:12px; font-size:15px; font-weight:700; cursor:pointer; margin-top:20px; transition:opacity .15s, transform .1s; box-shadow:0 4px 14px rgba(111,140,106,.30); font-family:inherit; }
+.btn-submit:hover { opacity:.92; transform:translateY(-1px); }
+.btn-submit:disabled { opacity:.5; cursor:not-allowed; transform:none; }
+.success { display:none; text-align:center; padding:40px 28px; }
+.success .icon { font-size:56px; margin-bottom:16px; }
+.success h2 { font-size:20px; font-weight:700; color:var(--sage-d); margin-bottom:8px; }
+.success p { font-size:13px; color:var(--text-soft); line-height:1.6; }
+.error-msg { color:var(--brique); font-size:11px; margin-top:4px; display:none; }
+.date-row { display:flex; gap:8px; }
+.date-row select { flex:1; padding:10px 8px; border:1.5px solid var(--border); border-radius:10px; font-size:14px; color:var(--text); background:var(--cream); font-family:inherit; }
+.date-row select:focus { border-color:var(--sage); outline:none; }
+@media print { body{background:white;padding:0;} .card{box-shadow:none;border-radius:0;} .header button,.btn-submit{display:none;} }
+.parent-zone { display:none; margin-top:12px; padding:14px; background:var(--info-l); border:1.5px solid var(--info-b); border-radius:10px; }
+.parent-zone .zone-label { font-size:11px; font-weight:700; color:var(--info); text-transform:uppercase; letter-spacing:.06em; margin-bottom:10px; }
+.btn-pdf { display:inline-flex; align-items:center; gap:6px; margin-top:10px; background:rgba(255,255,255,.25); color:white; padding:7px 16px; border-radius:20px; font-size:12px; font-weight:600; border:1.5px solid rgba(255,255,255,.4); cursor:pointer; transition:background .15s; }
+.btn-pdf:hover { background:rgba(255,255,255,.35); }
+@media (max-width:480px) { .field-row{grid-template-columns:1fr;} .form-body{padding:20px;} }
+</style></head><body>');
   w.document.write('<div class="page">');
   w.document.write('<div class="hdr"><div><div style="font-size:16px;font-weight:600;margin-bottom:3px;">Cabinet d\'orthophonie de No\u00eblie Lain\u00e9</div><div style="font-size:11px;opacity:.85;">285 rue de la Croix de Mission, 54200 Pagney-derri\u00e8re-Barine</div></div><div style="text-align:right;font-size:11px;opacity:.85;">Demande du<br><strong>'+today+'</strong></div></div>');
-  w.document.write('<div style="background:#F0FBF6;border-bottom:2px solid #A7F3D0;padding:12px 28px;font-size:15px;font-weight:600;color:#1D9E75;">📋 '+esc(prenom)+' '+esc(nom)+'</div>');
-  w.document.write('<div class="toolbar"><button class="btn" onclick="window.print()">🖨️ Imprimer / Enregistrer PDF</button></div>');
+  w.document.write('<div style="background:#EFF3ED;border-bottom:2px solid #A7F3D0;padding:12px 28px;font-size:15px;font-weight:600;color:#6F8C6A;">📋 '+esc(prenom)+' '+esc(nom)+'</div>');
+  w.document.write('<div class="toolbar" style="display:flex;gap:10px;padding:10px 28px;border-bottom:1px solid #E7E0D3;">');
+  w.document.write('<button onclick="window.print()" style="padding:7px 18px;border:none;border-radius:8px;cursor:pointer;font-size:13px;font-weight:700;background:#EA580C;color:white;">🖨️ Imprimer</button>');
+  w.document.write('<button onclick="_dlPdfRecap()" style="padding:7px 18px;border:none;border-radius:8px;cursor:pointer;font-size:13px;font-weight:700;background:#7C3AED;color:white;">📥 Télécharger PDF</button>');
+  w.document.write('</div>');
+  w.document.write('<script src=\"https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js\"><\/script>');
+  w.document.write('<script>function _dlPdfRecap(){ var el=document.querySelector(\".page\"); html2pdf().set({margin:0,filename:\"demande-ortho.pdf\",image:{type:\"jpeg\",quality:0.98},html2canvas:{scale:2,useCORS:true},jsPDF:{unit:\"mm\",format:\"a4\",orientation:\"portrait\"}}).from(el).save(); }<\/script>');
   w.document.write('<div class="body">'+parts+'</div>');
   w.document.write('<div class="footer"><span>Cabinet de Noëlie Lainé</span><span>Généré le '+today+'</span></div>');
   w.document.write('</div></body></html>');
@@ -469,7 +543,7 @@ async function submitForm(){
   var valid=true;
   ['nom','prenom','email','telephone','motif'].forEach(function(id){
     var el=document.getElementById(id);
-    if(!el.value.trim()){el.style.borderColor='#E53E3E';valid=false;}
+    if(!el.value.trim()){el.style.borderColor='#C17B5A';valid=false;}
     else el.style.borderColor='';
   });
   if(!document.getElementById('ddn').value){
@@ -525,7 +599,7 @@ async function submitForm(){
     var res=await fetch('https://xiznicrburryfmdfbjxk.supabase.co/functions/v1/quick-action',{
       method:'POST',
       headers:{'Content-Type':'application/json','Authorization':'Bearer '+SB_KEY},
-      body:JSON.stringify({...newPatient,created_at:now,data:{},praticien_id:_praticienId,user_id:_praticienId})
+      body:JSON.stringify({...newPatient,created_at:now,data:{},praticien_id:_praticienId})
     });
     if(!res.ok){var err=await res.text();throw new Error(err);}
     document.getElementById('form-container').style.display='none';
