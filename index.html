@@ -4622,7 +4622,7 @@ function openPatientModalFromAttente(a){
   document.getElementById('p-ald-ortho').checked=false;
   document.getElementById('p-tiers-payant').checked=true;
   document.getElementById('p-diagnostic').value=a.motif||'';
-  document.getElementById('p-nir').value='';
+  document.getElementById('p-nir').value = a.nir||'';
   document.getElementById('p-color').value='#1D9E75';
   document.getElementById('p-statut').value='actif';
   var _fixeRadio=document.getElementById('p-portail-fixe');
