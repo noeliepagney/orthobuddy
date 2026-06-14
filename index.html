@@ -4589,8 +4589,8 @@ function openPatientModalFromAttente(a){
     domicile: !!(a.domicile),
     distanceKm: 0,
     memeAgglo: false,
-    hospi: false,
-    hospiSortie: '',
+    hospi: !!(a.sortieHospit||a.hospi),
+    hospiSortie: a.hospiSortie||'',
     nir: a.nir||'',
     permNotes: notes,
   };
@@ -9575,6 +9575,7 @@ async function confirmerImportSelection(){
         sourceDemande: 'Formulaire web',
         urgence: item.urgence || 'aucune', urgenceCause: d.urgence_cause||d.urgenceCause||'',
         sortieHospit: !!(d.sortie_hospit),
+        hospi: !!(d.sortie_hospit),
         collab: false, renouvellements: 0,
       };
       if(!DB.attente)DB.attente=[];
