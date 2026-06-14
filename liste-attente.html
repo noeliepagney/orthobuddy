@@ -244,12 +244,10 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
       <div class="section-title">📋 Prescription médicale</div>
       <div class="field">
         <label>Avez-vous une ordonnance de moins d'un an ? <span class="req">*</span></label>
-        <div class="radio-group">
-          <div class="radio-group" id="rg-ordonnance">
+        <div class="radio-group" id="rg-ordonnance">
             <label class="radio-item"><input type="radio" name="ordonnance" value="oui" onchange="checkOrdonnance(this)" onclick="checkOrdonnance(this)"><span>Oui, j'ai une ordonnance de moins d'un an</span></label>
             <label class="radio-item"><input type="radio" name="ordonnance" value="non" onchange="checkOrdonnance(this)" onclick="checkOrdonnance(this)"><span>Non, je n'en ai pas encore</span></label>
             <label class="radio-item"><input type="radio" name="ordonnance" value="en_cours" onchange="checkOrdonnance(this)" onclick="checkOrdonnance(this)"><span>En cours d'obtention</span></label>
-          </div>
         </div>
         <div class="alert-orange" id="ordonnance-alert">
           <div class="title">ℹ️ Une ordonnance médicale est nécessaire</div>
@@ -724,7 +722,7 @@ async function submitForm(){
     if(!res.ok){var err=await res.text();throw new Error(err);}
     document.getElementById('form-container').style.display='none';
     document.getElementById('success-screen').style.display='block';
-    document.getElementById('success-prenom').textContent=prenom;
+    var sp=document.getElementById('success-prenom'); if(sp) sp.textContent=prenom;
   }catch(e){
     console.error(e);
     btn.disabled=false;btn.textContent='Envoyer ma demande →';
