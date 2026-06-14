@@ -2272,7 +2272,12 @@ const _sbEnv = localStorage.getItem('sb_env') || 'prod';
 let SB_URL = SB_CONFIGS[_sbEnv].url;
 let SB_KEY = SB_CONFIGS[_sbEnv].key;
 const SB_USER = 'noelie'; // identifiant unique dans la table (legacy Tauri)
-function getSbUserId(){ return sessionStorage.getItem('sb_user_id')||localStorage.getItem('sb_user_id')|| SB_USER; }
+function getSbUserId(){ 
+  var id = sessionStorage.getItem('sb_user_id')||localStorage.getItem('sb_user_id')|| SB_USER;
+  // Compatibilité : si l'UUID Supabase s'est substitué à 'noelie', on normalise
+  if(id === 'b443cde9-7186-4239-85ac-e48f1912e51a') return 'noelie';
+  return id;
+}
 function getSbToken(){ return sessionStorage.getItem('sb_token') || localStorage.getItem('sb_token') || SB_KEY; }
 function isAdmin(){ return sessionStorage.getItem('sb_role') === 'admin'; }
 function canUseBibliotheque(){ return isAdmin() || sessionStorage.getItem('sb_can_bibliotheque') === '1'; }
@@ -2468,7 +2473,11 @@ async function checkNouvellesReservations(){
     }
 
     // Vérifier nouvelles demandes liste d'attente
-    var resAtt = await fetch(SB_URL+'/rest/v1/liste_attente?traite=eq.false&user_id=eq.'+getSbUserId()+'&select=id', {
+    var _uid = getSbUserId();
+    var _uFilter = _uid === 'noelie'
+      ? 'user_id=eq.noelie'
+      : 'or=(user_id.eq.'+_uid+',user_id.eq.noelie,praticien_id.eq.'+_uid+',praticien_id.eq.noelie)';
+    var resAtt = await fetch(SB_URL+'/rest/v1/liste_attente?traite=eq.false&'+_uFilter+'&select=id', {
       headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer '+getSbToken() }
     });
     var attente = await resAtt.json();
@@ -4283,7 +4292,7 @@ function renderAttenteList(){
   var header = '<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;margin-bottom:8px;">'
     +'<span style="font-size:12px;color:var(--text-soft);">'+list.length+' demande'+(list.length>1?'s':'')+'</span>'
     +'<div style="display:flex;gap:6px;">'
-    +'<button class="btn btn-sm" style="background:#EDE9FE;color:#6D28D9;border:none;" onclick="importerDemandesWeb()">\u2601\ufe0f Importer du web</button>'
+    +'<button class="btn btn-sm" style="background:#EDE9FE;color:#6D28D9;border:none;" onclick="event.stopPropagation();importerDemandesWeb()">\u2601\ufe0f Importer du web</button>'
     +'<button class="btn btn-green btn-sm" onclick="openAttenteModal()">+ Nouvelle demande</button>'
     +'</div>'
     +'</div>';
@@ -9372,7 +9381,11 @@ async function importerDemandesWeb(){
   var btn=document.querySelector('[onclick="importerDemandesWeb()"]');
   if(btn){btn.textContent='☁️ Chargement…';btn.disabled=true;}
   try{
-    var res=await fetch(SB_URL+'/rest/v1/liste_attente?traite=eq.false&user_id=eq.'+getSbUserId()+'&order=created_at.asc',{
+    var uid = getSbUserId();
+    var userFilter = uid === 'noelie'
+      ? 'user_id=eq.noelie'
+      : 'or=(user_id.eq.'+uid+',user_id.eq.noelie,praticien_id.eq.'+uid+',praticien_id.eq.noelie)';
+    var res=await fetch(SB_URL+'/rest/v1/liste_attente?traite=eq.false&'+userFilter+'&order=created_at.asc',{
       headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Content-Type':'application/json'}
     });
     if(!res.ok) throw new Error('HTTP '+res.status);
@@ -9399,7 +9412,10 @@ async function importerDemandesWeb(){
       return {row:row, d:d, checked:true, urgence: d.sortie_hospit?'urgent':(d.urgence&&d.urgence!=='normal'?d.urgence:'aucune'), deleted:false};
     });
     renderPreviewImport();
-    document.getElementById('modal-preview-import').classList.add('open');
+    setTimeout(function(){
+      var m = document.getElementById('modal-preview-import');
+      if(m) m.classList.add('open');
+    }, 50);
   }catch(e){
     if(btn){btn.textContent='☁️ Importer du web';btn.disabled=false;}
     showToast('⚠️ Erreur : '+e.message);
