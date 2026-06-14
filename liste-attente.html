@@ -245,9 +245,9 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
       <div class="field">
         <label>Avez-vous une ordonnance de moins d'un an ? <span class="req">*</span></label>
         <div class="radio-group">
-          <label class="radio-item" onclick="setTimeout(function(){var r=document.querySelector('[name=ordonnance]:checked');if(r)checkOrdonnance(r);},10)"><input type="radio" name="ordonnance" value="oui" onchange="checkOrdonnance(this)"><span>Oui, j'ai une ordonnance de moins d'un an</span></label>
-          <label class="radio-item" onclick="setTimeout(function(){var r=document.querySelector('[name=ordonnance]:checked');if(r)checkOrdonnance(r);},10)"><input type="radio" name="ordonnance" value="non" onchange="checkOrdonnance(this)"><span>Non, je n'en ai pas encore</span></label>
-          <label class="radio-item" onclick="setTimeout(function(){var r=document.querySelector('[name=ordonnance]:checked');if(r)checkOrdonnance(r);},10)"><input type="radio" name="ordonnance" value="en_cours" onchange="checkOrdonnance(this)"><span>En cours d'obtention</span></label>
+          <label class="radio-item"><input type="radio" name="ordonnance" value="oui"><span>Oui, j'ai une ordonnance de moins d'un an</span></label>
+          <label class="radio-item"><input type="radio" name="ordonnance" value="non"><span>Non, je n'en ai pas encore</span></label>
+          <label class="radio-item"><input type="radio" name="ordonnance" value="en_cours"><span>En cours d'obtention</span></label>
         </div>
         <div class="alert-orange" id="ordonnance-alert">
           <div class="title">ℹ️ Une ordonnance médicale est nécessaire</div>
@@ -278,8 +278,8 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
       <div class="field">
         <label>S'agit-il d'un premier suivi orthophonique ? <span class="req">*</span></label>
         <div class="radio-group">
-          <label class="radio-item" onclick="setTimeout(function(){var r=document.querySelector('[name=premier_suivi]:checked');if(r)toggleSuiviPrecedent(r);},10)"><input type="radio" name="premier_suivi" value="oui" onchange="toggleSuiviPrecedent(this)"><span>Oui, c'est un premier suivi</span></label>
-          <label class="radio-item" onclick="setTimeout(function(){var r=document.querySelector('[name=premier_suivi]:checked');if(r)toggleSuiviPrecedent(r);},10)"><input type="radio" name="premier_suivi" value="non" onchange="toggleSuiviPrecedent(this)"><span>Non, un suivi orthophonique a déjà été réalisé</span></label>
+          <label class="radio-item"><input type="radio" name="premier_suivi" value="oui"><span>Oui, c'est un premier suivi</span></label>
+          <label class="radio-item"><input type="radio" name="premier_suivi" value="non"><span>Non, un suivi orthophonique a déjà été réalisé</span></label>
         </div>
       </div>
       <div class="suivi-prec-zone" id="zone-suivi-precedent">
@@ -601,7 +601,23 @@ async function loadPraticienInfos(){
   } catch(e){ console.error('loadPraticienInfos', e); }
 }
 
-document.addEventListener('DOMContentLoaded', loadPraticienInfos);
+document.addEventListener('DOMContentLoaded', function(){
+  loadPraticienInfos();
+
+  // Brancher tous les radio conditionnels proprement
+  document.querySelectorAll('input[name="ordonnance"]').forEach(function(r){
+    r.addEventListener('change', function(){ checkOrdonnance(this); });
+  });
+  document.querySelectorAll('input[name="premier_suivi"]').forEach(function(r){
+    r.addEventListener('change', function(){ toggleSuiviPrecedent(this); });
+  });
+  document.querySelectorAll('input[name="professionnels"]').forEach(function(r){
+    r.addEventListener('change', function(){ toggleAutreProf(this); });
+  });
+  document.querySelectorAll('input[name="structures"]').forEach(function(r){
+    r.addEventListener('change', function(){ toggleAutreStructure(this); });
+  });
+});
 const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inhpem5pY3JidXJyeWZtZGZianhrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAwNDM0NjEsImV4cCI6MjA5NTYxOTQ2MX0.vYuV7LIBXXkKJkHVwNPaI-lA7x1HwFROdU1K17ZB1Y8';
 
 function getChecked(name){ return [...document.querySelectorAll('input[name="'+name+'"]:checked')].map(el=>el.value); }
