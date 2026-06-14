@@ -8065,8 +8065,7 @@ function getPatientFallback(pid){
 
 // ── Patients ────────────────────────────────────────────────────────────────
 function loadPatients(){
-  // Essayer d'abord avec noelie, puis fallback UUID
-  const uid = 'noelie';
+  const uid = 'b443cde9-7186-4239-85ac-e48f1912e51a';
   fetch(SB_URL+"/rest/v1/orthobuddy_data?user_id=eq."+uid+"&select=data", {
     headers:{"apikey":SB_ANON,"Authorization":"Bearer "+SB_ANON}
   }).then(r=>r.json()).then(rows=>{

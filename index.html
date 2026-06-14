@@ -2272,12 +2272,7 @@ const _sbEnv = localStorage.getItem('sb_env') || 'prod';
 let SB_URL = SB_CONFIGS[_sbEnv].url;
 let SB_KEY = SB_CONFIGS[_sbEnv].key;
 const SB_USER = 'noelie'; // identifiant unique dans la table (legacy Tauri)
-function getSbUserId(){ 
-  var id = sessionStorage.getItem('sb_user_id')||localStorage.getItem('sb_user_id')|| SB_USER;
-  // Compatibilité : si l'UUID Supabase s'est substitué à 'noelie', on normalise
-  if(id === 'b443cde9-7186-4239-85ac-e48f1912e51a') return 'noelie';
-  return id;
-}
+function getSbUserId(){ return sessionStorage.getItem('sb_user_id')||localStorage.getItem('sb_user_id')|| SB_USER; }
 function getSbToken(){ return sessionStorage.getItem('sb_token') || localStorage.getItem('sb_token') || SB_KEY; }
 function isAdmin(){ return sessionStorage.getItem('sb_role') === 'admin'; }
 function canUseBibliotheque(){ return isAdmin() || sessionStorage.getItem('sb_can_bibliotheque') === '1'; }
@@ -2474,9 +2469,7 @@ async function checkNouvellesReservations(){
 
     // Vérifier nouvelles demandes liste d'attente
     var _uid = getSbUserId();
-    var _uFilter = _uid === 'noelie'
-      ? 'user_id=eq.noelie'
-      : 'or=(user_id.eq.'+_uid+',user_id.eq.noelie,praticien_id.eq.'+_uid+',praticien_id.eq.noelie)';
+    var _uFilter = 'or=(user_id.eq.'+_uid+',user_id.eq.noelie,praticien_id.eq.'+_uid+',praticien_id.eq.noelie)';
     var resAtt = await fetch(SB_URL+'/rest/v1/liste_attente?traite=eq.false&'+_uFilter+'&select=id', {
       headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer '+getSbToken() }
     });
@@ -9382,9 +9375,7 @@ async function importerDemandesWeb(){
   if(btn){btn.textContent='☁️ Chargement…';btn.disabled=true;}
   try{
     var uid = getSbUserId();
-    var userFilter = uid === 'noelie'
-      ? 'user_id=eq.noelie'
-      : 'or=(user_id.eq.'+uid+',user_id.eq.noelie,praticien_id.eq.'+uid+',praticien_id.eq.noelie)';
+    var userFilter = 'or=(user_id.eq.'+uid+',user_id.eq.noelie,praticien_id.eq.'+uid+',praticien_id.eq.noelie)';
     var res=await fetch(SB_URL+'/rest/v1/liste_attente?traite=eq.false&'+userFilter+'&order=created_at.asc',{
       headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Content-Type':'application/json'}
     });
