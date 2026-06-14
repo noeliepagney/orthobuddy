@@ -9422,6 +9422,23 @@ async function importerDemandesWeb(){
   }
 }
 
+async function supprimerPreviewRow(idx){
+  var item = _previewImportRows[idx];
+  if(!item) return;
+  item.deleted = true;
+  renderPreviewImport();
+  // Marquer traite=true dans Supabase pour ne plus la revoir
+  if(item.row && item.row.id){
+    try{
+      await fetch(SB_URL+'/rest/v1/liste_attente?id=eq.'+item.row.id, {
+        method:'PATCH',
+        headers:{...sbHeaders(),'Content-Type':'application/json','Prefer':'return=minimal'},
+        body: JSON.stringify({traite:true})
+      });
+    }catch(e){ console.warn('supprimerPreviewRow PATCH:', e); }
+  }
+}
+
 function togglePreviewUrgence(idx, niveau){
   _previewImportRows[idx].urgence = _previewImportRows[idx].urgence === niveau ? 'aucune' : niveau;
   renderPreviewImport();
@@ -9448,7 +9465,7 @@ function renderPreviewImport(){
       +'<div style="display:flex;gap:5px;flex-shrink:0;">'
       +'<button class="btn btn-sm'+(item.urgence==='urgent'?' btn-red':'')+'" onclick="togglePreviewUrgence('+realIdx+',\'urgent\')" title="Urgent">🔴</button>'
       +'<button class="btn btn-sm'+(item.urgence==='prioritaire'?' btn-amber':'')+'" onclick="togglePreviewUrgence('+realIdx+',\'prioritaire\')" title="Prioritaire">🟡</button>'
-      +'<button class="btn btn-sm" onclick="_previewImportRows['+realIdx+'].deleted=true;renderPreviewImport()" title="Supprimer" style="color:var(--red);">🗑️</button>'
+      +'<button class="btn btn-sm" onclick="supprimerPreviewRow('+realIdx+')" title="Ignorer cette demande" style="color:var(--red);">🗑️</button>'
       +'</div>'
       +'</div>'
       +'</div>';
