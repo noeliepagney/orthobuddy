@@ -8207,6 +8207,7 @@ function prefillFromPatient(p){
     if(a.symptomes_omf && a.symptomes_omf.length) map[trameId+".anamnese.symptomes_osm"]=a.symptomes_omf.slice();
 
     if(a.description_patient) map[trameId+".anamnese.personnalite"]=a.description_patient;
+    if(a.sensorialite && a.sensorialite.length) map[trameId+".anamnese.personnalite"]=(map[trameId+".anamnese.personnalite"]||'')+'\nSensibilités particulières : '+fmtArr(a.sensorialite);
 
     if(a.hygiene_nasale_omf){
       const hygMap={'Oui, efficacement':'Oui, efficace','Oui, mais insuffisamment':'Oui, insuffisante','Non':'Non'};
@@ -8282,6 +8283,7 @@ function prefillFromPatient(p){
     if(a.centres_interet) interetsCp.push(a.centres_interet);
     if(a.jeux_activites && a.jeux_activites.length) interetsCp.push(fmtArr(a.jeux_activites));
     if(a.jeux_activites_autres) interetsCp.push(a.jeux_activites_autres);
+    if(a.sensorialite && a.sensorialite.length) interetsCp.push("Sensibilités particulières : "+fmtArr(a.sensorialite));
     if(interetsCp.length) map[trameId+".anamnese.interets"]=interetsCp.join(', ');
   }
 
@@ -8787,6 +8789,7 @@ function prefillFromPatient(p){
     if(a.lieu_sommeil) activites.push("Lieu de sommeil : "+a.lieu_sommeil);
     if(a.troubles_sommeil && a.troubles_sommeil.length) activites.push("Troubles du sommeil : "+fmtArr(a.troubles_sommeil));
     if(a.autonomie && a.autonomie.length) activites.push("Autonomie : "+fmtArr(a.autonomie));
+    if(a.sensorialite && a.sensorialite.length) activites.push("Sensibilités particulières : "+fmtArr(a.sensorialite));
     if(a.attention && a.attention.length) activites.push("\u00c9l\u00e9ments attentionnels : "+fmtArr(a.attention));
     let jeux=[];
     if(a.jeux_activites && a.jeux_activites.length) jeux.push(fmtArr(a.jeux_activites));
@@ -9685,7 +9688,6 @@ function prefillFromPatient(p){
     if(a.alim_bebe) map[trameId+".anamnese.allaitement"]=a.alim_bebe;
 
     if(a.succion && a.succion.length) map[trameId+".anamnese.succion_items"]=fmtArr(a.succion);
-    else if(a.succion_habits && a.succion_habits.length) map[trameId+".anamnese.succion_items"]=fmtArr(a.succion_habits);
 
     let comprtRepasDeg=[];
     if(a.alimentation_oralite && a.alimentation_oralite.length) comprtRepasDeg.push(fmtArr(a.alimentation_oralite));
