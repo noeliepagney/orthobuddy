@@ -17,17 +17,17 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 .card { background: var(--cream); border-radius: 20px; max-width: 620px; margin: 0 auto; box-shadow: 0 2px 20px rgba(60,55,45,.07); overflow: hidden; border: 1px solid var(--border); }
 
 /* Header : fond crème avec un subtil soulignement sauge */
-.header { background: var(--cream); border-bottom: 3px solid var(--sage-l); padding: 32px 32px 26px; text-align: center; position: relative; }
-.header::before { content:''; position:absolute; top:0; left:0; right:0; height:4px; background: linear-gradient(90deg, var(--sage-b), var(--sage), var(--sage-b)); }
-.header-logo { font-size:13px; font-weight:600; color:var(--text-muted); letter-spacing:.06em; text-transform:uppercase; margin-bottom:14px; }
-.header h1 { color: var(--sage-d); font-size: 22px; font-weight: 700; margin-bottom: 6px; letter-spacing:-.02em; }
+.header { background: linear-gradient(160deg, var(--sage-l) 0%, #E8F0E6 100%); border-bottom: 2px solid var(--sage-b); padding: 36px 32px 28px; text-align: center; position: relative; }
+.header::before { content:''; position:absolute; top:0; left:0; right:0; height:5px; background: linear-gradient(90deg, var(--brique-b), var(--brique), var(--sage), var(--sage-d)); }
+.header-logo { font-size:13px; font-weight:600; color:var(--sage); letter-spacing:.06em; text-transform:uppercase; margin-bottom:14px; }
+.header h1 { color: var(--sage-d); font-size: 23px; font-weight: 700; margin-bottom: 8px; letter-spacing:-.02em; }
 .header p { color: var(--text-soft); font-size: 14px; line-height:1.6; }
 .header button { display:inline-block; margin-top:14px; background:var(--sage-l); color:var(--sage-d); padding:7px 16px; border-radius:20px; font-size:12px; font-weight:600; border:1px solid var(--sage-b); cursor:pointer; transition:background .15s; }
 .header button:hover { background:var(--sage-b); }
 
 /* Intro */
-.intro { background: white; border-bottom:1px solid var(--border); padding:20px 32px; }
-.intro p { font-size:13.5px; color:var(--text-soft); line-height:1.75; margin-bottom:8px; }
+.intro { background: #F9FCF8; border-bottom:1px solid var(--sage-b); padding:20px 32px; }
+.intro p { font-size:13.5px; color:var(--sage-d); line-height:1.75; margin-bottom:8px; }
 .intro p:last-child { font-size:12px; color:var(--text-muted); font-style:italic; margin-bottom:0; }
 
 /* Corps du formulaire */
@@ -36,10 +36,12 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 /* Titres de section : lisibles, doux, pas crieurs */
 .section-title { 
   font-size:13px; font-weight:600; color:var(--sage-d); 
-  margin:28px 0 14px; 
+  margin:28px 0 14px; padding:8px 12px;
   display:flex; align-items:center; gap:8px;
+  background:var(--sage-l); border-radius:8px;
+  border-left:3px solid var(--sage);
 }
-.section-title::after { content:''; flex:1; height:1px; background:var(--border); }
+.section-title::after { display:none; }
 .section-title:first-child { margin-top:0; }
 
 /* Champs */
@@ -69,7 +71,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
   padding:11px 14px; border:1.5px solid var(--border); border-radius:10px; 
   cursor:pointer; transition:border-color .15s, background .15s; background:white; 
 }
-.checkbox-item:hover { border-color:var(--sage); background:var(--sage-xl); }
+.checkbox-item:hover { border-color:var(--sage); background:var(--sage-l); }
 .checkbox-item input[type=checkbox] { width:16px; height:16px; accent-color:var(--sage); cursor:pointer; flex-shrink:0; margin-top:2px; }
 .checkbox-item span { font-size:13.5px; color:var(--text); }
 .checkbox-item strong { display:block; font-size:13.5px; color:var(--text); font-weight:500; }
@@ -80,7 +82,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
   padding:11px 14px; border:1.5px solid var(--border); border-radius:10px; 
   cursor:pointer; transition:border-color .15s, background .15s; background:white; 
 }
-.radio-item:hover { border-color:var(--sage); background:var(--sage-xl); }
+.radio-item:hover { border-color:var(--sage); background:var(--sage-l); }
 .radio-item input[type=radio] { width:16px; height:16px; accent-color:var(--sage); cursor:pointer; flex-shrink:0; }
 .radio-item span { font-size:13.5px; color:var(--text); }
 
@@ -500,14 +502,14 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'DM Sans', sans-serif; ba
 .field-row { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
 .checkbox-group { display:flex; flex-direction:column; gap:8px; margin-top:4px; }
 .checkbox-item { display:flex; align-items:flex-start; gap:14px; padding:10px 12px; border:1.5px solid var(--border); border-radius:10px; cursor:pointer; transition:border-color .15s, background .15s; background:var(--cream); }
-.checkbox-item:hover { border-color:var(--sage); background:var(--sage-xl); }
+.checkbox-item:hover { border-color:var(--sage); background:var(--sage-l); }
 .checkbox-item input[type=checkbox] { width:16px; height:16px; accent-color:var(--sage); cursor:pointer; flex-shrink:0; margin-top:2px; margin-right:2px; }
 .checkbox-item span { font-size:13px; color:var(--text); }
 .checkbox-item strong { display:block; font-size:13px; color:var(--text); }
 .checkbox-item small { font-size:11px; color:var(--text-soft); line-height:1.4; margin-top:2px; display:block; }
 .radio-group { display:flex; flex-direction:column; gap:8px; margin-top:4px; }
 .radio-item { display:flex; align-items:center; gap:14px; padding:10px 12px; border:1.5px solid var(--border); border-radius:10px; cursor:pointer; transition:border-color .15s, background .15s; background:var(--cream); }
-.radio-item:hover { border-color:var(--sage); background:var(--sage-xl); }
+.radio-item:hover { border-color:var(--sage); background:var(--sage-l); }
 .radio-item input[type=radio] { width:16px; height:16px; accent-color:var(--sage); cursor:pointer; flex-shrink:0; margin-right:2px; }
 .radio-item span { font-size:13px; color:var(--text); }
 .alert-orange { display:none; margin-top:10px; background:var(--amber-l); border:1.5px solid var(--amber-b); border-radius:10px; padding:12px 14px; }
