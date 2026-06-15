@@ -2469,8 +2469,7 @@ async function checkNouvellesReservations(){
 
     // Vérifier nouvelles demandes liste d'attente
     var _uid = getSbUserId();
-    var _uFilter = 'or=(user_id.eq.'+_uid+',user_id.eq.noelie,praticien_id.eq.'+_uid+',praticien_id.eq.noelie)';
-    var resAtt = await fetch(SB_URL+'/rest/v1/liste_attente?traite=eq.false&'+_uFilter+'&select=id', {
+    var resAtt = await fetch(SB_URL+'/rest/v1/liste_attente?traite=eq.false&user_id=eq.'+_uid+'&select=id', {
       headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer '+getSbToken() }
     });
     var attente = await resAtt.json();
@@ -9375,8 +9374,7 @@ async function importerDemandesWeb(){
   if(btn){btn.textContent='☁️ Chargement…';btn.disabled=true;}
   try{
     var uid = getSbUserId();
-    var userFilter = 'or=(user_id.eq.'+uid+',user_id.eq.noelie,praticien_id.eq.'+uid+',praticien_id.eq.noelie)';
-    var res=await fetch(SB_URL+'/rest/v1/liste_attente?traite=eq.false&'+userFilter+'&order=created_at.asc',{
+    var res=await fetch(SB_URL+'/rest/v1/liste_attente?traite=eq.false&user_id=eq.'+uid+'&order=created_at.asc',{
       headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Content-Type':'application/json'}
     });
     if(!res.ok) throw new Error('HTTP '+res.status);
