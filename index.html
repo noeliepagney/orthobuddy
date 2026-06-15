@@ -7257,6 +7257,13 @@ function getMaterielFiltres(){
     data = data.filter(function(m){
       var mt = (m.tags||'').toLowerCase();
       return _materielFamilles.some(function(famille){
+        // Nouveau format 'domaine::categorie'
+        if(famille.includes('::')){
+          var parts=famille.split('::'); var dom=parts[0]; var cat=parts[1];
+          var tags=_allTagsInNode((TAGS_TAXONOMY[dom]&&TAGS_TAXONOMY[dom][cat])||[]);
+          return tags.some(function(t){return mt.includes(t.toLowerCase());});
+        }
+        // Ancien format MATERIEL_FAMILLES
         return (MATERIEL_FAMILLES[famille]||[]).some(function(t){ return mt.includes(t.toLowerCase()); });
       });
     });
@@ -7536,6 +7543,17 @@ var MATERIEL_CATEGORIES = [
 ];
 
 
+function toggleCategorieAccordeon(){
+  var body = document.getElementById('cat-accordeon-body');
+  var chev = document.getElementById('cat-accordeon-chevron');
+  if(!body) return;
+  var open = body.style.display === 'none';
+  body.style.display = open ? 'flex' : 'none';
+  body.style.flexWrap = 'wrap';
+  body.style.gap = '6px';
+  if(chev) chev.style.transform = open ? 'rotate(180deg)' : 'rotate(0deg)';
+}
+
 function _invalidateMaterielFilters(){
   var fe = document.getElementById('materiel-filters');
   if(fe) fe.dataset.rendered = '';
@@ -7583,27 +7601,30 @@ function _renderMaterielFiltersHTML(el){
   });
   h += '</div></div>';
 
-  // Thématiques groupées
-  var DOMAINE_GROUPS = [
-    {label:'✍ Langage écrit',prefix:'LE —',color:'#1D4ED8',bg:'#DBEAFE',border:'#93C5FD'},
-    {label:'💬 Langage oral',prefix:'LO —',color:'#065F46',bg:'#D1FAE5',border:'#6EE7B7'},
-    {label:'🔢 Cognition math',prefix:'CM —',color:'#7C3AED',bg:'#EDE9FE',border:'#C4B5FD'},
-    {label:'🧠 Neuro',prefix:'Neuro —',color:'#B45309',bg:'#FEF3C7',border:'#FCD34D'},
-    {label:'👄 OMF / Voix / ORL',prefix:null,keys:['OMF / Oralité','Voix','ORL'],color:'#BE185D',bg:'#FCE7F3',border:'#F9A8D4'},
-    {label:'🛠 Supports & Outils',prefix:null,keys:['Supports','Jeux','Gestion'],color:'#374151',bg:'#F3F4F6',border:'#D1D5DB'},
-  ];
+  // Thématiques depuis TAGS_TAXONOMY (3 niveaux : domaine → catégorie → sous-catégorie)
+  var DOMAINE_STYLES = {
+    '✍ Langage écrit': {color:'#1D4ED8',bg:'#DBEAFE',border:'#93C5FD'},
+    '💬 Langage oral': {color:'#065F46',bg:'#D1FAE5',border:'#6EE7B7'},
+    '🔢 Cognition math': {color:'#7C3AED',bg:'#EDE9FE',border:'#C4B5FD'},
+    '🧠 Neuro': {color:'#B45309',bg:'#FEF3C7',border:'#FCD34D'},
+    '👄 OMF / Voix / ORL': {color:'#BE185D',bg:'#FCE7F3',border:'#F9A8D4'},
+    '🛠 Outils': {color:'#374151',bg:'#F3F4F6',border:'#D1D5DB'},
+  };
   h += '<div style="margin-bottom:10px;"><div style="font-size:11px;font-weight:600;color:var(--text-soft);margin-bottom:8px;text-transform:uppercase;letter-spacing:.04em;">Thématiques</div>';
-  DOMAINE_GROUPS.forEach(function(grp){
-    var keys = grp.keys||Object.keys(MATERIEL_FAMILLES).filter(function(k){return grp.prefix&&k.startsWith(grp.prefix);});
-    if(!keys.length) return;
-    h += '<div style="margin-bottom:7px;"><div style="font-size:10px;font-weight:700;color:'+grp.color+';margin-bottom:4px;">'+grp.label+'</div><div style="display:flex;gap:5px;flex-wrap:wrap;">';
-    keys.forEach(function(famille){
-      if(!MATERIEL_FAMILLES[famille]) return;
-      var famActive=Array.isArray(_materielFamilles)&&_materielFamilles.includes(famille);
-      var shortLabel=famille.replace(/^(LE|LO|CM|Neuro) — /,'');
-      h += '<label style="display:flex;align-items:center;gap:4px;padding:3px 10px;border-radius:20px;cursor:pointer;border:1px solid '+(famActive?grp.border:'var(--border)')+';background:'+(famActive?grp.bg:'var(--surface)')+';color:'+(famActive?grp.color:'var(--text)')+';font-size:11px;white-space:nowrap;">';
-      h += '<input type="checkbox" data-fam="'+famille.replace(/"/g,'&quot;')+'" '+(famActive?'checked':'')+' onchange="toggleMaterielFamille(this.dataset.fam)" style="cursor:pointer;">';
-      h += shortLabel+'</label>';
+  Object.keys(TAGS_TAXONOMY).forEach(function(domaine){
+    var st = DOMAINE_STYLES[domaine]||{color:'#374151',bg:'#F3F4F6',border:'#D1D5DB'};
+    h += '<div style="margin-bottom:7px;">';
+    h += '<div style="font-size:10px;font-weight:700;color:'+st.color+';margin-bottom:4px;">'+domaine+'</div>';
+    h += '<div style="display:flex;gap:5px;flex-wrap:wrap;">';
+    // Afficher les catégories intermédiaires comme chips filtrables
+    Object.keys(TAGS_TAXONOMY[domaine]).forEach(function(categorie){
+      var allSubTags = _allTagsInNode(TAGS_TAXONOMY[domaine][categorie]);
+      // Identifiant unique : "domaine::categorie"
+      var famId = domaine+'::'+categorie;
+      var famActive = Array.isArray(_materielFamilles)&&_materielFamilles.includes(famId);
+      h += '<label style="display:flex;align-items:center;gap:4px;padding:3px 10px;border-radius:20px;cursor:pointer;border:1px solid '+(famActive?st.border:'var(--border)')+';background:'+(famActive?st.bg:'var(--surface)')+';color:'+(famActive?st.color:'var(--text)')+';font-size:11px;white-space:nowrap;">';
+      h += '<input type="checkbox" data-fam="'+famId.replace(/"/g,'&quot;')+'" '+(famActive?'checked':'')+' onchange="toggleMaterielFamille(this.dataset.fam)" style="cursor:pointer;">';
+      h += categorie+'</label>';
     });
     h += '</div></div>';
   });
@@ -7631,11 +7652,19 @@ function _renderMaterielFiltersHTML(el){
   }
   h += '</div>';
 
-  // Catégories fixes
-  h += '<div style="margin-bottom:10px;"><div style="font-size:11px;font-weight:600;color:var(--text-soft);margin-bottom:6px;text-transform:uppercase;letter-spacing:.04em;">Catégorie</div><div style="display:flex;gap:6px;flex-wrap:wrap;">';
+  // Catégories fixes — accordéon
+  var _catActive = Array.isArray(_materielCategories)&&_materielCategories.length;
+  h += '<div style="margin-bottom:10px;">';
+  h += '<div onclick="toggleCategorieAccordeon()" style="display:flex;align-items:center;justify-content:space-between;cursor:pointer;padding:6px 0;">';
+  h += '<div style="font-size:11px;font-weight:600;color:var(--text-soft);text-transform:uppercase;letter-spacing:.04em;">Catégorie'
+    + (_catActive?' <span style="background:var(--brique,#B87355);color:white;font-size:9px;padding:1px 6px;border-radius:8px;font-weight:700;">'+_materielCategories.length+'</span>':'')
+    + '</div>';
+  h += '<span id="cat-accordeon-chevron" style="font-size:12px;color:var(--text-muted);transform:'+(_catActive?'rotate(180deg)':'rotate(0deg)')+';display:inline-block;transition:transform .2s;">▾</span>';
+  h += '</div>';
+  h += '<div id="cat-accordeon-body" style="display:'+(_catActive?'flex':'none')+';gap:6px;flex-wrap:wrap;padding:6px 0;">';
   MATERIEL_CATEGORIES.forEach(function(cat){
     var active=Array.isArray(_materielCategories)&&_materielCategories.includes(cat.id);
-    h += '<label style="display:flex;align-items:center;gap:5px;padding:5px 12px;border-radius:20px;cursor:pointer;border:1px solid '+(active?cat.border:'var(--border)')+';background:'+(active?cat.bg:'var(--surface)')+';color:'+(active?cat.color:'var(--text)')+';font-size:12px;">';
+    h += '<label style="display:flex;align-items:center;gap:5px;padding:4px 10px;border-radius:20px;cursor:pointer;border:1px solid '+(active?cat.border:'var(--border)')+';background:'+(active?cat.bg:'var(--surface)')+';color:'+(active?cat.color:'var(--text)')+';font-size:12px;">';
     h += '<input type="checkbox" data-cat="'+cat.id.replace(/"/g,'&quot;')+'" '+(active?'checked':'')+' onchange="toggleMaterielCategorie(this.dataset.cat)" style="cursor:pointer;">'+cat.label+'</label>';
   });
   h += '</div></div>';
@@ -7838,6 +7867,7 @@ function _setMeditTags(tags){
   var h = document.getElementById('medit-tags-hidden');
   if(h) h.value = tags.join(', ');
   _renderTagsSelected(tags);
+  _updateTagPickerUI();
 }
 
 function _renderTagsSelected(tags){
@@ -7874,23 +7904,27 @@ function openTagPicker(){
   overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:9999;display:flex;align-items:center;justify-content:center;';
 
   var panel = document.createElement('div');
-  panel.style.cssText = 'background:white;border-radius:16px;padding:20px;width:560px;max-width:95vw;max-height:80vh;overflow:hidden;display:flex;flex-direction:column;gap:12px;box-shadow:0 8px 32px rgba(0,0,0,.2);';
+  panel.style.cssText = 'background:white;border-radius:16px;padding:20px;width:700px;max-width:96vw;max-height:90vh;overflow:hidden;display:flex;flex-direction:column;gap:8px;box-shadow:0 8px 40px rgba(0,0,0,.25);';
 
   panel.innerHTML =
-    '<div style="display:flex;align-items:center;justify-content:space-between;">'
+    '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">'
     + '<div style="font-size:15px;font-weight:600;color:var(--text);">Ajouter des tags</div>'
-    + '<button onclick="closeTagPicker()" style="background:none;border:none;font-size:18px;cursor:pointer;color:var(--text-soft);">×</button>'
+    + '<button onclick="closeTagPicker()" style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--text-soft);line-height:1;">×</button>'
     + '</div>'
-    + '<div style="display:flex;gap:6px;height:360px;">'
-    + '<div id="tag-picker-domaine" style="width:130px;flex-shrink:0;border:1px solid var(--border);border-radius:10px;overflow-y:auto;padding:4px;"></div>'
-    + '<div id="tag-picker-categ" style="width:130px;flex-shrink:0;border:1px solid var(--border);border-radius:10px;overflow-y:auto;padding:4px;display:flex;align-items:center;justify-content:center;"><span style="font-size:11px;color:var(--text-muted);">← Domaine</span></div>'
-    + '<div id="tag-picker-souscateg" style="width:130px;flex-shrink:0;border:1px solid var(--border);border-radius:10px;overflow-y:auto;padding:4px;display:flex;align-items:center;justify-content:center;"><span style="font-size:11px;color:var(--text-muted);">← Catégorie</span></div>'
-    + '<div id="tag-picker-leaf" style="flex:1;border:1px solid var(--border);border-radius:10px;overflow-y:auto;padding:4px;display:flex;align-items:center;justify-content:center;"><span style="font-size:11px;color:var(--text-muted);">← Sous-catégorie</span></div>'
+    // Fil d'Ariane
+    + '<div id="tag-picker-breadcrumb" style="font-size:11px;color:var(--text-muted);min-height:18px;margin-bottom:8px;"></div>'
+    + '<div style="display:flex;gap:8px;height:380px;">'
+    + '<div id="tag-picker-domaine" style="width:150px;flex-shrink:0;border:1px solid var(--border);border-radius:10px;overflow-y:auto;padding:4px;"></div>'
+    + '<div id="tag-picker-categ" style="width:150px;flex-shrink:0;border:1px solid var(--border);border-radius:10px;overflow-y:auto;padding:4px;"><div style="height:100%;display:flex;align-items:center;justify-content:center;"><span style="font-size:11px;color:var(--text-muted);">← Domaine</span></div></div>'
+    + '<div id="tag-picker-souscateg" style="width:150px;flex-shrink:0;border:1px solid var(--border);border-radius:10px;overflow-y:auto;padding:4px;"><div style="height:100%;display:flex;align-items:center;justify-content:center;"><span style="font-size:11px;color:var(--text-muted);">← Catégorie</span></div></div>'
+    + '<div id="tag-picker-leaf" style="flex:1;min-width:180px;border:1px solid var(--border);border-radius:10px;overflow-y:auto;padding:8px;"><div style="height:100%;display:flex;align-items:center;justify-content:center;"><span style="font-size:11px;color:var(--text-muted);">← Sous-catégorie</span></div></div>'
     + '</div>'
+    // Tags déjà sélectionnés (mini résumé)
+    + '<div id="tag-picker-current" style="min-height:28px;display:flex;flex-wrap:wrap;gap:4px;margin:8px 0;padding:4px;background:var(--bg);border-radius:8px;border:1px solid var(--border);"></div>'
     + '<div style="display:flex;gap:8px;align-items:center;">'
-    + '<input type="text" id="tag-picker-custom" placeholder="Tag libre (Entrée pour ajouter)" style="flex:1;padding:7px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px;">'
-    + '<button onclick="addCustomTag()" style="padding:7px 14px;background:var(--green);color:white;border:none;border-radius:8px;cursor:pointer;font-size:13px;">Ajouter</button>'
-    + '<button onclick="closeTagPicker()" style="padding:7px 14px;background:var(--green-d);color:white;border:none;border-radius:8px;cursor:pointer;font-size:13px;font-weight:600;">Valider</button>'
+    + '<input type="text" id="tag-picker-custom" placeholder="Tag libre..." style="flex:1;padding:7px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px;">'
+    + '<button onclick="addCustomTag()" style="padding:7px 14px;background:var(--green-ll);color:var(--green-d);border:1px solid var(--green-b);border-radius:8px;cursor:pointer;font-size:13px;">+ Libre</button>'
+    + '<button onclick="closeTagPicker()" style="padding:7px 18px;background:var(--green-d);color:white;border:none;border-radius:8px;cursor:pointer;font-size:13px;font-weight:600;">✓ Valider</button>'
     + '</div>';
 
   overlay.appendChild(panel);
@@ -7903,12 +7937,38 @@ function openTagPicker(){
 
   document.body.appendChild(overlay);
   _renderTagPickerDomaines();
+  _updateTagPickerUI();
 
   // Brancher le champ custom
   setTimeout(function(){
     var inp = document.getElementById('tag-picker-custom');
     if(inp) inp.addEventListener('keydown', function(e){ if(e.key==='Enter'){e.preventDefault();addCustomTag();} });
   }, 50);
+}
+
+function _updateTagPickerUI(){
+  // Fil d'Ariane
+  var bc = document.getElementById('tag-picker-breadcrumb');
+  if(bc){
+    var parts = [];
+    if(_tagPickerState.domaine) parts.push('<span style="color:var(--green-d);font-weight:600;">'+_tagPickerState.domaine+'</span>');
+    if(_tagPickerState.categorie) parts.push(_tagPickerState.categorie);
+    if(_tagPickerState.sousCateg) parts.push(_tagPickerState.sousCateg);
+    bc.innerHTML = parts.length ? '📍 '+parts.join(' › ') : '';
+  }
+  // Résumé tags sélectionnés
+  var cur = document.getElementById('tag-picker-current');
+  if(cur){
+    var tags = _getMeditTags();
+    if(tags.length){
+      cur.innerHTML = tags.map(function(t){
+        return '<span style="font-size:11px;background:var(--green-ll);color:var(--green-mid);border:1px solid var(--green-b);padding:2px 8px;border-radius:10px;display:inline-flex;align-items:center;gap:3px;">'
+          +t+'<span data-tag="'+t.replace(/"/g,'&quot;')+'" onclick="removeTagMedit(this.dataset.tag);_updateTagPickerUI();" style="cursor:pointer;font-weight:700;">×</span></span>';
+      }).join('');
+    } else {
+      cur.innerHTML = '<span style="font-size:11px;color:var(--text-muted);">Aucun tag sélectionné</span>';
+    }
+  }
 }
 
 function closeTagPicker(){
