@@ -7193,10 +7193,10 @@ var _materielFiltre = '';
 var _materielTags = [];
 var _materielFamilles = [];
 var _materielFormat = '';
-var _materielNiveau = '';
-var _materielCategorie = '';
+var _materielNiveaux = [];
+var _materielCategories = [];
 var _materielPage = 0;
-var _materielCategorie = '';
+var _materielCategories = [];
 var _materielDuree = '';
 var _materielJai = '';
 var _materielPageSize = 30;
@@ -7248,9 +7248,9 @@ function getMaterielFiltres(){
         || (m.description||'').toLowerCase().includes(q);
     });
   }
-  if(_materielCategorie) data = data.filter(function(m){ return (m.categorie||'').toLowerCase().includes(_materielCategorie.toLowerCase()); });
+  if(Array.isArray(_materielCategories)&&_materielCategories.length){ data = data.filter(function(m){ return _materielCategories.some(function(c){return (m.categorie||'').toLowerCase()===c.toLowerCase();}); }); }
   if(_materielFormat) data = data.filter(function(m){ return (m.format||'').split(',').map(function(f){return f.trim().toLowerCase();}).includes(_materielFormat.toLowerCase()); });
-  if(_materielNiveau) data = data.filter(function(m){ return (m.niveau||'').split(',').map(function(n){return n.trim().toLowerCase();}).includes(_materielNiveau.toLowerCase()); });
+  if(Array.isArray(_materielNiveaux)&&_materielNiveaux.length){ data = data.filter(function(m){ var mn=(m.niveau||'').split(',').map(function(n){return n.trim().toLowerCase();}); return _materielNiveaux.every(function(nv){return mn.includes(nv.toLowerCase());}); }); }
   if(Array.isArray(_materielTags)&&_materielTags.length){ data = data.filter(function(m){ var mt=(m.tags||'').toLowerCase(); return _materielTags.every(function(t){ return mt.includes(t.toLowerCase()); }); }); }
   if(Array.isArray(_materielFamilles)&&_materielFamilles.length){
     data = data.filter(function(m){
@@ -7275,7 +7275,15 @@ function setMaterielFormat(f){
   _materielPage=0; renderMaterielUI();
 }
 function setMaterielNiveau(n){
-  _materielNiveau = (_materielNiveau===n) ? '' : n;
+  if(!Array.isArray(_materielNiveaux)) _materielNiveaux=[];
+  var idx = _materielNiveaux.indexOf(n);
+  if(idx>=0){ _materielNiveaux.splice(idx,1); } else { _materielNiveaux.push(n); }
+  _materielPage=0; renderMaterielUI();
+}
+function toggleMaterielCategorie(c){
+  if(!Array.isArray(_materielCategories)) _materielCategories=[];
+  var idx = _materielCategories.indexOf(c);
+  if(idx>=0){ _materielCategories.splice(idx,1); } else { _materielCategories.push(c); }
   _materielPage=0; renderMaterielUI();
 }
 
@@ -7305,14 +7313,61 @@ function filterTagsList(q){
 
 
 var MATERIEL_FAMILLES = {
-  'Phonologie & Articulation': ['articulation','phonème cible','paires minimales','discrimination auditive','structures syllabiques','métaphonologie','manipulation phonémique','coarticulation','fusion','segmentation phonémique','rimes','virelangues','logatomes','son b','son ch','son d','son dr','son f','son g','son j','son k','son l','son m','son n','son p','son r','son s','son t','son tr','son v','son y','son z','désonorisation/assourdissement','processus phonologiques simplificateurs','allophone','CCV CVC','CV VC','CVC','CVCV','CVCVCV','ccv','clusters','clusters consonantiques'],
-  'Lexique & Sémantique': ['dénomination','catégorisation sémantique','association sémantique','antonyme/synonyme','polysémie','réseau sémantique','traits sémantiques','familles de mots','expressions idiomatiques','définitions','lexique','lexique élaboré','accès lexical','base lexicale','banque de mots','banque d\'images','imagier','analogies','intrus sémantique','synonyme','contraires','dénomination verbes','dénomination rapide'],
-  'Morphosyntaxe': ['accords','conjugaison','articles','déterminants','pronoms','prépositions','négation','passives','relatives','subordonnées','genre/nombre','morphologie dérivationnelle','morphosyntaxe','flexibilité','connecteurs','conjonctions','adjectifs','adverbes','compléments','articles','pronoms sujets','pronoms compléments','singulier pluriel','masculin/féminin','variation adjectif','participes passés'],
-  'Compréhension': ['compréhension orale','compréhension écrite','inférences','implicite','consignes','phrases complexes','consignes complexes','causalité','cause','conséquence','dialogue','discours','récit','schéma narratif'],
-  'Lecture & Orthographe': ['lecture mots','lecture texte','orthographe','graphèmes','encodage','décodage','graphies complexes','lecture phrases','lecture syllabes','lecture simple','lecture flash','lecture audio','lecture logatomes','lecture texte court','orthographe grammaticale','orthographe logatomes','orthographe mots/ lexique orthographique/orthographe lexicale','graphies contextuelles','jeux de lecture','jeux de lecture/orthographe'],
-  'Numération & Calcul': ['chaine numérique','calculs','opérations','fractions','décimaux','base 10','numération','addition','soustraction','multiplication','division','sens du nombre','habiletés numériques de base','calculs simples','grands nombres','milliers','millions','dénombrement','subitizing','ordinalité','ordinaux','cardinaux','transcodages','faits arithmétiques','algorithmes','problèmes'],
-  'Mémoire & Attention': ['mémoire auditive','mémoire visuelle','mémoire sémantique','mémoire épisodique','attention','attention auditive','attention visuelle','inhibition','planification','flexibilité','fonctions exécutives','concentration','stroop','balayage visuel','mdt'],
-  'Communication & Pragmatique': ['pragmatique','dialogue','tour de rôle','théorie de l\'esprit','habiletés sociales','humour','ironie','inférences','demande','communication référentielle','discours'],
+  // ── LANGAGE ÉCRIT ──────────────────────────────────────────
+  'LE — Décodage': ['CGP','CPG','assemblage','adressage','lecture syllabes','lecture logatomes','lecture mots','lecture phrases','lecture texte','lecture simple','lecture flash','lecture textes progression'],
+  'LE — Fluence': ['fluence','vitesse lecture','précision lecture','ligne de base'],
+  'LE — Structures syllabiques': ['CV','VC','CVC','CVCV','CVCVCV','CCV','CCV CVC','clusters consonantiques','structures syllabiques'],
+  'LE — Graphies': ['digraphes','trigraphes','graphies complexes','graphies contextuelles','graphie x','valeur c','valeur g','valeur s','ill/aill/euill/ouill/eill','ein/ien','ian/ain','oin/ion','au/eau','oy/ay/uy'],
+  'LE — Mots particuliers': ['mots irréguliers','mots transparents','mots outils','mots visuellement proches','mots lacunaires'],
+  'LE — Orthographe lexicale': ['orthographe lexicale','orthographe','base lexicale','EOLE','Novlex','Manulex'],
+  'LE — Orthographe grammaticale': ['accords','homophones','homophones verbaux','homophones lexicaux','genre/nombre','masculin/féminin','singulier/pluriel'],
+  'LE — Morphologie': ['familles de mots','préfixes','suffixes','morphologie dérivationnelle','lettre finale muette'],
+  'LE — Compréhension écrite': ['compréhension écrite','lecture texte court','résumé','vrai/faux','implicite','inférences','anaphores','paratexte','polysémie'],
+  'LE — Syntaxe écrite': ['phrases complexes','relatives','passives','conditionnelles','connecteurs','subordonnées','négation'],
+  'LE — Métaphonologie': ['identification syllabe','fusion syllabique','syllabes mélangées','identification phonème','segmentation phonémique','décomposition phonémique','manipulation phonémique','localisation','rimes','discrimination auditive'],
+  'LE — Production écrite': ['production écrite','récit','invention','textes à trous','phrases à trous','amorces','concaténation','rédaction'],
+  // ── LANGAGE ORAL ───────────────────────────────────────────
+  'LO — Lexique': ['lexique','lexique élaboré','accès lexical','évocation','dénomination','désignation'],
+  'LO — Organisation sémantique': ['catégorisation sémantique','association sémantique','réseau sémantique','traits sémantiques','intrus sémantique','tout/parties'],
+  'LO — Relations lexicales': ['synonymes','antonymes','contraires','polysémie','expressions idiomatiques'],
+  'LO — Morphosyntaxe': ['pronoms','pronoms sujets','pronoms compléments','pronominaux','anaphores','SV','SVO','expansion','relatives','réversibles','voix passive','articles','déterminants','conjugaison','présent','futur','passé','temporalité'],
+  'LO — Discours': ['récit','schéma narratif','chronologie','histoires séquentielles','discours','communication référentielle'],
+  'LO — Pragmatique': ['pragmatique','implicite','humour','ironie','habiletés sociales','théorie de l\'esprit','émotions','TSA'],
+  'LO — Articulation / Parole': ['articulation','parole','intelligibilité','phonème cible','bd','pq','pb','td','kg','fv','sz','chj','mn','son b','son p','son d','son t','son g','son k','son f','son v','son s','son z','son ch','son j','son l','son r','son tr','son dr'],
+  // ── COGNITION MATH ─────────────────────────────────────────
+  'CM — Sens du nombre': ['subitizing','sens du nombre','quantités','petits nombres','grands nombres'],
+  'CM — Numération': ['numération','ligne numérique','chaîne numérique','transcodages','code arabe','code analogique','code verbal','triple code','base 10'],
+  'CM — Calcul': ['addition','soustraction','multiplication','division','faits arithmétiques','opérations'],
+  'CM — Résolution de problèmes': ['problèmes','étapes de résolution','logique','raisonnement mathématique'],
+  'CM — Maths avancées': ['fractions','décimaux','pourcentages','géométrie','mesures','heure','argent'],
+  // ── NEURO ──────────────────────────────────────────────────
+  'Neuro — Attention': ['attention','attention auditive','attention visuelle','concentration','balayage visuel'],
+  'Neuro — Fonctions exécutives': ['inhibition','flexibilité','planification','raisonnement','stratégie','contrôle'],
+  'Neuro — Mémoire': ['MDT','mémoire auditive','mémoire visuelle','mémoire sémantique','mémoire épisodique'],
+  'Neuro — Visuospatial': ['visuo-attentionnel','visuo-spatial','orientation spatiale','gnosies'],
+  'Neuro — Adulte': ['aphasie','TNCM','démence','stimulation cognitive'],
+  // ── OMF / VOIX / ORL ───────────────────────────────────────
+  'OMF / Oralité': ['OMF','oralité','alimentation','langue','déglutition','dysphagie','respiration nasale','souffle','praxies'],
+  'Voix': ['voix','prosodie','intelligibilité'],
+  'ORL': ['ORL','audiométrie','incompétence vélo-pharyngée'],
+  // ── SUPPORTS & OUTILS ──────────────────────────────────────
+  'Supports': ['PDF','photos','pictos','banque d\'images','banque d\'images','logiciel'],
+  'Jeux': ['dobble','lynx','memory','loto','jeu de l\'oie','jeu de familles','plateau','roues du hasard'],
+  'Gestion': ['bilan','dépistage','tracker','salle d\'attente'],
+};
+
+// Migration anciens tags → nouveaux
+var TAGS_MIGRATION = {
+  'dénomination rapide': 'dénomination',
+  'antonyme/synonyme': 'synonymes',
+  'jeux de lecture': 'lecture mots',
+  'jeux de lecture/orthographe': 'orthographe',
+  'orthographe mots/ lexique orthographique/orthographe lexicale': 'orthographe lexicale',
+  'CV VC': 'CV','ccv': 'CCV','clusters': 'clusters consonantiques',
+  'mémoire de travail': 'MDT','mdt': 'MDT',
+  'singulier pluriel': 'singulier/pluriel',
+  'calculs': 'opérations','chaine numérique': 'chaîne numérique',
+  'habiletés numériques de base': 'sens du nombre',
 };
 
 function renderMaterielUI(){
@@ -7374,39 +7429,35 @@ function renderMaterielUI(){
   });
   h += '</div></div>';
 
-  // Familles thematiques
+  // Familles thématiques groupées par domaine
   h += '<div style="margin-bottom:10px;">';
-  h += '<div style="font-size:11px;font-weight:600;color:var(--text-soft);margin-bottom:6px;text-transform:uppercase;letter-spacing:.04em;">Thématiques</div>';
-  h += '<div style="display:flex;gap:6px;flex-wrap:wrap;">';
-  Object.keys(MATERIEL_FAMILLES).forEach(function(famille){
-    var tagsOfFamille = MATERIEL_FAMILLES[famille];
-    var active = selectedTags.some(function(t){ return tagsOfFamille.includes(t); });
-    var famActive = _materielFamilles && _materielFamilles.includes(famille);
-    h += '<label style="display:flex;align-items:center;gap:5px;padding:5px 12px;border-radius:20px;cursor:pointer;border:1px solid '+(famActive?'#C4B5FD':'var(--border)')+';background:'+(famActive?'#EDE9FE':'var(--surface)')+';color:'+(famActive?'#7C3AED':'var(--text)')+';font-size:12px;white-space:nowrap;">';
-    h += '<input type="checkbox" '+(famActive?'checked':'')+' onchange="toggleMaterielFamille(\'' + famille.replace(/'/g,"\\'") + '\')" style="cursor:pointer;accent-color:var(--green);">';
-    h += famille+'</label>';
+  h += '<div style="font-size:11px;font-weight:600;color:var(--text-soft);margin-bottom:8px;text-transform:uppercase;letter-spacing:.04em;">Thématiques</div>';
+  var DOMAINE_GROUPS = [
+    {label:'✍ Langage écrit',prefix:'LE —',color:'#1D4ED8',bg:'#DBEAFE',border:'#93C5FD'},
+    {label:'💬 Langage oral',prefix:'LO —',color:'#065F46',bg:'#D1FAE5',border:'#6EE7B7'},
+    {label:'🔢 Cognition math',prefix:'CM —',color:'#7C3AED',bg:'#EDE9FE',border:'#C4B5FD'},
+    {label:'🧠 Neuro',prefix:'Neuro —',color:'#B45309',bg:'#FEF3C7',border:'#FCD34D'},
+    {label:'👄 OMF / Voix / ORL',prefix:null,keys:['OMF / Oralité','Voix','ORL'],color:'#BE185D',bg:'#FCE7F3',border:'#F9A8D4'},
+    {label:'🛠 Supports & Outils',prefix:null,keys:['Supports','Jeux','Gestion'],color:'#374151',bg:'#F3F4F6',border:'#D1D5DB'},
+  ];
+  DOMAINE_GROUPS.forEach(function(grp){
+    var keys = grp.keys||Object.keys(MATERIEL_FAMILLES).filter(function(k){return grp.prefix&&k.startsWith(grp.prefix);});
+    if(!keys.length) return;
+    h += '<div style="margin-bottom:7px;">';
+    h += '<div style="font-size:10px;font-weight:700;color:'+grp.color+';margin-bottom:4px;">'+grp.label+'</div>';
+    h += '<div style="display:flex;gap:5px;flex-wrap:wrap;">';
+    keys.forEach(function(famille){
+      if(!MATERIEL_FAMILLES[famille]) return;
+      var famActive=Array.isArray(_materielFamilles)&&_materielFamilles.includes(famille);
+      var shortLabel=famille.replace(/^(LE|LO|CM|Neuro) — /,'');
+      h += '<label style="display:flex;align-items:center;gap:4px;padding:3px 10px;border-radius:20px;cursor:pointer;border:1px solid '+(famActive?grp.border:'var(--border)')+';background:'+(famActive?grp.bg:'var(--surface)')+';color:'+(famActive?grp.color:'var(--text)')+';font-size:11px;white-space:nowrap;">';
+      h += '<input type="checkbox" data-fam="'+famille.replace(/"/g,'&quot;')+'" '+(famActive?'checked':'')+' onchange="toggleMaterielFamille(this.dataset.fam)" style="cursor:pointer;">';
+      h += shortLabel+'</label>';
+    });
+    h += '</div></div>';
   });
   h += '</div>';
-  // Tags actifs hors domaines
-  // Tags de la famille selectionnee pour affiner
-  if(Array.isArray(_materielFamilles) && _materielFamilles.length > 0){
-    var tagsDeFamilles = [];
-    _materielFamilles.forEach(function(f){ tagsDeFamilles = tagsDeFamilles.concat(MATERIEL_FAMILLES[f]||[]); });
-    tagsDeFamilles = [...new Set(tagsDeFamilles)].sort();
-    if(tagsDeFamilles.length > 0){
-      h += '<div style="margin-top:8px;padding:8px 10px;background:var(--green-ll);border-radius:var(--radius-sm);border:1px solid var(--green-l);">';
-      h += '<div style="font-size:10px;font-weight:600;color:var(--green-d);margin-bottom:6px;text-transform:uppercase;letter-spacing:.04em;">Affiner par tag</div>';
-      h += '<div style="display:flex;gap:5px;flex-wrap:wrap;">';
-      tagsDeFamilles.forEach(function(t){
-        var active = selectedTags.includes(t);
-        h += '<label style="display:flex;align-items:center;gap:4px;padding:3px 9px;border-radius:20px;cursor:pointer;font-size:11px;border:1px solid '+(active?'var(--green-d)':'var(--green-l)')+';background:'+(active?'var(--green-l)':'white')+';color:'+(active?'var(--green-d)':'var(--text-mid)')+'">';
-        h += '<input type="checkbox" '+(active?'checked':'')+' data-tag="'+t.replace(/"/g,'&quot;')+'" onchange="toggleMaterielTag(this.dataset.tag)" style="cursor:pointer;accent-color:var(--green);">';
-        h += t+'</label>';
-      });
-      h += '</div></div>';
-    }
-  }
-  var autresSelected = selectedTags.filter(function(t){ return !DOMAINES.includes(t); });
+    var autresSelected = selectedTags.filter(function(t){ return !DOMAINES.includes(t); });
   if(autresSelected.length>0){
     h += '<div style="display:flex;gap:4px;flex-wrap:wrap;margin-top:6px;">';
     autresSelected.forEach(function(t){
@@ -7415,6 +7466,20 @@ function renderMaterielUI(){
     h += '</div>';
   }
   h += '</div>';
+
+  // Catégories multi-sélection
+  if(cats.length > 0){
+    h += '<div style="margin-bottom:10px;">';
+    h += '<div style="font-size:11px;font-weight:600;color:var(--text-soft);margin-bottom:6px;text-transform:uppercase;letter-spacing:.04em;">Catégorie</div>';
+    h += '<div style="display:flex;gap:6px;flex-wrap:wrap;">';
+    cats.forEach(function(c){
+      var active = Array.isArray(_materielCategories)&&_materielCategories.includes(c);
+      h += '<label style="display:flex;align-items:center;gap:5px;padding:5px 12px;border-radius:20px;cursor:pointer;border:1px solid '+(active?'var(--brique-b,#E8C4B0)':'var(--border)')+';background:'+(active?'var(--brique-l,#FAF0EB)':'var(--surface)')+';color:'+(active?'var(--brique,#B87355)':'var(--text)')+';font-size:12px;white-space:nowrap;">';
+      h += '<input type="checkbox" data-cat="'+c.replace(/"/g,'&quot;')+'" '+(active?'checked':'')+' onchange="toggleMaterielCategorie(this.dataset.cat)" style="cursor:pointer;accent-color:var(--brique,#B87355);">';
+      h += c+'</label>';
+    });
+    h += '</div></div>';
+  }
 
   // Format select
   h += '<div style="margin-bottom:10px;">';
@@ -7433,8 +7498,8 @@ function renderMaterielUI(){
     parts.forEach(function(np){
       np = np.trim();
       if(!np) return;
-      var active = _materielNiveau===np;
-      h += '<span data-niv="'+np+'" onclick="setMaterielNiveau(this.dataset.niv)" style="font-size:11px;padding:3px 10px;border-radius:20px;cursor:pointer;border:1px solid '+(_materielNiveau===np?'var(--green-mid)':'var(--border)')+';background:'+(_materielNiveau===np?'var(--green-ll)':'var(--surface)')+';color:'+(_materielNiveau===np?'var(--green-mid)':'var(--text)')+';white-space:nowrap;">'+np+'</span>';
+      var active = Array.isArray(_materielNiveaux)&&_materielNiveaux.includes(np);
+      h += '<span data-niv="'+np+'" onclick="setMaterielNiveau(this.dataset.niv)" style="font-size:11px;padding:3px 10px;border-radius:20px;cursor:pointer;border:1px solid '+(active?'var(--green-mid)':'var(--border)')+';background:'+(active?'var(--green-ll)':'var(--surface)')+';color:'+(active?'var(--green-mid)':'var(--text)')+';white-space:nowrap;">'+(active?'✓ ':'')+np+'</span>';
     });
   });
   h += '</div></div>';
@@ -7458,7 +7523,7 @@ function renderMaterielUI(){
     h += '<button onclick="_materielCommun=(_materielCommun===\'commun\'?\'\':(_materielCommun===\'defaut\'?\'both\':\'commun\'));_materielPage=0;renderMaterielUI()" style="padding:4px 8px;border:1px solid var(--border);border-radius:var(--radius-sm);background:'+_bgC+';color:'+_colC+';font-size:12px;cursor:pointer;">🌐 Commun</button>';
     h += '<button onclick="_materielCommun=(_materielCommun===\'defaut\'?\'\':(_materielCommun===\'commun\'?\'both\':\'defaut\'));_materielPage=0;renderMaterielUI()" style="padding:4px 8px;border:1px solid var(--border);border-radius:var(--radius-sm);background:'+_bgD+';color:'+_colD+';font-size:12px;cursor:pointer;">🎁 Par défaut</button>';
   }
-  var hasFiltre = _materielFiltre||(Array.isArray(_materielTags)&&_materielTags.length)||_materielFormat||_materielNiveau||_materielDuree||_materielJai||_materielCommun||(Array.isArray(_materielFamilles)&&_materielFamilles.length);
+  var hasFiltre = _materielFiltre||(Array.isArray(_materielTags)&&_materielTags.length)||_materielFormat||(Array.isArray(_materielNiveaux)&&_materielNiveaux.length)||(Array.isArray(_materielCategories)&&_materielCategories.length)||_materielDuree||_materielJai||_materielCommun||(Array.isArray(_materielFamilles)&&_materielFamilles.length);
   if(hasFiltre){
     h += '<button class="btn btn-sm" onclick="_materielFiltre=\'\';_materielTags=[];_materielFormat=\'\';_materielNiveau=\'\';_materielDuree=\'\';_materielJai=\'\';_materielCommun=\'\';_materielPage=0;renderMaterielUI()" style="white-space:nowrap;">✕ Tout effacer</button>';
   }
