@@ -708,7 +708,7 @@ html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);colo
       </div>
 
       <!-- OUTILS CLINIQUES -->
-      <div class="page" id="page-materiel"><div id="materiel-content" style="padding:16px;"></div></div>
+      <div class="page" id="page-materiel"><div id="materiel-filters" style="padding:16px 16px 0;"></div><div id="materiel-results" style="padding:0 16px 16px;"></div></div>
 
       <div class="page" id="page-outils"><div id="outils-content" style="padding:16px;"></div></div>
 
@@ -7205,9 +7205,11 @@ var _materielJai = '';
 var _materielCommun = '';
 
 async function renderMaterielPage(){
-  var el = document.getElementById('materiel-content');
-  if(!el) return;
-  el.innerHTML = '<div class="loading" style="padding:40px;text-align:center;color:var(--text-soft);">Chargement...</div>';
+  var filtersEl = document.getElementById('materiel-filters');
+  var resultsEl = document.getElementById('materiel-results');
+  if(!filtersEl||!resultsEl) return;
+  resultsEl.innerHTML = '<div class="loading" style="padding:40px;text-align:center;color:var(--text-soft);">Chargement...</div>';
+  filtersEl.dataset.rendered = '';
   
   var url = SB_URL+'/rest/v1/materiel?order=titre.asc&select=*';
   var r = await fetch(url, {headers: {...sbHeaders(), 'Range-Unit':'items', 'Range':'0-2999', 'Prefer':'count=none'}});
@@ -7232,8 +7234,7 @@ function toggleMaterielFamille(famille){
   if(!Array.isArray(_materielFamilles)) _materielFamilles = [];
   var idx = _materielFamilles.indexOf(famille);
   if(idx>=0){ _materielFamilles.splice(idx,1); } else { _materielFamilles.push(famille); }
-  _materielPage = 0;
-  renderMaterielUI();
+  _materielPage = 0; _invalidateMaterielFilters(); renderMaterielUI();
 }
 
 function getMaterielFiltres(){
@@ -7272,19 +7273,19 @@ function getMaterielFiltres(){
 
 function setMaterielFormat(f){
   _materielFormat = (_materielFormat===f) ? '' : f;
-  _materielPage=0; renderMaterielUI();
+  _materielPage=0; _invalidateMaterielFilters(); renderMaterielUI();
 }
 function setMaterielNiveau(n){
   if(!Array.isArray(_materielNiveaux)) _materielNiveaux=[];
   var idx = _materielNiveaux.indexOf(n);
   if(idx>=0){ _materielNiveaux.splice(idx,1); } else { _materielNiveaux.push(n); }
-  _materielPage=0; renderMaterielUI();
+  _materielPage=0; _invalidateMaterielFilters(); renderMaterielUI();
 }
 function toggleMaterielCategorie(c){
   if(!Array.isArray(_materielCategories)) _materielCategories=[];
   var idx = _materielCategories.indexOf(c);
   if(idx>=0){ _materielCategories.splice(idx,1); } else { _materielCategories.push(c); }
-  _materielPage=0; renderMaterielUI();
+  _materielPage=0; _invalidateMaterielFilters(); renderMaterielUI();
 }
 
 function toggleMaterielTagsDropdown(){
@@ -7297,7 +7298,7 @@ function toggleMaterielTag(tag){
   var idx = _materielTags.indexOf(tag);
   if(idx>=0){ _materielTags.splice(idx,1); } else { _materielTags.push(tag); }
   _materielPage = 0;
-  renderMaterielUI();
+  _invalidateMaterielFilters(); renderMaterielUI();
 }
 
 function filterTagsList(q){
@@ -7425,68 +7426,54 @@ var MATERIEL_CATEGORIES = [
 ];
 
 
+function _invalidateMaterielFilters(){
+  var fe = document.getElementById('materiel-filters');
+  if(fe) fe.dataset.rendered = '';
+}
+
 function renderMaterielUI(){
-  var el = document.getElementById('materiel-content');
-  if(!el) return;
-  
-  var filtered = getMaterielFiltres();
-  var total = filtered.length;
-  var start = _materielPage * _materielPageSize;
-  var page = filtered.slice(start, start + _materielPageSize);
-  
-  // Extraire valeurs uniques pour filtres
+  renderMaterielFilters();
+  renderMaterielResults();
+}
+
+function renderMaterielFilters(){
+  var filtersEl = document.getElementById('materiel-filters');
+  if(!filtersEl) return;
+  // Ne re-rendre les filtres que si pas encore rendus (ou si données changées)
+  if(filtersEl.dataset.rendered === 'true') return;
+  filtersEl.dataset.rendered = 'true';
+  _renderMaterielFiltersHTML(filtersEl);
+}
+
+function _renderMaterielFiltersHTML(el){
   var cats = [...new Set(_materielData.map(function(m){return m.categorie;}).filter(Boolean))].sort();
-  var formats = [...new Set(_materielData.flatMap(function(m){ return (m.format||'').split(',').map(function(f){return f.trim();}).filter(Boolean); }))].sort();
-  
-  var h = '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:8px;">';
-  h += '<div style="font-size:13px;color:var(--text-soft);">'+total+' matériel'+(total>1?'s':'')+(total<_materielData.length?' sur '+_materielData.length:'')+'</div>';
-  h += '<button class="btn btn-sm btn-green" onclick="openMaterielModal(null)">+ Ajouter</button>';
-  h += '</div>';
-  
-  // Filtres
-  var allTags = [];
-  var tagCount = {};
-  _materielData.forEach(function(m){
-    (m.tags||'').split(',').forEach(function(t){
-      t = t.trim();
-      if(t){ tagCount[t]=(tagCount[t]||0)+1; if(!allTags.includes(t)) allTags.push(t); }
-    });
-  });
-  // Trier : domaines (avec emoji) en premier, puis le reste
-  var domainesTags = allTags.filter(function(t){ return /\p{Emoji}/u.test(t); }).sort();
-  var autresTags = allTags.filter(function(t){ return !/\p{Emoji}/u.test(t); }).sort();
-  allTags = domainesTags.concat(autresTags);
+  var formats = [...new Set(_materielData.flatMap(function(m){ return (m.format||'').split(/[,+]/).map(function(f){return f.trim();}).filter(Boolean); }))].sort();
   var niveaux = [...new Set(_materielData.flatMap(function(m){ return (m.niveau||'').split(',').map(function(n){return n.trim();}).filter(Boolean); }))].sort();
   var durees = [...new Set(_materielData.map(function(m){return m.duree;}).filter(Boolean))].sort();
-  var formats = [...new Set(_materielData.flatMap(function(m){ return (m.format||'').split(/[,+]/).map(function(f){return f.trim();}).filter(Boolean); }))].sort();
   var sel = 'padding:7px 10px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:12px;background:white;cursor:pointer;';
 
-  h += '<div style="background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:16px;">';
+  var h = '<div style="background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:16px;">';
+
+  // Barre de recherche — champ persistant avec ID fixe
   h += '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px;">';
-  h += '<input type="text" placeholder="🔍 Rechercher titre, auteur, tag..." value="'+(_materielFiltre||'')+'" oninput="_materielFiltre=this.value;_materielPage=0;renderMaterielUI()" style="flex:1;min-width:200px;padding:8px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:13px;">';
+  h += '<input type="text" id="mat-search-input" placeholder="🔍 Rechercher titre, auteur, tag..." value="'+(_materielFiltre||'')+'" style="flex:1;min-width:200px;padding:8px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:13px;">';
+  h += '<button class="btn btn-sm btn-green" onclick="openMaterielModal(null)">+ Ajouter</button>';
   h += '</div>';
 
-  // Tags dropdown avec recherche
-  var selectedTags = Array.isArray(_materielTags) ? _materielTags : (_materielTags ? [_materielTags] : []);
-  var DOMAINES = ['LE LANGAGE ECRIT','LO LANGAGE ORAL','COGNITION MATH','NEURO'];
-  var autresTags = allTags.filter(function(t){ return !DOMAINES.includes(t); });
-
-  // 4 bullets domaines
+  // Domaines
+  var selectedTags = Array.isArray(_materielTags) ? _materielTags : [];
+  var DOMAINES = ['✍ LE LANGAGE ECRIT','💬 LO LANGAGE ORAL','🔢 COGNITION MATH','🧠 NEURO'];
   h += '<div style="margin-bottom:10px;">';
   h += '<div style="font-size:11px;font-weight:600;color:var(--text-soft);margin-bottom:6px;text-transform:uppercase;letter-spacing:.04em;">Domaine</div>';
   h += '<div style="display:flex;gap:8px;flex-wrap:wrap;">';
   DOMAINES.forEach(function(d){
     var active = selectedTags.includes(d);
     h += '<label style="display:flex;align-items:center;gap:6px;padding:6px 12px;border-radius:20px;cursor:pointer;border:1px solid '+(active?'#93C5FD':'var(--border)')+';background:'+(active?'#DBEAFE':'var(--surface)')+';color:'+(active?'#1D4ED8':'var(--text)')+';font-size:12px;">';
-    h += '<input type="checkbox" data-tag="'+d.replace(/"/g,'&quot;')+'" '+(active?'checked':'')+' onchange="toggleMaterielTag(this.dataset.tag)" style="cursor:pointer;">';
-    h += '<span>'+d+'</span>';
-    h += '</label>';
+    h += '<input type="checkbox" data-tag="'+d.replace(/"/g,'&quot;')+'" '+(active?'checked':'')+' onchange="toggleMaterielTag(this.dataset.tag)" style="cursor:pointer;">'+d+'</label>';
   });
   h += '</div></div>';
 
-  // Familles thématiques groupées par domaine
-  h += '<div style="margin-bottom:10px;">';
-  h += '<div style="font-size:11px;font-weight:600;color:var(--text-soft);margin-bottom:8px;text-transform:uppercase;letter-spacing:.04em;">Thématiques</div>';
+  // Thématiques groupées
   var DOMAINE_GROUPS = [
     {label:'✍ Langage écrit',prefix:'LE —',color:'#1D4ED8',bg:'#DBEAFE',border:'#93C5FD'},
     {label:'💬 Langage oral',prefix:'LO —',color:'#065F46',bg:'#D1FAE5',border:'#6EE7B7'},
@@ -7495,12 +7482,11 @@ function renderMaterielUI(){
     {label:'👄 OMF / Voix / ORL',prefix:null,keys:['OMF / Oralité','Voix','ORL'],color:'#BE185D',bg:'#FCE7F3',border:'#F9A8D4'},
     {label:'🛠 Supports & Outils',prefix:null,keys:['Supports','Jeux','Gestion'],color:'#374151',bg:'#F3F4F6',border:'#D1D5DB'},
   ];
+  h += '<div style="margin-bottom:10px;"><div style="font-size:11px;font-weight:600;color:var(--text-soft);margin-bottom:8px;text-transform:uppercase;letter-spacing:.04em;">Thématiques</div>';
   DOMAINE_GROUPS.forEach(function(grp){
     var keys = grp.keys||Object.keys(MATERIEL_FAMILLES).filter(function(k){return grp.prefix&&k.startsWith(grp.prefix);});
     if(!keys.length) return;
-    h += '<div style="margin-bottom:7px;">';
-    h += '<div style="font-size:10px;font-weight:700;color:'+grp.color+';margin-bottom:4px;">'+grp.label+'</div>';
-    h += '<div style="display:flex;gap:5px;flex-wrap:wrap;">';
+    h += '<div style="margin-bottom:7px;"><div style="font-size:10px;font-weight:700;color:'+grp.color+';margin-bottom:4px;">'+grp.label+'</div><div style="display:flex;gap:5px;flex-wrap:wrap;">';
     keys.forEach(function(famille){
       if(!MATERIEL_FAMILLES[famille]) return;
       var famActive=Array.isArray(_materielFamilles)&&_materielFamilles.includes(famille);
@@ -7511,84 +7497,106 @@ function renderMaterielUI(){
     });
     h += '</div></div>';
   });
-  h += '</div>';
-    var autresSelected = selectedTags.filter(function(t){ return !DOMAINES.includes(t); });
-  if(autresSelected.length>0){
+  // Tags de familles actives
+  if(Array.isArray(_materielFamilles)&&_materielFamilles.length){
+    var tagsDeFamilles=[];
+    _materielFamilles.forEach(function(f){tagsDeFamilles=tagsDeFamilles.concat(MATERIEL_FAMILLES[f]||[]);});
+    tagsDeFamilles=[...new Set(tagsDeFamilles)].sort();
+    if(tagsDeFamilles.length){
+      h += '<div style="margin-top:8px;padding:8px 10px;background:var(--green-ll);border-radius:var(--radius-sm);border:1px solid var(--green-l);">';
+      h += '<div style="font-size:10px;font-weight:600;color:var(--green-d);margin-bottom:6px;text-transform:uppercase;letter-spacing:.04em;">Affiner par tag</div><div style="display:flex;gap:5px;flex-wrap:wrap;">';
+      tagsDeFamilles.forEach(function(t){
+        var active=selectedTags.includes(t);
+        h += '<label style="display:flex;align-items:center;gap:4px;padding:3px 9px;border-radius:20px;cursor:pointer;font-size:11px;border:1px solid '+(active?'var(--green-d)':'var(--green-l)')+';background:'+(active?'var(--green-l)':'white')+';color:'+(active?'var(--green-d)':'var(--text-mid)')+'">';
+        h += '<input type="checkbox" data-tag="'+t.replace(/"/g,'&quot;')+'" '+(active?'checked':'')+' onchange="toggleMaterielTag(this.dataset.tag)" style="cursor:pointer;">'+t+'</label>';
+      });
+      h += '</div></div>';
+    }
+  }
+  var autresSelected=(Array.isArray(_materielTags)?_materielTags:[]).filter(function(t){return !DOMAINES.includes(t);});
+  if(autresSelected.length){
     h += '<div style="display:flex;gap:4px;flex-wrap:wrap;margin-top:6px;">';
-    autresSelected.forEach(function(t){
-      h += '<span style="font-size:11px;background:var(--green-ll);color:var(--green-mid);padding:2px 8px;border-radius:10px;display:flex;align-items:center;gap:4px;">'+t+'<span data-tag="'+t.replace(/"/g,'&quot;')+'" onclick="toggleMaterielTag(this.dataset.tag)" style="cursor:pointer;font-weight:700;">×</span></span>';
-    });
+    autresSelected.forEach(function(t){ h += '<span style="font-size:11px;background:var(--green-ll);color:var(--green-mid);padding:2px 8px;border-radius:10px;display:flex;align-items:center;gap:4px;">'+t+'<span data-tag="'+t.replace(/"/g,'&quot;')+'" onclick="toggleMaterielTag(this.dataset.tag)" style="cursor:pointer;font-weight:700;">×</span></span>'; });
     h += '</div>';
   }
   h += '</div>';
 
-  // Catégories fixes (14 items)
-  h += '<div style="margin-bottom:10px;">';
-  h += '<div style="font-size:11px;font-weight:600;color:var(--text-soft);margin-bottom:6px;text-transform:uppercase;letter-spacing:.04em;">Catégorie</div>';
-  h += '<div style="display:flex;gap:6px;flex-wrap:wrap;">';
+  // Catégories fixes
+  h += '<div style="margin-bottom:10px;"><div style="font-size:11px;font-weight:600;color:var(--text-soft);margin-bottom:6px;text-transform:uppercase;letter-spacing:.04em;">Catégorie</div><div style="display:flex;gap:6px;flex-wrap:wrap;">';
   MATERIEL_CATEGORIES.forEach(function(cat){
-    var active = Array.isArray(_materielCategories)&&_materielCategories.includes(cat.id);
+    var active=Array.isArray(_materielCategories)&&_materielCategories.includes(cat.id);
     h += '<label style="display:flex;align-items:center;gap:5px;padding:5px 12px;border-radius:20px;cursor:pointer;border:1px solid '+(active?cat.border:'var(--border)')+';background:'+(active?cat.bg:'var(--surface)')+';color:'+(active?cat.color:'var(--text)')+';font-size:12px;">';
-    h += '<input type="checkbox" data-cat="'+cat.id.replace(/"/g,'&quot;')+'" '+(active?'checked':'')+' onchange="toggleMaterielCategorie(this.dataset.cat)" style="cursor:pointer;">';
-    h += cat.label+'</label>';
+    h += '<input type="checkbox" data-cat="'+cat.id.replace(/"/g,'&quot;')+'" '+(active?'checked':'')+' onchange="toggleMaterielCategorie(this.dataset.cat)" style="cursor:pointer;">'+cat.label+'</label>';
   });
   h += '</div></div>';
 
-  // Format select
-  h += '<div style="margin-bottom:10px;">';
+  // Format, Niveau, Durée, J'ai
+  h += '<div style="margin-bottom:10px;"><div style="font-size:11px;font-weight:600;color:var(--text-soft);margin-bottom:6px;text-transform:uppercase;letter-spacing:.04em;">Format</div>';
   h += '<select onchange="setMaterielFormat(this.value)" style="padding:8px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:13px;background:white;width:100%;">';
   h += '<option value="">Tous les formats</option>';
   formats.forEach(function(f){ h += '<option value="'+f+'"'+(_materielFormat===f?' selected':'')+'>'+f+'</option>'; });
-  h += '</select>';
-  h += '</div>';
+  h += '</select></div>';
 
-  // Niveau chips
-  h += '<div style="margin-bottom:10px;">';
-  h += '<div style="font-size:11px;font-weight:600;color:var(--text-soft);margin-bottom:6px;text-transform:uppercase;letter-spacing:.04em;">Niveau</div>';
+  h += '<div style="margin-bottom:10px;"><div style="font-size:11px;font-weight:600;color:var(--text-soft);margin-bottom:6px;text-transform:uppercase;letter-spacing:.04em;">Niveau</div>';
   h += '<div style="display:flex;gap:6px;flex-wrap:wrap;">';
   niveaux.forEach(function(n){
-    var parts = n.split(',');
-    parts.forEach(function(np){
-      np = np.trim();
-      if(!np) return;
-      var active = Array.isArray(_materielNiveaux)&&_materielNiveaux.includes(np);
+    n.split(',').forEach(function(np){
+      np=np.trim(); if(!np) return;
+      var active=Array.isArray(_materielNiveaux)&&_materielNiveaux.includes(np);
       h += '<span data-niv="'+np+'" onclick="setMaterielNiveau(this.dataset.niv)" style="font-size:11px;padding:3px 10px;border-radius:20px;cursor:pointer;border:1px solid '+(active?'var(--green-mid)':'var(--border)')+';background:'+(active?'var(--green-ll)':'var(--surface)')+';color:'+(active?'var(--green-mid)':'var(--text)')+';white-space:nowrap;">'+(active?'✓ ':'')+np+'</span>';
     });
   });
   h += '</div></div>';
 
-  // Durée + J'ai
   h += '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;">';
-  h += '<select onchange="_materielDuree=this.value;_materielPage=0;renderMaterielUI()" style="'+sel+'">';
-  h += '<option value="">Durée</option>';
+  h += '<select onchange="_materielDuree=this.value;_materielPage=0;renderMaterielResults()" style="'+sel+'"><option value="">Durée</option>';
   durees.forEach(function(d){ h += '<option value="'+d+'"'+(_materielDuree===d?' selected':'')+'>'+d+'</option>'; });
   h += '</select>';
-  h += '<select onchange="_materielJai=this.value;_materielPage=0;renderMaterielUI()" style="'+sel+'">';
-  h += '<option value="">J\'ai / J\'ai pas</option>';
+  h += '<select onchange="_materielJai=this.value;_materielPage=0;renderMaterielResults()" style="'+sel+'"><option value="">J\'ai / J\'ai pas</option>';
   h += '<option value="oui"'+((_materielJai==='oui')?' selected':'')+'>✅ Je possède</option>';
   h += '<option value="non"'+((_materielJai==='non')?' selected':'')+'>❌ Je ne possède pas</option>';
   h += '</select>';
-  if(isAdmin()){
-    var _bgC = (_materielCommun==='commun'||_materielCommun==='both')?'var(--green)':'var(--bg)';
-    var _bgD = (_materielCommun==='defaut'||_materielCommun==='both')?'var(--green)':'var(--bg)';
-    var _colC = (_materielCommun==='commun'||_materielCommun==='both')?'white':'var(--text)';
-    var _colD = (_materielCommun==='defaut'||_materielCommun==='both')?'white':'var(--text)';
-    h += '<button onclick="_materielCommun=(_materielCommun===\'commun\'?\'\':(_materielCommun===\'defaut\'?\'both\':\'commun\'));_materielPage=0;renderMaterielUI()" style="padding:4px 8px;border:1px solid var(--border);border-radius:var(--radius-sm);background:'+_bgC+';color:'+_colC+';font-size:12px;cursor:pointer;">🌐 Commun</button>';
-    h += '<button onclick="_materielCommun=(_materielCommun===\'defaut\'?\'\':(_materielCommun===\'commun\'?\'both\':\'defaut\'));_materielPage=0;renderMaterielUI()" style="padding:4px 8px;border:1px solid var(--border);border-radius:var(--radius-sm);background:'+_bgD+';color:'+_colD+';font-size:12px;cursor:pointer;">🎁 Par défaut</button>';
-  }
-  var hasFiltre = _materielFiltre||(Array.isArray(_materielTags)&&_materielTags.length)||_materielFormat||(Array.isArray(_materielNiveaux)&&_materielNiveaux.length)||(Array.isArray(_materielCategories)&&_materielCategories.length)||_materielDuree||_materielJai||_materielCommun||(Array.isArray(_materielFamilles)&&_materielFamilles.length);
+  var hasFiltre=_materielFiltre||(Array.isArray(_materielTags)&&_materielTags.length)||_materielFormat||(Array.isArray(_materielNiveaux)&&_materielNiveaux.length)||(Array.isArray(_materielCategories)&&_materielCategories.length)||_materielDuree||_materielJai||(Array.isArray(_materielFamilles)&&_materielFamilles.length);
   if(hasFiltre){
-    h += '<button class="btn btn-sm" onclick="_materielFiltre=\'\';_materielTags=[];_materielFormat=\'\';_materielNiveau=\'\';_materielDuree=\'\';_materielJai=\'\';_materielCommun=\'\';_materielPage=0;renderMaterielUI()" style="white-space:nowrap;">✕ Tout effacer</button>';
+    h += '<button class="btn btn-sm" onclick="_materielFiltre=\'\';_materielTags=[];_materielFormat=\'\';_materielNiveaux=[];_materielCategories=[];_materielDuree=\'\';_materielJai=\'\';_materielCommun=\'\';_materielFamilles=[];_materielPage=0;var fe=document.getElementById(\'materiel-filters\');if(fe){fe.dataset.rendered=\'\';fe.innerHTML=\'\';}_renderMaterielFiltersHTML(fe);renderMaterielResults()" style="white-space:nowrap;">✕ Tout effacer</button>';
   }
   h += '</div>';
-  h += '</div>'; // fin encadré filtres
-  // Liste
+  h += '</div>';
+
+  el.innerHTML = h;
+
+  // Brancher la recherche sur le vrai champ persistant
+  var searchInp = document.getElementById('mat-search-input');
+  if(searchInp){
+    searchInp.addEventListener('input', function(){
+      _materielFiltre = this.value;
+      _materielPage = 0;
+      renderMaterielResults();
+    });
+    // Empêcher les raccourcis clavier globaux dans ce champ
+    searchInp.addEventListener('keydown', function(e){ e.stopPropagation(); });
+  }
+}
+
+function renderMaterielResults(){
+  var el = document.getElementById('materiel-results');
+  if(!el) return;
+
+  var filtered = getMaterielFiltres();
+  var total = filtered.length;
+  var start2 = _materielPage * _materielPageSize;
+  var page = filtered.slice(start2, start2 + _materielPageSize);
+
+  var h = '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px;">';
+  h += '<div style="font-size:13px;color:var(--text-soft);">'+total+' matériel'+(total>1?'s':'')+(total<_materielData.length?' sur '+_materielData.length:'')+'</div>';
+  h += '</div>';
+
   if(!page.length){
     h += '<div style="text-align:center;padding:40px;color:var(--text-soft);">Aucun matériel trouvé.</div>';
   } else {
     h += '<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px;">';
     page.forEach(function(m){
-      var tags = (m.tags||'').split(',').map(function(t){return t.trim();}).filter(Boolean).slice(0,5);
+      var tags=(m.tags||'').split(',').map(function(t){return t.trim();}).filter(Boolean).slice(0,5);
       h += '<div data-mid="'+m.id+'" onclick="openMaterielModal(this.dataset.mid)" style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:12px 14px;cursor:pointer;display:flex;align-items:center;gap:10px;">';
       h += '<div style="flex:1;min-width:0;display:flex;align-items:center;gap:6px;flex-wrap:wrap;">';
       h += '<span style="font-size:13px;font-weight:500;color:var(--text);">'+(m.titre||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')+'</span>';
@@ -7599,23 +7607,21 @@ function renderMaterielUI(){
       h += '</div>';
     });
     h += '</div>';
+    // Pagination
+    if(total > _materielPageSize){
+      var totalPages = Math.ceil(total/_materielPageSize);
+      h += '<div style="display:flex;gap:6px;justify-content:center;margin-top:14px;flex-wrap:wrap;">';
+      for(var pi=0;pi<totalPages;pi++){
+        var active=pi===_materielPage;
+        h += '<button onclick="_materielPage='+pi+';renderMaterielResults()" style="min-width:30px;padding:4px 8px;border:1px solid '+(active?'var(--green)':'var(--border)')+';border-radius:6px;background:'+(active?'var(--green)':'white')+';color:'+(active?'white':'var(--text)')+';cursor:pointer;font-size:12px;">'+(pi+1)+'</button>';
+      }
+      h += '</div>';
+    }
   }
-  
-  // Pagination
-  if(total > _materielPageSize){
-    var nbPages = Math.ceil(total/_materielPageSize);
-    h += '<div style="display:flex;justify-content:center;gap:8px;margin-top:16px;">';
-    if(_materielPage>0) h += '<button class="btn btn-sm btn-ghost" onclick="_materielPage--;renderMaterielUI()">‹ Précédent</button>';
-    h += '<span style="font-size:12px;color:var(--text-soft);padding:6px 10px;">Page '+(_materielPage+1)+'/'+nbPages+'</span>';
-    if(_materielPage<nbPages-1) h += '<button class="btn btn-sm btn-ghost" onclick="_materielPage++;renderMaterielUI()">Suivant ›</button>';
-    h += '</div>';
-  }
-  
+
   el.innerHTML = h;
 }
 
-// Modal fiche matériel
-var _materielEditId = null;
 
 function openMaterielModal(id){
   if(!id){ editMateriel(null); return; }
