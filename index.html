@@ -7557,21 +7557,25 @@ function _searchTagFilter(q){
     el.style.display='block'; return;
   }
   var cur = Array.isArray(_materielTags)?_materielTags:[];
-  el.innerHTML = matches.map(function(it){
-    var sel = cur.includes(it.tag);
-    return '<div onclick="_selectTagFromFilter(' + JSON.stringify(JSON.stringify(it)) + ')" '
-      +'style="padding:8px 12px;cursor:pointer;border-bottom:1px solid var(--bg);display:flex;align-items:center;justify-content:space-between;gap:8px;" '
-      +'onmouseover="this.style.background=\'var(--bg)\'" onmouseout="this.style.background=\'\'">'
-      +'<div><div style="font-size:13px;font-weight:'+(sel?'700':'500')+';color:'+(sel?'var(--green-d)':'var(--text)')+';">'+(sel?'✓ ':'')+it.tag+'</div>'
-      +'<div style="font-size:10px;color:var(--text-muted);">'+it.path+'</div></div>'
-      +'<span style="font-size:11px;background:'+(sel?'var(--green-ll)':'var(--bg)')+';color:'+(sel?'var(--green-d)':'var(--text-muted)')+';padding:2px 8px;border-radius:10px;border:1px solid '+(sel?'var(--green-b)':'var(--border)')+';">'+(sel?'Actif':'Filtrer')+'</span>'
-      +'</div>';
-  }).join('');
+  el.innerHTML = '';
   el.style.display='block';
+  matches.forEach(function(it){
+    var sel = cur.includes(it.tag);
+    var row = document.createElement('div');
+    row.style.cssText = 'padding:8px 12px;cursor:pointer;border-bottom:1px solid var(--bg);display:flex;align-items:center;justify-content:space-between;gap:8px;';
+    row.onmouseover = function(){ this.style.background='var(--bg)'; };
+    row.onmouseout = function(){ this.style.background=''; };
+    row.innerHTML = '<div>'
+      +'<div style="font-size:13px;font-weight:'+(sel?'700':'500')+';color:'+(sel?'var(--green-d)':'var(--text)')+';">'+(sel?'✓ ':'')+it.tag.replace(/</g,'&lt;')+'</div>'
+      +'<div style="font-size:10px;color:var(--text-muted);">'+it.path+'</div>'
+      +'</div>'
+      +'<span style="font-size:11px;background:'+(sel?'var(--green-ll)':'var(--bg)')+';color:'+(sel?'var(--green-d)':'var(--text-muted)')+';padding:2px 8px;border-radius:10px;border:1px solid '+(sel?'var(--green-b)':'var(--border)')+';">'+(sel?'Actif':'Filtrer')+'</span>';
+    row.addEventListener('click', (function(item){ return function(){ _selectTagFromFilter(item); }; })(it));
+    el.appendChild(row);
+  });
 }
 
-function _selectTagFromFilter(jsonStr){
-  var it = JSON.parse(jsonStr);
+function _selectTagFromFilter(it){
   // Ajouter/retirer le tag dans _materielTags
   if(!Array.isArray(_materielTags)) _materielTags=[];
   var idx = _materielTags.indexOf(it.tag);
@@ -8008,7 +8012,7 @@ function openTagPicker(){
     // Fil d'Ariane
     + '<div id="tag-picker-breadcrumb" style="font-size:11px;color:var(--text-muted);min-height:18px;margin-bottom:4px;"></div>'
     + '<div style="position:relative;margin-bottom:6px;">'
-    + '<input type="text" id="tag-picker-search" placeholder="\U0001f50d Rechercher un tag..." style="width:100%;padding:7px 12px;border:1px solid var(--border);border-radius:8px;font-size:12px;box-sizing:border-box;">'
+    + '<input type="text" id="tag-picker-search" placeholder="🔍 Rechercher un tag..." style="width:100%;padding:7px 12px;border:1px solid var(--border);border-radius:8px;font-size:12px;box-sizing:border-box;">'
     + '<div id="tag-picker-search-results" style="display:none;position:absolute;top:calc(100% + 2px);left:0;right:0;background:white;border:1px solid var(--border);border-radius:8px;box-shadow:0 4px 16px rgba(0,0,0,.12);max-height:200px;overflow-y:auto;z-index:20;"></div>'
     + '</div>'
     + '<div style="display:flex;gap:8px;height:380px;">'
@@ -8103,21 +8107,25 @@ function _searchTagPicker(q){
     el.style.display='block'; return;
   }
   var cur = _getMeditTags();
-  el.innerHTML = matches.map(function(it){
-    var sel = cur.includes(it.tag);
-    return '<div onclick="_selectTagFromSearch(' + JSON.stringify(JSON.stringify(it)) + ')" '
-      +'style="padding:8px 12px;cursor:pointer;border-bottom:1px solid var(--bg);display:flex;align-items:center;justify-content:space-between;gap:8px;" '
-      +'onmouseover="this.style.background=\'var(--bg)\'" onmouseout="this.style.background=\'\'">'
-      +'<div><div style="font-size:13px;font-weight:'+(sel?'700':'500')+';color:'+(sel?'var(--green-d)':'var(--text)')+';">'+(sel?'✓ ':'')+it.tag+'</div>'
-      +'<div style="font-size:10px;color:var(--text-muted);">'+it.path+'</div></div>'
-      +'<span style="font-size:11px;background:'+(sel?'var(--green-ll)':'var(--bg)')+';color:'+(sel?'var(--green-d)':'var(--text-muted)')+';padding:2px 8px;border-radius:10px;border:1px solid '+(sel?'var(--green-b)':'var(--border)')+';">'+(sel?'Sélectionné':'+ Ajouter')+'</span>'
-      +'</div>';
-  }).join('');
+  el.innerHTML = '';
   el.style.display='block';
+  matches.forEach(function(it){
+    var sel = cur.includes(it.tag);
+    var row = document.createElement('div');
+    row.style.cssText = 'padding:8px 12px;cursor:pointer;border-bottom:1px solid var(--bg);display:flex;align-items:center;justify-content:space-between;gap:8px;';
+    row.onmouseover = function(){ this.style.background='var(--bg)'; };
+    row.onmouseout = function(){ this.style.background=''; };
+    row.innerHTML = '<div>'
+      +'<div style="font-size:13px;font-weight:'+(sel?'700':'500')+';color:'+(sel?'var(--green-d)':'var(--text)')+';">'+(sel?'✓ ':'')+it.tag.replace(/</g,'&lt;')+'</div>'
+      +'<div style="font-size:10px;color:var(--text-muted);">'+it.path+'</div>'
+      +'</div>'
+      +'<span style="font-size:11px;background:'+(sel?'var(--green-ll)':'var(--bg)')+';color:'+(sel?'var(--green-d)':'var(--text-muted)')+';padding:2px 8px;border-radius:10px;border:1px solid '+(sel?'var(--green-b)':'var(--border)')+';">'+(sel?'Sélectionné':'+ Ajouter')+'</span>';
+    row.addEventListener('click', (function(item){ return function(){ _selectTagFromSearch(item); }; })(it));
+    el.appendChild(row);
+  });
 }
 
-function _selectTagFromSearch(jsonStr){
-  var it = JSON.parse(jsonStr);
+function _selectTagFromSearch(it){
   var tags = _getMeditTags();
   if(tags.includes(it.tag)){ tags=tags.filter(function(t){return t!==it.tag;}); }
   else { tags.push(it.tag); }
