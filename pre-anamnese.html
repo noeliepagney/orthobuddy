@@ -219,7 +219,7 @@ const SECTIONS = {
     questions: [
       { id:"origine_bpa", label:"Qui est à l'origine de cette demande de bilan ?", type:"checkboxes", options:["Famille","Médecin / pédiatre","Enseignant","Infirmière scolaire","Accès direct","Autre"] },
       { id:"depuis_bpa", label:"Depuis quand observez-vous ces difficultés ?", type:"text" },
-      { id:"plainte_items_bpa", label:"Quelles difficultés observez-vous ?", type:"checkboxes", options:["Absence ou retard de langage","Difficile à comprendre quand il/elle parle","Ne fait pas encore de phrases","Difficultés de prononciation","Difficultés à comprendre les consignes","Lecture lente ou difficile","Difficultés à déchiffrer les mots","Difficultés en orthographe","Écriture difficile ou peu lisible","Difficultés en calcul ou en raisonnement","Difficultés d'attention","Difficultés à communiquer avec les autres","Problème de voix","Difficultés liées à la bouche (tétine, respiration par la bouche, déglutition…)","Autre"] },
+      { id:"plainte_items_bpa", label:"Quelles difficultés observez-vous ?", type:"checkboxes", options:["Absence de phrases","Difficultés de communication / pragmatique","Inintelligibilité","Problème d'articulation / phonologie","Problème de compréhension","Lecture lente ou laborieuse","Difficultés de déchiffrage","Difficultés d'orthographe","Écriture laborieuse / peu lisible","Difficultés de calcul / raisonnement mathématique","Difficultés attentionnelles","Difficultés à communiquer avec les autres","Problème de voix","Fonctions OMF (tétine, respiration buccale, déglutition…)","Autre"] },
       { id:"plainte_libre_bpa", label:"Pouvez-vous préciser ce qui vous inquiète ?", type:"textarea" },
     ]
   },
@@ -346,7 +346,7 @@ const SECTIONS = {
       { id:"difficultes_langagieres_lo", label:"Avez-vous remarqué l'un de ces éléments ?", type:"checkboxes", options:["Déformation des mots","Difficulté à se faire comprendre","Sons mal prononcés","Compréhension difficile","Cherche ses mots","Difficultés à exprimer ses idées","S'énerve quand incompris(e)","Utilisation de la gestuelle / mimiques","Utilisation du \"moi, je\"","Erreurs sur le genre des noms","Omission de mots grammaticaux","Discours souvent avorté","Mémorisation des comptines difficile"] },
       { id:"sons_detail", label:"Si certains sons sont mal prononcés, lesquels ?", type:"text" },
       { id:"intelligibilite_interlocuteur", label:"Avec qui se fait-il/elle le mieux comprendre ?", type:"checkboxes", options:["Parents","Maître/maîtresse","Camarades de classe","Grands-parents","Au téléphone"] },
-      { id:"trouble_phono", label:"Difficultés de prononciation ou de mémorisation", type:"checkboxes", options:["A du mal à dire les mots longs","A du mal à retenir les poésies / comptines","Confond certains sons","A du mal à apprendre une langue étrangère"] },
+      { id:"trouble_phono", label:"Difficultés de prononciation ou de mémorisation", type:"checkboxes", options:["Confusion de sons","Difficulté à dire les mots longs","Difficulté à retenir les poésies/comptines","Difficulté à apprendre une langue étrangère"] },
       { id:"stereotypies", label:"Avez-vous observé des comportements répétitifs ou inhabituels (gestes, mots, intérêts) ?", type:"select", options:["Oui","Non"] },
       { id:"stereotypies_detail", label:"Si oui, pouvez-vous préciser lesquels ?", type:"text" },
       { id:"aime_parler", label:"Aime parler", type:"select", options:["Oui","Non","Selon les personnes"] },
@@ -363,8 +363,8 @@ const SECTIONS = {
     label: "Oralité - fonction oromyofaciales",
     questions: [
       { id:"adresse_par_omf", label:"Qui vous a orienté(e) vers ce bilan ?", type:"checkboxes", options:["Médecin traitant","Pédiatre","ORL","Orthodontiste","Chirurgien-dentiste","Gastro-pédiatre","Autre"] },
-      { id:"motifs_omf", label:"Quels sont les motifs de la consultation ?", type:"checkboxes", options:["Otites à répétition","Pose d'aérateurs (\"yoyos\")","Surdité de transmission","Respiration par la bouche","Ronflements / pauses respiratoires pendant le sommeil","Bavage","Difficultés à prononcer certains sons","Difficile à comprendre quand il/elle parle","Avale de façon atypique","Difficultés alimentaires","Difficultés de sommeil liées à la respiration","Autre"] },
-      { id:"symptomes_omf", label:"Avez-vous remarqué l'un de ces éléments ?", type:"checkboxes", options:["Sensation d'oreille bouchée","S'entend parler de façon différente (voix qui résonne)","Acouphènes (bruits dans l'oreille)","Vertiges","Douleur à l'oreille","Entend moins bien","Parle fort","Demande souvent de répéter","Difficultés de concentration","Agitation","Repli sur soi"] },
+      { id:"motifs_omf", label:"Quels sont les motifs de la consultation ?", type:"checkboxes", options:["Otites à répétition","Pose d'aérateurs transtympaniques (ATT)","Surdité de transmission","Ventilation buccale","Ronflements / apnées du sommeil","Bavage","Difficultés articulatoires","Inintelligibilité","Déglutition atypique","TAP / difficultés alimentaires","TDSP","Autre"] },
+      { id:"symptomes_omf", label:"Avez-vous remarqué l'un de ces éléments ?", type:"checkboxes", options:["Acouphènes","Autophonie","Demande de répétitions","Hypoacousie","Otalgie"] },
       { id:"hygiene_nasale_omf", label:"Le nez est-il nettoyé/mouché régulièrement chaque jour ?", type:"select", options:["Oui, efficacement","Oui, mais insuffisamment","Non"] },
       { id:"mouchage_omf", label:"Se moucher seul(e) est-il possible ?", type:"select", options:["Oui","Non","Partiellement"] },
     ]
@@ -399,8 +399,8 @@ const SECTIONS = {
       { id:"hospitalisation_oralite", label:"Hospitalisations (motifs, durée)", type:"textarea" },
       { id:"poids_courbe_oralite", label:"Comment évolue la courbe de poids de votre enfant ?", type:"select", options:["Normale","Difficultés / ralentissement — préciser"] },
       { id:"nutrition_artificielle_oralite", label:"Votre enfant est-il / a-t-il été alimenté(e) par une sonde ?", type:"select", options:["Jamais","Dans le passé","En cours — préciser"] },
-      { id:"pathologies_oralite", label:"Votre enfant a-t-il l'une de ces difficultés ?", type:"checkboxes", options:["Reflux (RGO)","Allergies / intolérances alimentaires","Infections ORL fréquentes","Infections respiratoires fréquentes","Problèmes de transit","Grince des dents (bruxisme)"] },
-      { id:"sante_generale_tap", label:"Votre enfant a-t-il l'un de ces éléments médicaux ?", type:"checkboxes", options:["Reflux (RGO)","Épilepsie","Problèmes ORL","Problèmes de vue","Caries / hygiène bucco-dentaire","Allergies","Mycoses dans la bouche / aphtes"] },
+      { id:"pathologies_oralite", label:"Votre enfant a-t-il l'une de ces difficultés ?", type:"checkboxes", options:["RGO","Infections ORL répétées","Infections bronchiques / pneumopathies","Bruxisme","Allergies / intolérances alimentaires","Problèmes de transit"] },
+      { id:"sante_generale_tap", label:"Votre enfant a-t-il l'un de ces éléments médicaux ?", type:"checkboxes", options:["RGO","Épilepsie","Problèmes ORL","Problèmes visuels","Caries / mauvaise hygiène bucco-dentaire","Allergies","Mycoses buccales / aphtes"] },
       { id:"pathologies_oralite_autres", label:"Autres informations médicales utiles", type:"textarea" },
       { id:"na_voie_oralite", label:"Si votre enfant est alimenté(e) par sonde, par quelle voie ?", type:"checkboxes", options:["Sonde naso-gastrique (par le nez)","Sonde oro-gastrique (par la bouche)","Gastrostomie (bouton sur le ventre)","Jéjunostomie","Nutrition par voie veineuse"] },
       { id:"na_depuis_oralite", label:"Depuis quand ?", type:"text" },
@@ -539,8 +539,8 @@ const SECTIONS = {
       { id:"bilan_orl_voix_e", label:"Un bilan ORL a-t-il été fait récemment ? Avec quels résultats ?", type:"textarea" },
       { id:"comportement_vocal_voix_e", label:"Comment votre enfant utilise-t-il/elle sa voix (récréation, sport, classe, à la maison) ?", type:"textarea" },
       { id:"place_vocale_voix_e", label:"Votre enfant est-il/elle plutôt bruyant(e) ou silencieux(se), en famille et à l'école ?", type:"textarea" },
-      { id:"habitudes_vocales_voix_e", label:"Reconnaissez-vous ces habitudes chez votre enfant ?", type:"checkboxes", options:["Parle beaucoup et longtemps","Parle fort régulièrement","Crie souvent (récréation, sport)","Imite des voix (personnages, bruits)","Chante régulièrement (chorale, karaoké…)","S'éclaircit souvent la gorge","Toux fréquente","Vit dans un environnement bruyant (famille ou école)"] },
-      { id:"sensations_voix_e", label:"Votre enfant se plaint-il/elle de l'une de ces sensations ?", type:"checkboxes", options:["Boule ou gêne dans la gorge","Sensation de serrement","Fatigue de la voix","Douleurs au niveau de la gorge","Sa voix s'éteint parfois","Sa voix change au cours de la journée"] },
+      { id:"habitudes_vocales_voix_e", label:"Reconnaissez-vous ces habitudes chez votre enfant ?", type:"checkboxes", options:["Parle beaucoup et longtemps","Parle fort régulièrement","Cris fréquents (récré, sport)","Imitations de voix (personnages, bruits)","Chant régulier (chorale, karaoké…)","Hemmage fréquent","Toux chronique","Milieu bruyant (fam / scolaire)"] },
+      { id:"sensations_voix_e", label:"Votre enfant se plaint-il/elle de l'une de ces sensations ?", type:"checkboxes", options:["Boule / gêne dans la gorge","Sensation de serrage","Fatigue vocale","Douleurs laryngées ou péri-laryngées","Voix qui s'éteint","Voix qui change en cours de journée"] },
       { id:"atcd_med_voix_e", label:"Antécédents médicaux (rhinites, allergies, asthme, reflux…)", type:"textarea" },
       { id:"traitement_voix_e", label:"Traitements en cours", type:"text" },
     ]
