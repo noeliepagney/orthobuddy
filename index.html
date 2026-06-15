@@ -7544,6 +7544,57 @@ var MATERIEL_CATEGORIES = [
 ];
 
 
+
+function _searchTagFilter(q){
+  var el = document.getElementById('mat-tag-search-results');
+  if(!el) return;
+  if(!q||q.length<2){ el.style.display='none'; return; }
+  var matches = _buildTagIndex().filter(function(it){
+    return it.tag.toLowerCase().includes(q.toLowerCase())||it.sc.toLowerCase().includes(q.toLowerCase());
+  }).slice(0,20);
+  if(!matches.length){
+    el.innerHTML = '<div style="padding:10px;font-size:12px;color:var(--text-muted);">Aucun résultat</div>';
+    el.style.display='block'; return;
+  }
+  var cur = Array.isArray(_materielTags)?_materielTags:[];
+  el.innerHTML = matches.map(function(it){
+    var sel = cur.includes(it.tag);
+    return '<div onclick="_selectTagFromFilter(' + JSON.stringify(JSON.stringify(it)) + ')" '
+      +'style="padding:8px 12px;cursor:pointer;border-bottom:1px solid var(--bg);display:flex;align-items:center;justify-content:space-between;gap:8px;" '
+      +'onmouseover="this.style.background=\'var(--bg)\'" onmouseout="this.style.background=\'\'">'
+      +'<div><div style="font-size:13px;font-weight:'+(sel?'700':'500')+';color:'+(sel?'var(--green-d)':'var(--text)')+';">'+(sel?'✓ ':'')+it.tag+'</div>'
+      +'<div style="font-size:10px;color:var(--text-muted);">'+it.path+'</div></div>'
+      +'<span style="font-size:11px;background:'+(sel?'var(--green-ll)':'var(--bg)')+';color:'+(sel?'var(--green-d)':'var(--text-muted)')+';padding:2px 8px;border-radius:10px;border:1px solid '+(sel?'var(--green-b)':'var(--border)')+';">'+(sel?'Actif':'Filtrer')+'</span>'
+      +'</div>';
+  }).join('');
+  el.style.display='block';
+}
+
+function _selectTagFromFilter(jsonStr){
+  var it = JSON.parse(jsonStr);
+  // Ajouter/retirer le tag dans _materielTags
+  if(!Array.isArray(_materielTags)) _materielTags=[];
+  var idx = _materielTags.indexOf(it.tag);
+  if(idx>=0){ _materielTags.splice(idx,1); } else { _materielTags.push(it.tag); }
+  _materielPage=0;
+  renderMaterielResults();
+  // Rafraîchir les résultats de recherche
+  var si=document.getElementById('mat-tag-search');
+  if(si&&si.value) _searchTagFilter(si.value);
+  // Afficher badge tag actif
+  _invalidateMaterielFilters();
+  var fe=document.getElementById('materiel-filters');
+  if(fe){ fe.dataset.rendered=''; _renderMaterielFiltersHTML(fe); }
+  // Re-brancher le champ
+  var newSi=document.getElementById('mat-tag-search');
+  if(newSi){
+    newSi.value=si?si.value:'';
+    newSi.addEventListener('input',function(){_searchTagFilter(this.value);});
+    newSi.addEventListener('keydown',function(e){e.stopPropagation();});
+    if(newSi.value) _searchTagFilter(newSi.value);
+  }
+}
+
 function toggleCategorieAccordeon(){
   var body = document.getElementById('cat-accordeon-body');
   var chev = document.getElementById('cat-accordeon-chevron');
@@ -7609,6 +7660,12 @@ function _renderMaterielFiltersHTML(el){
     '👄 OMF / Voix / ORL': {color:'#BE185D',bg:'#FCE7F3',border:'#F9A8D4'},
     '🛠 Outils': {color:'#374151',bg:'#F3F4F6',border:'#D1D5DB'},
   };
+  // Recherche de tag dans les filtres
+  h += '<div style="position:relative;margin-bottom:10px;">';
+  h += '<input type="text" id="mat-tag-search" placeholder="🔍 Rechercher un tag précis..." style="width:100%;padding:7px 12px;border:1px solid var(--border);border-radius:8px;font-size:12px;box-sizing:border-box;">';
+  h += '<div id="mat-tag-search-results" style="display:none;position:absolute;top:calc(100% + 2px);left:0;right:0;background:white;border:1px solid var(--border);border-radius:8px;box-shadow:0 4px 16px rgba(0,0,0,.12);max-height:180px;overflow-y:auto;z-index:20;"></div>';
+  h += '</div>';
+
   h += '<div style="margin-bottom:10px;"><div style="font-size:11px;font-weight:600;color:var(--text-soft);margin-bottom:8px;text-transform:uppercase;letter-spacing:.04em;">Thématiques</div>';
   Object.keys(TAGS_TAXONOMY).forEach(function(domaine){
     var st = DOMAINE_STYLES[domaine]||{color:'#374151',bg:'#F3F4F6',border:'#D1D5DB'};
@@ -7735,6 +7792,12 @@ function _renderMaterielFiltersHTML(el){
 
   el.innerHTML = h;
 
+  // Brancher recherche tag
+  var tagSearchInp = document.getElementById('mat-tag-search');
+  if(tagSearchInp){
+    tagSearchInp.addEventListener('input', function(){ _searchTagFilter(this.value); });
+    tagSearchInp.addEventListener('keydown', function(e){ e.stopPropagation(); });
+  }
   // Brancher la recherche sur le vrai champ persistant
   var searchInp = document.getElementById('mat-search-input');
   if(searchInp){
@@ -7943,7 +8006,11 @@ function openTagPicker(){
     + '<button onclick="closeTagPicker()" style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--text-soft);line-height:1;">×</button>'
     + '</div>'
     // Fil d'Ariane
-    + '<div id="tag-picker-breadcrumb" style="font-size:11px;color:var(--text-muted);min-height:18px;margin-bottom:8px;"></div>'
+    + '<div id="tag-picker-breadcrumb" style="font-size:11px;color:var(--text-muted);min-height:18px;margin-bottom:4px;"></div>'
+    + '<div style="position:relative;margin-bottom:6px;">'
+    + '<input type="text" id="tag-picker-search" placeholder="\U0001f50d Rechercher un tag..." style="width:100%;padding:7px 12px;border:1px solid var(--border);border-radius:8px;font-size:12px;box-sizing:border-box;">'
+    + '<div id="tag-picker-search-results" style="display:none;position:absolute;top:calc(100% + 2px);left:0;right:0;background:white;border:1px solid var(--border);border-radius:8px;box-shadow:0 4px 16px rgba(0,0,0,.12);max-height:200px;overflow-y:auto;z-index:20;"></div>'
+    + '</div>'
     + '<div style="display:flex;gap:8px;height:380px;">'
     + '<div id="tag-picker-domaine" style="width:150px;flex-shrink:0;border:1px solid var(--border);border-radius:10px;overflow-y:auto;padding:4px;"></div>'
     + '<div id="tag-picker-categ" style="width:150px;flex-shrink:0;border:1px solid var(--border);border-radius:10px;overflow-y:auto;padding:4px;"><div style="height:100%;display:flex;align-items:center;justify-content:center;"><span style="font-size:11px;color:var(--text-muted);">← Domaine</span></div></div>'
@@ -7970,8 +8037,13 @@ function openTagPicker(){
   _renderTagPickerDomaines();
   _updateTagPickerUI();
 
-  // Brancher le champ custom
+  // Brancher la recherche et le champ custom
   setTimeout(function(){
+    var si = document.getElementById('tag-picker-search');
+    if(si){
+      si.addEventListener('input', function(){ _searchTagPicker(this.value); });
+      si.addEventListener('keydown', function(e){ e.stopPropagation(); });
+    }
     var inp = document.getElementById('tag-picker-custom');
     if(inp) inp.addEventListener('keydown', function(e){ if(e.key==='Enter'){e.preventDefault();addCustomTag();} });
   }, 50);
@@ -8000,6 +8072,67 @@ function _updateTagPickerUI(){
       cur.innerHTML = '<span style="font-size:11px;color:var(--text-muted);">Aucun tag sélectionné</span>';
     }
   }
+}
+
+
+function _buildTagIndex(){
+  var idx = [];
+  Object.keys(TAGS_TAXONOMY).forEach(function(dom){
+    Object.keys(TAGS_TAXONOMY[dom]).forEach(function(cat){
+      Object.keys(TAGS_TAXONOMY[dom][cat]).forEach(function(sc){
+        var tags = TAGS_TAXONOMY[dom][cat][sc]||[];
+        tags.forEach(function(tag){
+          idx.push({tag:tag, dom:dom, cat:cat, sc:sc,
+            path: dom.replace(/^\S+\s/,'') + ' › ' + cat + ' › ' + sc});
+        });
+      });
+    });
+  });
+  return idx;
+}
+
+function _searchTagPicker(q){
+  var el = document.getElementById('tag-picker-search-results');
+  if(!el) return;
+  if(!q||q.length<2){ el.style.display='none'; return; }
+  var matches = _buildTagIndex().filter(function(it){
+    return it.tag.toLowerCase().includes(q.toLowerCase())||it.sc.toLowerCase().includes(q.toLowerCase());
+  }).slice(0,20);
+  if(!matches.length){
+    el.innerHTML = '<div style="padding:10px;font-size:12px;color:var(--text-muted);">Aucun résultat</div>';
+    el.style.display='block'; return;
+  }
+  var cur = _getMeditTags();
+  el.innerHTML = matches.map(function(it){
+    var sel = cur.includes(it.tag);
+    return '<div onclick="_selectTagFromSearch(' + JSON.stringify(JSON.stringify(it)) + ')" '
+      +'style="padding:8px 12px;cursor:pointer;border-bottom:1px solid var(--bg);display:flex;align-items:center;justify-content:space-between;gap:8px;" '
+      +'onmouseover="this.style.background=\'var(--bg)\'" onmouseout="this.style.background=\'\'">'
+      +'<div><div style="font-size:13px;font-weight:'+(sel?'700':'500')+';color:'+(sel?'var(--green-d)':'var(--text)')+';">'+(sel?'✓ ':'')+it.tag+'</div>'
+      +'<div style="font-size:10px;color:var(--text-muted);">'+it.path+'</div></div>'
+      +'<span style="font-size:11px;background:'+(sel?'var(--green-ll)':'var(--bg)')+';color:'+(sel?'var(--green-d)':'var(--text-muted)')+';padding:2px 8px;border-radius:10px;border:1px solid '+(sel?'var(--green-b)':'var(--border)')+';">'+(sel?'Sélectionné':'+ Ajouter')+'</span>'
+      +'</div>';
+  }).join('');
+  el.style.display='block';
+}
+
+function _selectTagFromSearch(jsonStr){
+  var it = JSON.parse(jsonStr);
+  var tags = _getMeditTags();
+  if(tags.includes(it.tag)){ tags=tags.filter(function(t){return t!==it.tag;}); }
+  else { tags.push(it.tag); }
+  _setMeditTags(tags);
+  _tagPickerState.domaine=it.dom; _tagPickerState.categorie=it.cat; _tagPickerState.sousCateg=it.sc;
+  _renderTagPickerDomaines();
+  _selectTagDomaine(it.dom);
+  setTimeout(function(){
+    _selectTagCategorie(it.cat);
+    setTimeout(function(){
+      _selectTagSousCateg(it.sc);
+      var si=document.getElementById('tag-picker-search');
+      if(si&&si.value) _searchTagPicker(si.value);
+    },30);
+  },30);
 }
 
 function closeTagPicker(){
