@@ -8024,7 +8024,7 @@ function renderPlaceholder(label){ $("#lead").innerHTML=""; $("#form").innerHTML
 async function selectFromSub(){
   const leaf=currentLeaf(); if(!leaf) return;
   // Flush toute sauvegarde en attente avant de changer de bilan
-  if(saveTimer){ clearTimeout(saveTimer); await saveNow(); }
+  if(saveTimer){ clearTimeout(saveTimer); await saveNow(true); }
   if(leaf.trame){
     trameId=leaf.trame; loadData(); renderForm(); markSaved();
     if(currentPatientId){
@@ -9893,8 +9893,11 @@ function scheduleSave(){
   saveTimer=setTimeout(saveNow,800);
 }
 
-async function saveNow(){
+async function saveNow(force=false){
   if(!currentPatientId){ markSaved(); return; }
+  // Ne créer un nouveau bilan (POST) que si l'utilisateur a cliqué sur Enregistrer
+  // ou si un bilan existant est en cours d'édition (PATCH)
+  if(!currentBilanId && !force){ markSaved(); return; }
   const payload={
     patient_id:currentPatientId,
     type_bilan:trameId,
@@ -9936,7 +9939,7 @@ async function forceSaveBilan(){
   clearTimeout(saveTimer);
   const btn=$("#btnSaveBilan");
   if(btn){ btn.disabled=true; }
-  await saveNow();
+  await saveNow(true);
   if(btn){ btn.disabled=false; }
 }
 
@@ -10461,8 +10464,9 @@ function init(){
   // Peupler le sélecteur de trames
   fillCategories();
   $("#catSel").value="Enfant"; fillSub("Enfant");
-  selectFromSub();
-  $("#saveState").textContent="Chargement…";
+  // Ne pas sélectionner automatiquement de trame — attendre le choix du praticien
+  renderPlaceholder("Sélectionnez une catégorie et un type de bilan ci-dessus");
+  $("#saveState").textContent="Aucun bilan sélectionné";
 
   loadPatients();
 
