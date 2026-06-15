@@ -7259,8 +7259,9 @@ function getMaterielFiltres(){
       return _materielFamilles.some(function(famille){
         // Nouveau format 'domaine::categorie'
         if(famille.includes('::')){
-          var parts=famille.split('::'); var dom=parts[0]; var cat=parts[1];
-          var tags=_allTagsInNode((TAGS_TAXONOMY[dom]&&TAGS_TAXONOMY[dom][cat])||[]);
+          var parts=famille.split('::'); var dom=parts[0]; var cat=parts[1]; var sc=parts[2];
+          var node = sc ? ((TAGS_TAXONOMY[dom]&&TAGS_TAXONOMY[dom][cat]&&TAGS_TAXONOMY[dom][cat][sc])||[]) : ((TAGS_TAXONOMY[dom]&&TAGS_TAXONOMY[dom][cat])||[]);
+          var tags=_allTagsInNode(node);
           return tags.some(function(t){return mt.includes(t.toLowerCase());});
         }
         // Ancien format MATERIEL_FAMILLES
@@ -7547,10 +7548,8 @@ function toggleCategorieAccordeon(){
   var body = document.getElementById('cat-accordeon-body');
   var chev = document.getElementById('cat-accordeon-chevron');
   if(!body) return;
-  var open = body.style.display === 'none';
-  body.style.display = open ? 'flex' : 'none';
-  body.style.flexWrap = 'wrap';
-  body.style.gap = '6px';
+  var open = body.style.maxHeight === '0px' || body.style.maxHeight === '0';
+  body.style.maxHeight = open ? '500px' : '0';
   if(chev) chev.style.transform = open ? 'rotate(180deg)' : 'rotate(0deg)';
 }
 
@@ -7601,7 +7600,7 @@ function _renderMaterielFiltersHTML(el){
   });
   h += '</div></div>';
 
-  // Thématiques depuis TAGS_TAXONOMY (3 niveaux : domaine → catégorie → sous-catégorie)
+  // Thématiques depuis TAGS_TAXONOMY — 3 niveaux affichés
   var DOMAINE_STYLES = {
     '✍ Langage écrit': {color:'#1D4ED8',bg:'#DBEAFE',border:'#93C5FD'},
     '💬 Langage oral': {color:'#065F46',bg:'#D1FAE5',border:'#6EE7B7'},
@@ -7613,43 +7612,40 @@ function _renderMaterielFiltersHTML(el){
   h += '<div style="margin-bottom:10px;"><div style="font-size:11px;font-weight:600;color:var(--text-soft);margin-bottom:8px;text-transform:uppercase;letter-spacing:.04em;">Thématiques</div>';
   Object.keys(TAGS_TAXONOMY).forEach(function(domaine){
     var st = DOMAINE_STYLES[domaine]||{color:'#374151',bg:'#F3F4F6',border:'#D1D5DB'};
-    h += '<div style="margin-bottom:7px;">';
+    h += '<div style="margin-bottom:8px;">';
     h += '<div style="font-size:10px;font-weight:700;color:'+st.color+';margin-bottom:4px;">'+domaine+'</div>';
+    // Niveau 2 : catégories
     h += '<div style="display:flex;gap:5px;flex-wrap:wrap;">';
-    // Afficher les catégories intermédiaires comme chips filtrables
     Object.keys(TAGS_TAXONOMY[domaine]).forEach(function(categorie){
-      var allSubTags = _allTagsInNode(TAGS_TAXONOMY[domaine][categorie]);
-      // Identifiant unique : "domaine::categorie"
       var famId = domaine+'::'+categorie;
       var famActive = Array.isArray(_materielFamilles)&&_materielFamilles.includes(famId);
       h += '<label style="display:flex;align-items:center;gap:4px;padding:3px 10px;border-radius:20px;cursor:pointer;border:1px solid '+(famActive?st.border:'var(--border)')+';background:'+(famActive?st.bg:'var(--surface)')+';color:'+(famActive?st.color:'var(--text)')+';font-size:11px;white-space:nowrap;">';
       h += '<input type="checkbox" data-fam="'+famId.replace(/"/g,'&quot;')+'" '+(famActive?'checked':'')+' onchange="toggleMaterielFamille(this.dataset.fam)" style="cursor:pointer;">';
       h += categorie+'</label>';
     });
-    h += '</div></div>';
-  });
-  // Tags de familles actives
-  if(Array.isArray(_materielFamilles)&&_materielFamilles.length){
-    var tagsDeFamilles=[];
-    _materielFamilles.forEach(function(f){tagsDeFamilles=tagsDeFamilles.concat(MATERIEL_FAMILLES[f]||[]);});
-    tagsDeFamilles=[...new Set(tagsDeFamilles)].sort();
-    if(tagsDeFamilles.length){
-      h += '<div style="margin-top:8px;padding:8px 10px;background:var(--green-ll);border-radius:var(--radius-sm);border:1px solid var(--green-l);">';
-      h += '<div style="font-size:10px;font-weight:600;color:var(--green-d);margin-bottom:6px;text-transform:uppercase;letter-spacing:.04em;">Affiner par tag</div><div style="display:flex;gap:5px;flex-wrap:wrap;">';
-      tagsDeFamilles.forEach(function(t){
-        var active=selectedTags.includes(t);
-        h += '<label style="display:flex;align-items:center;gap:4px;padding:3px 9px;border-radius:20px;cursor:pointer;font-size:11px;border:1px solid '+(active?'var(--green-d)':'var(--green-l)')+';background:'+(active?'var(--green-l)':'white')+';color:'+(active?'var(--green-d)':'var(--text-mid)')+'">';
-        h += '<input type="checkbox" data-tag="'+t.replace(/"/g,'&quot;')+'" '+(active?'checked':'')+' onchange="toggleMaterielTag(this.dataset.tag)" style="cursor:pointer;">'+t+'</label>';
+    h += '</div>';
+    // Niveau 3 : sous-catégories des catégories actives
+    Object.keys(TAGS_TAXONOMY[domaine]).forEach(function(categorie){
+      var famId = domaine+'::'+categorie;
+      var famActive = Array.isArray(_materielFamilles)&&_materielFamilles.includes(famId);
+      if(!famActive) return;
+      var sousCategs = Object.keys(TAGS_TAXONOMY[domaine][categorie]);
+      // Si une seule sous-catégorie avec le même nom → pas la peine d'afficher
+      if(sousCategs.length===1 && sousCategs[0]===categorie) return;
+      h += '<div style="margin-top:5px;padding:6px 10px;background:'+st.bg+';border-radius:8px;border-left:3px solid '+st.border+';">';
+      h += '<div style="font-size:10px;color:'+st.color+';font-weight:600;margin-bottom:4px;">'+categorie+' → </div>';
+      h += '<div style="display:flex;gap:4px;flex-wrap:wrap;">';
+      sousCategs.forEach(function(sc){
+        var scId = domaine+'::'+categorie+'::'+sc;
+        var scActive = Array.isArray(_materielFamilles)&&_materielFamilles.includes(scId);
+        h += '<label style="display:flex;align-items:center;gap:3px;padding:2px 8px;border-radius:16px;cursor:pointer;border:1px solid '+(scActive?st.color:'var(--border)')+';background:'+(scActive?st.color:'white')+';color:'+(scActive?'white':'var(--text)')+';font-size:11px;white-space:nowrap;">';
+        h += '<input type="checkbox" data-fam="'+scId.replace(/"/g,'&quot;')+'" '+(scActive?'checked':'')+' onchange="toggleMaterielFamille(this.dataset.fam)" style="cursor:pointer;">';
+        h += sc+'</label>';
       });
       h += '</div></div>';
-    }
-  }
-  var autresSelected=(Array.isArray(_materielTags)?_materielTags:[]).filter(function(t){return !DOMAINES.includes(t);});
-  if(autresSelected.length){
-    h += '<div style="display:flex;gap:4px;flex-wrap:wrap;margin-top:6px;">';
-    autresSelected.forEach(function(t){ h += '<span style="font-size:11px;background:var(--green-ll);color:var(--green-mid);padding:2px 8px;border-radius:10px;display:flex;align-items:center;gap:4px;">'+t+'<span data-tag="'+t.replace(/"/g,'&quot;')+'" onclick="toggleMaterielTag(this.dataset.tag)" style="cursor:pointer;font-weight:700;">×</span></span>'; });
+    });
     h += '</div>';
-  }
+  });
   h += '</div>';
 
   // Catégories fixes — accordéon
@@ -7659,9 +7655,9 @@ function _renderMaterielFiltersHTML(el){
   h += '<div style="font-size:11px;font-weight:600;color:var(--text-soft);text-transform:uppercase;letter-spacing:.04em;">Catégorie'
     + (_catActive?' <span style="background:var(--brique,#B87355);color:white;font-size:9px;padding:1px 6px;border-radius:8px;font-weight:700;">'+_materielCategories.length+'</span>':'')
     + '</div>';
-  h += '<span id="cat-accordeon-chevron" style="font-size:12px;color:var(--text-muted);transform:'+(_catActive?'rotate(180deg)':'rotate(0deg)')+';display:inline-block;transition:transform .2s;">▾</span>';
+  h += '<span id="cat-accordeon-chevron" style="font-size:12px;color:var(--text-muted);display:inline-block;transition:transform .2s;">▾</span>';
   h += '</div>';
-  h += '<div id="cat-accordeon-body" style="display:'+(_catActive?'flex':'none')+';gap:6px;flex-wrap:wrap;padding:6px 0;">';
+  h += '<div id="cat-accordeon-body" style="display:flex;gap:6px;flex-wrap:wrap;padding:6px 0;max-height:'+(_catActive?'none':'0')+';overflow:hidden;transition:max-height .2s;">';
   MATERIEL_CATEGORIES.forEach(function(cat){
     var active=Array.isArray(_materielCategories)&&_materielCategories.includes(cat.id);
     h += '<label style="display:flex;align-items:center;gap:5px;padding:4px 10px;border-radius:20px;cursor:pointer;border:1px solid '+(active?cat.border:'var(--border)')+';background:'+(active?cat.bg:'var(--surface)')+';color:'+(active?cat.color:'var(--text)')+';font-size:12px;">';
