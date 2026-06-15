@@ -7248,7 +7248,7 @@ function getMaterielFiltres(){
         || (m.description||'').toLowerCase().includes(q);
     });
   }
-  if(Array.isArray(_materielCategories)&&_materielCategories.length){ data = data.filter(function(m){ return _materielCategories.some(function(c){return (m.categorie||'').toLowerCase()===c.toLowerCase();}); }); }
+  if(Array.isArray(_materielCategories)&&_materielCategories.length){ data = data.filter(function(m){ var mcs=(m.categorie||'').split(',').map(function(x){return x.trim().toLowerCase();}); return _materielCategories.some(function(c){ return mcs.some(function(mc){return mc===c.toLowerCase()||mc.replace(/\s+/g,' ')===c.toLowerCase().replace(/\s+/g,' ');}); }); }); }
   if(_materielFormat) data = data.filter(function(m){ return (m.format||'').split(',').map(function(f){return f.trim().toLowerCase();}).includes(_materielFormat.toLowerCase()); });
   if(Array.isArray(_materielNiveaux)&&_materielNiveaux.length){ data = data.filter(function(m){ var mn=(m.niveau||'').split(',').map(function(n){return n.trim().toLowerCase();}); return _materielNiveaux.every(function(nv){return mn.includes(nv.toLowerCase());}); }); }
   if(Array.isArray(_materielTags)&&_materielTags.length){ data = data.filter(function(m){ var mt=(m.tags||'').toLowerCase(); return _materielTags.every(function(t){ return mt.includes(t.toLowerCase()); }); }); }
@@ -7356,7 +7356,44 @@ var MATERIEL_FAMILLES = {
   'Gestion': ['bilan','dépistage','tracker','salle d\'attente'],
 };
 
-// Migration anciens tags → nouveaux
+// Migration anciens tags → nouveaux (basée sur les 590 tags du CSV)
+var TAGS_MIGRATION = {
+  // Domaines (à garder tels quels dans la nouvelle taxonomie)
+  '✍ LE LANGAGE ECRIT': '✍ LE LANGAGE ECRIT',
+  '💬 LO LANGAGE ORAL': '💬 LO LANGAGE ORAL',
+  '🔢 COGNITION MATH': '🔢 COGNITION MATH',
+  '🧠 NEURO': '🧠 NEURO',
+  // Anciens tags → nouveaux tags normalisés
+  'antonyme/synonyme': 'synonymes',
+  'dénomination rapide': 'dénomination',
+  'jeux de lecture': 'lecture mots',
+  'jeux de lecture/orthographe': 'orthographe',
+  'orthographe mots/ lexique orthographique/orthographe lexicale': 'orthographe lexicale',
+  'CV VC': 'CV',
+  'ccv': 'CCV',
+  'clusters': 'clusters consonantiques',
+  'mdt': 'MDT',
+  'singulier pluriel': 'singulier/pluriel',
+  'calculs': 'opérations',
+  'chaine numérique': 'chaîne numérique',
+  'habiletés numériques de base': 'sens du nombre',
+  'cgp': 'CGP',
+  'cpg': 'CPG',
+  'ill aill euill ouill eill': 'ill/aill/euill/ouill/eill',
+  'eole': 'EOLE',
+  'ch/j': 'chj',
+  's-z': 'sz',
+  's/z': 'sz',
+  'f/v': 'fv',
+  'p/b': 'pb',
+  't/d': 'td',
+  'b/d': 'bd',
+  'c/g': 'kg',
+  'banque  de mots': 'banque de mots',
+  'préfixes/suffixes': 'préfixes',
+  'ian/ain': 'ian/ain',
+  'incompétences vélo-pharyngées': 'incompétence vélo-pharyngée',
+};
 var TAGS_MIGRATION = {
   'dénomination rapide': 'dénomination',
   'antonyme/synonyme': 'synonymes',
@@ -7369,6 +7406,24 @@ var TAGS_MIGRATION = {
   'calculs': 'opérations','chaine numérique': 'chaîne numérique',
   'habiletés numériques de base': 'sens du nombre',
 };
+
+var MATERIEL_CATEGORIES = [
+  {id:'support rééducation', label:'support rééducation', color:'#7C3AED', bg:'#EDE9FE', border:'#C4B5FD'},
+  {id:'motivation carotte renforçateur', label:'motivation carotte renforçateur', color:'#16A34A', bg:'#DCFCE7', border:'#86EFAC'},
+  {id:'administratif', label:'administratif', color:'#E11D48', bg:'#FFE4E6', border:'#FECDD3'},
+  {id:'aides pédagogiques/partenariat parental/ accompagnement familial', label:'aides pédagogiques/partenariat parental/ accompagnement familial', color:'#6B7280', bg:'#F3F4F6', border:'#D1D5DB'},
+  {id:'articles', label:'articles', color:'#D97706', bg:'#FEF3C7', border:'#FCD34D'},
+  {id:'bilan', label:'bilan', color:'#374151', bg:'#F9FAFB', border:'#D1D5DB'},
+  {id:'documentation pro', label:'documentation pro', color:'#374151', bg:'#F9FAFB', border:'#D1D5DB'},
+  {id:'finance', label:'finance', color:'#374151', bg:'#F9FAFB', border:'#D1D5DB'},
+  {id:'groupe Facebook/ blog/compte Instagram de partage de matériel', label:'groupe Facebook/ blog/compte Instagram de partage de matériel', color:'#D97706', bg:'#FEF9C3', border:'#FDE68A'},
+  {id:'infographies', label:'infographies', color:'#E11D48', bg:'#FFF1F2', border:'#FECDD3'},
+  {id:'organisation', label:'organisation', color:'#D97706', bg:'#FFFBEB', border:'#FDE68A'},
+  {id:'questionnaire/grille', label:'questionnaire/grille', color:'#3B82F6', bg:'#EFF6FF', border:'#BFDBFE'},
+  {id:'test', label:'test', color:'#EC4899', bg:'#FDF2F8', border:'#FBCFE8'},
+  {id:'utilitaire bureau', label:'utilitaire bureau', color:'#374151', bg:'#F9FAFB', border:'#D1D5DB'},
+];
+
 
 function renderMaterielUI(){
   var el = document.getElementById('materiel-content');
@@ -7467,19 +7522,17 @@ function renderMaterielUI(){
   }
   h += '</div>';
 
-  // Catégories multi-sélection
-  if(cats.length > 0){
-    h += '<div style="margin-bottom:10px;">';
-    h += '<div style="font-size:11px;font-weight:600;color:var(--text-soft);margin-bottom:6px;text-transform:uppercase;letter-spacing:.04em;">Catégorie</div>';
-    h += '<div style="display:flex;gap:6px;flex-wrap:wrap;">';
-    cats.forEach(function(c){
-      var active = Array.isArray(_materielCategories)&&_materielCategories.includes(c);
-      h += '<label style="display:flex;align-items:center;gap:5px;padding:5px 12px;border-radius:20px;cursor:pointer;border:1px solid '+(active?'var(--brique-b,#E8C4B0)':'var(--border)')+';background:'+(active?'var(--brique-l,#FAF0EB)':'var(--surface)')+';color:'+(active?'var(--brique,#B87355)':'var(--text)')+';font-size:12px;white-space:nowrap;">';
-      h += '<input type="checkbox" data-cat="'+c.replace(/"/g,'&quot;')+'" '+(active?'checked':'')+' onchange="toggleMaterielCategorie(this.dataset.cat)" style="cursor:pointer;accent-color:var(--brique,#B87355);">';
-      h += c+'</label>';
-    });
-    h += '</div></div>';
-  }
+  // Catégories fixes (14 items)
+  h += '<div style="margin-bottom:10px;">';
+  h += '<div style="font-size:11px;font-weight:600;color:var(--text-soft);margin-bottom:6px;text-transform:uppercase;letter-spacing:.04em;">Catégorie</div>';
+  h += '<div style="display:flex;gap:6px;flex-wrap:wrap;">';
+  MATERIEL_CATEGORIES.forEach(function(cat){
+    var active = Array.isArray(_materielCategories)&&_materielCategories.includes(cat.id);
+    h += '<label style="display:flex;align-items:center;gap:5px;padding:5px 12px;border-radius:20px;cursor:pointer;border:1px solid '+(active?cat.border:'var(--border)')+';background:'+(active?cat.bg:'var(--surface)')+';color:'+(active?cat.color:'var(--text)')+';font-size:12px;">';
+    h += '<input type="checkbox" data-cat="'+cat.id.replace(/"/g,'&quot;')+'" '+(active?'checked':'')+' onchange="toggleMaterielCategorie(this.dataset.cat)" style="cursor:pointer;">';
+    h += cat.label+'</label>';
+  });
+  h += '</div></div>';
 
   // Format select
   h += '<div style="margin-bottom:10px;">';
