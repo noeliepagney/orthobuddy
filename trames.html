@@ -8051,6 +8051,9 @@ const STORE = "obtrame::"; // conservé pour les profils cabinet (localStorage)
 const SB_URL = "https://xiznicrburryfmdfbjxk.supabase.co";
 const SB_ANON = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inhpem5pY3JidXJyeWZtZGZianhrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAwNDM0NjEsImV4cCI6MjA5NTYxOTQ2MX0.vYuV7LIBXXkKJkHVwNPaI-lA7x1HwFROdU1K17ZB1Y8";
 function sbAnonKey(){ return SB_ANON; }
+function getSbToken(){ return sessionStorage.getItem('sb_token') || localStorage.getItem('sb_token') || SB_ANON; }
+function getSbUserId(){ return sessionStorage.getItem('sb_user_id') || localStorage.getItem('sb_user_id') || null; }
+function sbAuthHeaders(){ return {"apikey":SB_ANON,"Authorization":"Bearer "+getSbToken()}; }
 
 let trameId=null, data={}, saveTimer=null;
 let currentBilanId=null;
@@ -8067,7 +8070,7 @@ function getPatientFallback(pid){
 function loadPatients(){
   const uid = 'b443cde9-7186-4239-85ac-e48f1912e51a';
   fetch(SB_URL+"/rest/v1/orthobuddy_data?user_id=eq."+uid+"&select=data", {
-    headers:{"apikey":SB_ANON,"Authorization":"Bearer "+SB_ANON}
+    headers:sbAuthHeaders()
   }).then(r=>r.json()).then(rows=>{
     if(rows&&rows[0]&&rows[0].data&&rows[0].data.patients){
       allPatients=rows[0].data.patients;
@@ -9900,6 +9903,7 @@ async function saveNow(force=false){
   if(!currentBilanId && !force){ markSaved(); return; }
   const payload={
     patient_id:currentPatientId,
+    user_id:getSbUserId(),
     type_bilan:trameId,
     date_bilan:data[trameId+".entete.date_bilan"]||data[trameId+".administratif.date_bilan"]||new Date().toISOString().slice(0,10),
     data:data,
@@ -9911,13 +9915,13 @@ async function saveNow(force=false){
     if(currentBilanId){
       res=await fetch(SB_URL+"/rest/v1/bilans?id=eq."+currentBilanId,{
         method:"PATCH",
-        headers:{"apikey":SB_ANON,"Authorization":"Bearer "+SB_ANON,"Content-Type":"application/json","Prefer":"return=representation"},
+        headers:Object.assign({"Content-Type":"application/json","Prefer":"return=representation"},sbAuthHeaders()),
         body:JSON.stringify(payload)
       });
     } else {
       res=await fetch(SB_URL+"/rest/v1/bilans",{
         method:"POST",
-        headers:{"apikey":SB_ANON,"Authorization":"Bearer "+SB_ANON,"Content-Type":"application/json","Prefer":"return=representation"},
+        headers:Object.assign({"Content-Type":"application/json","Prefer":"return=representation"},sbAuthHeaders()),
         body:JSON.stringify(payload)
       });
     }
@@ -9958,7 +9962,7 @@ async function refreshSaved(){
   if(!currentPatientId) return;
   try{
     const res=await fetch(SB_URL+"/rest/v1/bilans?patient_id=eq."+currentPatientId+"&archived=eq.false&order=updated_at.desc",{
-      headers:{"apikey":SB_ANON,"Authorization":"Bearer "+SB_ANON}
+      headers:sbAuthHeaders()
     });
     const rows=await res.json();
     if(!Array.isArray(rows)) return;
@@ -9976,7 +9980,7 @@ async function refreshSaved(){
 async function openSaved(bilanId){
   try{
     const res=await fetch(SB_URL+"/rest/v1/bilans?id=eq."+bilanId,{
-      headers:{"apikey":SB_ANON,"Authorization":"Bearer "+SB_ANON}
+      headers:sbAuthHeaders()
     });
     const rows=await res.json();
     if(!rows||!rows[0]) return;
@@ -10000,13 +10004,13 @@ async function renewBilan(){
   try{
     await fetch(SB_URL+"/rest/v1/bilans?id=eq."+currentBilanId,{
       method:"PATCH",
-      headers:{"apikey":SB_ANON,"Authorization":"Bearer "+SB_ANON,"Content-Type":"application/json"},
+      headers:Object.assign({"Content-Type":"application/json"},sbAuthHeaders()),
       body:JSON.stringify({archived:true})
     });
     const newData=JSON.parse(JSON.stringify(data));
     const res=await fetch(SB_URL+"/rest/v1/bilans",{
       method:"POST",
-      headers:{"apikey":SB_ANON,"Authorization":"Bearer "+SB_ANON,"Content-Type":"application/json","Prefer":"return=representation"},
+      headers:Object.assign({"Content-Type":"application/json","Prefer":"return=representation"},sbAuthHeaders()),
       body:JSON.stringify({patient_id:currentPatientId,type_bilan:trameId,date_bilan:new Date().toISOString().slice(0,10),data:newData,archived:false})
     });
     const rows=await res.json();
@@ -10025,7 +10029,7 @@ async function deleteSaved(bilanId){
   try{
     await fetch(SB_URL+"/rest/v1/bilans?id=eq."+bilanId,{
       method:"DELETE",
-      headers:{"apikey":SB_ANON,"Authorization":"Bearer "+SB_ANON}
+      headers:sbAuthHeaders()
     });
     if(currentBilanId===bilanId){
       currentBilanId=null; data={}; renderForm();
