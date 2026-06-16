@@ -931,7 +931,13 @@ html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);colo
             <label class="btn btn-sm" style="cursor:pointer;">📤 Importer<input type="file" accept=".json" style="display:none;" onchange="importData(event)"></label>
             <button class="btn btn-sm btn-red" onclick="confirmReset()">🗑️ Réinitialiser</button>
           </div>
-          <p style="font-size:11px;color:var(--text-soft);margin-top:8px;">Données stockées localement. Exportez régulièrement pour éviter toute perte.</p></div></div>
+          <p style="font-size:11px;color:var(--text-soft);margin-top:8px;">Données stockées localement. Exportez régulièrement pour éviter toute perte.</p>
+          <div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--border);">
+            <div style="font-size:12px;font-weight:600;color:var(--text);margin-bottom:6px;">☁️ Sauvegardes automatiques (cloud)</div>
+            <p style="font-size:11px;color:var(--text-soft);margin-bottom:8px;">Une copie de vos données est conservée automatiquement sur le serveur (5 dernières versions, espacées d'au moins 1h).</p>
+            <button class="btn btn-sm" onclick="renderAutoBackupsList()">🕐 Voir les sauvegardes automatiques</button>
+            <div id="autobackups-list" style="margin-top:10px;"></div>
+          </div></div></div>
       </div>
       <div class="page" id="page-aide">
         <div style="max-width:760px;margin:0 auto;padding:24px 16px;">
@@ -2416,6 +2422,48 @@ function getObjectifsBibliotheque(){
   return _objectifsBibliotheque || OBJECTIFS_BIBLIOTHEQUE;
 }
 
+const AUTO_BACKUP_MIN_INTERVAL_MS = 60*60*1000; // au maximum 1 backup auto par heure
+const AUTO_BACKUP_KEEP = 5; // nombre de backups conservés
+
+function _maybeAutoBackup(dbLight){
+  try{
+    var last = parseInt(localStorage.getItem('ob_last_autobackup')||'0', 10);
+    if(Date.now() - last < AUTO_BACKUP_MIN_INTERVAL_MS) return; // pas encore l'heure
+    localStorage.setItem('ob_last_autobackup', String(Date.now()));
+    _runAutoBackup(dbLight);
+  }catch(e){ console.warn('autobackup check failed', e); }
+}
+
+async function _runAutoBackup(dbLight){
+  try{
+    var uid = getSbUserId();
+    // 1. Créer le nouveau backup
+    var r = await fetch(`${SB_URL}/rest/v1/orthobuddy_backups`, {
+      method: 'POST',
+      headers: {...sbHeaders(), 'Prefer':'return=minimal'},
+      body: JSON.stringify({ user_id: uid, data: dbLight })
+    });
+    if(!r.ok) { console.warn('autobackup insert failed', r.status); return; }
+
+    // 2. Lister les backups existants (les plus récents en premier)
+    var rList = await fetch(`${SB_URL}/rest/v1/orthobuddy_backups?user_id=eq.${uid}&select=id,created_at&order=created_at.desc`, {
+      headers: sbHeaders()
+    });
+    if(!rList.ok) return;
+    var rows = await rList.json();
+    if(!Array.isArray(rows) || rows.length <= AUTO_BACKUP_KEEP) return;
+
+    // 3. Supprimer les plus anciens au-delà des AUTO_BACKUP_KEEP derniers
+    var toDelete = rows.slice(AUTO_BACKUP_KEEP).map(function(x){return x.id;});
+    for(var i=0;i<toDelete.length;i++){
+      await fetch(`${SB_URL}/rest/v1/orthobuddy_backups?id=eq.${toDelete[i]}`, {
+        method:'DELETE',
+        headers: sbHeaders()
+      }).catch(function(){});
+    }
+  }catch(e){ console.warn('autobackup failed', e); }
+}
+
 async function sbSave(){
   setSyncStatus('syncing');
   try{
@@ -2449,6 +2497,7 @@ async function sbSave(){
     }
     setSyncStatus('ok');
     setTimeout(()=>setSyncStatus('idle'),3000);
+    _maybeAutoBackup(dbLight);
   }catch(e){
     console.error('Supabase save failed:', e);
     setSyncStatus('error');
@@ -3283,6 +3332,53 @@ async function changePassword(){
 // ═══════════════════════════════════════
 // BACKUP
 // ═══════════════════════════════════════
+async function renderAutoBackupsList(){
+  var el = document.getElementById('autobackups-list');
+  if(!el) return;
+  el.innerHTML = '<div style="font-size:12px;color:var(--text-soft);">Chargement…</div>';
+  try{
+    var uid = getSbUserId();
+    var r = await fetch(`${SB_URL}/rest/v1/orthobuddy_backups?user_id=eq.${uid}&select=id,created_at&order=created_at.desc`, {
+      headers: sbHeaders()
+    });
+    var rows = await r.json();
+    if(!Array.isArray(rows) || !rows.length){
+      el.innerHTML = '<div style="font-size:12px;color:var(--text-soft);">Aucune sauvegarde automatique pour le moment.</div>';
+      return;
+    }
+    var h = '<div style="display:flex;flex-direction:column;gap:6px;">';
+    rows.forEach(function(b){
+      var d = new Date(b.created_at);
+      var label = d.toLocaleDateString('fr-FR',{day:'2-digit',month:'2-digit',year:'numeric'}) + ' à ' + d.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});
+      h += '<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 12px;background:var(--bg);border:1px solid var(--border);border-radius:8px;font-size:12px;">';
+      h += '<span>🕐 '+label+'</span>';
+      h += '<button class="btn btn-sm" data-bid="'+b.id+'" onclick="restoreAutoBackup(this.dataset.bid)" style="font-size:11px;padding:4px 10px;">Restaurer</button>';
+      h += '</div>';
+    });
+    h += '</div>';
+    el.innerHTML = h;
+  }catch(e){
+    el.innerHTML = '<div style="font-size:12px;color:var(--red);">Erreur de chargement.</div>';
+  }
+}
+
+async function restoreAutoBackup(backupId){
+  if(!confirm('Restaurer cette sauvegarde ?\n\nCela remplacera toutes vos données actuelles par celles de cette sauvegarde. Cette action est irréversible.\n\nConseil : exportez d\'abord vos données actuelles si vous voulez pouvoir y revenir.')) return;
+  try{
+    var r = await fetch(`${SB_URL}/rest/v1/orthobuddy_backups?id=eq.${backupId}&select=data`, {
+      headers: sbHeaders()
+    });
+    var rows = await r.json();
+    if(!Array.isArray(rows) || !rows.length){ showToast('Sauvegarde introuvable','red'); return; }
+    DB = {...DB, ...rows[0].data};
+    save();
+    renderAll();
+    showToast('✓ Sauvegarde restaurée');
+  }catch(e){
+    showToast('Erreur lors de la restauration','red');
+  }
+}
+
 function exportData(){
   const b=new Blob([JSON.stringify(DB,null,2)],{type:'application/json'});
   const u=URL.createObjectURL(b);const a=document.createElement('a');
