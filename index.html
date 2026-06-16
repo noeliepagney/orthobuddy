@@ -10550,25 +10550,41 @@ function _addMaterielToActivite(idx){
     overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:10002;display:flex;align-items:center;justify-content:center;padding:16px;';
 
     var items = mesMateriels.map(function(m){
-      return '<label style="display:flex;align-items:center;gap:8px;padding:6px 10px;border-bottom:1px solid var(--border);cursor:pointer;font-size:12px;">'
-        + '<input type="checkbox" data-titre="'+m.titre.replace(/"/g,'&quot;')+'" style="accent-color:var(--green);cursor:pointer;">'
-        + '<span style="flex:1;">'+m.titre+'</span>'
-        + (m.auteur?'<span style="font-size:10px;color:var(--text-soft);">'+m.auteur+'</span>':'')
+      return '<label style="display:flex;align-items:flex-start;gap:10px;padding:9px 12px;border-bottom:1px solid var(--border);cursor:pointer;">'
+        + '<input type="checkbox" data-titre="'+m.titre.replace(/"/g,'&quot;')+'" style="accent-color:var(--green);cursor:pointer;margin-top:2px;flex-shrink:0;">'
+        + '<span style="flex:1;min-width:0;display:flex;flex-direction:column;gap:2px;">'
+        + '<span style="font-size:13px;color:var(--text);line-height:1.3;">'+m.titre+'</span>'
+        + (m.auteur?'<span style="font-size:11px;color:var(--text-soft);">'+m.auteur+'</span>':'')
+        + '</span>'
         + '</label>';
     }).join('');
 
-    overlay.innerHTML = '<div style="background:white;border-radius:14px;width:460px;max-width:100%;max-height:75vh;display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(0,0,0,.25);">'
-      + '<div style="padding:12px 16px;border-bottom:1px solid var(--border);font-size:13px;font-weight:600;">Ajouter un matériel au moyen</div>'
-      + '<input type="text" placeholder="Rechercher..." oninput="this.closest(\'.mat-overlay-inner\').querySelectorAll(\'label\').forEach(function(l){l.style.display=l.textContent.toLowerCase().includes(this.value.toLowerCase())?\'\':l.style.display=\'none\'})" style="margin:8px;padding:6px 10px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:12px;">'
-      + '<div class="mat-overlay-inner" style="overflow-y:auto;flex:1;">'+items+'</div>'
-      + '<div style="padding:10px 14px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:8px;">'
-      + '<button onclick="document.getElementById(\'mat-activite-overlay\').remove()" style="padding:6px 12px;border:1px solid var(--border);background:none;border-radius:8px;cursor:pointer;font-size:12px;">Annuler</button>'
-      + '<button onclick="_confirmMaterielActivite('+idx+')" style="padding:6px 12px;background:var(--green);color:white;border:none;border-radius:8px;cursor:pointer;font-size:12px;font-weight:600;">Ajouter</button>'
+    overlay.innerHTML = '<div style="background:white;border-radius:14px;width:540px;max-width:100%;max-height:82vh;display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(0,0,0,.25);">'
+      + '<div style="padding:14px 18px;border-bottom:1px solid var(--border);font-size:14px;font-weight:600;">Ajouter un matériel au moyen</div>'
+      + '<div style="padding:10px 14px;border-bottom:1px solid var(--border);">'
+      + '<input type="text" id="mat-activite-search" placeholder="🔍 Rechercher par titre ou auteur..." style="width:100%;box-sizing:border-box;padding:8px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:13px;">'
+      + '</div>'
+      + '<div id="mat-activite-list" style="overflow-y:auto;flex:1;">'+items+'</div>'
+      + '<div style="padding:12px 16px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:8px;">'
+      + '<button onclick="document.getElementById(\'mat-activite-overlay\').remove()" style="padding:7px 14px;border:1px solid var(--border);background:none;border-radius:8px;cursor:pointer;font-size:12px;">Annuler</button>'
+      + '<button onclick="_confirmMaterielActivite('+idx+')" style="padding:7px 14px;background:var(--green);color:white;border:none;border-radius:8px;cursor:pointer;font-size:12px;font-weight:600;">Ajouter</button>'
       + '</div>'
       + '</div>';
 
     document.body.appendChild(overlay);
     overlay.addEventListener('click', function(e){ if(e.target===overlay) overlay.remove(); });
+    overlay.addEventListener('keydown', function(e){ e.stopPropagation(); });
+    var maSearch = document.getElementById('mat-activite-search');
+    if(maSearch){
+      maSearch.addEventListener('input', function(){
+        var q = this.value.toLowerCase();
+        document.querySelectorAll('#mat-activite-list label').forEach(function(l){
+          l.style.display = l.textContent.toLowerCase().includes(q) ? '' : 'none';
+        });
+      });
+      maSearch.addEventListener('keydown', function(e){ e.stopPropagation(); });
+      setTimeout(function(){ maSearch.focus(); }, 50);
+    }
   };
   if(!_materielData.length){
     fetch(SB_URL+'/rest/v1/materiel?order=titre.asc&select=*',{headers:{...sbHeaders(),'Range':'0-2999','Prefer':'count=none'}})
@@ -10586,7 +10602,7 @@ function _addMaterielToActivite(idx){
 }
 
 function _confirmMaterielActivite(idx){
-  var checked = document.querySelectorAll('#mat-activite-overlay input[type=checkbox]:checked');
+  var checked = document.querySelectorAll('#mat-activite-list input[type=checkbox]:checked');
   var titres = [];
   checked.forEach(function(cb){ titres.push(cb.dataset.titre); });
   if(!titres.length){ document.getElementById('mat-activite-overlay').remove(); return; }
