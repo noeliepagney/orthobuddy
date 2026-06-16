@@ -10485,7 +10485,7 @@ function openMaterielSeanceSelector(){
 
   overlay.innerHTML = '<div style="background:white;border-radius:14px;width:480px;max-width:100%;max-height:80vh;display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(0,0,0,.25);">'
     + '<div style="padding:14px 18px;border-bottom:1px solid var(--border);font-size:14px;font-weight:600;">Sélectionner le matériel utilisé</div>'
-    + '<input type="text" placeholder="Rechercher..." oninput="filterMaterielSeance(this.value)" style="margin:10px;padding:7px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:12px;">'
+    + '<input type="text" id="materiel-seance-search" placeholder="Rechercher..." style="margin:10px;padding:7px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:12px;">'
     + '<div id="materiel-seance-list" style="overflow-y:auto;flex:1;">'+items+'</div>'
     + '<div style="padding:12px 16px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:8px;">'
     + '<button onclick="document.getElementById(\'materiel-seance-overlay\').remove()" style="padding:7px 14px;border:1px solid var(--border);background:none;border-radius:8px;cursor:pointer;font-size:12px;">Annuler</button>'
@@ -10495,6 +10495,13 @@ function openMaterielSeanceSelector(){
 
   document.body.appendChild(overlay);
   overlay.addEventListener('click', function(e){ if(e.target===overlay) overlay.remove(); });
+  overlay.addEventListener('keydown', function(e){ e.stopPropagation(); });
+  var msSearch = document.getElementById('materiel-seance-search');
+  if(msSearch){
+    msSearch.addEventListener('input', function(){ filterMaterielSeance(this.value); });
+    msSearch.addEventListener('keydown', function(e){ e.stopPropagation(); });
+    setTimeout(function(){ msSearch.focus(); }, 50);
+  }
   }; // fin doOpen
   if(!_materielData.length){
     var url = SB_URL+'/rest/v1/materiel?order=titre.asc&select=*';
@@ -19096,7 +19103,7 @@ document.addEventListener('keydown', function(e){
   var tag = (e.target.tagName||'').toLowerCase();
   if(tag==='input'||tag==='textarea'||tag==='select'||e.target.isContentEditable) return;
   // Ignorer si un modal est ouvert
-  if(document.querySelector('.overlay.active, .overlay[style*="flex"]')) return;
+  if(document.querySelector('.overlay.active, .overlay[style*="flex"], #materiel-seance-overlay, #tag-picker-overlay')) return;
   if(e.metaKey||e.ctrlKey||e.altKey) return;
 
   switch(e.key){
