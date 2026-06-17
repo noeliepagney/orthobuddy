@@ -2469,7 +2469,7 @@ async function sbSave(){
     // Try PATCH first (update existing row)
     const r = await fetch(`${SB_URL}/rest/v1/orthobuddy_data?user_id=eq.${getSbUserId()}`,{
       method:'PATCH',
-      headers:{...sbHeaders(),'Prefer':'return=minimal'},
+      headers:{...sbHeaders(),'Prefer':'return=minimal,count=exact'},
       body: body
     });
     if(r.status===401){
@@ -2478,7 +2478,9 @@ async function sbSave(){
     }
     if(r.status===404||r.status===200||r.status===204){
       // Si pas de ligne existante (0 rows updated), faire un INSERT
-      if(r.headers.get('content-range')==='*/0'){
+      var cr = r.headers.get('content-range')||'';
+      var affected = cr.includes('/') ? cr.split('/')[1] : null;
+      if(affected==='0'){
         const r2 = await fetch(`${SB_URL}/rest/v1/orthobuddy_data`,{
           method:'POST',
           headers:{...sbHeaders(),'Prefer':'return=minimal'},
