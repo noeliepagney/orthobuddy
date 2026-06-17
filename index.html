@@ -2234,8 +2234,18 @@ function calcAmoTarif(valeurActe, majoration, dateStr){
 // ═══════════════════════════════════════
 // Bannière mode test
 function switchEnv(env){
+  var current = localStorage.getItem('sb_env') || 'prod';
+  if(current !== env){
+    // On change réellement d'environnement : la session active appartient
+    // à l'ancien projet Supabase, elle doit être effacée pour forcer une
+    // reconnexion propre avec un compte valide sur le nouvel environnement.
+    sessionStorage.clear();
+    localStorage.removeItem('sb_token');
+    localStorage.removeItem('sb_user_id');
+    localStorage.removeItem('sb_refresh_token');
+  }
   localStorage.setItem('sb_env', env);
-  showToast(env === 'test' ? '🧪 Mode TEST activé' : '🟢 Mode PRODUCTION activé');
+  showToast(env === 'test' ? '🧪 Mode TEST activé — reconnexion nécessaire' : '🟢 Mode PRODUCTION activé — reconnexion nécessaire');
   setTimeout(()=>location.reload(), 400);
 }
 function updateEnvButtons(){
