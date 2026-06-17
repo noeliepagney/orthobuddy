@@ -163,6 +163,7 @@
       <button class="btn btn-primary" id="btnWord"><i class="ti ti-file-type-docx"></i> Télécharger Word</button>
       <button class="btn btn-ghost" id="btnSettings"><i class="ti ti-building"></i> Cabinet &amp; signature</button>
       <button class="btn btn-ghost" id="btnRenew" style="display:none"><i class="ti ti-copy"></i> Renouvellement</button>
+      <button class="btn btn-ghost" id="btnArchive" style="display:none"><i class="ti ti-archive"></i> Archiver</button>
       <button class="btn btn-danger" id="btnReset"><i class="ti ti-eraser"></i> Réinitialiser</button>
     </div>
 
@@ -172,6 +173,7 @@
         <select id="savedSel" class="sel"><option value="">— ouvrir un bilan —</option></select>
       </div>
       <button id="btnDeleteSaved" class="btn btn-ghost" title="Supprimer" style="flex-shrink:0;height:36px;color:#c0392b;border-color:#c0392b;" disabled><i class="ti ti-trash"></i></button>
+      <button class="btn btn-ghost" id="btnViewArchived" style="flex-shrink:0;height:36px;"><i class="ti ti-history"></i> Historique</button>
       <button class="btn btn-ghost" id="btnImport" style="flex-shrink:0;height:36px;"><i class="ti ti-upload"></i> Importer</button>
       <button class="btn btn-ghost" id="btnBackup" style="flex-shrink:0;height:36px;"><i class="ti ti-download"></i> Exporter</button>
       <input type="file" id="importFile" accept="application/json,.json" style="display:none">
@@ -9983,6 +9985,7 @@ async function refreshSaved(){
       sel.appendChild(o);
     });
     $("#btnRenew").style.display=rows.length>0?"":"none";
+    $("#btnArchive").style.display=rows.length>0?"":"none";
   }catch(e){ console.error(e); }
 }
 
@@ -10009,13 +10012,20 @@ async function openSaved(bilanId){
 // ── Renouvellement ───────────────────────────────────────────────────────────
 async function renewBilan(){
   if(!currentBilanId||!currentPatientId) return;
-  if(!confirm("Créer un bilan de renouvellement ?\nL'ancien bilan sera archivé et vous repartez d'une copie modifiable.")) return;
+  if(!confirm("Créer un bilan de renouvellement ?\n\nL'ancien bilan sera archivé (lecture seule, consultable dans l'historique).\nLe nouveau bilan repart vierge, seuls les champs administratifs et d'anamnèse issus de la fiche patient seront repris automatiquement.")) return;
   try{
+    // 1. Archiver l'ancien bilan (lecture seule, conservé pour historique)
     await fetch(SB_URL+"/rest/v1/bilans?id=eq."+currentBilanId,{
       method:"PATCH",
       headers:Object.assign({"Content-Type":"application/json"},sbAuthHeaders()),
       body:JSON.stringify({archived:true})
     });
+    // 2. Repartir d'un bilan vierge : seuls les champs issus de l'import
+    //    automatique (anamnèse + fiche patient) sont conservés, jamais les
+    //    saisies manuelles/observations cliniques du bilan précédent.
+    data = {};
+    const p = allPatients.find(x=>x.id===currentPatientId) || getPatientFallback(currentPatientId);
+    if(p) prefillFromPatient(p);
     const newData=JSON.parse(JSON.stringify(data));
     const res=await fetch(SB_URL+"/rest/v1/bilans",{
       method:"POST",
@@ -10025,12 +10035,95 @@ async function renewBilan(){
     const rows=await res.json();
     if(rows&&rows[0]){
       currentBilanId=rows[0].id;
-      data[trameId+".entete.date_bilan"]="";
-      data[trameId+".administratif.date_bilan"]="";
       renderForm(); refreshSaved(); markSaved();
-      alert("Renouvellement créé. L'ancien bilan est archivé.\nMettez à jour la date du bilan.");
+      alert("Renouvellement créé. L'ancien bilan est archivé et consultable dans l'historique.\nLe nouveau bilan ne contient que les informations administratives et d'anamnèse issues de la fiche patient — pensez à mettre à jour la date et à compléter les observations cliniques.");
     }
   }catch(e){ alert("Erreur renouvellement : "+e); }
+}
+
+async function archiveBilan(){
+  if(!currentBilanId||!currentPatientId) return;
+  if(!confirm("Archiver ce bilan ?\n\nIl deviendra consultable en lecture seule dans l'historique, et ne sera plus modifiable ni proposé dans la liste des bilans actifs.\nVous repartirez d'un formulaire vierge (avec les infos administratives et d'anamnèse pré-remplies).")) return;
+  try{
+    await fetch(SB_URL+"/rest/v1/bilans?id=eq."+currentBilanId,{
+      method:"PATCH",
+      headers:Object.assign({"Content-Type":"application/json"},sbAuthHeaders()),
+      body:JSON.stringify({archived:true})
+    });
+    currentBilanId=null;
+    data={};
+    const p = allPatients.find(x=>x.id===currentPatientId) || getPatientFallback(currentPatientId);
+    if(p) prefillFromPatient(p);
+    renderForm(); refreshSaved(); markSaved();
+    alert("Bilan archivé. Vous pouvez le retrouver en lecture seule via le bouton Historique.");
+  }catch(e){ alert("Erreur archivage : "+e); }
+}
+
+async function viewArchivedBilans(){
+  if(!currentPatientId){ alert("Sélectionnez d'abord un patient."); return; }
+  try{
+    const res=await fetch(SB_URL+"/rest/v1/bilans?patient_id=eq."+currentPatientId+"&archived=eq.true&order=updated_at.desc",{
+      headers:sbAuthHeaders()
+    });
+    const rows=await res.json();
+    if(!Array.isArray(rows)||!rows.length){ alert("Aucun bilan archivé pour ce patient."); return; }
+    const overlay=document.createElement("div");
+    overlay.id="archived-overlay";
+    overlay.style.cssText="position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:10010;display:flex;align-items:center;justify-content:center;padding:16px;";
+    const items=rows.map(b=>{
+      const tt=TRAMES[b.type_bilan]?TRAMES[b.type_bilan].titre:b.type_bilan;
+      const d=b.updated_at?new Date(b.updated_at).toLocaleDateString('fr-FR',{day:'2-digit',month:'2-digit',year:'numeric'}):'';
+      return '<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-bottom:1px solid '+C.border+';">'
+        +'<div><div style="font-size:13px;color:'+C.ink+';font-weight:500;">'+esc(tt)+'</div>'
+        +'<div style="font-size:11px;color:'+C.inkSoft+';">Archivé le '+d+'</div></div>'
+        +'<button data-bid="'+b.id+'" onclick="viewArchivedDetail(this.dataset.bid)" style="padding:6px 14px;background:'+C.sageLight+';color:white;border:none;border-radius:8px;cursor:pointer;font-size:12px;">Consulter</button>'
+        +'</div>';
+    }).join('');
+    overlay.innerHTML='<div style="background:white;border-radius:14px;width:480px;max-width:100%;max-height:75vh;display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(0,0,0,.25);">'
+      +'<div style="padding:14px 18px;border-bottom:1px solid '+C.border+';font-size:14px;font-weight:600;display:flex;justify-content:space-between;align-items:center;">'
+      +'<span>Bilans archivés (lecture seule)</span>'
+      +'<button onclick="document.getElementById(\'archived-overlay\').remove()" style="background:none;border:none;font-size:18px;cursor:pointer;color:'+C.inkSoft+';">×</button>'
+      +'</div>'
+      +'<div style="overflow-y:auto;flex:1;">'+items+'</div>'
+      +'</div>';
+    document.body.appendChild(overlay);
+    overlay.addEventListener("click",e=>{ if(e.target===overlay) overlay.remove(); });
+  }catch(e){ alert("Erreur chargement historique : "+e); }
+}
+
+async function viewArchivedDetail(bilanId){
+  try{
+    const res=await fetch(SB_URL+"/rest/v1/bilans?id=eq."+bilanId,{ headers:sbAuthHeaders() });
+    const rows=await res.json();
+    if(!rows||!rows[0]) return;
+    const b=rows[0];
+    document.getElementById("archived-overlay")?.remove();
+    // Charger en lecture seule : on affiche le formulaire rempli mais désactivé
+    const savedTrameId=trameId, savedData=data, savedBilanId=currentBilanId;
+    trameId=b.type_bilan; data=b.data||{};
+    const pos=findCatForTrame(trameId);
+    if(pos){ $("#catSel").value=pos.cat; fillSub(pos.cat,trameId); }
+    renderForm();
+    document.querySelectorAll("#form input, #form textarea, #form select").forEach(el=>el.disabled=true);
+    const banner=document.createElement("div");
+    banner.id="archived-readonly-banner";
+    banner.style.cssText="position:sticky;top:0;background:#FEF3C7;color:#92400E;padding:10px 16px;text-align:center;font-size:13px;z-index:100;border-radius:8px;margin-bottom:12px;display:flex;align-items:center;justify-content:center;gap:12px;";
+    banner.innerHTML="🔒 Bilan archivé — lecture seule"
+      +'<button onclick="closeArchivedView()" style="background:'+C.sageLight+';color:white;border:none;padding:5px 14px;border-radius:6px;cursor:pointer;font-size:12px;">Fermer</button>';
+    $("#form").prepend(banner);
+    window._restoreAfterArchiveView={trameId:savedTrameId,data:savedData,bilanId:savedBilanId};
+  }catch(e){ alert("Erreur ouverture archive : "+e); }
+}
+
+function closeArchivedView(){
+  const r=window._restoreAfterArchiveView;
+  if(r){
+    trameId=r.trameId; data=r.data; currentBilanId=r.bilanId;
+    const pos=trameId?findCatForTrame(trameId):null;
+    if(pos){ $("#catSel").value=pos.cat; fillSub(pos.cat,trameId); }
+    renderForm();
+  }
+  window._restoreAfterArchiveView=null;
 }
 
 // ── Suppression ───────────────────────────────────────────────────────────────
@@ -10503,6 +10596,8 @@ function init(){
   });
 
   $("#btnRenew").addEventListener("click",renewBilan);
+  $("#btnArchive").addEventListener("click",archiveBilan);
+  $("#btnViewArchived").addEventListener("click",viewArchivedBilans);
   $("#btnBackup").addEventListener("click",exportBackup);
   $("#btnImport").addEventListener("click",()=>$("#importFile").click());
   $("#importFile").addEventListener("change",e=>{ const f=e.target.files[0]; if(f) importBackup(f); e.target.value=""; });
