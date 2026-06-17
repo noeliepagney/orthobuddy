@@ -17629,11 +17629,13 @@ async function envoyerQuestionnaire(pid){
 
 function _loadDocxLib(cb){
   if(window.docx){ cb(); return; }
-  var s=document.createElement('script');
-  s.src='https://cdn.jsdelivr.net/npm/docx@9.6.1/dist/index.umd.cjs';
-  s.onload=function(){ cb(); };
-  s.onerror=function(){ showToast('Impossible de charger le générateur Word (vérifiez la connexion internet)','red'); };
-  document.head.appendChild(s);
+  import('https://cdn.jsdelivr.net/npm/docx@9.6.1/+esm').then(function(mod){
+    window.docx=mod;
+    cb();
+  }).catch(function(e){
+    console.error('Erreur chargement docx-js', e);
+    showToast('Impossible de charger le générateur Word (vérifiez la connexion internet)','red');
+  });
 }
 
 function _collectQaSelectedSections(){
