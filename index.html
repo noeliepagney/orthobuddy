@@ -11748,7 +11748,15 @@ function getAllEvents(dateStr){
     var rdvDuree=(hh2*60+mm2)-(hh*60+mm);
     return{id:r.id,type:'other',title:(r.emoji?r.emoji+' ':'')+r.titre,heure:r.debut,debut:hh*60+mm,fin:hh2*60+mm2,duree:rdvDuree,color:r.color||'var(--blue)'};
   });
-  return[...pat,...rdv].sort((a,b)=>a.debut-b.debut);
+  // Créneaux ouverts (statut libre) — pas encore réservés par un patient,
+  // affichés en plage légère pour distinguer visuellement d'un vrai RDV.
+  const creneauxLibres=(DB.creneaux||[]).filter(function(c){ return c.date===dateStr && c.statut==='libre'; }).map(function(c){
+    const[hh,mm]=(c.heure_debut||'09:00').split(':').map(Number);
+    const[hh2,mm2]=(c.heure_fin||'09:30').split(':').map(Number);
+    var crDuree=(hh2*60+mm2)-(hh*60+mm);
+    return{id:c.id,type:'creneau_libre',title:'🟢 Créneau ouvert',heure:c.heure_debut.slice(0,5),debut:hh*60+mm,fin:hh2*60+mm2,duree:crDuree>0?crDuree:30,color:'rgba(92,138,107,0.18)',isCreneauLibre:true};
+  });
+  return[...pat,...rdv,...creneauxLibres].sort((a,b)=>a.debut-b.debut);
 }
 
 const HOURS=[7,8,9,10,11,12,13,14,15,16,17,18,19,20];
@@ -12153,6 +12161,15 @@ function renderAgenda(){
 }
 
 function _buildApptHtml(e){
+  if(e.isCreneauLibre){
+    var finStrCr=String(Math.floor(e.fin/60)).padStart(2,'0')+':'+String(e.fin%60).padStart(2,'0');
+    var timeStrCr=e.heure+' → '+finStrCr;
+    var htCr=Math.max((e.duree/60*64),18);
+    var innerCr = htCr>=32
+      ? `<span class="appt-title" style="color:var(--green-d);">${e.title}</span><span class="appt-time" style="color:var(--green-mid);">${timeStrCr}</span>`
+      : `<span style="font-size:10px;font-weight:600;color:var(--green-d);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block;line-height:${htCr-2}px;">${e.title}</span>`;
+    return {html:innerCr, sub:'', timeStr:timeStrCr, ht:htCr};
+  }
   var s2 = e.type==='patient' ? DB.seances.find(function(s){return s.id===e.seanceId;}) : null;
   var r2 = e.type!=='patient' ? DB.rdvs.find(function(r){return r.id===e.id;}) : null;
   var sub = '';
@@ -12356,6 +12373,8 @@ function renderListView(days){
           if(sl.amoCategory==='reunion') lparts.push('🏫 Réunion ESS');
           listSub = lparts.join(' · ');
         }
+      } else if(e.type==='creneau_libre'){
+        listSub = 'Pas encore réservé';
       } else {
         var rl = DB.rdvs.find(function(r){return r.id===e.id;});
         if(rl && rl.titre) listSub = rl.titre;
@@ -12460,6 +12479,7 @@ function clickSlot(dateStr,heure){
   }
 }
 function clickEvent(id,type){
+  if(type==='creneau_libre'){ showPage('creneaux'); return; }
   if(type==='patient'){const s=DB.seances.find(s=>s.id===id);if(s)openSeanceModal(s.patientId,s.id);}
   else openRdvModal(id);
 }
