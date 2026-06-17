@@ -8048,8 +8048,13 @@ const STORE = "obtrame::"; // conservé pour les profils cabinet (localStorage)
 /* ═══════════════════════════════════════════════════════════════════════════
    OrthoBuddy — Moteur Supabase
    ═══════════════════════════════════════════════════════════════════════════ */
-const SB_URL = "https://xiznicrburryfmdfbjxk.supabase.co";
-const SB_ANON = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inhpem5pY3JidXJyeWZtZGZianhrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAwNDM0NjEsImV4cCI6MjA5NTYxOTQ2MX0.vYuV7LIBXXkKJkHVwNPaI-lA7x1HwFROdU1K17ZB1Y8";
+const SB_CONFIGS_TR = {
+  prod: { url: "https://xiznicrburryfmdfbjxk.supabase.co", key: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inhpem5pY3JidXJyeWZtZGZianhrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAwNDM0NjEsImV4cCI6MjA5NTYxOTQ2MX0.vYuV7LIBXXkKJkHVwNPaI-lA7x1HwFROdU1K17ZB1Y8" },
+  test: { url: "https://lexlcscnbggtbekhvxwv.supabase.co", key: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxleGxjc2NuYmdndGJla2h2eHd2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA1MDM2MDAsImV4cCI6MjA5NjA3OTYwMH0.RO6YGwxSv5xWuorQyaKbKCpReGyv9gCeX5IAuLJAdIY" }
+};
+const _trEnv = localStorage.getItem('sb_env') || 'prod';
+const SB_URL = SB_CONFIGS_TR[_trEnv].url;
+const SB_ANON = SB_CONFIGS_TR[_trEnv].key;
 function sbAnonKey(){ return SB_ANON; }
 function getSbToken(){ return sessionStorage.getItem('sb_token') || localStorage.getItem('sb_token') || SB_ANON; }
 function getSbUserId(){ return sessionStorage.getItem('sb_user_id') || localStorage.getItem('sb_user_id') || null; }
@@ -8061,14 +8066,15 @@ let currentPatientId=null;
 let allPatients=[];
 function getPatientFallback(pid){
   try{
-    const db=JSON.parse(localStorage.getItem("orthobuddy_v3")||"{}");
+    const skKey = _trEnv === 'test' ? 'orthobuddy_v3_test' : 'orthobuddy_v3';
+    const db=JSON.parse(localStorage.getItem(skKey)||"{}");
     return (db.patients||[]).find(x=>x.id===pid)||null;
   }catch(e){ return null; }
 }
 
 // ── Patients ────────────────────────────────────────────────────────────────
 function loadPatients(){
-  const uid = 'b443cde9-7186-4239-85ac-e48f1912e51a';
+  const uid = getSbUserId() || (_trEnv === 'test' ? 'b6839216-7bbb-484c-a341-34badb6af200' : 'b443cde9-7186-4239-85ac-e48f1912e51a');
   fetch(SB_URL+"/rest/v1/orthobuddy_data?user_id=eq."+uid+"&select=data", {
     headers:sbAuthHeaders()
   }).then(r=>r.json()).then(rows=>{
