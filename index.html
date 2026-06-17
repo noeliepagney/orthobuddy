@@ -18022,7 +18022,7 @@ async function telechargerQuestionnaireWord(pid){
   var selected=_collectQaSelectedSections();
   if(selected.length===0){showToast('Sélectionnez au moins une section','red');return;}
   var p=DB.patients.find(function(x){return x.id===pid;})||{};
-  var patientLabel='Patient : '+((p.prenom||'')+' '+(p.nom||'')).trim()+(p.ddn?' — né(e) le '+new Date(p.ddn).toLocaleDateString('fr-FR'):'');
+  var patientLabel=((p.prenom||'')+' '+(p.nom||'')).trim()+(p.ddn?', né(e) le '+new Date(p.ddn).toLocaleDateString('fr-FR'):'');
   showToast('Génération du document…','green');
   _loadDocxLib(function(){
     try{
@@ -18071,8 +18071,8 @@ async function telechargerQuestionnaireWord(pid){
       }
       var children=[];
       children.push(new d.Paragraph({alignment:d.AlignmentType.CENTER,spacing:{after:60},children:[new d.TextRun({text:'Questionnaire préalable au bilan orthophonique',bold:true,size:36,color:SAGE})]}));
-      children.push(new d.Paragraph({alignment:d.AlignmentType.CENTER,spacing:{after:40},children:[new d.TextRun({text:'Noëlie Lainé — Orthophoniste',bold:true,size:24,color:'444444'})]}));
-      children.push(new d.Paragraph({alignment:d.AlignmentType.CENTER,spacing:{after:20},children:[new d.TextRun({text:'Cabinet — Pagney-derrière-Barine',size:20,color:'666666'})]}));
+      children.push(new d.Paragraph({alignment:d.AlignmentType.CENTER,spacing:{after:20},children:[new d.TextRun({text:'Noëlie Lainé',bold:true,size:26,color:'444444'})]}));
+      children.push(new d.Paragraph({alignment:d.AlignmentType.CENTER,spacing:{after:20},children:[new d.TextRun({text:'Orthophoniste - Pagney-derrière-Barine',bold:true,size:24,color:'444444'})]}));
       children.push(new d.Paragraph({alignment:d.AlignmentType.CENTER,spacing:{after:240},children:[new d.TextRun({text:'noelie.orthophonie@gmail.com',size:20,color:'666666'})]}));
       children.push(new d.Paragraph({spacing:{after:80},children:[new d.TextRun({text:'Bonjour,',size:22})]}));
       children.push(new d.Paragraph({spacing:{after:80},children:[new d.TextRun({text:'Je vous remercie pour votre confiance.',size:22})]}));
