@@ -12948,7 +12948,33 @@ function getAllDocs(cb){
   initDocsDB(function(db){
     var tx = db.transaction('docs','readonly');
     var req = tx.objectStore('docs').getAll();
-    req.onsuccess = function(e){cb(e.target.result||[]);};
+    req.onsuccess = function(e){
+      var localDocs = e.target.result||[];
+      if(SB_URL && SB_KEY){
+        fetch(SB_URL+'/rest/v1/orthobuddy_files?select=*', {
+          headers: {'apikey': SB_KEY, 'Authorization': 'Bearer '+getSbToken()}
+        }).then(function(r){ return r.json(); }).then(function(sbDocs){
+          if(!Array.isArray(sbDocs)) sbDocs = [];
+          var localIds = localDocs.map(function(d){ return d.id; });
+          var extra = sbDocs.filter(function(d){ return !localIds.includes(d.id); }).map(function(d){
+            return {
+              id: d.id,
+              patientId: d.patient_id,
+              titre: d.titre || d.name,
+              name: d.name,
+              type: d.type,
+              categorie: d.categorie || 'portail',
+              storageKey: d.storage_key,
+              createdAt: d.created_at,
+              fromPortail: d.categorie === 'portail'
+            };
+          });
+          cb(localDocs.concat(extra));
+        }).catch(function(){ cb(localDocs); });
+      } else {
+        cb(localDocs);
+      }
+    };
   });
 }
 
@@ -19921,7 +19947,27 @@ async function previewOrEditDoc(id){
     var req = db.transaction('docs','readonly').objectStore('docs').get(id);
     req.onsuccess = async function(e){
       var d = e.target.result;
-      if(!d) return;
+      if(!d){
+        // Pas trouvé en local : chercher côté Supabase (doc déposé via portail patient)
+        if(SB_URL && SB_KEY){
+          try{
+            var r = await fetch(SB_URL+'/rest/v1/orthobuddy_files?id=eq.'+id+'&select=*', {
+              headers: {'apikey': SB_KEY, 'Authorization': 'Bearer '+getSbToken()}
+            });
+            var rows = await r.json();
+            if(Array.isArray(rows) && rows[0]){
+              var sd = rows[0];
+              d = {
+                id: sd.id, patientId: sd.patient_id, titre: sd.titre||sd.name,
+                nom: sd.titre||sd.name, name: sd.name, type: sd.type,
+                categorie: sd.categorie||'portail', storageKey: sd.storage_key,
+                createdAt: sd.created_at
+              };
+            }
+          }catch(err){ console.warn('previewOrEditDoc supabase fallback error', err); }
+        }
+      }
+      if(!d){ showToast('Document introuvable','red'); return; }
       var url = await getDocUrl(d);
       var ic = getDocIcon(d.type);
       var prev = !url ? '<div style="text-align:center;padding:32px;font-size:40px;">'+ic.icon+'<div style="font-size:13px;color:var(--text-soft);margin-top:8px;">Fichier non disponible</div></div>' :
