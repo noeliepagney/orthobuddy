@@ -2077,7 +2077,7 @@ function getTmoCle(){
 // ═══════════════════════════════════════
 // DATA
 // ═══════════════════════════════════════
-const SK = 'orthobuddy_v3';
+const SK = (localStorage.getItem('sb_env')||'prod')==='test' ? 'orthobuddy_v3_test' : 'orthobuddy_v3';
 
 const DEFAULT_PARCOURS = [
   {id:'p1', emoji:'🗣️', nom:'Langage oral',
@@ -2235,13 +2235,8 @@ function calcAmoTarif(valeurActe, majoration, dateStr){
 // Bannière mode test
 function switchEnv(env){
   localStorage.setItem('sb_env', env);
-  SB_URL = SB_CONFIGS[env].url;
-  SB_KEY = SB_CONFIGS[env].key;
-  updateEnvBanner();
-  updateEnvButtons();
   showToast(env === 'test' ? '🧪 Mode TEST activé' : '🟢 Mode PRODUCTION activé');
-  // Recharger les données depuis la bonne base Supabase
-  sbLoad().then(()=>{ renderAll(); setTimeout(checkQuestionnairesRecus, 300); });
+  setTimeout(()=>location.reload(), 400);
 }
 function updateEnvButtons(){
   const env = localStorage.getItem('sb_env') || 'prod';
