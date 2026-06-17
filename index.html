@@ -17209,7 +17209,217 @@ var QA_OPTIONS = {
   debut_difficultes:{type:'text'},
   obs_enseignant_le:{type:'text'},
   plainte_le:{type:'text'},
-  commentaires_le:{type:'text'}
+  commentaires_le:{type:'text'},
+
+  // ── Alimentation - déglutition (oralité) ──
+  respiration_jour:{type:'choice',opts:['Par le nez','Par la bouche','Mixte']},
+  respiration_nuit:{type:'choice',opts:['Par le nez','Par la bouche','Mixte']},
+  porte_en_bouche:{type:'choice',opts:['Oui','Non']},
+  alimentation_oralite:{type:'choice',opts:['Mange de tout','Est difficile sur la nourriture (sélectif)','A du mal à mastiquer','Tousse pendant les repas','Garde la nourriture dans les joues']},
+  journee_alim:{type:'text'},
+  evitement_repas:{type:'choice',opts:['Oui','Non']},
+  meme_repas:{type:'choice',opts:['Oui','Non — un repas particulier est préparé pour lui/elle']},
+  difficultes_lieux:{type:'choice',opts:['Partout pareil','Mieux avec certaines personnes']},
+  atcd_alim_mere:{type:'choice',opts:["Difficultés avec l'allaitement","Difficultés avec le biberon","Difficultés lors de la diversification alimentaire"]},
+  atcd_alim_pere:{type:'choice',opts:["Difficultés avec l'allaitement","Difficultés avec le biberon","Difficultés lors de la diversification alimentaire"]},
+  atcd_alim_fratrie:{type:'choice',opts:["Difficultés avec l'allaitement","Difficultés avec le biberon","Difficultés lors de la diversification alimentaire"]},
+  antecedents_ortho:{type:'choice',opts:['Oui','Non']},
+  prescripteur_oralite:{type:'choice',opts:['Pédiatre','ORL','Gastro-pédiatre','Neuropédiatre','Diététicien / nutritionniste','Médecin PMI','Hôpital','Autre']},
+  prescripteur_tap:{type:'choice',opts:['Gastro-pédiatre','Neuropédiatre','Sortie de néonatologie','Pédiatre','Médecin PMI','SESSAD / IME','Autre']},
+  reanimation_oralite:{type:'choice',opts:['Non','Oui — préciser la durée']},
+  hospitalisation_oralite:{type:'text'},
+  poids_courbe_oralite:{type:'choice',opts:['Normale','Difficultés / cassure — préciser']},
+  nutrition_artificielle_oralite:{type:'choice',opts:['Jamais','Antérieure','En cours — préciser (SNG, gastrostomie…)']},
+  pathologies_oralite:{type:'choice',opts:['RGO','Allergies / intolérances alimentaires','Infections ORL répétées','Infections bronchiques / pneumopathies','Problèmes de transit','Bruxisme']},
+  sante_generale_tap:{type:'choice',opts:['RGO','Épilepsie','Problèmes ORL','Problèmes visuels','Caries / mauvaise hygiène bucco-dentaire','Allergies','Mycoses buccales / aphtes']},
+  pathologies_oralite_autres:{type:'text'},
+  na_voie_oralite:{type:'choice',opts:['SNG (sonde naso-gastrique)','SOG (sonde oro-gastrique)','Gastrostomie (bouton Mic-Key)','Jéjunostomie','Nutrition parentérale (voie veineuse)']},
+  na_depuis_oralite:{type:'text'},
+  na_rythme_oralite:{type:'text'},
+  na_prise_orale_oralite:{type:'choice',opts:['Oui, sans restriction','Oui, selon tolérance','Non — prises orales contre-indiquées','Partiellement']},
+  na_faim_oralite:{type:'choice',opts:['Présente','Absente ou incertaine','Variable']},
+  na_impacts_oralite:{type:'choice',opts:['Expériences sensorielles négatives (passages de sonde répétés)','Exploration orale limitée (sonde encombrant le nez ou la bouche)','Schéma corporel perturbé (gastrostomie)','Sensation de faim décidée par rythme externe','Représentations alimentaires altérées','Aversion alimentaire développée']},
+  alim_mode_tap:{type:'choice',opts:['Oral exclusif','Mixte oral + entérale','Entérale exclusive','Parentérale','Mixte oral + parentérale']},
+  alim_evolution_tap:{type:'text'},
+  brossage_oralite:{type:'choice',opts:['Possible autonome','Possible avec aide','Difficile — préciser','Impossible']},
+  mouchage_oralite:{type:'choice',opts:['Possible autonome','Possible avec aide','Difficile','Impossible']},
+  exploration_orale_oralite:{type:'choice',opts:['Présente et normale','Peu ou absente',"Excessive (Angelman, mordre, s'aiguiser les dents…)"]},
+
+  // ── Aphasie ──
+  etiologie_neuro:{type:'choice',opts:['AVC ischémique','AVC hémorragique','Traumatisme crânien','Tumeur','Maladie neurodégénérative','Autre']},
+  date_accident_aphasie:{type:'text'},
+  localisation_lesion_aphasie:{type:'text'},
+  date_premiers_symptomes:{type:'text'},
+  mode_installation:{type:'choice',opts:['Petit à petit, de façon progressive','Brutalement (suite à un AVC ou un malaise)',"Par étapes, avec des périodes d'aggravation"]},
+  caractere_evolutif:{type:'choice',opts:['Stables',"Elles s'aggravent progressivement",'Par étapes (périodes stables puis aggravation)','Cela varie selon les jours ou les moments']},
+  plainte_cognitive:{type:'choice',opts:['Mémoire (rendez-vous, événements récents)','Trouver ses mots','Comprendre ce qu\'on lui dit',"Gestes du quotidien (s'habiller, utiliser des objets…)",'Organiser, planifier, s\'adapter aux changements','Se repérer dans l\'espace','Reconnaître des visages ou des lieux familiers','Calcul']},
+  modif_comportement:{type:'choice',opts:["Moins d'initiative, de motivation",'Ralentissement général','A arrêté certaines activités','Dort beaucoup plus qu\'avant','Comportements inhabituels, moins de retenue','Colères, agressivité','Anxiété','Tristesse, moral en baisse','Troubles du sommeil']},
+  troubles_associes_aphasie:{type:'choice',opts:['Apraxie de la parole / anarthrie','Dysarthrie','Hémiplégie / hémiplégie brachio-faciale','Héminégligence visuelle (côté préciser)','Troubles neurovisuels (hémianopsie, NSU)','Troubles praxiques gestuels','Troubles cognitifs associés (FE, mémoire, attention)','Épilepsie','Troubles de déglutition','Troubles psychiatriques / thymiques']},
+  troubles_associes_texte_aphasie:{type:'text'},
+
+  // ── Bégaiement ──
+  debut_begaiement:{type:'text'},
+  evolution_begaiement:{type:'text'},
+  description_begaiement:{type:'text'},
+  variations_situationnelles_begaiement:{type:'text'},
+  signes_lutte_begaiement:{type:'text'},
+  reaction_enfant_begaiement:{type:'text'},
+  evitements_begaiement:{type:'text'},
+  impact_scolaire_begaiement:{type:'text'},
+  impact_social_begaiement:{type:'text'},
+  ressenti_parents_begaiement:{type:'text'},
+  aide_parents_begaiement:{type:'text'},
+  atcd_perso_begaiement_parent:{type:'choice',opts:['Oui','Non']},
+  atcd_perso_begaiement_detail:{type:'text'},
+
+  // ── BPA ──
+  origine_bpa:{type:'choice',opts:['Famille','Médecin / pédiatre','Enseignant','Infirmière scolaire','Accès direct','Autre']},
+  depuis_bpa:{type:'text'},
+  plainte_items_bpa:{type:'choice',opts:['Absence ou retard de langage','Inintelligibilité','Absence de phrases',"Problème d'articulation / phonologie","Problème de compréhension",'Lecture lente ou laborieuse','Difficultés de déchiffrage',"Difficultés d'orthographe",'Écriture laborieuse / peu lisible','Difficultés de calcul / raisonnement mathématique','Difficultés attentionnelles','Difficultés de communication / pragmatique','Problème de voix','Fonctions OMF (tétine, respiration buccale, déglutition…)','Autre']},
+  plainte_libre_bpa:{type:'text'},
+
+  // ── Communication précoce ──
+  diagnostic_cp:{type:'text'},
+
+  // ── OMF (oralité - fonctions oromyofaciales) ──
+  adresse_par_omf:{type:'choice',opts:['Médecin traitant','Pédiatre','ORL','Orthodontiste','Chirurgien-dentiste','Gastro-pédiatre','Autre']},
+  motifs_omf:{type:'choice',opts:["Otites à répétition","Pose d'aérateurs transtympaniques (ATT)",'Surdité de transmission','Ventilation buccale','Ronflements / apnées du sommeil','Bavage','Difficultés articulatoires','Inintelligibilité','Déglutition atypique','TAP / difficultés alimentaires','TDSP','Autre']},
+  symptomes_omf:{type:'choice',opts:["Sensation d'oreille bouchée",'Autophonie','Acouphènes','Vertiges','Otalgie','Hypoacousie','Parle fort','Demande de répétitions','Difficultés de concentration','Agitation','Repli sur soi']},
+
+  // ── Déglutition dysfonctionnelle ──
+  qui_adresse_deg:{type:'choice',opts:['Le patient lui-même',"L'entourage",'Le médecin traitant','Orthodontiste / dentiste','ORL','Autre médecin spécialiste']},
+  motif_deg:{type:'text'},
+  appareillage_deg:{type:'choice',opts:['Oui','Non']},
+  appareillage_detail_deg:{type:'text'},
+  succion_contexte:{type:'text'},
+  age_cuillere:{type:'text'},
+  age_morceaux:{type:'text'},
+  liquides_age:{type:'text'},
+  bruxisme_deg:{type:'choice',opts:['Non','Diurne','Nocturne','Diurne et nocturne']},
+  appareil_nuit_deg:{type:'choice',opts:['Aucun','Orthodontique','Orthopédique (avancement mandibulaire)','Autre']},
+  scoliose_deg:{type:'choice',opts:['Non','Scoliose suivie','Port de corset']},
+  orthodontie_deg:{type:'choice',opts:['Oui','Non']},
+  orthodontie_detail_deg:{type:'text'},
+
+  // ── Dysphagie ──
+  personne_demande_dyph:{type:'text'},
+  pathologie_dyph:{type:'text'},
+  histoire_dyph:{type:'text'},
+  domaines_plainte_dyph:{type:'choice',opts:['Toux pendant les repas','Fausses routes (solides)','Fausses routes (liquides)','Sensation de blocage','Voix mouillée après déglutition','Perte de poids','Allongement du temps de repas','Refus alimentaire']},
+  plainte_detaillee_dyph:{type:'text'},
+  alimentation_dyph:{type:'choice',opts:['Orale exclusive','Orale + complément','Mixte (orale + SNG/PEG)','Artificielle exclusive (SNG/PEG)']},
+  textures_dyph:{type:'choice',opts:['Normal','Tendre','Haché / mouillé','Mouliné / lisse','Liquide épais','Liquide nature']},
+  evolution_poids_dyph:{type:'choice',opts:['Stable','Perte de poids','Prise de poids']},
+  episodes_febriles_dyph:{type:'choice',opts:['Oui','Non']},
+  atcd_chir_dyph:{type:'text'},
+  traitements_dyph:{type:'text'},
+  autres_soins_dyph:{type:'text'},
+  qualite_vie_dyph:{type:'text'},
+
+  // ── Surdité ──
+  origine_demande_surd:{type:'choice',opts:['ORL','Pédiatre','Médecin traitant','Audioprothésiste','CAMSP / SESSAD','Établissement scolaire','La famille elle-même']},
+  plainte_famille_surd:{type:'text'},
+  attentes_famille_surd:{type:'text'},
+  type_surdite_surd:{type:'choice',opts:['Transmission','Perception (neurosensorielle)','Mixte']},
+  etiologie_surd:{type:'text'},
+  syndromes_surd:{type:'text'},
+  audiogramme_resultats_surd:{type:'text'},
+  acouphenes_surd:{type:'choice',opts:['Oui','Non','Parfois']},
+  hyperacousie_surd:{type:'choice',opts:['Oui','Non','Parfois']},
+  appareillage_surd:{type:'choice',opts:['Prothèse auditive droite','Prothèse auditive gauche','Implant cochléaire droit','Implant cochléaire gauche','BAA (Baha)',"Pas d'appareillage"]},
+  appareillage_depuis_surd:{type:'text'},
+  port_appareillage_surd:{type:'choice',opts:['Port permanent','Port régulier','Port irrégulier','Refusé','Non applicable']},
+  ic_date_surd:{type:'text'},
+  statut_auditif_parents_surd:{type:'choice',opts:['Entendants (les deux)','Un sourd / un entendant','Sourds (les deux)']},
+  langue_domicile_surd:{type:'text'},
+  projet_educ_surd:{type:'choice',opts:['Oralisme pur','Approche bimodale (oral + LSF)','LSF / Langue des Signes','Bilingue (LSF + français écrit)','En cours de réflexion']},
+  contacts_assos_surd:{type:'choice',opts:['Oui','Non','En cours']},
+  repercussions_surd:{type:'choice',opts:['Difficultés en réunion / groupe','Difficultés au téléphone','Difficultés en milieu bruyant',"Fatigue d'écoute",'Isolement social','Retentissement professionnel','Retentissement familial','Anxiété / stress']},
+  age_survenue_surd:{type:'choice',opts:['Prélingual (avant 2 ans)','Périlingual (2-5 ans)','Postlingual (après 5 ans)','Congénital']},
+
+  // ── SAOS / Apnées du sommeil ──
+  adresse_par_saos:{type:'choice',opts:['ORL','Pneumologue / médecin du sommeil','Médecin traitant','Dentiste / orthodontiste','Cardiologue','Neurologue']},
+  plainte_principale_saos:{type:'text'},
+  diagnostic_saos:{type:'text'},
+  traitement_saos:{type:'choice',opts:['PPC / CPAP',"Orthèse d'avancée mandibulaire",'Chirurgie ORL','Prise en charge diététique','Rééducation (kiné)','Aucun traitement']},
+  tolerance_ppc_saos:{type:'choice',opts:['Non portée','Portée mal tolérée','Portée correctement','Portée parfaitement']},
+  contexte_med_saos:{type:'choice',opts:['Hypertension artérielle','Maladie cardiaque','Diabète','Surpoids / obésité','TDAH','Maladie neurologique','COVID long / fatigue chronique']},
+  sympt_nocturnes_saos:{type:'choice',opts:['Ronflements','Bavage nocturne','Pauses respiratoires',"Sensation d'étouffement",'Sommeil agité','Nycturie','Transpiration excessive','Réveils avec maux de tête','Respiration buccale nocturne','Bruxisme nocturne']},
+  sympt_diurnes_saos:{type:'choice',opts:['Somnolence excessive','Fatigue dès le réveil','Difficultés à se réveiller','Maux de tête au réveil','Troubles de la mémoire','Troubles de la concentration',"Troubles de l'humeur",'Baisse de la libido','Performances altérées']},
+  qualite_sommeil_saos:{type:'text'},
+
+  // ── SEP ──
+  date_diagnostic_sep:{type:'text'},
+  forme_sep:{type:'choice',opts:['Rémittente (poussées + rémissions)','Secondairement progressive',"Progressive d'emblée",'Syndrome cliniquement isolé']},
+  premiers_signes_sep:{type:'text'},
+  evolution_sep:{type:'text'},
+  symptomes_visuels_sep:{type:'choice',opts:['Névrite optique rétrobulbaire','Diplopie','Nystagmus']},
+  symptomes_sensitifs_sep:{type:'choice',opts:['Paresthésies','Signe de Lhermitte','Douleurs neuropathiques','Troubles sensibilité tactile/positionnelle']},
+  fatigue_sep:{type:'choice',opts:['Absente ou légère','Modérée','Sévère']},
+  humeur_sep:{type:'choice',opts:['Dépression','Anxiété','Labilité émotionnelle']},
+
+  // ── SLA ──
+  date_diag_sla:{type:'text'},
+  symptomes_inaug_sla:{type:'text'},
+  atteinte_initiale_sla:{type:'choice',opts:['Bulbaire','Spinale (membres supérieurs)','Spinale (membres inférieurs)','Respiratoire','Mixte']},
+  centre_ref_sla:{type:'choice',opts:['Oui','Non']},
+  appareillage_resp_sla:{type:'choice',opts:['Aucun','VNI nocturne','VNI diurne et nocturne','Oxygénothérapie','Trachéotomie']},
+  nutrition_art_sla:{type:'choice',opts:['Aucune','SNG','Gastrostomie (PEG)','Jejunostomie']},
+  plainte_cog_sla:{type:'choice',opts:['Manque du mot','Troubles attentionnels','Troubles exécutifs','Troubles du comportement','Aucune']},
+  mode_vie_sla:{type:'text'},
+  etat_emot_sla:{type:'text'},
+
+  // ── Voix (adulte) ──
+  profession_voix_a:{type:'text'},
+  motif_voix_a:{type:'text'},
+  historique_voix_a:{type:'text'},
+  plainte_intensite_voix_a:{type:'choice',opts:['Difficulté à parler fort','Difficulté à parler doucement']},
+  plainte_frequence_voix_a:{type:'choice',opts:["Difficulté d'accès aux graves","Difficulté d'accès aux médiums","Difficulté d'accès aux aigus"]},
+  plainte_duree_voix_a:{type:'choice',opts:['Fatigabilité vocale rapide','Bonne récupération vocale','Difficulté de récupération vocale']},
+  plainte_esthetique_voix_a:{type:'text'},
+  charge_pro_voix_a:{type:'text'},
+  charge_fam_voix_a:{type:'text'},
+  charge_loisirs_voix_a:{type:'text'},
+  charge_com_voix_a:{type:'text'},
+  hygiene_items_voix_a:{type:'choice',opts:['Tabac','Alcool','Autres substances','Hydratation insuffisante','Bonne hydratation','Environnement bruyant','Forçage vocal régulier','Raclements de gorge fréquents']},
+  gene_sensitive_voix_a:{type:'choice',opts:['Douleurs','Picotements',"Sensation d'étranglement",'Globus','Raclement de gorge']},
+  gene_respi_voix_a:{type:'choice',opts:['Essoufflement','Bruit inspiratoire (stridor)','Bruit expiratoire (wheezing)']},
+  gene_phagique_voix_a:{type:'choice',opts:['Blocage','Fausse route','Éructations','Vomissements']},
+  retentissement_voix_a:{type:'text'},
+
+  // ── Voix (enfant) ──
+  adresse_par_voix_e:{type:'choice',opts:['ORL','Médecin traitant / pédiatre','Parents','École','Auto-référence']},
+  plainte_enfant_voix_e:{type:'text'},
+  plainte_parents_voix_e:{type:'text'},
+  gene_ressentie_voix_e:{type:'choice',opts:['Pas de gêne — peu motivé','Gêne légère','Gêne modérée','Gêne importante — motivation au changement','Ne peut pas encore exprimer']},
+  contexte_survenue_voix_e:{type:'text'},
+  bilan_orl_voix_e:{type:'text'},
+  comportement_vocal_voix_e:{type:'text'},
+  place_vocale_voix_e:{type:'text'},
+  habitudes_vocales_voix_e:{type:'choice',opts:['Parle beaucoup et longtemps','Parle fort régulièrement','Cris fréquents (récré, sport)','Imitations de voix (personnages, bruits)','Chant régulier (chorale, karaoké…)','Hemmage fréquent','Toux chronique','Milieu bruyant (fam / scolaire)']},
+  sensations_voix_e:{type:'choice',opts:['Boule / gêne dans la gorge','Sensation de serrage','Fatigue vocale','Douleurs laryngées ou péri-laryngées',"Voix qui s'éteint",'Voix qui change en cours de journée']},
+  atcd_med_voix_e:{type:'text'},
+  traitement_voix_e:{type:'text'},
+
+  // ── Anosmie ──
+  etiologie_anos:{type:'choice',opts:['Après une rhinite virale (gros rhume)','Traumatisme crânien','Cause inconnue','Polypes dans le nez','Maladie neurodégénérative (Parkinson, Alzheimer…)',"Effet d'un médicament",'Suite au Covid']},
+  type_anos:{type:'choice',opts:['Anosmie (ne sent plus rien)','Hyposmie (sent moins bien)','Hyperosmie (sent trop fort)','Cacosmie (mauvaises odeurs persistantes)','Parosmie (confond des odeurs)','Fantosmie (hallucinations olfactives)']},
+  atcd_orl_anos:{type:'choice',opts:['Angines fréquentes','Otites fréquentes','Sinusites à répétition','Polypose naso-sinusienne','Chirurgie ORL','Traumatisme crânien','Aucun']},
+  odeurs_aimees_apres:{type:'text'},
+  odeurs_aimees_avant:{type:'text'},
+  odeurs_non_aimees_apres:{type:'text'},
+  retentissement_alim:{type:'choice',opts:['Je mange moins','Je mange plus','Je mange différemment','Pas de changement']},
+  tabagisme:{type:'choice',opts:['Oui','Non']},
+  regime:{type:'text'},
+  allergies:{type:'text'},
+  plat_prefere:{type:'text'},
+  boisson_preferee:{type:'text'},
+  plat_deteste:{type:'text'},
+  boisson_detestee:{type:'text'},
+  poids_neuro:{type:'text'},
+  taille_neuro:{type:'text'},
+  date_premiers_symptomes_anos:{type:'text'},
+  commentaires_anos:{type:'text'}
 };
 
 var QA_SECTIONS = {
@@ -17860,9 +18070,15 @@ async function telechargerQuestionnaireWord(pid){
         return blocks;
       }
       var children=[];
-      children.push(new d.Paragraph({alignment:d.AlignmentType.CENTER,spacing:{after:80},children:[new d.TextRun({text:'Questionnaire préalable au bilan orthophonique',bold:true,size:36,color:SAGE})]}));
-      children.push(new d.Paragraph({alignment:d.AlignmentType.CENTER,spacing:{after:40},children:[new d.TextRun({text:patientLabel,size:22,color:'666666'})]}));
-      children.push(new d.Paragraph({alignment:d.AlignmentType.CENTER,spacing:{after:240},children:[new d.TextRun({text:'Merci de compléter ce document et de le retourner par email avant le rendez-vous.',italics:true,size:20,color:'666666'})]}));
+      children.push(new d.Paragraph({alignment:d.AlignmentType.CENTER,spacing:{after:60},children:[new d.TextRun({text:'Questionnaire préalable au bilan orthophonique',bold:true,size:36,color:SAGE})]}));
+      children.push(new d.Paragraph({alignment:d.AlignmentType.CENTER,spacing:{after:40},children:[new d.TextRun({text:'Noëlie Lainé — Orthophoniste',bold:true,size:24,color:'444444'})]}));
+      children.push(new d.Paragraph({alignment:d.AlignmentType.CENTER,spacing:{after:20},children:[new d.TextRun({text:'Cabinet — Pagney-derrière-Barine',size:20,color:'666666'})]}));
+      children.push(new d.Paragraph({alignment:d.AlignmentType.CENTER,spacing:{after:240},children:[new d.TextRun({text:'noelie.orthophonie@gmail.com',size:20,color:'666666'})]}));
+      children.push(new d.Paragraph({spacing:{after:80},children:[new d.TextRun({text:'Bonjour,',size:22})]}));
+      children.push(new d.Paragraph({spacing:{after:80},children:[new d.TextRun({text:'Je vous remercie pour votre confiance.',size:22})]}));
+      children.push(new d.Paragraph({spacing:{after:80},children:[new d.TextRun({text:'Afin de préparer au mieux notre première rencontre concernant '+(patientLabel||'votre enfant')+', je vous invite à compléter ce questionnaire avant le rendez-vous.',size:22})]}));
+      children.push(new d.Paragraph({spacing:{after:80},children:[new d.TextRun({text:"Les informations que vous y renseignerez me permettront de mieux connaître le parcours et les besoins, et ainsi de consacrer davantage de temps aux échanges et à l'évaluation lors du bilan.",size:22})]}));
+      children.push(new d.Paragraph({spacing:{after:240},children:[new d.TextRun({text:"Merci de me retourner ce document complété par email avant le rendez-vous. Si vous rencontrez la moindre difficulté, n'hésitez pas à me contacter.",size:22,italics:true,color:'666666'})]}));
       selected.forEach(function(sec){
         children.push(new d.Paragraph({
           heading:d.HeadingLevel.HEADING_1,
