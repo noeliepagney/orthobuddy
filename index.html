@@ -3664,6 +3664,8 @@ function showModal(title,bodyHtml){
   document.getElementById('modal-generic').classList.add('open');
   var btnQa=document.getElementById('btn-envoyer-qa');
   if(btnQa){ btnQa.addEventListener('click',function(){ envoyerQuestionnaire(this.dataset.pid); }); }
+  var btnQw=document.getElementById('btn-telecharger-qa');
+  if(btnQw){ btnQw.addEventListener('click',function(){ telechargerQuestionnaireWord(this.dataset.pid); }); }
   var btnQi=document.getElementById('btn-integrer-qa');
   if(btnQi){ btnQi.addEventListener('click',function(){ integrerQuestionnaire(this.dataset.pid,this.dataset.token); }); }
 }
@@ -17563,7 +17565,10 @@ function ouvrirEnvoiQuestionnaire(pid){
     html+='</div>';
   });
 
-  html+='<button id="btn-envoyer-qa" data-pid="'+pid+'" style="background:#7C3AED;color:white;border:none;border-radius:var(--radius-sm);padding:10px 18px;font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;width:100%;margin-top:8px;">Envoyer le questionnaire</button>';
+  html+='<div style="display:flex;gap:8px;margin-top:8px;">';
+  html+='<button id="btn-envoyer-qa" data-pid="'+pid+'" style="background:#7C3AED;color:white;border:none;border-radius:var(--radius-sm);padding:10px 18px;font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;flex:1;">Envoyer le questionnaire</button>';
+  html+='<button id="btn-telecharger-qa" data-pid="'+pid+'" style="background:var(--bg);color:var(--text);border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px 18px;font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;flex:1;">📄 Télécharger en Word</button>';
+  html+='</div>';
   html+='</div>';
 
   showModal('Questionnaire pré-bilan',html);
@@ -17620,6 +17625,98 @@ async function envoyerQuestionnaire(pid){
     if(json.success){closeModal('modal-generic');showToast('Questionnaire envoye a '+email,'green');}
     else{showToast('Erreur: '+(json.error||'inconnue'),'red');}
   }catch(e){showToast('Erreur: '+e.message,'red');}
+}
+
+function _loadDocxLib(cb){
+  if(window.docx){ cb(); return; }
+  var s=document.createElement('script');
+  s.src='https://cdn.jsdelivr.net/npm/docx@9.6.1/build/index.js';
+  s.onload=function(){ cb(); };
+  s.onerror=function(){ showToast('Impossible de charger le générateur Word (vérifiez la connexion internet)','red'); };
+  document.head.appendChild(s);
+}
+
+function _collectQaSelectedSections(){
+  var selected=[];
+  Object.keys(QA_SECTIONS).forEach(function(secId){
+    var sec=QA_SECTIONS[secId];
+    var cb=document.getElementById('qp-sec-'+secId);
+    if(cb&&cb.checked){
+      var qs=[];
+      sec.questions.forEach(function(q){
+        var qcb=document.getElementById('qp-q-'+secId+'-'+q.id);
+        if(qcb&&qcb.checked) qs.push(q);
+      });
+      if(qs.length>0) selected.push({label:sec.label,questions:qs});
+    }
+  });
+  return selected;
+}
+
+async function telechargerQuestionnaireWord(pid){
+  var selected=_collectQaSelectedSections();
+  if(selected.length===0){showToast('Sélectionnez au moins une section','red');return;}
+  var p=DB.patients.find(function(x){return x.id===pid;})||{};
+  var patientLabel='Patient : '+((p.prenom||'')+' '+(p.nom||'')).trim()+(p.ddn?' — né(e) le '+new Date(p.ddn).toLocaleDateString('fr-FR'):'');
+  showToast('Génération du document…','green');
+  _loadDocxLib(function(){
+    try{
+      var d=window.docx;
+      var SAGE='3D6B4F';
+      function questionBlock(label){
+        return [
+          new d.Paragraph({
+            spacing:{before:200,after:60},
+            children:[ new d.CheckBox({checked:false}), new d.TextRun({text:' '+label,bold:true}) ]
+          }),
+          new d.Paragraph({
+            border:{bottom:{style:d.BorderStyle.SINGLE,size:4,color:'CCCCCC',space:1}},
+            spacing:{after:200},
+            children:[ new d.TextRun({text:' '}) ]
+          }),
+          new d.Paragraph({
+            border:{bottom:{style:d.BorderStyle.SINGLE,size:4,color:'CCCCCC',space:1}},
+            spacing:{after:160},
+            children:[ new d.TextRun({text:' '}) ]
+          })
+        ];
+      }
+      var children=[];
+      children.push(new d.Paragraph({alignment:d.AlignmentType.CENTER,spacing:{after:80},children:[new d.TextRun({text:'Questionnaire préalable au bilan orthophonique',bold:true,size:36,color:SAGE})]}));
+      children.push(new d.Paragraph({alignment:d.AlignmentType.CENTER,spacing:{after:40},children:[new d.TextRun({text:patientLabel,size:22,color:'666666'})]}));
+      children.push(new d.Paragraph({alignment:d.AlignmentType.CENTER,spacing:{after:240},children:[new d.TextRun({text:'Merci de compléter ce document et de le retourner par email avant le rendez-vous.',italics:true,size:20,color:'666666'})]}));
+      selected.forEach(function(sec){
+        children.push(new d.Paragraph({
+          heading:d.HeadingLevel.HEADING_1,
+          border:{bottom:{style:d.BorderStyle.SINGLE,size:6,color:SAGE,space:4}},
+          spacing:{before:280,after:140},
+          children:[new d.TextRun(sec.label)]
+        }));
+        sec.questions.forEach(function(q){ children.push.apply(children, questionBlock(q.label)); });
+      });
+      var doc=new d.Document({
+        styles:{
+          default:{document:{run:{font:'Arial',size:22}}},
+          paragraphStyles:[{id:'Heading1',name:'Heading 1',basedOn:'Normal',next:'Normal',quickFormat:true,
+            run:{size:28,bold:true,font:'Arial',color:SAGE},paragraph:{outlineLevel:0}}]
+        },
+        sections:[{
+          properties:{page:{size:{width:11906,height:16838},margin:{top:1100,right:1100,bottom:1100,left:1100}}},
+          children:children
+        }]
+      });
+      d.Packer.toBlob(doc).then(function(blob){
+        var url=URL.createObjectURL(blob);
+        var a=document.createElement('a');
+        a.href=url;
+        var fname='questionnaire-pre-bilan'+(p.nom?'-'+p.nom.replace(/[^a-zA-Z0-9]/g,''):'')+'.docx';
+        a.download=fname;
+        document.body.appendChild(a); a.click(); document.body.removeChild(a);
+        setTimeout(function(){URL.revokeObjectURL(url);},2000);
+        showToast('Document téléchargé','green');
+      }).catch(function(e){ showToast('Erreur génération : '+e.message,'red'); });
+    }catch(e){ showToast('Erreur : '+e.message,'red'); }
+  });
 }
 
 function saveAnamneseTab(pid, silent){
