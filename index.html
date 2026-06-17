@@ -17059,6 +17059,159 @@ async function integrerQuestionnaire(pid, token){
 
 // Définition des sections/questions pour le questionnaire pré-bilan
 // Les id correspondent EXACTEMENT aux clés data-ana de l'anamnèse OrthoBuddy
+// Options de réponse réelles, extraites du formulaire d'anamnèse (renderAnamneseTab).
+// type: 'choice' = case à cocher unique par option proposée (le patient coche celles qui s'appliquent)
+// type: 'text' = ligne(s) de réponse libre (pas d'options fixes)
+var QA_OPTIONS = {
+  // ── Informations générales (enfant) ──
+  lieu_vie:{type:'choice',opts:['Avec ses deux parents','En garde alternée','Chez son père','Chez sa mère',"En famille d'accueil / foyer"]},
+  fratrie:{type:'choice',opts:['Enfant unique','Aîné(e)','Cadet(te)','Benjamin/Benjamine']},
+  fratrie_detail:{type:'text'},
+  bilinguisme:{type:'choice',opts:['Oui','Non']},
+  langue_maison:{type:'text'},
+  atcd_fam_mere:{type:'choice',opts:['Difficultés de lecture',"Difficultés d'orthographe",'Difficultés en mathématiques','Difficultés de concentration','Difficultés de langage']},
+  atcd_fam_pere:{type:'choice',opts:['Difficultés de lecture',"Difficultés d'orthographe",'Difficultés en mathématiques','Difficultés de concentration','Difficultés de langage']},
+  atcd_fam_fratrie:{type:'choice',opts:['Difficultés de lecture',"Difficultés d'orthographe",'Difficultés en mathématiques','Difficultés de concentration','Difficultés de langage']},
+  origine_plainte:{type:'choice',opts:['Parent','École','Médecin','Autre']},
+  conscience_difficultes:{type:'choice',opts:['Oui','Non','Partiellement']},
+  commentaires_famille:{type:'text'},
+  grossesse:{type:'choice',opts:['Sans particularité','Diabète gestationnel','Infection pendant la grossesse','Menace d\u2019accouchement prématuré (MAP)','Anomalie détectée chez le bébé','Souffrance du bébé pendant la grossesse','Exposition à des substances (tabac, alcool, médicaments…)','Autre']},
+  naissance_mode:{type:'choice',opts:['Voie basse','Césarienne programmée',"Césarienne d'urgence"]},
+  naissance_terme:{type:'choice',opts:['À terme','Prématurité légère (35-36 semaines de grossesse)','Prématurité modérée (32-34 semaines)','Grande prématurité (27-31 semaines)','Prématurité extrême (22-26 semaines)']},
+  naissance_detail:{type:'choice',opts:['Utilisation de forceps, ventouse ou spatules','Difficultés pendant l\u2019accouchement','Réanimation à la naissance','Passage en soins intensifs / néonatologie']},
+  poids_naissance:{type:'choice',opts:['Plus de 2,5 kg','Moins de 2,5 kg','Moins de 1,5 kg','Moins de 1 kg']},
+  commentaires_peri:{type:'text'},
+  orl:{type:'choice',opts:['Angines fréquentes','Otites fréquentes','Pose d\u2019aérateurs ("yoyos")','Ablation des végétations','Ablation des amygdales','Surdité','Audiogramme déjà réalisé','Audiogramme prévu']},
+  vision:{type:'choice',opts:['Port de lunettes','Myopie','Astigmatisme','Strabisme']},
+  traumatismes:{type:'text'},
+  operations:{type:'text'},
+  bilans:{type:'choice',opts:['Bilan psychologique','Tests de QI (psychométrique)','Bilan neuropsychologique','Bilan orthophonique','Bilan en ergothérapie','Bilan psychomoteur','Bilan ophtalmologique (yeux)','Bilan neurologique','Bilan orthoptique (vision)']},
+  suivis:{type:'choice',opts:['Orthophonie','Psychologie','Ergothérapie','Neuropsychologie','Psychomotricité','Orthoptie']},
+  diagnostics:{type:'text'},
+  commentaires_med:{type:'text'},
+  marche_4_pattes:{type:'choice',opts:['Oui','Non']},
+  age_marche:{type:'text'},
+  age_velo:{type:'text'},
+  age_babillage:{type:'text'},
+  age_premiers_mots:{type:'text'},
+  age_phrases:{type:'text'},
+  memo_comptines:{type:'choice',opts:['Oui','Non','Difficultés']},
+  regression_langage:{type:'choice',opts:['Oui','Non']},
+  age_regression:{type:'text'},
+  commentaires_dev:{type:'text'},
+  lateralite:{type:'choice',opts:['Droitier(e)','Gaucher(e)','Ambidextre']},
+  proprete_diurne:{type:'text'},
+  proprete_nocturne:{type:'text'},
+  lieu_sommeil:{type:'choice',opts:['Chambre seul(e)','Chambre partagée','Lit des parents','Chambre des parents']},
+  troubles_sommeil:{type:'choice',opts:['Terreurs nocturnes','Réveils nocturnes',"Difficulté à s'endormir",'Besoin de lumière','Cauchemars','Ronflements','Apnées','Grince des dents','Bon sommeil']},
+  alimentation:{type:'choice',opts:['Mange de tout','Sélectif(ve)','Gros appétit','Petit appétit','Difficultés à mastiquer','Tousse pendant les repas']},
+  autonomie:{type:'choice',opts:['Se lave seul(e)',"Se déshabille seul(e)",'S\'habille seul(e)','Fait ses lacets','Mange proprement','Coupe sa viande','Mange avec couverts',"S'essuie aux toilettes"]},
+  sensorialite:{type:'choice',opts:['Bruit','Textiles / étiquettes qui grattent','Lumière','Odeurs','Température','Ne supporte pas d\u2019avoir les mains sales','Marche difficilement pieds nus']},
+  attention:{type:'choice',opts:['Oublie souvent ses affaires','Se déconcentre facilement',"A du mal à être ordonné(e) dans son travail",'A besoin de bouger beaucoup',"A du mal à attendre son tour","A du mal à se faire des ami(e)s","N'avait pas toujours conscience du danger plus jeune","Résultats scolaires irréguliers selon les jours","A tendance à agir sans réfléchir"]},
+  jeux_activites:{type:'choice',opts:['Jeux de construction','Bricolage','Dessin','Activités physiques','Lecture']},
+  jeux_activites_autres:{type:'text'},
+  ecrans_semaine:{type:'choice',opts:['0h','1h','2h','3h','4h','5h','6h','Plus de 6h']},
+  ecrans_weekend:{type:'choice',opts:['0h','1h','2h','3h','4h','5h','6h','Plus de 6h']},
+  classe:{type:'choice',opts:['TPS','PS','MS','GS','CP','CE1','CE2','CM1','CM2','6ème','5ème','4ème','3ème','Seconde','Première','Terminale']},
+  ecole:{type:'text'},
+  aime_ecole:{type:'choice',opts:['Oui','Non','Selon les jours']},
+  obs_enseignant:{type:'text'},
+  difficultes_scolaires:{type:'choice',opts:['Oui','Non']},
+  difficultes_detail:{type:'text'},
+  redoublement:{type:'choice',opts:['Oui','Non']},
+  redoublement_classe:{type:'text'},
+  commentaires_scol:{type:'text'},
+  temps_devoirs:{type:'choice',opts:['5min','10min','15min','30min','45min','1h',"Plus d'1h"]},
+  description_patient:{type:'text'},
+  centres_interet:{type:'text'},
+
+  // ── Informations générales (adulte) ──
+  demandeur_neuro:{type:'choice',opts:['Le patient lui-même',"L'entourage",'Le médecin traitant','Un médecin spécialiste']},
+  plainte_actuelle_neuro:{type:'text'},
+  premiers_symptomes_neuro:{type:'text'},
+  diagnostic_neuro:{type:'text'},
+  evolution_maladie_neuro:{type:'text'},
+  plainte_entourage_neuro:{type:'text'},
+  impact_vie_quotidienne_neuro:{type:'text'},
+  situation_familiale:{type:'choice',opts:['Marié(e)','En couple','Veuf/Veuve','Divorcé(e)','Célibataire']},
+  aidant:{type:'text'},
+  niveau_scolaire:{type:'choice',opts:["Certificat d'études",'CAP/BEP','Bac','Bac+2','Bac+3','Bac+5 et plus']},
+  niveau_eleve:{type:'choice',opts:['Bon(ne) élève','Élève moyen(ne)','En difficulté']},
+  vie_pro_neuro:{type:'text'},
+  date_retraite:{type:'text'},
+  lateralite_neuro:{type:'choice',opts:['Droitier(e)','Gaucher(e)','Ambidextre']},
+  evenements_vie:{type:'text'},
+  anosognosie:{type:'choice',opts:['Oui, tout à fait','Partiellement','Peu ou pas consciente']},
+  antecedents_neuro:{type:'choice',opts:['Diabète','Hypertension','Cholestérol élevé','Hallucinations visuelles','Chutes fréquentes','Incontinence','Dépression','AVC ou accident vasculaire cérébral transitoire (AIT)','Traumatisme crânien','Maladie de Parkinson']},
+  commentaires_neuro:{type:'text'},
+  traitements_neuro:{type:'text'},
+  reaction_antidep:{type:'choice',opts:['Oui','Non','Ne sait pas']},
+  vision_neuro:{type:'choice',opts:['Cataracte','Glaucome','DMLA (dégénérescence maculaire liée à l\u2019âge)','Porte des lunettes']},
+  audition_neuro:{type:'choice',opts:["Baisse d'audition liée à l'âge",'Porte des appareils auditifs','Surdité','Ne porte pas ses appareils auditifs']},
+  gout_odorat:{type:'choice',opts:['Conservés','Altérés','Très altérés']},
+  atcd_fam_neuro:{type:'text'},
+  autres_soins_neuro:{type:'text'},
+  examens_neuro:{type:'choice',opts:['IRM','Scanner','Scintigraphie cérébrale','Analyses de sang','Bilan neuropsychologique (tests de mémoire et de raisonnement)','Évaluation gériatrique']},
+  resultats_examens:{type:'text'},
+  info_langagiere:{type:'text'},
+  conduite:{type:'choice',opts:['Oui','Non','A arrêté récemment']},
+  gestion_finances:{type:'choice',opts:['Oui','Non','Avec aide']},
+  lieu_vie_neuro:{type:'choice',opts:['Domicile, seul(e)','Domicile, avec conjoint(e)','Domicile, avec famille','EHPAD (maison de retraite médicalisée)','Résidence senior','Autre']},
+  occupations:{type:'text'},
+
+  // ── Langage oral ──
+  mode_garde:{type:'choice',opts:['Crèche','Assistante maternelle','Nounou','Grands-parents','À la maison',"Jardin d'enfants"]},
+  age_entree_ecole:{type:'choice',opts:['2 ans','2 ans 1/2','3 ans','3 ans 1/2']},
+  amenagements:{type:'choice',opts:['AESH','Ordinateur','Aide technologique','Cours sur clé USB','Réduction devoirs','Adaptation police','PAP','PPS','PPRE','PAI']},
+  lieu_devoirs:{type:'choice',opts:['Bureau chambre','Cuisine','Salon']},
+  alim_bebe:{type:'choice',opts:['Allaitement exclusif','Allaitement mixte','Biberon']},
+  succion:{type:'choice',opts:['Pouce/doigt','Tétine','Doudou/vêtement']},
+  stereotypies:{type:'choice',opts:['Oui','Non']},
+  stereotypies_detail:{type:'text'},
+  difficultes_langagieres_lo:{type:'choice',opts:['Déformation des mots','Difficulté à se faire comprendre','Sons mal prononcés','Compréhension difficile','Cherche ses mots',"Difficultés à exprimer ses idées",'S\u2019énerve quand incompris(e)','Utilisation de la gestuelle / mimiques','Utilisation du "moi, je"','Erreurs sur le genre des noms','Omission de mots grammaticaux','Discours souvent avorté','Mémorisation des comptines difficile']},
+  sons_detail:{type:'text'},
+  intelligibilite_interlocuteur:{type:'choice',opts:['Parents','Maître/maîtresse','Camarades de classe','Grands-parents','Au téléphone']},
+  trouble_va_lo:{type:'choice',opts:['A tendance à sauter des lignes en lisant',"A du mal à recopier un texte (s'y retrouver)",'A mal à la tête après avoir lu','A tendance à se cogner / mal évaluer les distances','A des difficultés en géométrie']},
+  aime_parler:{type:'choice',opts:['Oui','Non','Selon les personnes']},
+  lo_avec_le:{type:'choice',opts:['Amélioration','Stable','Détérioration','Sans objet']},
+  difficultes_retention_lo:{type:'choice',opts:['Comptines','Poésies','Informations verbales','Listes']},
+  temps_lecture_lo:{type:'choice',opts:['5min','10min','15min','30min','45min','1h',"Plus d'1h"]},
+  plainte_lo:{type:'text'},
+  attentes_lo:{type:'text'},
+  commentaires_lo:{type:'text'},
+
+  // ── Cognition mathématique ──
+  retard_langage_cm:{type:'choice',opts:['Oui','Non','Ne sait pas']},
+  confusions_auditives_cm:{type:'choice',opts:["Confond des mots qui se ressemblent à l'oral","A du mal à apprendre une langue étrangère"]},
+  trouble_phono_cm:{type:'choice',opts:["A du mal à dire les mots longs, encore aujourd'hui",'Confond certains sons']},
+  visuo_attentionnel_cm:{type:'choice',opts:['A tendance à sauter des lignes en lisant',"A du mal à recopier un texte (s'y retrouver)",'A mal à la tête après avoir lu','A tendance à se cogner / mal évaluer les distances','A des difficultés en géométrie']},
+  appetence_maths:{type:'choice',opts:['0','1','2','3','4','5','6','7','8','9','10']},
+  appetence_lecture:{type:'choice',opts:['0','1','2','3','4','5','6','7','8','9','10']},
+  difficultes_maths:{type:'choice',opts:['Résolution de problèmes','Erreurs de calcul','Poser des opérations','Calcul mental','Difficultés à compter','Lecture des nombres',"Difficultés de transcription des chiffres / nombres à l'écrit",'Erreurs en copie de nombres','Écriture des chiffres sur la ligne difficile',"Mauvaise gestion de l'espace sur la feuille","Compte sur ses doigts en grandissant",'Ne reconnaît pas les quantités sans compter (ex : sur un dé)','Continue à compter sur ses doigts ou un à un','Méthodes de calcul peu efficaces pour son âge']},
+  difficultes_retention_cm:{type:'choice',opts:['Tables de multiplication','Termes irréguliers (quatre-vingt, soixante-dix…)','Comptines numériques']},
+  tables_multi:{type:'choice',opts:['Maîtrisées','En cours','Non maîtrisées']},
+  temps_lecture_cm:{type:'choice',opts:['5min','10min','15min','30min','45min','1h',"Plus d'1h"]},
+  obs_enseignant_maths:{type:'text'},
+  description_difficultes_cm:{type:'text'},
+  attentes_cm:{type:'text'},
+  autres_difficultes_maths:{type:'text'},
+
+  // ── Langage écrit ──
+  retard_langage_le:{type:'choice',opts:['Oui','Non','Ne sait pas']},
+  confusions_auditives_le:{type:'choice',opts:['Confusions de mots auditivement proches','Confusions de sons']},
+  trouble_phono_le:{type:'choice',opts:["A du mal à dire les mots longs, encore aujourd'hui","A du mal à apprendre une langue étrangère",'Confond certains sons']},
+  visuo_attentionnel_le:{type:'choice',opts:['A tendance à sauter des lignes en lisant',"A du mal à recopier un texte (s'y retrouver)",'A mal à la tête après avoir lu','A tendance à se cogner / mal évaluer les distances','A des difficultés en géométrie']},
+  appetence_lecture_le:{type:'choice',opts:['0','1','2','3','4','5','6','7','8','9','10']},
+  difficultes_le:{type:'choice',opts:['Lenteur de lecture / non fluide','Écriture phonétique','Confusions de sons','Erreurs de découpage (segmentation) de mots','Erreurs fréquentes en lecture','Difficultés de compréhension',"Difficultés en orthographe",'Fatigue lors des tâches écrites','Confusions de lettres/sons','Sauts de ligne','Oubli de lettres','Inversions','Mauvaise transcription de graphies','Erreurs en copie','Écriture sur les lignes difficile','Espace feuille mal géré','Différence dictée préparée/non préparée','Travail important pour les dictées','Un mot écrit de 5 façons différentes']},
+  le_avec_lo:{type:'choice',opts:['Amélioration','Stable','Détérioration','Sans objet']},
+  difficultes_retention_le:{type:'choice',opts:['Comptines','Poésies',"Informations dites à l'oral",'Listes']},
+  temps_lecture_le:{type:'choice',opts:['5min','10min','15min','30min','45min','1h',"Plus d'1h"]},
+  debut_difficultes:{type:'text'},
+  obs_enseignant_le:{type:'text'},
+  plainte_le:{type:'text'},
+  commentaires_le:{type:'text'}
+};
+
 var QA_SECTIONS = {
   base_enfant: {
     label: 'Informations générales (enfant)',
@@ -17665,23 +17818,46 @@ async function telechargerQuestionnaireWord(pid){
     try{
       var d=window.docx;
       var SAGE='3D6B4F';
-      function questionBlock(label){
-        return [
+      function questionBlock(q){
+        var opt=QA_OPTIONS[q.id];
+        var blocks=[
           new d.Paragraph({
-            spacing:{before:200,after:60},
-            children:[ new d.CheckBox({checked:false}), new d.TextRun({text:' '+label,bold:true}) ]
-          }),
-          new d.Paragraph({
+            spacing:{before:200,after: (opt&&opt.type==='choice')?80:60},
+            children:[ new d.TextRun({text:q.label,bold:true}) ]
+          })
+        ];
+        if(opt && opt.type==='choice' && opt.opts && opt.opts.length){
+          // Une checkbox par option, sur autant de lignes que nécessaire (3 par ligne)
+          var opts=opt.opts;
+          for(var i=0;i<opts.length;i+=2){
+            var runs=[];
+            runs.push(new d.CheckBox({checked:false}));
+            runs.push(new d.TextRun({text:' '+opts[i]+'   '}));
+            if(opts[i+1]!==undefined){
+              runs.push(new d.CheckBox({checked:false}));
+              runs.push(new d.TextRun({text:' '+opts[i+1]}));
+            }
+            blocks.push(new d.Paragraph({ spacing:{after:60}, children: runs }));
+          }
+          blocks.push(new d.Paragraph({
+            spacing:{before:40,after:160},
+            border:{bottom:{style:d.BorderStyle.SINGLE,size:4,color:'CCCCCC',space:1}},
+            children:[ new d.TextRun({text:'Précisions : ',italics:true,size:18,color:'888888'}) ]
+          }));
+        } else {
+          // Pas d'options connues : réponse libre sur 2 lignes
+          blocks.push(new d.Paragraph({
             border:{bottom:{style:d.BorderStyle.SINGLE,size:4,color:'CCCCCC',space:1}},
             spacing:{after:200},
             children:[ new d.TextRun({text:' '}) ]
-          }),
-          new d.Paragraph({
+          }));
+          blocks.push(new d.Paragraph({
             border:{bottom:{style:d.BorderStyle.SINGLE,size:4,color:'CCCCCC',space:1}},
             spacing:{after:160},
             children:[ new d.TextRun({text:' '}) ]
-          })
-        ];
+          }));
+        }
+        return blocks;
       }
       var children=[];
       children.push(new d.Paragraph({alignment:d.AlignmentType.CENTER,spacing:{after:80},children:[new d.TextRun({text:'Questionnaire préalable au bilan orthophonique',bold:true,size:36,color:SAGE})]}));
@@ -17694,7 +17870,7 @@ async function telechargerQuestionnaireWord(pid){
           spacing:{before:280,after:140},
           children:[new d.TextRun(sec.label)]
         }));
-        sec.questions.forEach(function(q){ children.push.apply(children, questionBlock(q.label)); });
+        sec.questions.forEach(function(q){ children.push.apply(children, questionBlock(q)); });
       });
       var doc=new d.Document({
         styles:{
