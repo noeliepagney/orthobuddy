@@ -8023,8 +8023,11 @@ function findCatForTrame(tid){ for(const c of Object.keys(CATEGORIES)){ const i=
 function renderPlaceholder(label){ $("#lead").innerHTML=""; $("#form").innerHTML="<div class='note'><span class='gt'>À venir</span>La trame « "+esc(label)+" » n'est pas encore créée. Dis-moi quand tu veux qu'on la construise.</div>"; $("#saveState").className="save-state"; $("#saveState").textContent=""; }
 async function selectFromSub(){
   const leaf=currentLeaf(); if(!leaf) return;
-  // Flush toute sauvegarde en attente avant de changer de bilan
+  // Flush toute sauvegarde en attente sur le bilan PRÉCÉDENT avant de changer
   if(saveTimer){ clearTimeout(saveTimer); await saveNow(true); }
+  // On change de type de bilan : on repart sur un nouveau bilan vierge,
+  // jamais sur l'id du bilan précédemment ouvert/édité.
+  currentBilanId=null;
   if(leaf.trame){
     trameId=leaf.trame; loadData(); renderForm(); markSaved();
     if(currentPatientId){
